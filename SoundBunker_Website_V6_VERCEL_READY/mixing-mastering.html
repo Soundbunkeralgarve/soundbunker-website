@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#100d14">
+  <meta name="description" content="SoundBunker Algarve professional creative service in Loulé.">
+  <title>SoundBunker Algarve</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="detail-styles.css">
+  <link rel="stylesheet" href="v5-styles.css">
+  <script src="service-page.js" defer></script>
+  <script src="script.js" defer></script>
+</head>
+<body data-service-page="mixing">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header" id="top">
+    <a class="brand" href="index.html" aria-label="SoundBunker Algarve home"><img src="soundbunker-logo.png" alt="SoundBunker Algarve"></a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu"><span></span><span></span></button>
+    <nav id="site-nav" class="site-nav" aria-label="Main navigation">
+      <a href="index.html#studio" data-i18n="nav.studio">Studio</a>
+      <a href="index.html#services" data-i18n="nav.services">Services</a>
+      <a href="experiences-parties.html" data-i18n="nav.experiences">Experiences</a>
+      <a href="index.html#education" data-i18n="nav.education">Education</a>
+      <a href="index.html#hub" data-i18n="nav.partnership">The Hub</a>
+      <a href="index.html#contact" data-i18n="nav.contact">Contact</a>
+    </nav>
+    <div class="header-actions"><div class="language-switcher" role="group" aria-label="Language"><button class="lang active" type="button" data-lang="en" aria-pressed="true">EN</button><button class="lang" type="button" data-lang="pt" aria-pressed="false">PT</button><button class="lang" type="button" data-lang="fr" aria-pressed="false">FR</button></div><a class="button button-small" href="#book" data-i18n="common.book">Book now</a></div>
+  </header>
+  <main id="main">
+    <section class="detail-hero" id="detail-hero"></section>
+    <div id="detail-content"></div>
+    <section class="booking section" id="book">
+      <div class="wrap detail-book-intro"><p class="eyebrow" data-i18n="booking.eyebrow">Online booking</p><h2 data-i18n="booking.title">Book your studio time.</h2><p data-i18n="booking.copy">Choose your session, select an available date and secure it with your VAT-inclusive deposit.</p></div>
+      <div class="wrap booking-grid"><div class="booking-copy"><ul><li data-i18n="booking.rule1">Weekdays: 10:00, 13:00 or 16:00</li><li data-i18n="booking.rule2">Saturday: 16:00, two hours only</li><li data-i18n="booking.rule3">Sunday: 10:00, two or four hours</li><li data-i18n="booking.rule4">Free move with more than 24 hours' notice</li></ul><p class="policy" data-i18n="booking.policy">The deposit is non-refundable for cancellation or changes within 24 hours.</p><p>For parties, podcasts, voiceover, photography, mixing or a bespoke song, email <a href="mailto:bookings@soundbunker.pt">bookings@soundbunker.pt</a> for a tailored booking.</p></div>
+        <form class="booking-form" id="booking-form" novalidate>
+          <div class="field full-field"><label for="service" data-i18n="form.service">Session</label><select id="service" name="service" required></select></div>
+          <div class="field"><label for="date" data-i18n="form.date">Date</label><input id="date" name="date" type="date" required></div>
+          <div class="field"><label for="time" data-i18n="form.time">Start time</label><select id="time" name="time" required><option value="" data-i18n="form.chooseDate">Choose a date first</option></select></div>
+          <div class="field"><label for="name" data-i18n="form.name">Full name</label><input id="name" name="name" autocomplete="name" required></div>
+          <div class="field"><label for="email" data-i18n="form.email">Email</label><input id="email" name="email" type="email" autocomplete="email" required></div>
+          <div class="field"><label for="phone" data-i18n="form.phone">Phone</label><input id="phone" name="phone" type="tel" autocomplete="tel" required></div>
+          <div class="field"><label for="taxId" data-i18n="form.nif">NIF / tax number</label><input id="taxId" name="taxId"></div>
+          <div class="field full-field"><label for="notes" data-i18n="form.notes">Session notes</label><textarea id="notes" name="notes" rows="3"></textarea></div>
+          <label class="check full-field"><input type="checkbox" name="terms" required><span><span data-i18n="form.terms">I accept the booking and cancellation terms.</span> <a href="terms.html" target="_blank">Terms</a></span></label>
+          <div class="booking-total full-field"><div><span data-i18n="form.total">Session total</span><b id="session-total">€250</b></div><div><span data-i18n="form.due">Due now</span><b id="deposit-total">€100</b></div></div>
+          <button class="button full full-field" type="submit" data-i18n="form.pay">Continue to secure payment</button><p class="form-status full-field" id="form-status" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+  <footer class="site-footer"><div class="wrap footer-main"><a class="brand" href="index.html"><img src="soundbunker-logo.png" alt="SoundBunker Algarve"></a><div><a href="mailto:bookings@soundbunker.pt">bookings@soundbunker.pt</a><a href="index.html#contact">Loulé, Algarve</a><a href="index.html#services">All services</a></div></div><div class="wrap footer-legal"><span>© <span id="year"></span> SoundBunker Algarve</span><span><a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a></span></div></footer>
+</body>
+</html>
