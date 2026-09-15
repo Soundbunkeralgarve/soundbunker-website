@@ -1,0 +1,5 @@
+SoundBunker Algarve Website — FINAL STATIC BUILD
+Domain: www.soundbunker.pt
+Languages: EN / PT / DE / FR
+Status: front-end/content build complete. Calendar, Stripe and InvoiceXpress integrations intentionally retained for separate connection/testing phase.
+Vercel: index.html at root; Root Directory = ./
