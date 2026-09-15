@@ -56,6 +56,7 @@ export async function availableSlots(date, session) {
 }
 
 export async function createCalendarEvent(metadata, stripeSessionId) {
+  if (!metadata.date || !metadata.start) return { skipped: true, reason: "no-slot-service" };
   const calendarId = process.env.GOOGLE_CALENDAR_ID;
   const token = await accessToken();
   if (!calendarId || !token) return { skipped: true };

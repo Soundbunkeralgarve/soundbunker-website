@@ -33,8 +33,8 @@ export async function createCheckoutSession({ session, booking, origin, bookingR
     "line_items[0][quantity]": "1",
     "line_items[0][price_data][currency]": "eur",
     "line_items[0][price_data][unit_amount]": String(session.deposit * 100),
-    "line_items[0][price_data][product_data][name]": `SoundBunker booking deposit — ${session.name}`,
-    "line_items[0][price_data][product_data][description]": `${booking.date} at ${booking.time}. VAT included. Balance due on the session day.`
+    "line_items[0][price_data][product_data][name]": session.fullPayment ? `SoundBunker — ${session.name}` : `SoundBunker booking deposit — ${session.name}`,
+    "line_items[0][price_data][product_data][description]": session.noSlot ? `Paid in full. VAT included. Upload audio after payment.` : `${booking.date} at ${booking.time}. VAT included.${session.fullPayment ? " Paid in full." : " Balance due on the session day."}`
   });
   Object.entries(metadata).forEach(([key, value]) => body.set(`metadata[${key}]`, String(value).slice(0, 500)));
   const response = await fetch("https://api.stripe.com/v1/checkout/sessions", { method: "POST", headers: { authorization: `Bearer ${process.env.STRIPE_SECRET_KEY}`, "content-type": "application/x-www-form-urlencoded" }, body });
