@@ -1,0 +1,7 @@
+SOUNDBUNKER FINAL BUILD — 15 SEPTEMBER 2026
+Homepage must show: YOUR SOUND, MADE REAL.
+Navigation must show: PARTIES & EXPERIENCES / HUB ACADEMY / THE HUB
+Language selector must show: EN / PT / DE / FR
+
+VERCEL: Root Directory blank. Static site. index.html is in this folder.
+IMPORTANT: Extract this ZIP first, then upload the CONTENTS of this folder / all extracted files together. Do not upload an older SoundBunker folder from Downloads.

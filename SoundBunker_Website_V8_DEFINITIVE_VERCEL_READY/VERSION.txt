@@ -1,4 +1,0 @@
-SoundBunker Algarve Website V8 — Definitive rebuild
-Base: original V5 master
-Includes: final V6 booking/payment logic, €450 one-off production pay-in-full deal, Hub Academy, Hub Culture + Red Panda, dedicated Mixing & Mastering submission page, dedicated Parties & Experiences page, and Market Day street image.
-Vercel: index.html is at root; Root Directory = ./

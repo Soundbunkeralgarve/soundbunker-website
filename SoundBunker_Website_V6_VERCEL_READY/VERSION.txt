@@ -1,8 +1,0 @@
-SoundBunker Website V6 — Pricing Update
-Built: 14 September 2026
-
-V6 changes:
-- Fixed VAT-inclusive mixing and mastering prices added
-- Remote session pricing added: €175/hour, €600 half day, €1,000 full day
-- Existing V5 original-song package, Market Day offers, party content and trilingual layouts retained
-- Vercel-ready structure retained with index.html at the top level
