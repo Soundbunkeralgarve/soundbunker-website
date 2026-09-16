@@ -55,9 +55,26 @@ export async function sendToInvoiceXpressAutomation(metadata, stripeSessionId) {
   const netUnitPrice = Number((total / 1.23).toFixed(6));
   const balance = Number((total - paid).toFixed(2));
 
+  // Resolve the SoundBunker sequence dynamically so its numeric InvoiceXpress ID
+  // does not need to be stored in source code or Vercel.
+  const sequencesResult = await ixRequest("/sequences.json");
+  if (!sequencesResult.response.ok) {
+    console.error("InvoiceXpress sequences lookup failed", sequencesResult.response.status, sequencesResult.data);
+    throw new Error(`InvoiceXpress sequences lookup failed (${sequencesResult.response.status})`);
+  }
+  const sequences = Array.isArray(sequencesResult.data?.sequences)
+    ? sequencesResult.data.sequences
+    : (sequencesResult.data?.sequences ? [sequencesResult.data.sequences] : []);
+  const soundBunkerSequence = sequences.find(sequence =>
+    String(sequence?.serie || "").trim().toLowerCase() === "soundbunker"
+  );
+  const sequenceId = soundBunkerSequence?.current_invoice_sequence_id || soundBunkerSequence?.id;
+  if (!sequenceId) throw new Error("InvoiceXpress SoundBunker sequence not found");
+
   const createBody = {
     invoice: {
       date: today,
+      sequence_id: String(sequenceId),
       due_date: dueDate,
       reference: bookingRef,
       observations: [
