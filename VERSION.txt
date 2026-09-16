@@ -1,4 +1,7 @@
-SoundBunker Website V6 — Voiceover, Party & SB Favicon Edition
-Updated: 16 September 2026
+SoundBunker Algarve Website — FINAL STATIC BUILD
+Domain: www.soundbunker.pt
+Languages: EN / PT / DE / FR
+Status: front-end/content build complete. Calendar, Stripe and InvoiceXpress integrations intentionally retained for separate connection/testing phase.
+Vercel: index.html at root; Root Directory = ./
 
-Includes six distinct service-page layouts, expanded homepage Remote Voiceover client wall, looping birthday-party video, detailed party sales section, updated tagline, trilingual content and the original black-and-white SB favicon across every page.
+Final live package: restored definitive 16 Sept sequence build; SB favicon only; production API integrations preserved.

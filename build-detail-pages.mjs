@@ -17,7 +17,7 @@ const template = key => `<!doctype html>
   <meta name="theme-color" content="#100d14">
   <meta name="description" content="SoundBunker Algarve professional creative service in Loulé.">
   <title>SoundBunker Algarve</title>
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -36,7 +36,7 @@ const template = key => `<!doctype html>
       <a href="index.html#studio" data-i18n="nav.studio">Studio</a>
       <a href="index.html#services" data-i18n="nav.services">Services</a>
       <a href="experiences-parties.html" data-i18n="nav.experiences">Experiences</a>
-      <a href="index.html#education" data-i18n="nav.education">Education</a>
+      <a href="hub-academy.html" data-i18n="nav.education">Hub Academy</a>
       <a href="index.html#hub" data-i18n="nav.partnership">The Hub</a>
       <a href="index.html#contact" data-i18n="nav.contact">Contact</a>
     </nav>
