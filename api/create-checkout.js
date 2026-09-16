@@ -10,13 +10,10 @@ export default async function handler(request, response) {
     const input = await parseJson(request);
     const booking = { service: safeText(input.service, 50), date: safeText(input.date, 10), time: safeText(input.time, 5), name: safeText(input.name, 120), email: safeText(input.email, 200), phone: safeText(input.phone, 60), taxId: safeText(input.taxId, 40), notes: safeText(input.notes, 450), language: safeText(input.language, 2) };
     const session = getSession(booking.service);
-    if (!session || !booking.name || !booking.phone || !validEmail(booking.email)) return json(response, { error: "Invalid booking details" }, 400);
-    if (!session.noSlot) {
-      if (!isIsoDate(booking.date)) return json(response, { error: "Invalid booking date" }, 400);
-      if (booking.date < new Date().toISOString().slice(0, 10)) return json(response, { error: "Date is in the past" }, 400);
-      const slots = await availableSlots(booking.date, session);
-      if (!slots.includes(booking.time)) return json(response, { error: "That time is no longer available" }, 409);
-    }
+    if (!session || !isIsoDate(booking.date) || !booking.name || !booking.phone || !validEmail(booking.email)) return json(response, { error: "Invalid booking details" }, 400);
+    if (booking.date < new Date().toISOString().slice(0, 10)) return json(response, { error: "Date is in the past" }, 400);
+    const slots = await availableSlots(booking.date, session);
+    if (!slots.includes(booking.time)) return json(response, { error: "That time is no longer available" }, 409);
     const origin = process.env.SITE_URL || `https://${request.headers.host}`;
     const checkout = await createCheckoutSession({ session, booking, origin, bookingRef: randomUUID() });
     return json(response, { url: checkout.url });

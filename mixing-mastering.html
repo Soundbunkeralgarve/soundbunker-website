@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#100d14">
   <meta name="description" content="SoundBunker Algarve professional creative service in Loulé.">
   <title>SoundBunker Algarve</title>
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -25,26 +25,27 @@
       <a href="index.html#studio" data-i18n="nav.studio">Studio</a>
       <a href="index.html#services" data-i18n="nav.services">Services</a>
       <a href="experiences-parties.html" data-i18n="nav.experiences">Experiences</a>
-      <a href="hub-academy.html" data-i18n="nav.education">Hub Academy</a>
-      <a href="index.html#hub-culture" data-i18n="nav.partnership">The Hub Culture</a>
-      <a href="https://www.dropbox.com/request/uc9zb768pniqiklha04t" target="_blank" rel="noopener" data-i18n="nav.upload">Upload Files</a>
+      <a href="index.html#education" data-i18n="nav.education">Education</a>
+      <a href="index.html#hub" data-i18n="nav.partnership">The Hub</a>
       <a href="index.html#contact" data-i18n="nav.contact">Contact</a>
     </nav>
-    <div class="header-actions"><div class="language-switcher" role="group" aria-label="Language"><button class="lang active" type="button" data-lang="en" aria-pressed="true">EN</button><button class="lang" type="button" data-lang="pt" aria-pressed="false">PT</button><button class="lang" type="button" data-lang="de" aria-pressed="false">DE</button><button class="lang" type="button" data-lang="fr" aria-pressed="false">FR</button></div><a class="button button-small" href="#book" data-i18n="common.book">Book now</a></div>
+    <div class="header-actions"><div class="language-switcher" role="group" aria-label="Language"><button class="lang active" type="button" data-lang="en" aria-pressed="true">EN</button><button class="lang" type="button" data-lang="pt" aria-pressed="false">PT</button><button class="lang" type="button" data-lang="fr" aria-pressed="false">FR</button></div><a class="button button-small" href="#book" data-i18n="common.book">Book now</a></div>
   </header>
   <main id="main">
     <section class="detail-hero" id="detail-hero"></section>
     <div id="detail-content"></div>
-    <section class="section wrap"><div class="section-head"><div><p class="eyebrow">Upload your audio</p><h2>Send your stems or premaster.</h2></div><p>Choose your mixing or mastering service, enter your details and pay the full amount online. No studio date or time is required.</p></div><div class="submission-box"><h3>Upload directly to SoundBunker</h3><p><strong>Mixing:</strong> consolidated WAV/AIFF stems from the same start point, plus rough mix, BPM, sample rate and references.</p><p><strong>Mastering:</strong> full-resolution stereo premaster, without limiting on the master bus where possible, plus a reference if useful.</p><p><strong>Name files:</strong> YOUR NAME + SONG TITLE so we can match them to your order.</p><p><a class="button" href="https://www.dropbox.com/request/uc9zb768pniqiklha04t" target="_blank" rel="noopener">Upload stems / premaster ↗</a></p></div></section><section class="booking section" id="book">
-      <div class="wrap detail-book-intro"><p class="eyebrow">Online mixing & mastering</p><h2>Choose your service and pay in full.</h2><p>No date or time is needed. After payment, upload your audio using the Dropbox button above.</p></div>
-      <div class="wrap booking-grid"><div class="booking-copy"><ul><li>Choose mixing, mastering or a mix + master package</li><li>Enter your contact and project details</li><li>Pay the full VAT-inclusive amount online</li><li>Upload your audio through the secure Dropbox request</li></ul><p class="policy">Mixing and mastering do not reserve a studio slot, so no date or start time is required.</p></div>
+    <section class="booking section" id="book">
+      <div class="wrap detail-book-intro"><p class="eyebrow" data-i18n="booking.eyebrow">Online booking</p><h2 data-i18n="booking.title">Book your studio time.</h2><p data-i18n="booking.copy">Choose your session, select an available date and secure it with your VAT-inclusive deposit.</p></div>
+      <div class="wrap booking-grid"><div class="booking-copy"><ul><li data-i18n="booking.rule1">Weekdays: 10:00, 13:00 or 16:00</li><li data-i18n="booking.rule2">Saturday: 16:00, two hours only</li><li data-i18n="booking.rule3">Sunday: 10:00, two or four hours</li><li data-i18n="booking.rule4">Free move with more than 24 hours' notice</li></ul><p class="policy" data-i18n="booking.policy">The deposit is non-refundable for cancellation or changes within 24 hours.</p><p>For parties, podcasts, voiceover, photography, mixing or a bespoke song, email <a href="mailto:bookings@soundbunker.pt">bookings@soundbunker.pt</a> for a tailored booking.</p></div>
         <form class="booking-form" id="booking-form" novalidate>
           <div class="field full-field"><label for="service" data-i18n="form.service">Session</label><select id="service" name="service" required></select></div>
+          <div class="field"><label for="date" data-i18n="form.date">Date</label><input id="date" name="date" type="date" required></div>
+          <div class="field"><label for="time" data-i18n="form.time">Start time</label><select id="time" name="time" required><option value="" data-i18n="form.chooseDate">Choose a date first</option></select></div>
           <div class="field"><label for="name" data-i18n="form.name">Full name</label><input id="name" name="name" autocomplete="name" required></div>
           <div class="field"><label for="email" data-i18n="form.email">Email</label><input id="email" name="email" type="email" autocomplete="email" required></div>
           <div class="field"><label for="phone" data-i18n="form.phone">Phone</label><input id="phone" name="phone" type="tel" autocomplete="tel" required></div>
           <div class="field"><label for="taxId" data-i18n="form.nif">NIF / tax number</label><input id="taxId" name="taxId"></div>
-          <div class="field full-field"><label for="notes">Project notes / references</label><textarea id="notes" name="notes" rows="3"></textarea></div>
+          <div class="field full-field"><label for="notes" data-i18n="form.notes">Session notes</label><textarea id="notes" name="notes" rows="3"></textarea></div>
           <label class="check full-field"><input type="checkbox" name="terms" required><span><span data-i18n="form.terms">I accept the booking and cancellation terms.</span> <a href="terms.html" target="_blank">Terms</a></span></label>
           <div class="booking-total full-field"><div><span data-i18n="form.total">Session total</span><b id="session-total">€250</b></div><div><span data-i18n="form.due">Due now</span><b id="deposit-total">€100</b></div></div>
           <button class="button full full-field" type="submit" data-i18n="form.pay">Continue to secure payment</button><p class="form-status full-field" id="form-status" role="status" aria-live="polite"></p>

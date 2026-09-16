@@ -11,8 +11,7 @@ async function accessToken() {
   if (!email || !privateKey) return null;
   const now = Math.floor(Date.now() / 1000);
   const header = base64url(JSON.stringify({ alg: "RS256", typ: "JWT" }));
-  const subject = process.env.GOOGLE_CALENDAR_ID;
-  const claims = base64url(JSON.stringify({ iss: email, sub: subject, scope: "https://www.googleapis.com/auth/calendar", aud: "https://oauth2.googleapis.com/token", iat: now, exp: now + 3600 }));
+  const claims = base64url(JSON.stringify({ iss: email, scope: "https://www.googleapis.com/auth/calendar", aud: "https://oauth2.googleapis.com/token", iat: now, exp: now + 3600 }));
   const unsigned = `${header}.${claims}`;
   const signer = createSign("RSA-SHA256");
   signer.update(unsigned);
@@ -57,7 +56,6 @@ export async function availableSlots(date, session) {
 }
 
 export async function createCalendarEvent(metadata, stripeSessionId) {
-  if (!metadata.date || !metadata.start) return { skipped: true, reason: "no-slot-service" };
   const calendarId = process.env.GOOGLE_CALENDAR_ID;
   const token = await accessToken();
   if (!calendarId || !token) return { skipped: true };
@@ -75,10 +73,6 @@ export async function createCalendarEvent(metadata, stripeSessionId) {
   const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?sendUpdates=all`;
   const response = await fetch(url, { method: "POST", headers: { authorization: `Bearer ${token}`, "content-type": "application/json" }, body: JSON.stringify(event) });
   if (response.status === 409) return { duplicate: true, id: eventId };
-  if (!response.ok) {
-    const detail = await response.text();
-    console.error("Google Calendar event creation failed", response.status, detail);
-    throw new Error("Could not create Google Calendar event");
-  }
+  if (!response.ok) throw new Error("Could not create Google Calendar event");
   return response.json();
 }
