@@ -23,7 +23,10 @@ export const sessions = {
   "master": { name: "Mastering", price: 75, deposit: 75, noSlot: true, fullPayment: true, group: "mixing" },
   "mixmaster-12": { name: "Mix + master · up to 12 channels", price: 185, deposit: 185, noSlot: true, fullPayment: true, group: "mixing" },
   "mixmaster-24": { name: "Mix + master · up to 24 channels", price: 245, deposit: 245, noSlot: true, fullPayment: true, group: "mixing" },
-  "mixmaster-48": { name: "Mix + master · up to 48 channels", price: 335, deposit: 335, noSlot: true, fullPayment: true, group: "mixing" }
+  "mixmaster-48": { name: "Mix + master · up to 48 channels", price: 335, deposit: 335, noSlot: true, fullPayment: true, group: "mixing" },
+  "voucher-starter": { name: "Gift Voucher · Studio Starter", price: 120, deposit: 120, hours: 0, noSlot: true, fullPayment: true, voucher: true, group: "voucher" },
+  "voucher-pro": { name: "Gift Voucher · Session Pro", price: 200, deposit: 200, hours: 0, noSlot: true, fullPayment: true, voucher: true, group: "voucher" },
+  "voucher-popstar": { name: "Gift Voucher · Pop Star Experience", price: 250, deposit: 250, hours: 0, noSlot: true, fullPayment: true, voucher: true, group: "voucher" }
 };
 export function nominalSlots(date, session) {
   if (session.noSlot) return [];
