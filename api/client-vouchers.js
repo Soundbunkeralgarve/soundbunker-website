@@ -1,2 +1,15 @@
-import { json } from './lib/http.js';import { requireUser } from './lib/supabase-auth.js';
-export default async function handler(req,res){if(req.method!=='GET')return json(res,{error:'Method not allowed'},405);const c=await requireUser(req);if(c.error)return json(res,{error:c.error},c.status);const {data,error}=await c.admin.from('vouchers').select('*').eq('owner_id',c.user.id).order('created_at',{ascending:false});if(error)return json(res,{error:'Could not load vouchers'},500);return json(res,{vouchers:data||[]});}
+import { json } from './lib/http.js';
+import { requireUser } from './lib/supabase-auth.js';
+import { listClientVouchers } from './lib/vouchers.js';
+
+export default async function handler(request, response) {
+  if (request.method !== 'GET') return json(response, { error: 'Method not allowed' }, 405);
+  const context = await requireUser(request);
+  if (context.error) return json(response, { error: context.error }, context.status);
+  try {
+    const vouchers = await listClientVouchers(context);
+    return json(response, { vouchers });
+  } catch (error) {
+    return json(response, { error: error.message || 'Could not load gift vouchers', setup: /setup/i.test(error.message || '') }, 503);
+  }
+}

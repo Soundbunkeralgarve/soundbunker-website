@@ -1,3 +1,100 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Community | SoundBunker Algarve</title><link rel="stylesheet" href="client-gifts.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="community.js" defer></script></head><body class="portal-bg"><main class="portal-shell"><header class="portal-top"><a href="/client" class="brand-link">← Client Area</a><span class="role-badge">MEMBERS ONLY</span></header><section class="client-hero"><p class="eyebrow">SoundBunker Community</p><h1>Create. Collaborate. Connect.</h1><p>A private creative network for SoundBunker artists, producers, singers, DJs, musicians and creators.</p></section>
-<div class="community-layout"><aside class="panel profile-panel"><h2>Your profile</h2><div class="profile-avatar-wrap"><img id="avatarPreview" class="profile-avatar" alt="Profile photo"><input id="avatarFile" type="file" accept="image/*"></div><form id="profileForm"><label>Name<input id="profileName" maxlength="120"></label><label>Artist / stage name<input id="artistName" maxlength="120"></label><label>What do you do?<input id="creativeRole" placeholder="Producer, singer, DJ, songwriter…" maxlength="120"></label><label>Genres / skills<input id="genres" placeholder="House, pop, vocals, guitar…" maxlength="200"></label><label>Bio<textarea id="bio" maxlength="500" rows="3"></textarea></label><label>Music / social link<input id="socialLink" type="url" placeholder="https://…"></label><button class="primary" type="submit">Save profile</button><p id="profileMessage" class="muted"></p></form></aside>
-<section><article class="panel chat-compose"><h2>Community feed</h2><form id="postForm"><label>Post type<select id="postType"><option>General Chat</option><option>Collaboration Wanted</option><option>Session Work</option><option>Jobs & Opportunities</option><option>Musicians Wanted</option><option>Track Feedback</option></select></label><label>Message<textarea id="postBody" maxlength="1000" rows="4" placeholder="What are you working on, looking for or offering?" required></textarea></label><label>Share a collaboration file <input id="postFile" type="file" accept="audio/*,.wav,.mp3,.aiff,.m4a,.pdf,.zip"></label><button class="primary" type="submit">Post to community</button><p id="communityMessage" class="muted"></p></form></article><div id="posts" class="chat-feed"></div></section></div></main></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="The private SoundBunker Algarve community for artists, creators, collaborations, feedback, events and marketplace listings.">
+  <title>Community | SoundBunker Algarve</title>
+  <link rel="icon" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="client-gifts.css">
+  <link rel="stylesheet" href="community.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="community.js" defer></script>
+</head>
+<body class="portal-bg community-page">
+  <header class="community-nav">
+    <a class="community-logo" href="/" aria-label="SoundBunker Algarve home"><img src="soundbunker-logo.png" alt="SoundBunker Algarve"></a>
+    <div class="community-nav-actions"><span>Private members space</span><a href="/client">← Client Area</a></div>
+  </header>
+
+  <main>
+    <section class="community-hero">
+      <div class="community-hero-copy">
+        <p class="eyebrow">SoundBunker Community</p>
+        <h1>Where Algarve creators connect.</h1>
+        <p>Chat with the community, share work, find collaborators, ask for feedback, promote an event, offer a service or buy and sell creative equipment.</p>
+        <div class="community-hero-tags"><span>Artists</span><span>Producers</span><span>Photographers</span><span>DJs</span><span>Creators</span><span>Local community</span></div>
+      </div>
+      <div class="community-hero-mosaic" aria-label="SoundBunker creative community">
+        <figure class="community-mosaic-main"><img src="group-session.webp" alt="Artists collaborating in the SoundBunker studio"></figure>
+        <figure><img src="creative-portrait.webp" alt="Creative portrait photography"></figure>
+        <figure><img src="hub-art-community.jpg" alt="Community creativity at The Hub Culture"></figure>
+      </div>
+    </section>
+    <div class="community-spectrum" aria-hidden="true"></div>
+
+    <section class="community-workspace">
+      <aside class="community-left-rail">
+        <article class="community-profile-card">
+          <div id="myAvatar" class="community-avatar community-avatar-large">SB</div>
+          <span>Signed in as</span><h2 id="myName">SoundBunker member</h2><p id="myEmail"></p>
+        </article>
+        <nav class="community-filters" aria-label="Community feed filters">
+          <button class="active" data-filter="all"><span>⌂</span> Everything <b id="countAll">0</b></button>
+          <button data-filter="chat"><span>●</span> Chat <b id="countChat">0</b></button>
+          <button data-filter="collaboration"><span>↗</span> Collaborate <b id="countCollaboration">0</b></button>
+          <button data-filter="marketplace"><span>€</span> Marketplace <b id="countMarketplace">0</b></button>
+          <button data-filter="showcase"><span>★</span> Showcase <b id="countShowcase">0</b></button>
+          <button data-filter="events"><span>◇</span> Events <b id="countEvents">0</b></button>
+          <button data-filter="feedback"><span>?</span> Feedback <b id="countFeedback">0</b></button>
+        </nav>
+        <article class="community-rules-card"><span>COMMUNITY STANDARD</span><h3>Useful, respectful, real.</h3><p>Support people’s work, describe listings honestly and keep private information private.</p></article>
+      </aside>
+
+      <section class="community-feed-column">
+        <article class="community-composer">
+          <div class="community-composer-head"><div id="composerAvatar" class="community-avatar">SB</div><div><span>Create a post</span><h2>What do you want to share?</h2></div></div>
+          <div class="community-type-picker" role="group" aria-label="Choose post type">
+            <button class="active" type="button" data-post-type="chat">Chat</button>
+            <button type="button" data-post-type="collaboration">Find collaborators</button>
+            <button type="button" data-post-type="marketplace">Sell / offer</button>
+            <button type="button" data-post-type="showcase">Share work</button>
+            <button type="button" data-post-type="events">Post event</button>
+            <button type="button" data-post-type="feedback">Ask feedback</button>
+          </div>
+          <form id="postForm">
+            <input type="hidden" id="postCategory" value="chat">
+            <label class="community-title-field">Post title <small>optional for general chat</small><input id="postTitle" maxlength="120" placeholder="Give people a clear reason to join in"></label>
+            <label>Message<textarea id="postBody" maxlength="1500" rows="5" placeholder="Share an update, idea, question or opportunity..." required></textarea></label>
+            <div id="marketFields" class="community-extra-row" hidden><label>Price in EUR <small>leave empty for offers</small><input id="postPrice" type="number" min="0" step="0.01" placeholder="150"></label><label>Location<input id="postLocation" maxlength="120" placeholder="Loulé / Algarve / Remote"></label></div>
+            <div class="community-extra-row"><label>Link <small>optional</small><input id="postLink" type="url" maxlength="500" placeholder="Track, portfolio, tickets or listing URL"></label><label>Cover image <small>optional</small><select id="postImagePreset"><option value="">No cover image</option><option value="group-session.webp">Studio collaboration</option><option value="creative-portrait.webp">Creative portrait</option><option value="dj.webp">DJ culture</option><option value="hub-art-community.jpg">Community & workshops</option><option value="hub-street-culture.jpg">Street culture</option><option value="service-recording-mic.jpg">Recording studio</option><option value="custom">Use image URL</option></select></label></div>
+            <label id="customImageField" hidden>Image URL<input id="postImageUrl" type="url" maxlength="500" placeholder="https://..."></label>
+            <div class="community-compose-footer"><p id="communityMessage" role="status"></p><button class="community-publish" type="submit">Publish to community</button></div>
+          </form>
+        </article>
+
+        <div class="community-feed-tools">
+          <div><p class="eyebrow">Community feed</p><h2 id="feedTitle">Everything</h2></div>
+          <label class="community-search"><span>Search</span><input id="feedSearch" type="search" placeholder="People, posts, listings..."></label>
+        </div>
+        <div id="posts" class="community-posts"><article class="community-loading">Loading the community...</article></div>
+      </section>
+
+      <aside class="community-right-rail">
+        <article class="community-action-card">
+          <p class="eyebrow">Start something</p><h2>Make the next connection.</h2>
+          <button type="button" data-quick-type="collaboration">Find a collaborator <span>↗</span></button>
+          <button type="button" data-quick-type="marketplace">Sell or offer something <span>€</span></button>
+          <button type="button" data-quick-type="showcase">Share your latest work <span>★</span></button>
+        </article>
+        <article class="community-discovery-card community-discovery-image"><div><span>LOCAL CREATIVE NETWORK</span><h3>Music. Art. Photo. Skate. Culture.</h3></div></article>
+        <article class="community-info-card"><span>MARKETPLACE</span><h3>What can members post?</h3><ul><li>Instruments and studio equipment</li><li>Creative services and availability</li><li>Tickets, workshops and events</li><li>Wanted posts and skill swaps</li></ul><p>SoundBunker does not process marketplace payments. Members agree arrangements directly.</p></article>
+        <article class="community-support-card"><span>STUDIO SUPPORT</span><h3>Need SoundBunker?</h3><p>For bookings and project support, contact the studio directly rather than posting private details.</p><a href="https://wa.me/351964895908" target="_blank" rel="noopener">WhatsApp the studio →</a></article>
+      </aside>
+    </section>
+  </main>
+</body>
+</html>

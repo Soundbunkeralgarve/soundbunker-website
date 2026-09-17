@@ -1,3 +1,20 @@
-SOUNDBUNKER FINAL MASTER - 17 SEPT 2026
-Admin + Client Area + Gold Card + Community + Gift Vouchers + WhatsApp
-Gift vouchers use supplied original SoundBunker PDF artwork and personalised PDF downloads.
+SoundBunker Algarve Website - PREMIUM CLIENT, VOUCHER & COMMUNITY BUILD
+Build date: 17 September 2026
+Domain: www.soundbunker.pt
+Languages: EN / PT / DE / FR on the main website
+
+This build advances the current client-portal/admin master. It is not the old V6 build.
+
+Included in this release:
+- Premium image-led Gift Experience storefront based on the approved gift menu
+- No selectable valid-from date; vouchers run for 12 months from purchase
+- Print-aligned A4 voucher with To and From/message on one row
+- Automatic Stripe-to-client voucher attachment and existing-payment reconciliation
+- Live My Gift Vouchers cards with View / Print access in the Client Area
+- Premium image-led Client Area redesign
+- Community 2.0 social feed with chat, collaborations, marketplace, showcase, events and feedback
+- Community likes, comments, sharing, search, filters and member moderation
+- Admin voucher count and voucher list
+
+Vercel: index.html is at the ZIP top level; Root Directory = ./
+Database: run SUPABASE_PORTAL_UPGRADE_17_SEPT_2026.sql once before testing the new portal features.

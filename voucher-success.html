@@ -1,1 +1,76 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Your Gift Voucher | SoundBunker Algarve</title><link rel="icon" href="favicon.svg"><link rel="stylesheet" href="client-gifts.css"></head><body class="portal-bg"><main class="portal-shell narrow"><a href="/" class="brand-link">SoundBunker Algarve</a><section id="loading" class="panel"><h1>Preparing your voucher…</h1><p>Confirming your secure payment.</p></section><section id="voucher" class="panel" hidden><p class="eyebrow">SoundBunker Algarve</p><h1>Your gift voucher is ready.</h1><h2 id="vService"></h2><p><strong>For:</strong> <span id="vTo"></span><br><strong>From:</strong> <span id="vFrom"></span><br><strong>Voucher code:</strong> <span id="vCode"></span></p><p class="muted">Your download uses the original SoundBunker designed voucher artwork. It is valid for 12 months from purchase and booking is subject to availability.</p><a id="downloadVoucher" class="primary" href="#">Download personalised voucher PDF</a> <a class="pill-link" href="client.html">Go to Client Area</a></section><p id="fail" class="error"></p></main><script>const q=new URLSearchParams(location.search),id=q.get('session_id');fetch('/api/voucher-status?session_id='+encodeURIComponent(id||'')).then(r=>r.json().then(d=>({ok:r.ok,d}))).then(({ok,d})=>{if(!ok)throw Error(d.error||'Could not load voucher');loading.hidden=true;voucher.hidden=false;vService.textContent=d.service;vTo.textContent=d.to;vFrom.textContent=d.from;vCode.textContent=d.code;downloadVoucher.href='/api/voucher-pdf?session_id='+encodeURIComponent(id)}).catch(e=>{loading.hidden=true;fail.textContent=e.message});</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Your Gift Voucher | SoundBunker Algarve</title>
+  <link rel="icon" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="voucher-success.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="voucher-page">
+  <header class="voucher-toolbar no-print">
+    <a href="/">← SoundBunker Algarve</a>
+    <div class="voucher-toolbar-actions">
+      <a class="toolbar-link" href="client.html">Client Area</a>
+      <button type="button" onclick="window.print()">Print / Save as PDF</button>
+    </div>
+  </header>
+
+  <main class="voucher-stage">
+    <section id="loading" class="voucher-state"><h1>Preparing your voucher...</h1><p>Confirming your secure payment and attaching it to your account.</p></section>
+    <p id="fail" class="voucher-state error" hidden></p>
+
+    <article id="voucher" class="voucher-sheet" hidden>
+      <header class="voucher-sheet-header">
+        <img class="voucher-logo" src="soundbunker-logo-white.png" alt="SoundBunker Algarve">
+        <div class="voucher-sheet-header-copy">
+          <p class="voucher-kicker">A real studio experience</p>
+          <h1>Gift Voucher</h1>
+        </div>
+      </header>
+      <div class="voucher-spectrum" aria-hidden="true"></div>
+
+      <section class="voucher-sheet-body">
+        <div class="voucher-package-line">
+          <div><p class="voucher-package-eyebrow">The gift of music</p><h2 id="vService"></h2></div>
+          <div id="vPrice" class="voucher-package-price"></div>
+        </div>
+
+        <div class="voucher-main-card">
+          <img id="vImage" class="voucher-main-image" src="service-recording-mic.jpg" alt="SoundBunker studio experience">
+          <div class="voucher-main-copy">
+            <h3>Made especially for</h3>
+            <div class="voucher-personal-row">
+              <div class="voucher-personal-field"><span>To</span><strong id="vTo"></strong></div>
+              <div class="voucher-personal-field from-field"><span>From</span><strong id="vFrom"></strong></div>
+            </div>
+            <div id="vIncluded" class="voucher-included"></div>
+          </div>
+        </div>
+
+        <div class="voucher-meta">
+          <div class="voucher-meta-field"><span>Purchase date</span><strong id="vPurchase"></strong></div>
+          <div class="voucher-meta-field"><span>Voucher code</span><strong id="vCode"></strong></div>
+        </div>
+        <p class="voucher-validity"><b>Valid for 12 months from the purchase date.</b> Advance booking is required and all session dates are subject to availability. Voucher expiry: <span id="vExpiry"></span>.</p>
+
+        <div class="voucher-redeem">
+          <div><h3>How to redeem</h3><p>Contact SoundBunker, quote the voucher code and choose an available session date. Bring a digital or printed copy of this voucher.</p></div>
+          <div><h3>What happens next</h3><p>Choose the songs before the session. Our engineer will guide the recording and professionally mix and master the finished performances.</p></div>
+        </div>
+      </section>
+
+      <footer class="voucher-sheet-footer">
+        <div><h3>Book the experience</h3><p>soundbunker.pt<br>WhatsApp +351 964 895 908<br>bookings@soundbunker.pt</p></div>
+        <img class="voucher-qr" src="voucher-qr.png" alt="QR code for SoundBunker online">
+        <div class="voucher-footer-right"><h3>Find us in Loulé</h3><p>Inside The Hub Culture<br>Next to Loulé Municipal Market</p></div>
+      </footer>
+    </article>
+  </main>
+  <script src="voucher-success.js"></script>
+</body>
+</html>

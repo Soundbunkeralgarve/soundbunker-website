@@ -1,4 +1,34 @@
-let sb,session;const $=s=>document.querySelector(s);const esc=s=>String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-async function boot(){try{const c=await fetch('/api/supabase-config').then(r=>r.json());sb=window.supabase.createClient(c.url,c.key,{auth:{persistSession:true}});session=(await sb.auth.getSession()).data.session;if(!session){location.replace('/client');return}await load()}catch(e){$('#adminMessage').textContent=e.message}}
-async function load(){const r=await fetch('/api/admin-dashboard',{headers:{authorization:`Bearer ${session.access_token}`}}),d=await r.json();if(r.status===403){$('#adminMessage').textContent='This area is restricted to SoundBunker administrators.';return}if(!r.ok)throw Error(d.error||'Could not load admin dashboard');$('#adminMessage').hidden=true;$('#adminContent').hidden=false;$('#clientTotal').textContent=d.profiles.length;$('#bookingTotal').textContent=d.bookings.length;$('#projectTotal').textContent=d.projects.length;$('#photoTotal').textContent=d.photos.length;$('#voucherTotal').textContent=d.vouchers.length;$('#clients').innerHTML=d.profiles.length?d.profiles.map(p=>`<div class="admin-client"><div><strong>${esc(p.full_name||'Unnamed client')}</strong><br><small>${esc(p.email||'')} · ${p.role==='admin'?'ADMIN':'Client'}</small></div><label>Qualifying bookings<input type="number" min="0" id="count-${p.id}" value="${Number(p.qualifying_booking_count||0)}"></label><label class="gold-toggle"><input type="checkbox" id="gold-${p.id}" ${p.gold_status?'checked':''}> Gold active</label><button class="ghost-button" onclick="saveClient('${p.id}')">Save</button></div>`).join(''):'<p class="muted">No clients yet.</p>';$('#vouchers').innerHTML=d.vouchers.length?d.vouchers.map(v=>`<div class="mini-project"><strong>${esc(v.service_name||'Gift Voucher')}</strong> · ${esc(v.voucher_code||'')} · ${esc(v.gift_to||'')} · ${esc(v.status||'active')}</div>`).join(''):'<p class="muted">No vouchers yet.</p>'}
-async function saveClient(id){const r=await fetch('/api/admin-update-client',{method:'POST',headers:{authorization:`Bearer ${session.access_token}`,'content-type':'application/json'},body:JSON.stringify({id,qualifying_booking_count:$('#count-'+id).value,gold_status:$('#gold-'+id).checked})});if(r.ok)load();else alert((await r.json()).error||'Could not save')};document.addEventListener('DOMContentLoaded',boot);
+let sb;
+const $ = selector => document.querySelector(selector);
+const esc = value => String(value || '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
+const date = value => value ? new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(value)) : '';
+
+async function boot() {
+  try {
+    const config = await fetch('/api/supabase-config').then(response => response.json());
+    sb = window.supabase.createClient(config.url, config.key, { auth: { persistSession: true } });
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { location.replace('/client'); return; }
+    const response = await fetch('/api/admin-dashboard', { headers: { authorization: `Bearer ${session.access_token}` } });
+    const data = await response.json();
+    if (response.status === 403) {
+      $('#adminMessage').textContent = 'This area is restricted to SoundBunker administrators.';
+      setTimeout(() => location.replace('/client'), 1500);
+      return;
+    }
+    if (!response.ok) throw new Error(data.error || 'Could not load admin dashboard');
+    $('#adminMessage').hidden = true;
+    $('#adminContent').hidden = false;
+    $('#clientTotal').textContent = data.profiles.length;
+    $('#bookingTotal').textContent = data.bookings.length;
+    $('#projectTotal').textContent = data.projects.length;
+    $('#photoTotal').textContent = data.photos.length;
+    $('#voucherTotal').textContent = data.vouchers.length;
+    $('#clients').innerHTML = data.profiles.length ? data.profiles.map(profile => `<div class="mini-project"><strong>${esc(profile.full_name || 'Unnamed client')}</strong> · ${esc(profile.email)} · ${profile.role === 'admin' ? 'ADMIN' : 'Client'} · ${Number(profile.qualifying_booking_count || 0)} Gold bookings${profile.gold_status ? ' · GOLD ACTIVE' : ''}</div>`).join('') : '<p class="muted">No clients yet.</p>';
+    $('#vouchers').innerHTML = data.vouchers.length ? data.vouchers.map(voucher => `<div class="mini-project"><strong>${esc(voucher.code || 'Voucher')}</strong> · ${esc(voucher.service_name || 'Gift experience')} · For ${esc(voucher.recipient_name || 'recipient')} · ${esc(voucher.buyer_email)} · ${esc(voucher.status || 'active')} · valid to ${esc(date(voucher.expires_at))}</div>`).join('') : '<p class="muted">No paid vouchers attached yet.</p>';
+  } catch (error) {
+    $('#adminMessage').textContent = error.message;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', boot);

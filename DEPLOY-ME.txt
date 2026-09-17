@@ -1,7 +1,18 @@
-SOUNDBUNKER FINAL BUILD — 15 SEPTEMBER 2026
-Homepage must show: YOUR SOUND, MADE REAL.
-Navigation must show: PARTIES & EXPERIENCES / HUB ACADEMY / THE HUB
-Language selector must show: EN / PT / DE / FR
+SOUNDBUNKER CURRENT PREMIUM BUILD - 17 SEPTEMBER 2026
 
-VERCEL: Root Directory blank. Static site. index.html is in this folder.
-IMPORTANT: Extract this ZIP first, then upload the CONTENTS of this folder / all extracted files together. Do not upload an older SoundBunker folder from Downloads.
+This is the current master, not the old V6 package.
+
+VERCEL
+- Root Directory: blank or ./
+- index.html is at the top level
+- Extract the ZIP, then upload all extracted files together
+
+ONE-TIME DATABASE STEP
+- Run SUPABASE_PORTAL_UPGRADE_17_SEPT_2026.sql in Supabase SQL Editor
+- This enables automatic client vouchers and Community 2.0
+
+KEY AREAS TO TEST AFTER DEPLOYMENT
+- Gift Experiences purchase and Stripe return
+- A4 Print / Save as PDF voucher alignment
+- My Gift Vouchers in the Client Area
+- Community posts, likes, comments and marketplace listings

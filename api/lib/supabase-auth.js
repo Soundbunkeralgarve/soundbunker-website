@@ -1,4 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
+export async function optionalUser(request){
+ const token=(request.headers.authorization||'').replace(/^Bearer\s+/,'');
+ const url=process.env.SUPABASE_URL,pub=process.env.SUPABASE_PUBLISHABLE_KEY;
+ if(!token||!url||!pub)return null;
+ const auth=createClient(url,pub,{auth:{persistSession:false,autoRefreshToken:false}});
+ const {data,error}=await auth.auth.getUser(token);
+ return error?null:(data?.user||null);
+}
 export async function requireUser(request){
  const token=(request.headers.authorization||'').replace(/^Bearer\s+/,'');
  const url=process.env.SUPABASE_URL,pub=process.env.SUPABASE_PUBLISHABLE_KEY,secret=process.env.SUPABASE_SECRET_KEY;

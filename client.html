@@ -1,3 +1,106 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Client Area | SoundBunker Algarve</title><link rel="icon" href="favicon.svg"><link rel="stylesheet" href="client-gifts.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="client.js" defer></script></head><body class="portal-bg"><main class="portal-shell"><header class="portal-top"><a href="/" class="brand-link">← SoundBunker Algarve</a><a class="pill-link" href="gift-vouchers.html">Gift Vouchers</a></header>
-<section id="authPanel" hidden><section class="client-hero"><p class="eyebrow">SoundBunker Client Area</p><h1>Your studio. Your projects.</h1><p>Create an account or sign in to securely access uploads, bookings, finished music, photographs, vouchers and Gold Card rewards.</p></section><div class="portal-grid"><article class="panel login-panel"><div class="auth-tabs"><button id="loginTab" class="auth-tab active" type="button">Sign in</button><button id="signupTab" class="auth-tab" type="button">Create account</button></div><form id="loginForm"><div id="nameField" hidden><label>Your name<input id="fullName" type="text" autocomplete="name" placeholder="Your full name"></label></div><label>Email<input id="email" type="email" autocomplete="email" placeholder="you@example.com" required></label><label>Password<input id="password" type="password" autocomplete="current-password" minlength="8" placeholder="Minimum 8 characters" required></label><button id="authSubmit" class="primary" type="submit">Sign in</button><button id="forgotPassword" class="text-button" type="button">Forgot password?</button><p id="authMessage" class="muted"></p></form></article><article class="panel portal-preview"><h2>Everything in one place</h2><div class="feature-list"><div><b>Upload Files</b><span>Send backing tracks, stems and session files securely.</span></div><div><b>Projects & Masters</b><span>Access your mixdowns, masters and final deliveries.</span></div><div><b>Photo Gallery</b><span>Private edited galleries and downloads.</span></div><div><b>Gift Vouchers</b><span>Redeem a code and book an available slot.</span></div><div><b>Gold Card</b><span>Track qualifying bookings and rewards.</span></div></div></article></div></section>
-<section id="portalPanel" hidden><section class="dashboard-hero"><div class="dashboard-hero-copy"><p class="eyebrow">SoundBunker Client Area</p><h1>Welcome, <span id="clientName">Client</span>.</h1><p>Your SoundBunker sessions, files and finished work — together in one private space.</p></div></section><div class="dashboard-head"><div><p id="clientEmail" class="muted"></p></div><div><span id="roleBadge" class="role-badge">Client</span><button id="signOut" class="ghost-button">Sign out</button></div></div><div class="dashboard-grid"><a class="dash-card image-card upload-card" href="https://www.dropbox.com/request/uc9zb768pniqiklha04t" target="_blank" rel="noopener"><span>UPLOAD</span><h3>Upload Files</h3><p>Send backing tracks, stems, premaster files or session material.</p><b>Open secure upload →</b></a><div class="dash-card image-card projects-card"><span>PROJECTS</span><h3>My Projects</h3><p id="projectSummary">Mixdowns, masters and final deliveries assigned to your account.</p><div id="projectList" class="mini-list"></div></div><div class="dash-card image-card photos-card"><span>PHOTOS</span><h3>My Photos</h3><p>Your private edited galleries and photography deliveries.</p><div id="photoEmpty" class="mini-list"><div class="mini-project">No photo galleries uploaded yet.</div></div></div><div class="dash-card voucher-card"><span>VOUCHERS</span><h3>My Gift Vouchers</h3><div id="voucherList" class="mini-list"><div class="mini-project">No vouchers attached to your account yet.</div></div><a href="gift-vouchers.html"><b>Purchase a voucher →</b></a></div><div class="dash-card gold-card gold-member-card"><img src="assets/gold-card-promo.png" alt="SoundBunker Gold Card"><span>GOLD CARD</span><h3 id="goldState">Gold Card progress</h3><p><strong id="goldCount">0</strong> qualifying full-price bookings recorded.</p><div class="gold-progress"><i id="goldProgress"></i></div><p id="goldExplain" class="muted">Your physical Gold Card is our thank-you for your loyalty and continued support.</p></div><a class="dash-card" href="/community"><span>COMMUNITY</span><h3>SoundBunker Community</h3><p>Connect with other registered SoundBunker artists and creators.</p><b>Open community →</b></a><a id="adminCard" class="dash-card admin-card" href="/admin" hidden><span>ADMIN ONLY</span><h3>SoundBunker Admin</h3><p>Manage clients, projects, deliveries, vouchers and bookings.</p><b>Open admin dashboard →</b></a></div></section></main></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Your private SoundBunker Algarve client area for projects, masters, photographs, gift vouchers, rewards and community.">
+  <title>Client Area | SoundBunker Algarve</title>
+  <link rel="icon" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="client-gifts.css">
+  <link rel="stylesheet" href="client-portal.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="client.js" defer></script>
+</head>
+<body class="portal-bg client-page">
+  <main class="client-shell">
+    <header class="client-nav">
+      <a href="/" class="client-logo" aria-label="SoundBunker Algarve home"><img src="soundbunker-logo.png" alt="SoundBunker Algarve"></a>
+      <nav><a href="gift-vouchers.html">Gift Experiences</a><a href="/community">Community</a></nav>
+    </header>
+
+    <section id="authPanel" class="client-auth" hidden>
+      <div class="client-auth-visual">
+        <div class="client-auth-copy">
+          <p class="eyebrow">SoundBunker Client Area</p>
+          <h1>Your studio life, all in one place.</h1>
+          <p>Securely access projects, final masters, photo galleries, gift vouchers, rewards and the private SoundBunker community.</p>
+        </div>
+        <div class="client-auth-images"><img src="group-session.webp" alt="SoundBunker artists working together"><img src="creative-portrait.webp" alt="Creative portrait made at SoundBunker"></div>
+      </div>
+      <div class="client-auth-form-wrap">
+        <article class="client-login-card">
+          <p class="eyebrow">Private access</p>
+          <h2>Welcome to SoundBunker.</h2>
+          <div class="auth-tabs"><button id="loginTab" class="auth-tab active" type="button">Sign in</button><button id="signupTab" class="auth-tab" type="button">Create account</button></div>
+          <form id="loginForm" class="login-panel">
+            <div id="nameField" hidden><label>Your name<input id="fullName" type="text" autocomplete="name" placeholder="Your full name"></label></div>
+            <label>Email<input id="email" type="email" autocomplete="email" placeholder="you@example.com" required></label>
+            <label>Password<input id="password" type="password" autocomplete="current-password" minlength="8" placeholder="Minimum 8 characters" required></label>
+            <button id="authSubmit" class="client-primary" type="submit">Sign in</button>
+            <button id="forgotPassword" class="text-button" type="button">Forgot password?</button>
+            <p id="authMessage" class="muted" role="status"></p>
+          </form>
+          <div class="client-login-trust"><span>Private account</span><span>Secure access</span><span>One place for every project</span></div>
+        </article>
+      </div>
+    </section>
+
+    <section id="portalPanel" hidden>
+      <section class="client-dashboard-hero">
+        <div class="client-dashboard-copy">
+          <p class="eyebrow">Your SoundBunker</p>
+          <h1>Welcome back, <span id="clientName">Client</span>.</h1>
+          <p>Your music, images, experiences and community - organised in one private creative home.</p>
+          <div class="client-hero-actions"><a href="https://www.dropbox.com/request/uc9zb768pniqiklha04t" target="_blank" rel="noopener">Upload files</a><a class="outline" href="/community">Open community</a></div>
+        </div>
+      </section>
+
+      <div class="client-account-bar">
+        <div><span>Signed in as</span><strong id="clientEmail"></strong></div>
+        <div class="client-account-actions"><span id="roleBadge" class="role-badge">Client</span><button id="signOut" class="ghost-button">Sign out</button></div>
+      </div>
+
+      <section class="client-metrics" aria-label="Client account overview">
+        <article><span>Projects</span><strong id="projectCount">0</strong><p>Current deliveries</p></article>
+        <article><span>Gift vouchers</span><strong id="voucherCount">0</strong><p>Attached to your account</p></article>
+        <article><span>Gold Card</span><strong id="goldCount">0</strong><p id="goldState">Qualifying bookings</p></article>
+      </section>
+
+      <section class="client-section-head">
+        <div><p class="eyebrow">My creative space</p><h2>Everything from the studio.</h2></div>
+        <p>Jump straight into the things you use most. Your assigned work stays private to your account.</p>
+      </section>
+
+      <section class="client-bento">
+        <a class="client-bento-card client-upload" href="https://www.dropbox.com/request/uc9zb768pniqiklha04t" target="_blank" rel="noopener"><span>UPLOAD</span><div><h3>Send session files</h3><p>Backing tracks, stems, premasters and reference files.</p><b>Open secure upload →</b></div></a>
+        <article class="client-bento-card client-projects"><span>PROJECTS & MASTERS</span><div><h3>Latest deliveries</h3><p id="projectSummary">Your mixdowns, masters and finished projects appear here.</p><div id="projectList" class="client-mini-list"></div></div></article>
+        <article class="client-bento-card client-photos"><span>PHOTO GALLERIES</span><div><h3>My photographs</h3><p>Private edited galleries, selections and high-resolution downloads.</p><div id="photoEmpty" class="client-mini-list"><span>No photo galleries uploaded yet.</span></div></div></article>
+        <a class="client-bento-card client-book" href="index.html#booking"><span>BOOK A SESSION</span><div><h3>Ready for the next one?</h3><p>Choose recording, production, mixing, voice-over, photography or an experience.</p><b>Explore bookings →</b></div></a>
+      </section>
+
+      <section class="client-vouchers-section" id="my-vouchers">
+        <div class="client-voucher-head">
+          <div><p class="eyebrow">My Gift Vouchers</p><h2>Your experiences, ready when you are.</h2><p>Paid vouchers are automatically matched to the purchaser or recipient email on this account.</p></div>
+          <a href="gift-vouchers.html">Buy another gift</a>
+        </div>
+        <div id="voucherList" class="client-voucher-list"><div class="client-loading-card">Loading your gift vouchers...</div></div>
+        <p id="voucherMessage" class="client-inline-message" role="status"></p>
+      </section>
+
+      <section class="client-community-feature">
+        <div class="client-community-images"><img src="hub-art-community.jpg" alt="Creative workshop at The Hub Culture"><img src="dj.webp" alt="SoundBunker DJ setup"></div>
+        <div class="client-community-copy"><p class="eyebrow">Members community</p><h2>Talk. Collaborate. Create. Trade.</h2><p>Meet other local artists and creators, share work, ask for feedback, find collaborators, post events, buy and sell equipment or services, and keep the conversation moving.</p><div class="client-community-tags"><span>Chat</span><span>Collaborations</span><span>Marketplace</span><span>Events</span><span>Feedback</span></div><a href="/community">Enter the community →</a></div>
+      </section>
+
+      <section class="client-rewards-row">
+        <article class="client-gold-card"><span>GOLD CARD</span><h3>Your loyalty, rewarded.</h3><p>Every qualifying full-price booking moves you closer to SoundBunker Gold benefits.</p></article>
+        <article class="client-help-card"><span>NEED HELP?</span><h3>Talk to the studio.</h3><p>For a project, voucher or booking question, message us directly.</p><a href="https://wa.me/351964895908" target="_blank" rel="noopener">WhatsApp the studio →</a></article>
+        <a id="adminCard" class="client-admin-card" href="/admin" hidden><span>ADMIN ONLY</span><h3>Open admin dashboard</h3><p>Manage clients, deliveries, bookings and vouchers.</p></a>
+      </section>
+    </section>
+  </main>
+</body>
+</html>

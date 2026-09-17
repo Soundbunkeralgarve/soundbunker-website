@@ -1,5 +1,160 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Gift Vouchers | SoundBunker Algarve</title><link rel="icon" href="favicon.svg"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="client-gifts.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script></head><body class="portal-bg"><main class="portal-shell"><header class="portal-top"><a href="/" class="brand-link">← SoundBunker Algarve</a><a class="pill-link" href="client.html">Client Area</a></header><section class="gift-hero"><p class="eyebrow">Gift Experiences</p><h1>Give the gift of music.</h1><p>Three real studio experiences in Loulé. Personalise the voucher, pay securely online, then the recipient books their experience later.</p></section><section class="gift-grid">
-<article class="gift-card"><span>1 hour · up to 4</span><h2>Studio Starter</h2><strong>€120</strong><p>Up to 3 songs · mixed & mastered · digital copies.</p><button data-id="voucher-starter" data-name="Studio Starter">Choose Starter</button></article>
-<article class="gift-card featured"><span>2 hours · up to 4</span><h2>Session Pro</h2><strong>€200</strong><p>Up to 6 songs · more takes · mixed & mastered.</p><button data-id="voucher-pro" data-name="Session Pro">Choose Session Pro</button></article>
-<article class="gift-card"><span>Studio + photos · up to 4</span><h2>Pop Star Experience</h2><strong>€250</strong><p>1hr studio · 1hr photoshoot · 10 edited photos.</p><button data-id="voucher-popstar" data-name="Pop Star Experience">Choose Pop Star</button></article></section>
-<form id="giftForm" class="panel gift-form" hidden><h2>Personalise <span id="chosenName">your voucher</span></h2><input type="hidden" name="service" id="service"><div class="form-grid"><label>From<input name="giftFrom" required maxlength="120"></label><label>To<input name="giftTo" required maxlength="120"></label><label>Your email<input type="email" name="email" required></label><label>Your phone<input type="tel" name="phone" required></label><label>Gift / start date<input type="date" name="giftStartDate" required></label><label>Recipient email <small>optional</small><input type="email" name="recipientEmail"></label><label class="wide">Personal message <small>optional</small><textarea name="giftMessage" maxlength="400"></textarea></label></div><button class="primary" type="submit">Pay securely with Stripe</button><p class="muted">No studio date is booked now. The recipient chooses an available slot when they redeem the voucher.</p><p id="giftError" class="error"></p></form></main><script src="gift-vouchers.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Give a SoundBunker Algarve recording studio experience in Loulé. Choose from three premium gift vouchers and personalise it online.">
+  <title>Gift Experiences | SoundBunker Algarve</title>
+  <link rel="icon" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="client-gifts.css">
+  <link rel="stylesheet" href="gift-vouchers.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="portal-bg gift-store">
+  <header class="gift-nav">
+    <a class="gift-brand" href="/" aria-label="SoundBunker Algarve home">
+      <img src="soundbunker-logo.png" alt="SoundBunker Algarve">
+    </a>
+    <nav aria-label="Gift voucher navigation">
+      <a href="assets/SoundBunker_Gift_Experience_Menu.pdf" target="_blank" rel="noopener">View gift menu</a>
+      <a class="gift-nav-pill" href="client.html">Client Area</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="gift-hero-premium">
+      <div class="gift-hero-copy">
+        <p class="eyebrow">SoundBunker Gift Experiences</p>
+        <h1>Give them a story worth replaying.</h1>
+        <p class="gift-lead">A real recording session in a professional Loulé studio - beautifully presented, personally addressed and ready to print the moment you buy.</p>
+        <div class="gift-hero-actions">
+          <a class="gift-primary" href="#choose">Choose an experience</a>
+          <span>Secure payment · 12-month validity · IVA included</span>
+        </div>
+      </div>
+      <div class="gift-hero-gallery" aria-label="SoundBunker gift experience gallery">
+        <figure class="gift-hero-main"><img src="pop-star-experience.jpg" alt="Children singing together at SoundBunker Algarve"></figure>
+        <figure><img src="service-mixing-desk.jpg" alt="SoundBunker professional recording studio desk"></figure>
+        <figure><img src="service-recording-mic.jpg" alt="Professional studio microphone"></figure>
+      </div>
+    </section>
+    <div class="gift-spectrum" aria-hidden="true"></div>
+
+    <section class="gift-menu-section" id="choose">
+      <div class="gift-section-heading">
+        <div>
+          <p class="eyebrow">Choose their experience</p>
+          <h2>Three ways to give the gift of music.</h2>
+        </div>
+        <p>Every experience includes professional guidance, recording, mixing and mastering. No previous studio experience is needed.</p>
+      </div>
+
+      <div class="gift-experience-list">
+        <article class="gift-experience" data-card="voucher-starter">
+          <div class="gift-experience-image starter-image"><span>Studio Starter</span></div>
+          <div class="gift-experience-content">
+            <div class="gift-experience-title">
+              <div><p>1 hour · up to 4 people</p><h3>Studio Starter</h3></div>
+              <strong>€120<small>IVA included</small></strong>
+            </div>
+            <p class="gift-experience-description">The perfect first taste of studio life - step into a real recording booth and leave with songs that are genuinely yours.</p>
+            <ul>
+              <li>Record up to 3 songs</li><li>Professional engineer included</li>
+              <li>Mixed and mastered</li><li>Digital copies to keep</li>
+            </ul>
+            <div class="gift-experience-footer"><span><b>Best for:</b> first-timers, birthdays and friends.</span><button type="button" data-id="voucher-starter" data-name="Studio Starter" data-price="120">Choose Studio Starter</button></div>
+          </div>
+        </article>
+
+        <article class="gift-experience gift-experience-featured" data-card="voucher-pro">
+          <div class="gift-experience-image pro-image"><span>Session Pro</span></div>
+          <div class="gift-experience-content">
+            <div class="gift-experience-title">
+              <div><p>2 hours · up to 4 people</p><h3>Session Pro</h3></div>
+              <strong>€200<small>IVA included</small></strong>
+            </div>
+            <p class="gift-experience-description">Double the time to build a fuller set - more songs, more takes and enough space to get every detail right.</p>
+            <ul>
+              <li>Record up to 6 songs</li><li>More time to experiment</li>
+              <li>Mixed and mastered</li><li>Digital copies to keep</li>
+            </ul>
+            <div class="gift-experience-footer"><span><b>Best for:</b> singers ready to record a fuller set.</span><button type="button" data-id="voucher-pro" data-name="Session Pro" data-price="200">Choose Session Pro</button></div>
+          </div>
+        </article>
+
+        <article class="gift-experience" data-card="voucher-popstar">
+          <div class="gift-experience-image popstar-image"><span>Pop Star Experience</span></div>
+          <div class="gift-experience-content">
+            <div class="gift-experience-title">
+              <div><p>Studio + photos · up to 4 people</p><h3>Pop Star Experience</h3></div>
+              <strong>€250<small>IVA included</small></strong>
+            </div>
+            <p class="gift-experience-description">The full star treatment - record favourite songs, then step in front of the camera for a professional photoshoot.</p>
+            <ul>
+              <li>1 hour recording studio</li><li>Record up to 8 songs</li>
+              <li>1 hour photoshoot</li><li>10 edited photographs</li>
+            </ul>
+            <div class="gift-experience-footer"><span><b>Best for:</b> the ultimate sound-and-image gift.</span><button type="button" data-id="voucher-popstar" data-name="Pop Star Experience" data-price="250">Choose Pop Star</button></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="gift-process" aria-label="How SoundBunker gift vouchers work">
+      <div><span>01</span><h3>Choose</h3><p>Select the studio experience that suits them.</p></div>
+      <div><span>02</span><h3>Personalise</h3><p>Add the recipient and your birthday or gift message.</p></div>
+      <div><span>03</span><h3>Give</h3><p>Print or save the premium voucher immediately.</p></div>
+      <div><span>04</span><h3>Book later</h3><p>They contact us to choose their preferred available date.</p></div>
+    </section>
+
+    <section id="giftFormSection" class="gift-form-section" hidden>
+      <div class="gift-form-intro">
+        <p class="eyebrow">Personalise your gift</p>
+        <h2><span id="chosenName">Your experience</span></h2>
+        <p>The details in the first two fields appear on the printed voucher. Use the <b>From / message</b> line for wording such as “Happy Birthday Maisie - love from Mum & Dad”.</p>
+        <div class="gift-form-preview">
+          <span>Selected experience</span>
+          <strong id="chosenPreview">Studio Starter</strong>
+          <b id="chosenPrice">€120</b>
+        </div>
+      </div>
+      <form id="giftForm" class="gift-form-premium">
+        <input type="hidden" name="service" id="service">
+        <div class="gift-visible-fields">
+          <label>To <small>printed on voucher</small><input name="giftTo" required maxlength="120" placeholder="Mia"></label>
+          <label>From / message <small>printed on voucher</small><input name="giftFrom" required maxlength="180" placeholder="Happy Birthday Maisie - love from Mum & Dad"></label>
+        </div>
+        <div class="gift-buyer-fields">
+          <label>Your name<input name="customerName" autocomplete="name" required maxlength="120" placeholder="Purchaser name"></label>
+          <label>Your email<input type="email" name="email" autocomplete="email" required placeholder="you@example.com"></label>
+          <label>Your phone<input type="tel" name="phone" autocomplete="tel" required placeholder="+351 ..."></label>
+          <label>Recipient email <small>optional</small><input type="email" name="recipientEmail" placeholder="recipient@example.com"></label>
+        </div>
+        <label class="gift-consent"><input type="checkbox" required><span>I understand the voucher is valid for 12 months from its purchase date and booking is subject to availability.</span></label>
+        <button class="gift-pay-button" type="submit">Pay <span id="payPrice">€120</span> securely with Stripe</button>
+        <p class="gift-form-note">No studio date is selected now. The recipient books their preferred available slot when they are ready.</p>
+        <p id="giftError" class="error" role="alert"></p>
+      </form>
+    </section>
+
+    <section class="gift-confidence">
+      <div class="gift-confidence-image"><img src="group-session.webp" alt="Artists collaborating in the SoundBunker studio"></div>
+      <div>
+        <p class="eyebrow">A real experience, not another thing</p>
+        <h2>Made in the studio. Kept forever.</h2>
+        <p>SoundBunker Algarve is a professional recording and creative studio inside The Hub Culture in central Loulé. Every voucher gives the recipient dedicated studio time, expert support and finished work to take home.</p>
+        <div class="gift-trust-grid"><span>Professional studio</span><span>Engineer included</span><span>Secure Stripe payment</span><span>12 months to redeem</span></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="gift-footer">
+    <div><img src="soundbunker-logo.png" alt="SoundBunker Algarve"><p>Inside The Hub Culture, next to Loulé Municipal Market.</p></div>
+    <div><a href="mailto:bookings@soundbunker.pt">bookings@soundbunker.pt</a><a href="https://wa.me/351964895908">WhatsApp +351 964 895 908</a></div>
+  </footer>
+  <script src="gift-vouchers.js"></script>
+</body>
+</html>
