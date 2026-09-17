@@ -1,0 +1,2 @@
+import { json } from './lib/http.js';import { requireUser } from './lib/supabase-auth.js';
+export default async function handler(req,res){if(req.method!=='GET')return json(res,{error:'Method not allowed'},405);const c=await requireUser(req);if(c.error)return json(res,{error:c.error},c.status);const {data,error}=await c.admin.from('vouchers').select('*').eq('owner_id',c.user.id).order('created_at',{ascending:false});if(error)return json(res,{error:'Could not load vouchers'},500);return json(res,{vouchers:data||[]});}
