@@ -4,7 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node --check script.js && node --check api/availability.js && node --check api/create-checkout.js && node --check api/stripe-webhook.js"
+    "check": "node --check script.js && node --check api/availability.js && node --check api/create-checkout.js && node --check api/stripe-webhook.js && node --check api/supabase-config.js && node --check api/client-profile.js && node --check client.js"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.4"
+  }
 }
