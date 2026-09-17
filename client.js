@@ -1,31 +1,14 @@
-let supabaseClient;
+let supabaseClient, mode='login';
 const $=s=>document.querySelector(s);
 const show=(id,on=true)=>{const e=$(id);if(e)e.hidden=!on};
-const message=(text,bad=false)=>{const e=$('#authMessage');e.textContent=text||'';e.className=bad?'error':'muted'};
+const message=(text,bad=false)=>{const e=$('#authMessage');if(!e)return;e.textContent=text||'';e.className=bad?'error':'muted'};
+function setMode(next){mode=next;const signup=mode==='signup';show('#nameField',signup);$('#fullName').required=signup;$('#password').autocomplete=signup?'new-password':'current-password';$('#authSubmit').textContent=signup?'Create account':'Sign in';$('#loginTab').classList.toggle('active',!signup);$('#signupTab').classList.toggle('active',signup);message('');}
 async function boot(){
-  try{
-    const r=await fetch('/api/supabase-config'); const cfg=await r.json(); if(!r.ok) throw Error(cfg.error||'Login unavailable');
-    supabaseClient=window.supabase.createClient(cfg.url,cfg.key);
-    const {data:{session}}=await supabaseClient.auth.getSession();
-    if(session) await enterPortal(session); else show('#authPanel');
-    supabaseClient.auth.onAuthStateChange(async(_event,newSession)=>{ if(newSession) await enterPortal(newSession); });
-  }catch(e){show('#authPanel');message(e.message,true)}
+ try{const r=await fetch('/api/supabase-config');const cfg=await r.json();if(!r.ok)throw Error(cfg.error||'Login unavailable');supabaseClient=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});const {data:{session}}=await supabaseClient.auth.getSession();if(session)await enterPortal(session);else{show('#portalPanel',false);show('#authPanel',true)}supabaseClient.auth.onAuthStateChange(async(event,newSession)=>{if(newSession&&(event==='SIGNED_IN'||event==='TOKEN_REFRESHED'))await enterPortal(newSession);if(event==='SIGNED_OUT'){show('#portalPanel',false);show('#authPanel',true)}})}catch(e){show('#authPanel',true);message(e.message,true)}
 }
-async function sendLink(ev){
-  ev.preventDefault(); const email=$('#email').value.trim(); if(!email)return;
-  message('Sending secure login link…'); $('#sendLink').disabled=true;
-  const {error}=await supabaseClient.auth.signInWithOtp({email,options:{emailRedirectTo:'https://www.soundbunker.pt/client-login.html'}});
-  $('#sendLink').disabled=false;
-  if(error)return message(error.message,true);
-  message('Check your email. We’ve sent you a secure sign-in link.');
-}
-async function enterPortal(session){
-  show('#authPanel',false); show('#portalPanel');
-  const r=await fetch('/api/client-profile',{headers:{authorization:`Bearer ${session.access_token}`}}); const d=await r.json();
-  if(!r.ok){await supabaseClient.auth.signOut();show('#portalPanel',false);show('#authPanel');return message(d.error||'Please sign in again',true)}
-  const p=d.profile; $('#clientName').textContent=p.full_name||p.email; $('#clientEmail').textContent=p.email;
-  $('#goldCount').textContent=String(p.qualifying_booking_count||0); $('#goldState').textContent=p.gold_status?'Gold Card active':'Gold Card progress';
-  if(p.role==='admin'){show('#adminCard');$('#roleBadge').textContent='Administrator';}else $('#roleBadge').textContent='Client';
-}
+async function authenticate(ev){ev.preventDefault();const email=$('#email').value.trim();const password=$('#password').value;const fullName=$('#fullName').value.trim();$('#authSubmit').disabled=true;message(mode==='signup'?'Creating your account…':'Signing in…');let result;if(mode==='signup'){result=await supabaseClient.auth.signUp({email,password,options:{data:{full_name:fullName,name:fullName}}});}else result=await supabaseClient.auth.signInWithPassword({email,password});$('#authSubmit').disabled=false;if(result.error)return message(result.error.message,true);if(mode==='signup'&&!result.data.session)return message('Account created. Check your email to confirm your address, then sign in.');if(result.data.session)await enterPortal(result.data.session)}
+async function forgot(){const email=$('#email').value.trim();if(!email)return message('Enter your email first.',true);const {error}=await supabaseClient.auth.resetPasswordForEmail(email,{redirectTo:'https://www.soundbunker.pt/client.html'});message(error?error.message:'Password reset email sent.',Boolean(error))}
+async function enterPortal(session){show('#authPanel',false);show('#portalPanel',true);const r=await fetch('/api/client-profile',{headers:{authorization:`Bearer ${session.access_token}`}});const d=await r.json();if(!r.ok){await supabaseClient.auth.signOut();return message(d.error||'Please sign in again',true)}const p=d.profile;const display=(p.full_name||'Client').trim();$('#clientName').textContent=display;$('#clientEmail').textContent=p.email;$('#goldCount').textContent=String(p.qualifying_booking_count||0);$('#goldState').textContent=p.gold_status?'Gold Card active':'Gold Card progress';if(p.role==='admin'){show('#adminCard',true);$('#roleBadge').textContent='Administrator'}else{show('#adminCard',false);$('#roleBadge').textContent='Client'}await loadProjects(session)}
+async function loadProjects(session){try{const r=await fetch('/api/client-projects',{headers:{authorization:`Bearer ${session.access_token}`}});if(!r.ok)return;const d=await r.json();const box=$('#projectList');box.innerHTML='';(d.projects||[]).slice(0,3).forEach(p=>{const a=document.createElement(p.delivery_url?'a':'div');a.className='mini-project';a.textContent=p.title||'SoundBunker project';if(p.delivery_url){a.href=p.delivery_url;a.target='_blank';a.rel='noopener'}box.appendChild(a)});if((d.projects||[]).length)$('#projectSummary').textContent='Your latest SoundBunker deliveries:'}catch{}}
 async function signOut(){await supabaseClient.auth.signOut();location.reload()}
-document.addEventListener('DOMContentLoaded',()=>{$('#loginForm').addEventListener('submit',sendLink);$('#signOut').addEventListener('click',signOut);boot()});
+document.addEventListener('DOMContentLoaded',()=>{$('#loginForm').addEventListener('submit',authenticate);$('#loginTab').addEventListener('click',()=>setMode('login'));$('#signupTab').addEventListener('click',()=>setMode('signup'));$('#forgotPassword').addEventListener('click',forgot);$('#signOut').addEventListener('click',signOut);setMode('login');boot()});

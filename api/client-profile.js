@@ -20,5 +20,7 @@ export default async function handler(request,response){
     if(result.error) return json(response,{error:'Could not create client profile'},500);
     profile=result.data;
   }
-  return json(response,{profile:{id:profile.id,email:profile.email||user.email||'',full_name:profile.full_name||'',role:profile.role||'client',gold_status:Boolean(profile.gold_status),qualifying_booking_count:Number(profile.qualifying_booking_count||0)}});
+  const metadataName=user.user_metadata?.full_name||user.user_metadata?.name||'';
+  if(!profile.full_name && metadataName){ const updated=await admin.from('profiles').update({full_name:metadataName}).eq('id',user.id).select('*').single(); if(!updated.error) profile=updated.data; }
+  return json(response,{profile:{id:profile.id,email:profile.email||user.email||'',full_name:profile.full_name||metadataName||'',role:profile.role||'client',gold_status:Boolean(profile.gold_status),qualifying_booking_count:Number(profile.qualifying_booking_count||0)}});
 }
