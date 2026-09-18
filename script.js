@@ -1,6 +1,6 @@
 const translations = {
   en: {
-    nav:{studio:"Home",services:"Services",experiences:"Parties & Experiences",education:"Hub Academy",partnership:"The Hub Culture",upload:"Upload Files",contact:"Contact"},
+    nav:{studio:"Home",services:"Services",experiences:"Parties & Experiences",education:"Hub Academy",partnership:"The Hub Culture",upload:"Upload Files",client:"Client Login",contact:"Contact"},
     common:{book:"Book now",bookSession:"Book a session",viewPrices:"View prices",enquire:"Enquire",learnMore:"Explore service"},
     hero:{eyebrow:"Recording studio · Loulé, Algarve",title:"Your sound, made real.",copy:"Professional recording, production, mixing, voiceover and creative experiences inside The Hub Culture.",explore:"Explore the studio",meta1:"25+ years' experience",meta2:"Release-ready sound",meta3:"Prices include VAT"},
     remoteHome:{eyebrow:"Remote voiceover & directed sessions",title:"Studio in Loulé. Control room anywhere.",copy:"Record voice, dialogue and remote podcast sessions in broadcast quality while producers, agencies and directors listen and direct live from anywhere.",item1:"Live direction through SessionLink Pro",item2:"Professional booth, Neumann U87 and experienced engineer",item3:"Clean takes, organised files and delivery to specification",cta:"Explore remote sessions",badge:"Live direction · Worldwide delivery",clients:"Selected brands and productions"},
@@ -20,7 +20,7 @@ const translations = {
     contact:{eyebrow:"Visit SoundBunker",title:"In the heart of Loulé.",studio:"Home",directions:"Get directions",bookings:"Bookings",phone:"Telephone number coming soon.",follow:"Follow"}
   },
   pt: {
-    nav:{studio:"Estúdio",services:"Serviços",experiences:"Festas & Experiências",education:"Hub Academy",partnership:"The Hub Culture",upload:"Enviar ficheiros",contact:"Contacto"},
+    nav:{studio:"Estúdio",services:"Serviços",experiences:"Festas & Experiências",education:"Hub Academy",partnership:"The Hub Culture",upload:"Enviar ficheiros",client:"Área do Cliente",contact:"Contacto"},
     common:{book:"Reservar",bookSession:"Reservar sessão",viewPrices:"Ver preços",enquire:"Pedir informações",learnMore:"Explorar serviço"},
     hero:{eyebrow:"Estúdio de gravação · Loulé, Algarve",title:"O seu som, tornado realidade.",copy:"Gravação profissional, produção, mistura, voz-off e experiências criativas dentro do The Hub Culture.",explore:"Conhecer o estúdio",meta1:"Mais de 25 anos de experiência",meta2:"Som pronto para lançamento",meta3:"Preços com IVA incluído"},
     remoteHome:{eyebrow:"Voz-off remota e sessões dirigidas",title:"Estúdio em Loulé. Sala de controlo mundial.",copy:"Grave voz, diálogo e sessões remotas de podcast com qualidade broadcast enquanto produtores, agências e realizadores ouvem e dirigem em direto a partir de qualquer lugar.",item1:"Direção em direto através do SessionLink Pro",item2:"Cabine profissional, Neumann U87 e técnico experiente",item3:"Tomadas limpas, ficheiros organizados e entrega segundo as especificações",cta:"Explorar sessões remotas",badge:"Direção em direto · Entrega mundial",clients:"Marcas e produções selecionadas"},
@@ -40,7 +40,7 @@ const translations = {
     contact:{eyebrow:"Visite o SoundBunker",title:"No coração de Loulé.",studio:"Estúdio",directions:"Obter direções",bookings:"Reservas",phone:"Número de telefone disponível em breve.",follow:"Siga-nos"}
   },
   de: {
-    nav:{studio:"Home",services:"Services",experiences:"Partys & Erlebnisse",education:"Hub Academy",partnership:"The Hub Culture",upload:"Dateien hochladen",contact:"Kontakt"},
+    nav:{studio:"Home",services:"Services",experiences:"Partys & Erlebnisse",education:"Hub Academy",partnership:"The Hub Culture",upload:"Dateien hochladen",client:"Kunden-Login",contact:"Kontakt"},
     common:{book:"Jetzt buchen",bookSession:"Session buchen",viewPrices:"Preise ansehen",enquire:"Anfragen",learnMore:"Service ansehen"},
     hero:{eyebrow:"Tonstudio · Loulé, Algarve",title:"Dein Sound. Echt gemacht.",copy:"Professionelle Aufnahmen, Produktion, Mixing, Voiceover und kreative Erlebnisse in The Hub Culture.",explore:"Studio entdecken",meta1:"25+ Jahre Erfahrung",meta2:"Release-fertiger Sound",meta3:"Preise inkl. MwSt."},
     remoteHome:{eyebrow:"Remote Voiceover & Regie-Sessions",title:"Studio in Loulé. Regie überall.",copy:"Sprach-, Dialog- und Podcast-Aufnahmen in Broadcast-Qualität mit Live-Regie von überall.",item1:"Live-Regie über SessionLink Pro",item2:"Professionelle Kabine, Neumann U87 und erfahrener Engineer",item3:"Saubere Takes, organisierte Dateien und Lieferung nach Vorgabe",cta:"Remote Sessions ansehen",badge:"Live-Regie · Weltweite Lieferung",clients:"Ausgewählte Marken und Produktionen"},
@@ -60,7 +60,7 @@ const translations = {
     contact:{eyebrow:"SoundBunker besuchen",title:"Im Herzen von Loulé.",studio:"Home",directions:"Route",bookings:"Buchungen",phone:"Telefonnummer folgt in Kürze.",follow:"Folgen"}
   },
   fr: {
-    nav:{studio:"Home",services:"Services",experiences:"Fêtes & Expériences",education:"Hub Academy",partnership:"The Hub Culture",upload:"Upload Files",contact:"Contact"},
+    nav:{studio:"Home",services:"Services",experiences:"Fêtes & Expériences",education:"Hub Academy",partnership:"The Hub Culture",upload:"Upload Files",client:"Espace client",contact:"Contact"},
     common:{book:"Réserver",bookSession:"Réserver une session",viewPrices:"Voir les tarifs",enquire:"Nous contacter",learnMore:"Découvrir le service"},
     hero:{eyebrow:"Studio d'enregistrement · Loulé, Algarve",title:"Votre son prend vie.",copy:"Enregistrement professionnel, production, mixage, voix off et expériences créatives au sein de The Hub Culture.",explore:"Découvrir le studio",meta1:"Plus de 25 ans d'expérience",meta2:"Son prêt à sortir",meta3:"Prix TVA comprise"},
     remoteHome:{eyebrow:"Voix off à distance & sessions dirigées",title:"Studio à Loulé. Régie dans le monde entier.",copy:"Enregistrez voix, dialogue et podcasts à distance en qualité broadcast pendant que producteurs, agences et réalisateurs écoutent et dirigent en direct, où qu’ils soient.",item1:"Direction en direct via SessionLink Pro",item2:"Cabine professionnelle, Neumann U87 et ingénieur expérimenté",item3:"Prises propres, fichiers organisés et livraison conforme",cta:"Découvrir les sessions à distance",badge:"Direction en direct · Livraison mondiale",clients:"Marques et productions sélectionnées"},
