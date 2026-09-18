@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { json } from './lib/http.js';
+import { dropboxConfigured, ensureClientDropboxFolder } from './lib/dropbox.js';
 export default async function handler(request,response){
   if(request.method!=='GET') return json(response,{error:'Method not allowed'},405);
   const auth=request.headers.authorization||'';
@@ -22,5 +23,14 @@ export default async function handler(request,response){
   }
   const metadataName=user.user_metadata?.full_name||user.user_metadata?.name||'';
   if(!profile.full_name && metadataName){ const updated=await admin.from('profiles').update({full_name:metadataName}).eq('id',user.id).select('*').single(); if(!updated.error) profile=updated.data; }
-  return json(response,{profile:{id:profile.id,email:profile.email||user.email||'',full_name:profile.full_name||metadataName||'',role:profile.role||'client',gold_status:Boolean(profile.gold_status),qualifying_booking_count:Number(profile.qualifying_booking_count||0)}});
+  let dropboxWarning='';
+  if(!profile.dropbox_shared_url && dropboxConfigured()){
+    try{
+      const folder=await ensureClientDropboxFolder({userId:user.id,fullName:profile.full_name||metadataName,email:profile.email||user.email});
+      const saved=await admin.from('profiles').update({dropbox_folder_path:folder.path,dropbox_shared_url:folder.url,dropbox_created_at:new Date().toISOString()}).eq('id',user.id).select('*').single();
+      if(saved.error) throw saved.error;
+      profile=saved.data;
+    }catch(folderError){console.error('Automatic Dropbox folder error',folderError);dropboxWarning='Your file folder is still being prepared.';}
+  }
+  return json(response,{profile:{id:profile.id,email:profile.email||user.email||'',full_name:profile.full_name||metadataName||'',role:profile.role||'client',gold_status:Boolean(profile.gold_status),qualifying_booking_count:Number(profile.qualifying_booking_count||0),dropbox_folder_path:profile.dropbox_folder_path||'',dropbox_shared_url:profile.dropbox_shared_url||''},dropboxWarning});
 }

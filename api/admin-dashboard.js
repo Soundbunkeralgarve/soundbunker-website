@@ -1,5 +1,5 @@
 import { json } from './lib/http.js';import { requireAdmin } from './lib/supabase-auth.js';
 export default async function handler(req,res){if(req.method!=='GET')return json(res,{error:'Method not allowed'},405);const c=await requireAdmin(req);if(c.error)return json(res,{error:c.error},c.status);const [profiles,projects,photos,vouchers,bookings]=await Promise.all([
- c.admin.from('profiles').select('id,email,full_name,role,gold_status,qualifying_booking_count,created_at').order('created_at',{ascending:false}),
+ c.admin.from('profiles').select('id,email,full_name,role,gold_status,qualifying_booking_count,dropbox_folder_path,dropbox_shared_url,dropbox_created_at,created_at').order('created_at',{ascending:false}),
  c.admin.from('projects').select('*').order('created_at',{ascending:false}).limit(100),c.admin.from('photo_galleries').select('*').order('created_at',{ascending:false}).limit(100),c.admin.from('vouchers').select('*').order('created_at',{ascending:false}).limit(100),c.admin.from('bookings').select('*').order('created_at',{ascending:false}).limit(100)]);
  return json(res,{profiles:profiles.data||[],projects:projects.data||[],photos:photos.data||[],vouchers:vouchers.data||[],bookings:bookings.data||[]});}

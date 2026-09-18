@@ -17,6 +17,19 @@ Before testing vouchers or Community 2.0, open the Supabase SQL Editor and run:
 
 It creates or upgrades the private voucher, community post, comment and reaction tables. The migration is additive and can be run again safely.
 
+## Automatic Dropbox client folders
+
+The Client Area can create a private delivery folder automatically when a client first signs in. Existing clients receive one on their next login, and an administrator can also create it immediately from the Admin Dashboard.
+
+Add these Vercel Production environment variables from a Dropbox Developer App:
+
+- `DROPBOX_APP_KEY`
+- `DROPBOX_APP_SECRET`
+- `DROPBOX_REFRESH_TOKEN`
+- `DROPBOX_CLIENT_ROOT` (optional; defaults to `/SoundBunker Clients`)
+
+For a short-lived test token, `DROPBOX_ACCESS_TOKEN` is also supported, but the refresh-token setup is recommended for production. Enable `files.metadata.read`, `files.metadata.write`, `files.content.read`, `files.content.write`, `sharing.read` and `sharing.write`. Client links are view/download only; clients continue using the existing Dropbox File Request for uploads.
+
 ## Voucher flow
 
 - The purchaser chooses an experience and enters the recipient plus a visible From/message line.

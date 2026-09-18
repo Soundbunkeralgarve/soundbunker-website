@@ -1,4 +1,5 @@
 let sb;
+let currentSession;
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value || '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
 const date = value => value ? new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(value)) : '';
@@ -9,6 +10,7 @@ async function boot() {
     sb = window.supabase.createClient(config.url, config.key, { auth: { persistSession: true } });
     const { data: { session } } = await sb.auth.getSession();
     if (!session) { location.replace('/client'); return; }
+    currentSession = session;
     const response = await fetch('/api/admin-dashboard', { headers: { authorization: `Bearer ${session.access_token}` } });
     const data = await response.json();
     if (response.status === 403) {
@@ -24,11 +26,40 @@ async function boot() {
     $('#projectTotal').textContent = data.projects.length;
     $('#photoTotal').textContent = data.photos.length;
     $('#voucherTotal').textContent = data.vouchers.length;
-    $('#clients').innerHTML = data.profiles.length ? data.profiles.map(profile => `<div class="mini-project"><strong>${esc(profile.full_name || 'Unnamed client')}</strong> · ${esc(profile.email)} · ${profile.role === 'admin' ? 'ADMIN' : 'Client'} · ${Number(profile.qualifying_booking_count || 0)} Gold bookings${profile.gold_status ? ' · GOLD ACTIVE' : ''}</div>`).join('') : '<p class="muted">No clients yet.</p>';
+    renderClients(data.profiles);
     $('#vouchers').innerHTML = data.vouchers.length ? data.vouchers.map(voucher => `<div class="mini-project"><strong>${esc(voucher.code || 'Voucher')}</strong> · ${esc(voucher.service_name || 'Gift experience')} · For ${esc(voucher.recipient_name || 'recipient')} · ${esc(voucher.buyer_email)} · ${esc(voucher.status || 'active')} · valid to ${esc(date(voucher.expires_at))}</div>`).join('') : '<p class="muted">No paid vouchers attached yet.</p>';
   } catch (error) {
     $('#adminMessage').textContent = error.message;
   }
 }
 
+function renderClients(profiles) {
+  $('#clients').innerHTML = profiles.length ? profiles.map(profile => `<article class="admin-client-row" data-user-id="${esc(profile.id)}">
+    <div><strong>${esc(profile.full_name || 'Unnamed client')}</strong><span>${esc(profile.email)}</span><small>${profile.role === 'admin' ? 'ADMIN' : 'CLIENT'} · ${Number(profile.qualifying_booking_count || 0)} Gold bookings${profile.gold_status ? ' · GOLD ACTIVE' : ''}</small></div>
+    <div class="admin-folder-actions">${profile.dropbox_shared_url ? `<a class="admin-folder-link" href="${esc(profile.dropbox_shared_url)}" target="_blank" rel="noopener">Open Dropbox folder ↗</a><small>${esc(profile.dropbox_folder_path || '')}</small>` : `<button class="admin-create-folder" type="button" data-user-id="${esc(profile.id)}">Create Dropbox folder</button><small>Automatically created at next client login</small>`}</div>
+  </article>`).join('') : '<p class="muted">No clients yet.</p>';
+}
+
+async function createFolder(button) {
+  const status = $('#folderMessage');
+  button.disabled = true;
+  status.textContent = 'Creating the private Dropbox folder...';
+  try {
+    const response = await fetch('/api/admin-client-folder', {
+      method: 'POST',
+      headers: { authorization: `Bearer ${currentSession.access_token}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ userId: button.dataset.userId })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Could not create folder');
+    const actions = button.closest('.admin-folder-actions');
+    actions.innerHTML = `<a class="admin-folder-link" href="${esc(data.folder.url)}" target="_blank" rel="noopener">Open Dropbox folder ↗</a><small>${esc(data.folder.path)}</small>`;
+    status.textContent = 'Dropbox folder created and attached to the client.';
+  } catch (error) {
+    button.disabled = false;
+    status.textContent = error.message;
+  }
+}
+
 document.addEventListener('DOMContentLoaded', boot);
+document.addEventListener('click', event => { const button = event.target.closest('.admin-create-folder'); if (button) createFolder(button); });

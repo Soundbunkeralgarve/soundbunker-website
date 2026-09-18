@@ -1,6 +1,12 @@
 -- Run once in the Supabase SQL Editor for premium vouchers and Community 2.0.
 -- This migration is additive and safe to run again.
 
+-- Private Dropbox delivery folder details for each Client Area account.
+alter table public.profiles add column if not exists dropbox_folder_path text;
+alter table public.profiles add column if not exists dropbox_shared_url text;
+alter table public.profiles add column if not exists dropbox_created_at timestamptz;
+create unique index if not exists profiles_dropbox_folder_unique on public.profiles(dropbox_folder_path) where dropbox_folder_path is not null;
+
 create table if not exists public.vouchers (
   id uuid primary key default gen_random_uuid(),
   code text not null,

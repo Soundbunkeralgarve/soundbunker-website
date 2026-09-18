@@ -1,5 +1,5 @@
-SoundBunker Algarve Website - PREMIUM CLIENT, VOUCHER & COMMUNITY BUILD
-Build date: 17 September 2026
+SoundBunker Algarve Website - PREMIUM CLIENT, VOUCHER, COMMUNITY & DROPBOX BUILD
+Build date: 18 September 2026
 Domain: www.soundbunker.pt
 Languages: EN / PT / DE / FR on the main website
 
@@ -15,6 +15,10 @@ Included in this release:
 - Community 2.0 social feed with chat, collaborations, marketplace, showcase, events and feedback
 - Community likes, comments, sharing, search, filters and member moderation
 - Admin voucher count and voucher list
+- Automatic Dropbox delivery folder for new and existing client accounts
+- Admin buttons to create or open each client Dropbox folder
+- Client view/download access through Open My Files
+- Mobile main-menu Client Login button
 
 Vercel: index.html is at the ZIP top level; Root Directory = ./
 Database: run SUPABASE_PORTAL_UPGRADE_17_SEPT_2026.sql once before testing the new portal features.

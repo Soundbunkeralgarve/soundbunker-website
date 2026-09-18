@@ -9,7 +9,14 @@ VERCEL
 
 ONE-TIME DATABASE STEP
 - Run SUPABASE_PORTAL_UPGRADE_17_SEPT_2026.sql in Supabase SQL Editor
-- This enables automatic client vouchers and Community 2.0
+- This enables automatic client vouchers, Community 2.0 and Dropbox folder fields
+
+DROPBOX CLIENT FOLDERS
+- Create a Dropbox Developer App with App Folder access
+- Enable files.metadata.read, files.metadata.write, files.content.read, files.content.write, sharing.read and sharing.write
+- Add DROPBOX_APP_KEY, DROPBOX_APP_SECRET and DROPBOX_REFRESH_TOKEN in Vercel Production environment variables
+- Optional: DROPBOX_CLIENT_ROOT=/SoundBunker Clients
+- Redeploy after adding the variables
 
 KEY AREAS TO TEST AFTER DEPLOYMENT
 - Gift Experiences purchase and Stripe return

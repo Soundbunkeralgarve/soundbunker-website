@@ -79,6 +79,13 @@ async function enterPortal(session) {
   $('#clientEmail').textContent = profile.email;
   $('#goldCount').textContent = String(profile.qualifying_booking_count || 0);
   $('#goldState').textContent = profile.gold_status ? 'Gold Card active' : 'Qualifying bookings';
+  const dropboxLink = $('#clientDropboxLink');
+  if (profile.dropbox_shared_url) {
+    dropboxLink.href = profile.dropbox_shared_url;
+    show('#clientDropboxLink', true);
+  } else {
+    show('#clientDropboxLink', false);
+  }
   if (profile.role === 'admin') {
     show('#adminCard', true);
     $('#roleBadge').textContent = 'Administrator';
