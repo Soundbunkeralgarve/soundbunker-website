@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="The private SoundBunker Algarve community for artists, creators, collaborations, feedback, events and marketplace listings.">
-  <title>Community | SoundBunker Algarve</title>
+  <meta name="description" content="SoundBunker Social — the private network for SoundBunker artists, producers, singers, songwriters, DJs and creators.">
+  <title>SoundBunker Social | SoundBunker Algarve</title>
   <link rel="icon" href="favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,7 +23,7 @@
   <main>
     <section class="community-hero">
       <div class="community-hero-copy">
-        <p class="eyebrow">SoundBunker Community</p>
+        <p class="eyebrow">SoundBunker Social</p>
         <h1>Where Algarve creators connect.</h1>
         <p>Chat with the community, share work, find collaborators, ask for feedback, promote an event, offer a service or buy and sell creative equipment.</p>
         <div class="community-hero-tags"><span>Artists</span><span>Producers</span><span>Photographers</span><span>DJs</span><span>Creators</span><span>Local community</span></div>
@@ -40,11 +40,12 @@
       <aside class="community-left-rail">
         <article class="community-profile-card">
           <div id="myAvatar" class="community-avatar community-avatar-large">SB</div>
-          <span>Signed in as</span><h2 id="myName">SoundBunker member</h2><p id="myEmail"></p>
+          <span>Signed in as</span><h2 id="myName">SoundBunker member</h2><p id="myRole">Complete your creative profile</p>
+          <button id="editProfile" class="community-profile-edit" type="button">Edit my profile</button>
         </article>
         <nav class="community-filters" aria-label="Community feed filters">
           <button class="active" data-filter="all"><span>⌂</span> Everything <b id="countAll">0</b></button>
-          <button data-filter="chat"><span>●</span> Chat <b id="countChat">0</b></button>
+          <button data-filter="chat"><span class="live-dot"></span> Live chat <b id="countChat">0</b></button>
           <button data-filter="collaboration"><span>↗</span> Collaborate <b id="countCollaboration">0</b></button>
           <button data-filter="marketplace"><span>€</span> Marketplace <b id="countMarketplace">0</b></button>
           <button data-filter="showcase"><span>★</span> Showcase <b id="countShowcase">0</b></button>
@@ -55,6 +56,19 @@
       </aside>
 
       <section class="community-feed-column">
+        <section id="liveChatPanel" class="live-chat-panel" hidden>
+          <div class="live-chat-head">
+            <div><p class="eyebrow">Live now</p><h2>SoundBunker Social Chat</h2><p>Talk in real time with creators who are online.</p></div>
+            <span id="onlineSummary" class="online-summary">Checking who's online…</span>
+          </div>
+          <div class="live-chat-layout">
+            <div class="live-chat-conversation">
+              <div id="liveMessages" class="live-messages" aria-live="polite"><p class="community-loading">Loading live chat…</p></div>
+              <form id="liveChatForm" class="live-chat-form"><input id="liveChatInput" maxlength="500" autocomplete="off" placeholder="Message SoundBunker Social…" required><button type="submit">Send</button></form>
+            </div>
+            <aside class="online-members"><h3>Online now</h3><div id="onlineMembers"></div></aside>
+          </div>
+        </section>
         <article class="community-composer">
           <div class="community-composer-head"><div id="composerAvatar" class="community-avatar">SB</div><div><span>Create a post</span><h2>What do you want to share?</h2></div></div>
           <div class="community-type-picker" role="group" aria-label="Choose post type">
@@ -77,13 +91,17 @@
         </article>
 
         <div class="community-feed-tools">
-          <div><p class="eyebrow">Community feed</p><h2 id="feedTitle">Everything</h2></div>
+          <div><p class="eyebrow">SoundBunker Social feed</p><h2 id="feedTitle">Everything</h2></div>
           <label class="community-search"><span>Search</span><input id="feedSearch" type="search" placeholder="People, posts, listings..."></label>
         </div>
         <div id="posts" class="community-posts"><article class="community-loading">Loading the community...</article></div>
       </section>
 
       <aside class="community-right-rail">
+        <article class="member-directory-card">
+          <div class="member-directory-head"><div><p class="eyebrow">Members</p><h2>Meet the creators</h2></div><span id="memberCount">0</span></div>
+          <div id="memberDirectory" class="member-directory"><p>Loading profiles…</p></div>
+        </article>
         <article class="community-action-card">
           <p class="eyebrow">Start something</p><h2>Make the next connection.</h2>
           <button type="button" data-quick-type="collaboration">Find a collaborator <span>↗</span></button>
@@ -96,5 +114,23 @@
       </aside>
     </section>
   </main>
+
+  <dialog id="profileEditor" class="profile-dialog">
+    <form id="profileForm" method="dialog">
+      <button class="profile-dialog-close" type="button" data-close-profile aria-label="Close">×</button>
+      <p class="eyebrow">Your public profile</p><h2>Introduce yourself.</h2>
+      <div class="profile-photo-row"><div id="profilePreview" class="community-avatar community-avatar-large">SB</div><label class="profile-photo-button">Choose profile image<input id="profileImage" type="file" accept="image/jpeg,image/png,image/webp" hidden></label></div>
+      <label>Display name<input id="profileName" maxlength="120" required></label>
+      <fieldset><legend>What do you do?</legend><div id="profileRoles" class="profile-role-options"></div></fieldset>
+      <label>Short bio<textarea id="profileBio" maxlength="500" rows="4" placeholder="Tell other members what you create and who you'd like to work with."></textarea></label>
+      <p id="profileMessage" class="profile-message" role="status"></p>
+      <button id="saveProfile" class="community-publish" type="submit">Save profile</button>
+    </form>
+  </dialog>
+
+  <dialog id="memberProfile" class="profile-dialog member-profile-dialog">
+    <article id="memberProfileContent"></article>
+    <button class="profile-dialog-close" type="button" data-close-member aria-label="Close">×</button>
+  </dialog>
 </body>
 </html>

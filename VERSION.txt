@@ -1,4 +1,4 @@
-SoundBunker Algarve Website - PREMIUM CLIENT, VOUCHER, COMMUNITY & DROPBOX BUILD
+SoundBunker Algarve Website - PREMIUM CLIENT, VOUCHER, SOUNDBUNKER SOCIAL & DROPBOX BUILD
 Build date: 18 September 2026
 Domain: www.soundbunker.pt
 Languages: EN / PT / DE / FR on the main website
@@ -12,8 +12,10 @@ Included in this release:
 - Automatic Stripe-to-client voucher attachment and existing-payment reconciliation
 - Live My Gift Vouchers cards with View / Print access in the Client Area
 - Premium image-led Client Area redesign
-- Community 2.0 social feed with chat, collaborations, marketplace, showcase, events and feedback
-- Community likes, comments, sharing, search, filters and member moderation
+- SoundBunker Social with live chat and online member presence
+- Editable member profiles with image, bio and creative roles
+- Gold-member verification tick with admin controls
+- Social feed with collaborations, marketplace, showcase, events, feedback, likes, comments, sharing and moderation
 - Admin voucher count and voucher list
 - Automatic Dropbox delivery folder for new and existing client accounts
 - Admin buttons to create or open each client Dropbox folder

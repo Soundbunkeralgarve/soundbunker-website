@@ -9,7 +9,8 @@ VERCEL
 
 ONE-TIME DATABASE STEP
 - Run SUPABASE_PORTAL_UPGRADE_17_SEPT_2026.sql in Supabase SQL Editor
-- This enables automatic client vouchers, Community 2.0 and Dropbox folder fields
+- This enables automatic client vouchers, SoundBunker Social and Dropbox folder fields
+- If that upgrade was already run, run SUPABASE_SOUNDBUNKER_SOCIAL_18_SEPT_2026.sql instead
 
 DROPBOX CLIENT FOLDERS
 - Create a Dropbox Developer App with App Folder access
@@ -22,4 +23,4 @@ KEY AREAS TO TEST AFTER DEPLOYMENT
 - Gift Experiences purchase and Stripe return
 - A4 Print / Save as PDF voucher alignment
 - My Gift Vouchers in the Client Area
-- Community posts, likes, comments and marketplace listings
+- SoundBunker Social profiles, profile photos, online presence, live chat, Gold ticks, posts, likes, comments and marketplace listings

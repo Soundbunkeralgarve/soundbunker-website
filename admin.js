@@ -35,7 +35,7 @@ async function boot() {
 
 function renderClients(profiles) {
   $('#clients').innerHTML = profiles.length ? profiles.map(profile => `<article class="admin-client-row" data-user-id="${esc(profile.id)}">
-    <div><strong>${esc(profile.full_name || 'Unnamed client')}</strong><span>${esc(profile.email)}</span><small>${profile.role === 'admin' ? 'ADMIN' : 'CLIENT'} · ${Number(profile.qualifying_booking_count || 0)} Gold bookings${profile.gold_status ? ' · GOLD ACTIVE' : ''}</small></div>
+    <div><strong>${esc(profile.full_name || 'Unnamed client')}</strong><span>${esc(profile.email)}</span><small>${profile.role === 'admin' ? 'ADMIN' : 'CLIENT'} · ${Number(profile.qualifying_booking_count || 0)} Gold bookings${profile.gold_status ? ' · GOLD ACTIVE' : ''}</small><button class="admin-gold-toggle" type="button" data-user-id="${esc(profile.id)}" data-gold="${profile.gold_status ? 'true' : 'false'}">${profile.gold_status ? 'Remove Gold tick' : 'Give Gold tick'}</button></div>
     <div class="admin-folder-actions">${profile.dropbox_shared_url ? `<a class="admin-folder-link" href="${esc(profile.dropbox_shared_url)}" target="_blank" rel="noopener">Open Dropbox folder ↗</a><small>${esc(profile.dropbox_folder_path || '')}</small>` : `<button class="admin-create-folder" type="button" data-user-id="${esc(profile.id)}">Create Dropbox folder</button><small>Automatically created at next client login</small>`}</div>
   </article>`).join('') : '<p class="muted">No clients yet.</p>';
 }
@@ -61,5 +61,19 @@ async function createFolder(button) {
   }
 }
 
+async function toggleGold(button) {
+  const nextGold = button.dataset.gold !== 'true';
+  button.disabled = true;
+  try {
+    const response = await fetch('/api/admin-dashboard', { method: 'POST', headers: { authorization: `Bearer ${currentSession.access_token}`, 'content-type': 'application/json' }, body: JSON.stringify({ action: 'set_gold', userId: button.dataset.userId, gold: nextGold }) });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Could not update Gold status');
+    button.dataset.gold = String(nextGold);
+    button.textContent = nextGold ? 'Remove Gold tick' : 'Give Gold tick';
+    button.closest('.admin-client-row').querySelector('small').textContent = button.closest('.admin-client-row').querySelector('small').textContent.replace(' · GOLD ACTIVE', '') + (nextGold ? ' · GOLD ACTIVE' : '');
+  } catch (error) { $('#folderMessage').textContent = error.message; }
+  finally { button.disabled = false; }
+}
+
 document.addEventListener('DOMContentLoaded', boot);
-document.addEventListener('click', event => { const button = event.target.closest('.admin-create-folder'); if (button) createFolder(button); });
+document.addEventListener('click', event => { const folder = event.target.closest('.admin-create-folder'); const gold = event.target.closest('.admin-gold-toggle'); if (folder) createFolder(folder); if (gold) toggleGold(gold); });

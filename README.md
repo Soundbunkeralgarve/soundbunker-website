@@ -1,6 +1,6 @@
 # SoundBunker Algarve - Premium Portal Build
 
-This is the current 17 September 2026 website master with the premium Gift Experiences, Client Area and Community 2.0 update.
+This is the current 18 September 2026 website master with premium Gift Experiences, Client Area, Dropbox delivery and SoundBunker Social.
 
 ## Deploy
 
@@ -11,11 +11,15 @@ This is the current 17 September 2026 website master with the premium Gift Exper
 
 ## One-time Supabase upgrade
 
-Before testing vouchers or Community 2.0, open the Supabase SQL Editor and run:
+Before testing vouchers or SoundBunker Social, open the Supabase SQL Editor and run:
 
 `SUPABASE_PORTAL_UPGRADE_17_SEPT_2026.sql`
 
-It creates or upgrades the private voucher, community post, comment and reaction tables. The migration is additive and can be run again safely.
+It creates or upgrades the private voucher, social post, comment, reaction, live-chat, member-profile, presence and profile-image storage setup. The migration is additive and can be run again safely.
+
+If the earlier portal upgrade has already been run, you can run only:
+
+`SUPABASE_SOUNDBUNKER_SOCIAL_18_SEPT_2026.sql`
 
 ## Automatic Dropbox client folders
 
@@ -38,6 +42,6 @@ For a short-lived test token, `DROPBOX_ACCESS_TOKEN` is also supported, but the 
 - When a client signs in, older paid Stripe gift sessions using the same purchaser email are reconciled automatically.
 - The purchaser or recipient can view and print the voucher from My Gift Vouchers.
 
-## Community
+## SoundBunker Social
 
-Community pages are private to authenticated Client Area members. Members can create chat, collaboration, marketplace, showcase, event and feedback posts, plus comment, like, share and remove their own content. Administrators can moderate all posts and comments.
+SoundBunker Social is private to authenticated Client Area members. It includes live chat with online status, editable member profiles, profile images, bios and creative roles, a searchable social feed, collaboration and marketplace posts, likes, comments and sharing. Gold members display a gold tick. Administrators can add or remove Gold status from the client list and moderate posts and comments.
