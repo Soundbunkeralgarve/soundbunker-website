@@ -78,7 +78,8 @@ async function enterPortal(session) {
   show('#portalPanel', true);
   const profile = await refreshProfile(session, true);
   if (!profile) return;
-  await Promise.all([loadProjects(session), loadVouchers(session)]);
+  if (profile.role === 'admin') { location.replace('/admin'); return; }
+  await Promise.all([loadProjects(session), loadGalleries(session), loadVouchers(session)]);
 }
 
 async function refreshProfile(session, initial = false) {
@@ -109,7 +110,13 @@ function renderProfile(profile, warning) {
   $('#goldCount').textContent = String(profile.qualifying_booking_count || 0);
   $('#goldState').textContent = profile.gold_status ? 'Gold Card active' : 'Qualifying bookings';
   const dropboxLink = $('#clientDropboxLink');
-  if (profile.dropbox_shared_url) {
+  for (const [selector, url] of [['#musicFolderLink', profile.dropbox_music_url], ['#photosFolderLink', profile.dropbox_photos_url]]) {
+    if (url) { $(selector).href = url; show(selector, true); }
+    else show(selector, false);
+  }
+  $('#musicUpload').disabled = !profile.dropbox_music_url;
+  $('#photosUpload').disabled = !profile.dropbox_photos_url;
+  if (profile.dropbox_shared_url && profile.dropbox_music_url && profile.dropbox_photos_url) {
     dropboxLink.href = profile.dropbox_shared_url;
     show('#clientDropboxLink', true);
     show('#refreshDropbox', false);
@@ -144,6 +151,44 @@ async function checkDropbox() {
   if (session) await refreshProfile(session);
 }
 
+async function uploadChunk(session, type, name, action, chunk, sessionId = '', offset = 0) {
+  const response = await fetch('/api/client-upload', {
+    method: 'POST',
+    headers: { authorization: `Bearer ${session.access_token}`, 'content-type': 'application/octet-stream',
+      'x-file-type': type, 'x-file-name': name, 'x-upload-action': action,
+      'x-upload-session': sessionId, 'x-upload-offset': String(offset) },
+    body: chunk
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'Upload failed');
+  return data;
+}
+
+async function uploadFiles(input, type) {
+  const status = $(`#${type}UploadStatus`);
+  const files = Array.from(input.files || []);
+  if (!files.length) return;
+  input.disabled = true;
+  try {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) throw new Error('Sign in again to upload files.');
+    for (let fileIndex = 0; fileIndex < files.length; fileIndex++) {
+      const file = files[fileIndex];
+      const size = 2 * 1024 * 1024;
+      const first = await uploadChunk(session, type, file.name, 'start', file.slice(0, size));
+      let offset = Math.min(size, file.size);
+      while (offset < file.size) {
+        status.textContent = `Uploading ${file.name} (${fileIndex + 1}/${files.length}) · ${Math.round(offset / file.size * 100)}%`;
+        await uploadChunk(session, type, file.name, 'append', file.slice(offset, offset + size), first.sessionId, offset);
+        offset = Math.min(offset + size, file.size);
+      }
+      await uploadChunk(session, type, file.name, 'finish', new Blob([]), first.sessionId, offset);
+      status.textContent = `${fileIndex + 1}/${files.length} uploaded. ${file.name} is in My ${type === 'music' ? 'Music' : 'Photos'}.`;
+    }
+  } catch (error) { status.textContent = error.message; }
+  finally { input.value = ''; input.disabled = false; }
+}
+
 async function loadProjects(session) {
   try {
     const response = await fetch('/api/client-projects', { headers: { authorization: `Bearer ${session.access_token}` } });
@@ -165,6 +210,17 @@ async function loadProjects(session) {
   } catch {
     $('#projectList').innerHTML = '<span class="client-mini-project">Projects are temporarily unavailable.</span>';
   }
+}
+
+async function loadGalleries(session) {
+  try {
+    const response = await fetch('/api/client-galleries', { headers: { authorization: `Bearer ${session.access_token}` } });
+    if (!response.ok) return;
+    const data = await response.json();
+    const galleries = data.galleries || [];
+    if (!galleries.length) return;
+    $('#photoEmpty').innerHTML = galleries.slice(0, 5).map(gallery => `<a class="client-mini-project" href="${escapeHtml(gallery.delivery_url)}" target="_blank" rel="noopener">${escapeHtml(gallery.title || 'Photo gallery')} ↗</a>`).join('');
+  } catch { /* The main My Photos folder remains available. */ }
 }
 
 function dateLabel(value) {
@@ -222,6 +278,8 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#forgotPassword').addEventListener('click', forgot);
   $('#signOut').addEventListener('click', signOut);
   $('#refreshDropbox').addEventListener('click', checkDropbox);
+  $('#musicUpload').addEventListener('change', event => uploadFiles(event.target, 'music'));
+  $('#photosUpload').addEventListener('change', event => uploadFiles(event.target, 'photos'));
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden && $('#portalPanel') && !$('#portalPanel').hidden && $('#clientDropboxLink').hidden) checkDropbox();
   });

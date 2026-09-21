@@ -11,6 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="client-gifts.css">
   <link rel="stylesheet" href="client-portal.css">
+  <link rel="stylesheet" href="client-dashboard.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="client.js" defer></script>
 </head>
@@ -53,8 +54,7 @@
         <div class="client-dashboard-copy">
           <p class="eyebrow">Your SoundBunker</p>
           <h1>Welcome back, <span id="clientName">Client</span>.</h1>
-          <p>Your music, images, experiences and community - organised in one private creative home.</p>
-          <div class="client-hero-actions"><a href="https://www.dropbox.com/request/uc9zb768pniqiklha04t" target="_blank" rel="noopener">Upload files</a><a id="clientDropboxLink" class="outline" href="#" target="_blank" rel="noopener" hidden>Open my files</a><button id="refreshDropbox" class="outline" type="button" hidden>Check my files</button><a class="outline" href="/community">Open SoundBunker Social</a></div><p id="dropboxStatus" class="muted" aria-live="polite" hidden></p>
+          <p>Your sessions, files and creative community in one easy place.</p>
         </div>
       </section>
 
@@ -63,21 +63,34 @@
         <div class="client-account-actions"><span id="roleBadge" class="role-badge">Client</span><button id="signOut" class="ghost-button">Sign out</button></div>
       </div>
 
+      <section class="client-quick-actions" aria-label="Main client actions">
+        <a href="#manage-sessions" class="client-quick-card"><span>01 / BOOKINGS</span><strong>Manage Sessions</strong><small>Book a slot, check the change policy or WhatsApp the studio.</small><b>Manage sessions ↗</b></a>
+        <a href="#my-files" class="client-quick-card"><span>02 / YOUR WORK</span><strong>My Files</strong><small>Your music and photographs, each in its own private folder.</small><b>Open my files ↗</b></a>
+        <a href="/community" class="client-quick-card"><span>03 / COMMUNITY</span><strong>SoundBunker Social</strong><small>Chat, meet creatives and share what you are making.</small><b>Enter Social ↗</b></a>
+      </section>
+
+      <section class="client-hub-panel" id="manage-sessions">
+        <div><p class="eyebrow">Manage Sessions</p><h2>Your studio time.</h2><p>Choose a new session or message the studio about an existing booking. Include your booking reference and preferred new date when requesting a move.</p><p class="client-policy">Changes more than 24 hours before a session can carry the deposit to a new available slot. Within 24 hours, the original deposit is forfeited and a new deposit is needed to book another slot.</p></div>
+        <div class="client-panel-actions"><a class="client-action-solid" href="index.html#booking">Book a session ↗</a><a class="client-action-ghost" href="https://wa.me/351964895908?text=Hi%20SoundBunker%2C%20I%27d%20like%20to%20manage%20my%20booking." target="_blank" rel="noopener">WhatsApp the studio ↗</a></div>
+      </section>
+
+      <section class="client-hub-panel client-files-panel" id="my-files">
+        <div><p class="eyebrow">My Files</p><h2>One private space. Two clear folders.</h2><p>Find your mixes and masters in My Music, and your galleries and image downloads in My Photos. Upload files directly to the right folder below.</p><a id="clientDropboxLink" class="client-folder-all" href="#" target="_blank" rel="noopener" hidden>Open entire client folder ↗</a><button id="refreshDropbox" class="client-action-ghost" type="button" hidden>Check my files</button><p id="dropboxStatus" class="muted" aria-live="polite" hidden></p></div>
+        <div class="client-folder-grid">
+          <article class="client-folder-card"><span>01 / AUDIO</span><h3>My Music</h3><p>Projects, tracks, mixes, masters, stems and references.</p><a id="musicFolderLink" href="#" target="_blank" rel="noopener" hidden>Browse &amp; download ↗</a><label class="client-upload-label" for="musicUpload">Upload music files<input id="musicUpload" type="file" multiple hidden></label><p id="musicUploadStatus" class="client-upload-status" role="status"></p></article>
+          <article class="client-folder-card"><span>02 / IMAGES</span><h3>My Photos</h3><p>Private galleries, selections and high-resolution images.</p><a id="photosFolderLink" href="#" target="_blank" rel="noopener" hidden>Browse &amp; download ↗</a><label class="client-upload-label" for="photosUpload">Upload photographs<input id="photosUpload" type="file" accept="image/*" multiple hidden></label><p id="photosUploadStatus" class="client-upload-status" role="status"></p></article>
+        </div>
+      </section>
+
       <section class="client-metrics" aria-label="Client account overview">
         <article><span>Projects</span><strong id="projectCount">0</strong><p>Current deliveries</p></article>
         <article><span>Gift vouchers</span><strong id="voucherCount">0</strong><p>Attached to your account</p></article>
         <article><span>Gold Card</span><strong id="goldCount">0</strong><p id="goldState">Qualifying bookings</p></article>
       </section>
 
-      <section class="client-section-head">
-        <div><p class="eyebrow">My creative space</p><h2>Everything from the studio.</h2></div>
-        <p>Jump straight into the things you use most. Your assigned work stays private to your account.</p>
-      </section>
-
       <section class="client-bento">
-        <a class="client-bento-card client-upload" href="https://www.dropbox.com/request/uc9zb768pniqiklha04t" target="_blank" rel="noopener"><span>UPLOAD</span><div><h3>Send session files</h3><p>Backing tracks, stems, premasters and reference files.</p><b>Open secure upload →</b></div></a>
         <article class="client-bento-card client-projects"><span>PROJECTS & MASTERS</span><div><h3>Latest deliveries</h3><p id="projectSummary">Your mixdowns, masters and finished projects appear here.</p><div id="projectList" class="client-mini-list"></div></div></article>
-        <article class="client-bento-card client-photos"><span>PHOTO GALLERIES</span><div><h3>My photographs</h3><p>Private edited galleries, selections and high-resolution downloads.</p><div id="photoEmpty" class="client-mini-list"><span>No photo galleries uploaded yet.</span></div></div></article>
+        <article class="client-bento-card client-photos"><span>PHOTO GALLERIES</span><div><h3>My photographs</h3><p>Your private image collections live in My Photos.</p><div id="photoEmpty" class="client-mini-list"><a href="#my-files">Open My Photos above ↗</a></div></div></article>
         <a class="client-bento-card client-book" href="index.html#booking"><span>BOOK A SESSION</span><div><h3>Ready for the next one?</h3><p>Choose recording, production, mixing, voice-over, photography or an experience.</p><b>Explore bookings →</b></div></a>
       </section>
 

@@ -1,6 +1,11 @@
-SOUNDBUNKER CURRENT PREMIUM BUILD - 17 SEPTEMBER 2026
+SOUNDBUNKER CURRENT PREMIUM BUILD - 21 SEPTEMBER 2026
 
 This is the current master, not the old V6 package.
+
+ACADEMY UPDATE
+- Redesigned homepage Academy section and full Academy page
+- Inspired by the supplied Creative Clubs leaflet and school proposal
+- The two PDFs are not embedded or linked on the site
 
 VERCEL
 - Root Directory: blank or ./

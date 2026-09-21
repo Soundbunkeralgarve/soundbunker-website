@@ -26,6 +26,12 @@ async function boot() {
     $('#projectTotal').textContent = data.projects.length;
     $('#photoTotal').textContent = data.photos.length;
     $('#voucherTotal').textContent = data.vouchers.length;
+    $('#bookingsList').innerHTML = data.bookings.length ? data.bookings.map(booking => {
+      const name = booking.customer_name || booking.name || booking.client_name || 'Client booking';
+      const email = booking.customer_email || booking.email || '';
+      const slot = booking.start_at || booking.start_time || booking.booking_date || booking.date;
+      return `<div class="admin-booking-row"><div><strong>${esc(name)}</strong><small>${esc(booking.service_name || booking.service || '')} · ${esc(slot ? date(slot) : 'Time in booking record')} · ${esc(booking.status || 'Booked')}</small></div>${email ? `<a href="mailto:${encodeURIComponent(email)}?subject=SoundBunker%20booking">Email client ↗</a>` : ''}</div>`;
+    }).join('') : '<p class="muted">No booking records are connected yet. Paid sessions are also visible in the studio calendar.</p>';
     renderClients(data.profiles);
     $('#vouchers').innerHTML = data.vouchers.length ? data.vouchers.map(voucher => `<div class="mini-project"><strong>${esc(voucher.code || 'Voucher')}</strong> · ${esc(voucher.service_name || 'Gift experience')} · For ${esc(voucher.recipient_name || 'recipient')} · ${esc(voucher.buyer_email)} · ${esc(voucher.status || 'active')} · valid to ${esc(date(voucher.expires_at))}</div>`).join('') : '<p class="muted">No paid vouchers attached yet.</p>';
   } catch (error) {
@@ -36,8 +42,18 @@ async function boot() {
 function renderClients(profiles) {
   $('#clients').innerHTML = profiles.length ? profiles.map(profile => `<article class="admin-client-row" data-user-id="${esc(profile.id)}">
     <div><strong>${esc(profile.full_name || 'Unnamed client')}</strong><span>${esc(profile.email)}</span><small>${profile.role === 'admin' ? 'ADMIN' : 'CLIENT'} · ${Number(profile.qualifying_booking_count || 0)} Gold bookings${profile.gold_status ? ' · GOLD ACTIVE' : ''}</small><button class="admin-gold-toggle" type="button" data-user-id="${esc(profile.id)}" data-gold="${profile.gold_status ? 'true' : 'false'}">${profile.gold_status ? 'Remove Gold tick' : 'Give Gold tick'}</button></div>
-    <div class="admin-folder-actions">${profile.dropbox_shared_url ? `<a class="admin-folder-link" href="${esc(profile.dropbox_shared_url)}" target="_blank" rel="noopener">Open Dropbox folder ↗</a><small>${esc(profile.dropbox_folder_path || '')}</small>` : `<button class="admin-create-folder" type="button" data-user-id="${esc(profile.id)}">Create Dropbox folder</button><small>Client area updates automatically when ready</small>`}</div>
+    <div class="admin-folder-actions">${folderActions(profile)}<form class="admin-assign-form" data-user-id="${esc(profile.id)}"><label>Assign to client<select name="type"><option value="music">Music project</option><option value="photos">Photo gallery</option></select></label><input name="title" required maxlength="150" placeholder="Project or gallery title"><input name="url" required type="url" placeholder="https://... delivery link"><button type="submit">Assign delivery</button></form></div>
   </article>`).join('') : '<p class="muted">No clients yet.</p>';
+}
+
+function folderActions(profile) {
+  const links = [
+    ['Open client folder', profile.dropbox_shared_url],
+    ['My Music', profile.dropbox_music_url],
+    ['My Photos', profile.dropbox_photos_url]
+  ].filter(([, url]) => url).map(([label, url]) => `<a class="admin-folder-link" href="${esc(url)}" target="_blank" rel="noopener">${label} ↗</a>`).join('');
+  const create = !profile.dropbox_music_url || !profile.dropbox_photos_url ? `<button class="admin-create-folder" type="button" data-user-id="${esc(profile.id)}">${profile.dropbox_shared_url ? 'Add Music & Photos folders' : 'Create client folders'}</button>` : '';
+  return `${links}${create}<small>${esc(profile.dropbox_folder_path || 'Client area updates when ready')}</small>`;
 }
 
 async function createFolder(button) {
@@ -53,8 +69,10 @@ async function createFolder(button) {
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || 'Could not create folder');
     const actions = button.closest('.admin-folder-actions');
-    actions.innerHTML = `<a class="admin-folder-link" href="${esc(data.folder.url)}" target="_blank" rel="noopener">Open Dropbox folder ↗</a><small>${esc(data.folder.path)}</small>`;
-    status.textContent = 'Dropbox folder created and attached to the client.';
+    const form = actions.querySelector('.admin-assign-form');
+    actions.innerHTML = folderActions({ id: button.dataset.userId, dropbox_shared_url: data.folder.url, dropbox_music_url: data.folder.musicUrl, dropbox_photos_url: data.folder.photosUrl, dropbox_folder_path: data.folder.path });
+    actions.appendChild(form);
+    status.textContent = 'Client folder, My Music and My Photos are ready.';
   } catch (error) {
     button.disabled = false;
     status.textContent = error.message;
@@ -75,5 +93,27 @@ async function toggleGold(button) {
   finally { button.disabled = false; }
 }
 
+async function assignDelivery(form) {
+  const status = $('#folderMessage');
+  const button = form.querySelector('button');
+  const fields = new FormData(form);
+  const type = fields.get('type');
+  button.disabled = true;
+  try {
+    const response = await fetch('/api/admin-dashboard', {
+      method: 'POST', headers: { authorization: `Bearer ${currentSession.access_token}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ action: 'add_delivery', userId: form.dataset.userId, type, title: fields.get('title'), url: fields.get('url') })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Could not assign delivery');
+    status.textContent = `Assigned ${data.delivery.title} to the client. It will appear in their ${type === 'music' ? 'projects' : 'photo galleries'}.`;
+    form.reset();
+    const count = type === 'music' ? $('#projectTotal') : $('#photoTotal');
+    count.textContent = String(Number(count.textContent || 0) + 1);
+  } catch (error) { status.textContent = error.message; }
+  finally { button.disabled = false; }
+}
+
 document.addEventListener('DOMContentLoaded', boot);
 document.addEventListener('click', event => { const folder = event.target.closest('.admin-create-folder'); const gold = event.target.closest('.admin-gold-toggle'); if (folder) createFolder(folder); if (gold) toggleGold(gold); });
+document.addEventListener('submit', event => { const form = event.target.closest('.admin-assign-form'); if (form) { event.preventDefault(); assignDelivery(form); } });

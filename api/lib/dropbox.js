@@ -78,14 +78,36 @@ async function sharedLink(path) {
   }
 }
 
-export async function ensureClientDropboxFolder({ userId, fullName, email }) {
+export async function ensureClientDropboxFolder({ userId, fullName, email, existingPath }) {
   if (!dropboxConfigured()) throw new Error('Dropbox is not configured');
   const rootValue = process.env.DROPBOX_CLIENT_ROOT || '/SoundBunker Clients';
   const root = `/${rootValue.split('/').filter(Boolean).map(cleanSegment).join('/')}`;
   const label = cleanSegment(fullName || String(email || '').split('@')[0] || 'Client');
-  const folderPath = `${root}/${label} - ${String(userId).slice(0, 8)}`;
+  const folderPath = existingPath || `${root}/${label} - ${String(userId).slice(0, 8)}`;
   await ensureFolder(root);
   await ensureFolder(folderPath);
-  const url = await sharedLink(folderPath);
-  return { path: folderPath, url };
+  const musicPath = `${folderPath}/My Music`;
+  const photosPath = `${folderPath}/My Photos`;
+  await Promise.all([ensureFolder(musicPath), ensureFolder(photosPath)]);
+  const [url, musicUrl, photosUrl] = await Promise.all([
+    sharedLink(folderPath), sharedLink(musicPath), sharedLink(photosPath)
+  ]);
+  return { path: folderPath, url, musicPath, musicUrl, photosPath, photosUrl };
+}
+
+export async function uploadClientFile({ path, chunk, sessionId, offset, finish }) {
+  const token = await accessToken();
+  const endpoint = sessionId ? finish ? '/files/upload_session/finish' : '/files/upload_session/append_v2' : '/files/upload_session/start';
+  const argument = sessionId
+    ? finish ? { cursor: { session_id: sessionId, offset }, commit: { path, mode: 'add', autorename: true, mute: true } }
+      : { cursor: { session_id: sessionId, offset }, close: false }
+    : { close: false };
+  const response = await fetch(`https://content.dropboxapi.com/2${endpoint}`, {
+    method: 'POST',
+    headers: { authorization: `Bearer ${token}`, 'content-type': 'application/octet-stream', 'dropbox-api-arg': JSON.stringify(argument) },
+    body: chunk
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error_summary || 'Dropbox upload failed');
+  return data;
 }

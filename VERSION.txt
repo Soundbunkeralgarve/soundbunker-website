@@ -1,11 +1,14 @@
 SoundBunker Algarve Website - PREMIUM CLIENT, VOUCHER, SOUNDBUNKER SOCIAL & DROPBOX BUILD
-Build date: 18 September 2026
+Build date: 21 September 2026
 Domain: www.soundbunker.pt
 Languages: EN / PT / DE / FR on the main website
 
 This build advances the current client-portal/admin master. It is not the old V6 build.
 
 Included in this release:
+- The Hub Academy homepage section and full-page design inspired by the supplied school proposal and Creative Clubs leaflet
+- Responsive Creative Clubs, achievement patches and school-partnership enquiry sections
+- The PDFs are not embedded or linked on the website
 - Premium image-led Gift Experience storefront based on the approved gift menu
 - No selectable valid-from date; vouchers run for 12 months from purchase
 - Print-aligned A4 voucher with To and From/message on one row

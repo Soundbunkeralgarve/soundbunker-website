@@ -12,10 +12,14 @@ export default async function handler(request, response) {
   const { data: profile, error } = await context.admin.from('profiles').select('id,email,full_name,dropbox_folder_path,dropbox_shared_url').eq('id', userId).maybeSingle();
   if (error || !profile) return json(response, { error: 'Client profile was not found' }, 404);
   try {
-    const folder = await ensureClientDropboxFolder({ userId: profile.id, fullName: profile.full_name, email: profile.email });
+    const folder = await ensureClientDropboxFolder({ userId: profile.id, fullName: profile.full_name, email: profile.email, existingPath: profile.dropbox_folder_path });
     const updated = await context.admin.from('profiles').update({
       dropbox_folder_path: folder.path,
       dropbox_shared_url: folder.url,
+      dropbox_music_path: folder.musicPath,
+      dropbox_music_url: folder.musicUrl,
+      dropbox_photos_path: folder.photosPath,
+      dropbox_photos_url: folder.photosUrl,
       dropbox_created_at: new Date().toISOString()
     }).eq('id', profile.id);
     if (updated.error) throw updated.error;

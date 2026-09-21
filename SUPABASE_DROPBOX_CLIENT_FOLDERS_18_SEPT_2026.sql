@@ -4,6 +4,10 @@
 alter table public.profiles add column if not exists dropbox_folder_path text;
 alter table public.profiles add column if not exists dropbox_shared_url text;
 alter table public.profiles add column if not exists dropbox_created_at timestamptz;
+alter table public.profiles add column if not exists dropbox_music_path text;
+alter table public.profiles add column if not exists dropbox_music_url text;
+alter table public.profiles add column if not exists dropbox_photos_path text;
+alter table public.profiles add column if not exists dropbox_photos_url text;
 
 create unique index if not exists profiles_dropbox_folder_unique
 on public.profiles(dropbox_folder_path)

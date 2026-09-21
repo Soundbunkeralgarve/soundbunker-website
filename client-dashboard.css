@@ -1,0 +1,39 @@
+.client-page [hidden]{display:none!important}
+.client-dashboard-hero{min-height:310px;background-position:center 46%}
+.client-dashboard-copy{padding:clamp(35px,5vw,66px)}
+.client-dashboard-copy h1{font-size:clamp(43px,5.5vw,78px);margin:12px 0}
+.client-dashboard-copy>p:not(.eyebrow){font-size:17px;margin:0}
+.client-quick-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:26px 0 42px}
+.client-quick-card{display:flex;flex-direction:column;min-height:250px;padding:28px;color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.18);background:linear-gradient(140deg,#281632,#121018);transition:transform .2s,border-color .2s}
+.client-quick-card:hover,.client-quick-card:focus-visible{transform:translateY(-4px);border-color:#da92ed}
+.client-quick-card:nth-child(2){background:linear-gradient(140deg,#302027,#131018)}
+.client-quick-card:nth-child(3){background:linear-gradient(140deg,#292044,#121018)}
+.client-quick-card span,.client-folder-card>span{font-size:11px;font-weight:800;letter-spacing:.16em;color:#e3a3e9}
+.client-quick-card strong{font:700 clamp(26px,2.7vw,38px)/1.08 'Space Grotesk';margin:24px 0 10px}
+.client-quick-card small{font-size:14px;line-height:1.5;color:#d6cbd9}
+.client-quick-card b{margin-top:auto;padding-top:20px;font-size:14px}
+.client-hub-panel{scroll-margin-top:24px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:35px;align-items:center;padding:clamp(28px,4vw,58px);margin-bottom:18px;background:#17111e;border:1px solid rgba(255,255,255,.15)}
+.client-hub-panel h2{font-size:clamp(32px,4vw,54px);line-height:1.05;margin:10px 0 17px}
+.client-hub-panel p:not(.eyebrow){color:#d2c7d7;line-height:1.6;max-width:750px}
+.client-hub-panel .client-policy{border-left:3px solid #d9a7ec;padding:8px 0 8px 15px;font-size:14px}
+.client-panel-actions{display:flex;flex-direction:column;gap:10px;min-width:210px}
+.client-action-solid,.client-action-ghost,.client-folder-card a,.client-upload-label,.client-folder-all{display:inline-block;padding:12px 17px;border-radius:6px;font:700 14px 'DM Sans';text-decoration:none;cursor:pointer;text-align:center}
+.client-action-solid{background:#e3a6ec;color:#1a0f1b}
+.client-action-ghost,.client-folder-all{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.38)}
+.client-files-panel{grid-template-columns:1fr 1.25fr;align-items:start;margin-bottom:35px}
+.client-folder-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.client-folder-card{display:flex;flex-direction:column;align-items:start;padding:25px;background:#22192a;border:1px solid rgba(255,255,255,.13)}
+.client-folder-card h3{font-size:28px;margin:20px 0 6px}
+.client-folder-card p{font-size:13px;min-height:60px}
+.client-folder-card a{color:#1b1220;background:#fff;margin:10px 0}
+.client-upload-label{color:#fff;border:1px solid #ad75bd;margin-top:auto}
+.client-folder-card .client-upload-status{min-height:0;margin:10px 0 0;overflow-wrap:anywhere}
+.client-folder-all{margin:10px 0}
+.client-metrics{margin:28px 0 38px}
+.client-bento{grid-template-columns:repeat(2,1fr);grid-template-rows:340px 310px;margin-bottom:55px}
+.client-vouchers-section,.client-community-feature{margin-bottom:55px}
+.client-community-feature{min-height:420px}
+.client-community-images img{min-height:420px}
+.client-mini-list a{color:#fff}
+@media(max-width:1050px){.client-files-panel{grid-template-columns:1fr}.client-hub-panel{grid-template-columns:1fr}.client-panel-actions{flex-direction:row}}
+@media(max-width:760px){.client-dashboard-hero{min-height:270px}.client-dashboard-copy{padding:34px 6vw}.client-dashboard-copy h1{font-size:45px}.client-quick-actions{grid-template-columns:1fr;margin:15px 5vw 28px;gap:9px}.client-quick-card{min-height:150px;padding:21px}.client-quick-card strong{font-size:27px;margin:12px 0 6px}.client-quick-card b{padding-top:8px}.client-hub-panel{margin:0 5vw 14px;padding:25px}.client-panel-actions{flex-direction:column}.client-folder-grid{grid-template-columns:1fr}.client-folder-card p{min-height:0}.client-metrics{margin:25px 5vw}.client-bento{grid-template-columns:1fr;grid-template-rows:repeat(3,310px);margin-bottom:45px}.client-community-images img{min-height:220px;height:220px}}
