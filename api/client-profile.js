@@ -31,6 +31,9 @@ export default async function handler(request,response){
       if(saved.error) throw saved.error;
       profile=saved.data;
     }catch(folderError){console.error('Automatic Dropbox folder error',folderError);dropboxWarning='Your file folder is still being prepared.';}
+  } else if (!profile.dropbox_shared_url) {
+    console.error('Automatic Dropbox folder unavailable: Dropbox credentials are not configured');
+    dropboxWarning='Your file folder is still being prepared.';
   }
   return json(response,{profile:{id:profile.id,email:profile.email||user.email||'',full_name:profile.full_name||metadataName||'',role:profile.role||'client',gold_status:Boolean(profile.gold_status),qualifying_booking_count:Number(profile.qualifying_booking_count||0),dropbox_folder_path:profile.dropbox_folder_path||'',dropbox_shared_url:profile.dropbox_shared_url||''},dropboxWarning});
 }

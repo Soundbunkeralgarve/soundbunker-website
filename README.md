@@ -23,7 +23,7 @@ If the earlier portal upgrade has already been run, you can run only:
 
 ## Automatic Dropbox client folders
 
-The Client Area can create a private delivery folder automatically when a client first signs in. Existing clients receive one on their next login, and an administrator can also create it immediately from the Admin Dashboard.
+The Client Area creates a delivery folder when the client first has a confirmed, signed-in session. With email confirmation enabled, the client confirms their email first. Existing clients receive one when they next open the Client Area. If an administrator creates the folder while the client is already signed in, the link appears automatically within about 15 seconds; the client can also use **Check my files** immediately without logging out.
 
 Add these Vercel Production environment variables from a Dropbox Developer App:
 
@@ -32,7 +32,7 @@ Add these Vercel Production environment variables from a Dropbox Developer App:
 - `DROPBOX_REFRESH_TOKEN`
 - `DROPBOX_CLIENT_ROOT` (optional; defaults to `/SoundBunker Clients`)
 
-For a short-lived test token, `DROPBOX_ACCESS_TOKEN` is also supported, but the refresh-token setup is recommended for production. Enable `files.metadata.read`, `files.metadata.write`, `files.content.read`, `files.content.write`, `sharing.read` and `sharing.write`. Client links are view/download only; clients continue using the existing Dropbox File Request for uploads.
+For a short-lived test token, `DROPBOX_ACCESS_TOKEN` is also supported. When both credential sets are present, refresh-token credentials take priority. Enable `files.metadata.read`, `files.metadata.write`, `files.content.read`, `files.content.write`, `sharing.read` and `sharing.write`. Client links are view/download only; clients continue using the existing Dropbox File Request for uploads. If a folder cannot be created, the Admin Dashboard's **Create Dropbox folder** action displays the Dropbox error for diagnosis. Add the confirmed `/client` redirect URL to Supabase Auth's allowed redirects if email confirmation is enabled.
 
 ## Voucher flow
 

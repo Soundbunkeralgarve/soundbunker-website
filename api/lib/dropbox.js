@@ -8,11 +8,15 @@ export function dropboxConfigured() {
 }
 
 async function accessToken() {
-  if (process.env.DROPBOX_ACCESS_TOKEN) return process.env.DROPBOX_ACCESS_TOKEN;
   const key = process.env.DROPBOX_APP_KEY;
   const secret = process.env.DROPBOX_APP_SECRET;
   const refreshToken = process.env.DROPBOX_REFRESH_TOKEN;
-  if (!key || !secret || !refreshToken) throw new Error('Dropbox is not configured');
+  // A temporary access token may still be present after the refresh credentials
+  // are configured. Prefer the renewable credentials so it cannot expire silently.
+  if (!key || !secret || !refreshToken) {
+    if (process.env.DROPBOX_ACCESS_TOKEN) return process.env.DROPBOX_ACCESS_TOKEN;
+    throw new Error('Dropbox is not configured');
+  }
   const response = await fetch('https://api.dropboxapi.com/oauth2/token', {
     method: 'POST',
     headers: {

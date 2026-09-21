@@ -36,7 +36,7 @@ async function boot() {
 function renderClients(profiles) {
   $('#clients').innerHTML = profiles.length ? profiles.map(profile => `<article class="admin-client-row" data-user-id="${esc(profile.id)}">
     <div><strong>${esc(profile.full_name || 'Unnamed client')}</strong><span>${esc(profile.email)}</span><small>${profile.role === 'admin' ? 'ADMIN' : 'CLIENT'} · ${Number(profile.qualifying_booking_count || 0)} Gold bookings${profile.gold_status ? ' · GOLD ACTIVE' : ''}</small><button class="admin-gold-toggle" type="button" data-user-id="${esc(profile.id)}" data-gold="${profile.gold_status ? 'true' : 'false'}">${profile.gold_status ? 'Remove Gold tick' : 'Give Gold tick'}</button></div>
-    <div class="admin-folder-actions">${profile.dropbox_shared_url ? `<a class="admin-folder-link" href="${esc(profile.dropbox_shared_url)}" target="_blank" rel="noopener">Open Dropbox folder ↗</a><small>${esc(profile.dropbox_folder_path || '')}</small>` : `<button class="admin-create-folder" type="button" data-user-id="${esc(profile.id)}">Create Dropbox folder</button><small>Automatically created at next client login</small>`}</div>
+    <div class="admin-folder-actions">${profile.dropbox_shared_url ? `<a class="admin-folder-link" href="${esc(profile.dropbox_shared_url)}" target="_blank" rel="noopener">Open Dropbox folder ↗</a><small>${esc(profile.dropbox_folder_path || '')}</small>` : `<button class="admin-create-folder" type="button" data-user-id="${esc(profile.id)}">Create Dropbox folder</button><small>Client area updates automatically when ready</small>`}</div>
   </article>`).join('') : '<p class="muted">No clients yet.</p>';
 }
 

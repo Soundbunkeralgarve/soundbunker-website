@@ -1,5 +1,8 @@
 let supabaseClient;
 let mode = 'login';
+let folderTimer;
+let folderChecks = 0;
+let profileRequest;
 const $ = selector => document.querySelector(selector);
 const show = (selector, on = true) => { const element = $(selector); if (element) element.hidden = !on; };
 const escapeHtml = value => String(value || '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
@@ -32,9 +35,14 @@ async function boot() {
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (session) await enterPortal(session);
     else { show('#portalPanel', false); show('#authPanel', true); }
-    supabaseClient.auth.onAuthStateChange(async (event, newSession) => {
-      if (newSession && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) await enterPortal(newSession);
-      if (event === 'SIGNED_OUT') { show('#portalPanel', false); show('#authPanel', true); }
+    supabaseClient.auth.onAuthStateChange((event, newSession) => {
+      // Supabase callbacks must return promptly; fetching inside one can stall auth.
+      if (newSession && event === 'SIGNED_IN') setTimeout(() => enterPortal(newSession), 0);
+      if (event === 'SIGNED_OUT') {
+        clearInterval(folderTimer);
+        folderTimer = null;
+        show('#portalPanel', false); show('#authPanel', true);
+      }
     });
   } catch (error) {
     show('#authPanel', true);
@@ -50,7 +58,7 @@ async function authenticate(event) {
   $('#authSubmit').disabled = true;
   message(mode === 'signup' ? 'Creating your account...' : 'Signing in...');
   const result = mode === 'signup'
-    ? await supabaseClient.auth.signUp({ email, password, options: { data: { full_name: fullName, name: fullName } } })
+    ? await supabaseClient.auth.signUp({ email, password, options: { emailRedirectTo: `${location.origin}/client`, data: { full_name: fullName, name: fullName } } })
     : await supabaseClient.auth.signInWithPassword({ email, password });
   $('#authSubmit').disabled = false;
   if (result.error) return message(result.error.message, true);
@@ -68,13 +76,34 @@ async function forgot() {
 async function enterPortal(session) {
   show('#authPanel', false);
   show('#portalPanel', true);
-  const response = await fetch('/api/client-profile', { headers: { authorization: `Bearer ${session.access_token}` } });
-  const data = await response.json();
-  if (!response.ok) {
-    await supabaseClient.auth.signOut();
-    return message(data.error || 'Please sign in again', true);
-  }
-  const profile = data.profile;
+  const profile = await refreshProfile(session, true);
+  if (!profile) return;
+  await Promise.all([loadProjects(session), loadVouchers(session)]);
+}
+
+async function refreshProfile(session, initial = false) {
+  if (profileRequest) return profileRequest;
+  profileRequest = (async () => {
+    try {
+      const response = await fetch('/api/client-profile', { headers: { authorization: `Bearer ${session.access_token}` }, cache: 'no-store' });
+      const data = await response.json();
+      if (!response.ok) {
+        if (response.status === 401 && initial) await supabaseClient.auth.signOut();
+        throw new Error(data.error || 'Could not load your client area');
+      }
+      renderProfile(data.profile, data.dropboxWarning);
+      return data.profile;
+    } catch (error) {
+      if (initial) message(error.message, true);
+      else $('#dropboxStatus').textContent = 'Files are not ready yet. Try Check my files again shortly.';
+      return null;
+    }
+  })();
+  try { return await profileRequest; }
+  finally { profileRequest = null; }
+}
+
+function renderProfile(profile, warning) {
   $('#clientName').textContent = (profile.full_name || 'Client').trim();
   $('#clientEmail').textContent = profile.email;
   $('#goldCount').textContent = String(profile.qualifying_booking_count || 0);
@@ -83,8 +112,23 @@ async function enterPortal(session) {
   if (profile.dropbox_shared_url) {
     dropboxLink.href = profile.dropbox_shared_url;
     show('#clientDropboxLink', true);
+    show('#refreshDropbox', false);
+    show('#dropboxStatus', false);
+    clearInterval(folderTimer);
+    folderTimer = null;
   } else {
     show('#clientDropboxLink', false);
+    show('#refreshDropbox', true);
+    $('#dropboxStatus').textContent = warning || 'Preparing your files…';
+    show('#dropboxStatus', true);
+    if (!folderTimer && folderChecks < 6) {
+      folderTimer = setInterval(async () => {
+        if (document.hidden) return;
+        folderChecks++;
+        await checkDropbox();
+        if (folderChecks >= 6) { clearInterval(folderTimer); folderTimer = null; }
+      }, 15000);
+    }
   }
   if (profile.role === 'admin') {
     show('#adminCard', true);
@@ -93,7 +137,11 @@ async function enterPortal(session) {
     show('#adminCard', false);
     $('#roleBadge').textContent = 'Client';
   }
-  await Promise.all([loadProjects(session), loadVouchers(session)]);
+}
+
+async function checkDropbox() {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (session) await refreshProfile(session);
 }
 
 async function loadProjects(session) {
@@ -173,6 +221,10 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#signupTab').addEventListener('click', () => setMode('signup'));
   $('#forgotPassword').addEventListener('click', forgot);
   $('#signOut').addEventListener('click', signOut);
+  $('#refreshDropbox').addEventListener('click', checkDropbox);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && $('#portalPanel') && !$('#portalPanel').hidden && $('#clientDropboxLink').hidden) checkDropbox();
+  });
   setMode('login');
   boot();
 });
