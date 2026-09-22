@@ -1,5 +1,10 @@
 export const TIME_ZONE = "Europe/Lisbon";
 export const sessions = {
+  "prize-recording-1h": { name: "Prize · one-hour recording", price: 0, deposit: 0, hours: 1, prizeOnly: true, group: "prize" },
+  "prize-photo-30m": { name: "Prize · 30-minute team photoshoot · 10 edited images", price: 0, deposit: 0, hours: 0.5, prizeOnly: true, group: "prize" },
+  "gift-starter-1h": { name: "Studio Starter · 1-hour recording", price: 120, deposit: 120, hours: 1, fullPayment: true, giftSourceId: 'voucher-starter', voucherOnly: true, group: 'gift' },
+  "gift-pro-2h": { name: "Session Pro · 2-hour recording", price: 200, deposit: 200, hours: 2, fullPayment: true, giftSourceId: 'voucher-pro', voucherOnly: true, group: 'gift' },
+  "gift-popstar-2h": { name: "Pop Star · 1-hour recording + 1-hour photoshoot", price: 250, deposit: 250, hours: 2, fullPayment: true, giftSourceId: 'voucher-popstar', voucherOnly: true, group: 'gift' },
   "recording-2h": { name: "Recording with engineer · 2 hours", price: 250, deposit: 100, hours: 2, group: "recording" },
   "recording-4h": { name: "Recording with engineer · 4 hours", price: 450, deposit: 100, hours: 4, group: "recording" },
   "recording-day": { name: "Recording with engineer · Full day", price: 675, deposit: 100, hours: 7, fullDay: true, group: "recording" },

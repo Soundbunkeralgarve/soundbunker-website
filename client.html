@@ -19,7 +19,7 @@
   <main class="client-shell">
     <header class="client-nav">
       <a href="/" class="client-logo" aria-label="SoundBunker Algarve home"><img src="soundbunker-logo.png" alt="SoundBunker Algarve"></a>
-      <nav><a href="gift-vouchers.html">Gift Experiences</a><a href="/community">SoundBunker Social</a></nav>
+      <nav><a href="gift-vouchers.html">Gift Experiences</a><a href="/redeem">Redeem voucher</a><a href="/community">SoundBunker Social</a><a href="#inbox">Inbox <span id="inboxBadge"></span></a><a href="#notifications">Updates <span id="noticeBadge"></span></a></nav>
     </header>
 
     <section id="authPanel" class="client-auth" hidden>
@@ -64,15 +64,24 @@
       </div>
 
       <section class="client-quick-actions" aria-label="Main client actions">
-        <a href="#manage-sessions" class="client-quick-card"><span>01 / BOOKINGS</span><strong>Manage Sessions</strong><small>Book a slot, check the change policy or WhatsApp the studio.</small><b>Manage sessions ↗</b></a>
+        <a href="#manage-sessions" class="client-quick-card"><span>01 / BOOKINGS</span><strong>Manage Sessions</strong><small>See your sessions and propose a new date.</small><b>Manage sessions ↗</b></a>
         <a href="#my-files" class="client-quick-card"><span>02 / YOUR WORK</span><strong>My Files</strong><small>Your music and photographs, each in its own private folder.</small><b>Open my files ↗</b></a>
         <a href="/community" class="client-quick-card"><span>03 / COMMUNITY</span><strong>SoundBunker Social</strong><small>Chat, meet creatives and share what you are making.</small><b>Enter Social ↗</b></a>
       </section>
 
       <section class="client-hub-panel" id="manage-sessions">
-        <div><p class="eyebrow">Manage Sessions</p><h2>Your studio time.</h2><p>Choose a new session or message the studio about an existing booking. Include your booking reference and preferred new date when requesting a move.</p><p class="client-policy">Changes more than 24 hours before a session can carry the deposit to a new available slot. Within 24 hours, the original deposit is forfeited and a new deposit is needed to book another slot.</p></div>
+        <div><p class="eyebrow">Manage Sessions</p><h2>Your studio time.</h2><p>View your bookings and propose a different day. The studio reviews your request and confirms the new date.</p><p class="client-policy">Submit a move more than 24 hours before your original session to carry your deposit over at no fee. Within 24 hours, a new booking and deposit are required.</p><div id="myBookings" class="client-booking-list"><p>Loading your sessions…</p></div><p id="bookingStatus" role="status"></p></div>
         <div class="client-panel-actions"><a class="client-action-solid" href="index.html#booking">Book a session ↗</a><a class="client-action-ghost" href="https://wa.me/351964895908?text=Hi%20SoundBunker%2C%20I%27d%20like%20to%20manage%20my%20booking." target="_blank" rel="noopener">WhatsApp the studio ↗</a></div>
       </section>
+
+      <section class="client-hub-panel portal-inbox-panel" id="inbox"><div class="client-inbox-content">
+        <p class="eyebrow">PRIVATE INBOX</p><h2>Messages.</h2><p>Connect directly with other SoundBunker members. Conversations are only visible to their participants.</p>
+        <div class="client-inbox-grid"><aside><label for="memberSearch">Find a member</label><input id="memberSearch" type="search" placeholder="Search by name or creative role"><div id="inboxMembers"></div></aside>
+          <div class="client-thread"><h3 id="threadTitle">Select a member</h3><div id="threadMessages" class="thread-messages"><p>Choose someone to start a private conversation.</p></div>
+          <form id="privateMessageForm"><textarea id="privateMessage" maxlength="2000" rows="3" placeholder="Write a private message…" required></textarea><button class="client-action-solid" type="submit">Send message</button></form></div></div>
+        <p id="inboxStatus" role="status"></p></div></section>
+
+      <section class="client-hub-panel portal-notice-panel" id="notifications"><div><p class="eyebrow">STUDIO UPDATES</p><h2>Your notifications.</h2><p>New files, session changes, messages and updates from the studio appear here.</p><div id="notificationList"><p>Loading updates…</p></div><button id="markRead" class="client-action-ghost" type="button">Mark all as read</button></div></section>
 
       <section class="client-hub-panel client-files-panel" id="my-files">
         <div><p class="eyebrow">My Files</p><h2>One private space. Two clear folders.</h2><p>Find your mixes and masters in My Music, and your galleries and image downloads in My Photos. Upload files directly to the right folder below.</p><a id="clientDropboxLink" class="client-folder-all" href="#" target="_blank" rel="noopener" hidden>Open entire client folder ↗</a><button id="refreshDropbox" class="client-action-ghost" type="button" hidden>Check my files</button><p id="dropboxStatus" class="muted" aria-live="polite" hidden></p></div>
@@ -97,7 +106,7 @@
       <section class="client-vouchers-section" id="my-vouchers">
         <div class="client-voucher-head">
           <div><p class="eyebrow">My Gift Vouchers</p><h2>Your experiences, ready when you are.</h2><p>Paid vouchers are automatically matched to the purchaser or recipient email on this account.</p></div>
-          <a href="gift-vouchers.html">Buy another gift</a>
+          <div><a href="/redeem">Redeem a voucher →</a> · <a href="gift-vouchers.html">Buy another gift</a></div>
         </div>
         <div id="voucherList" class="client-voucher-list"><div class="client-loading-card">Loading your gift vouchers...</div></div>
         <p id="voucherMessage" class="client-inline-message" role="status"></p>

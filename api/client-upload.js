@@ -13,7 +13,9 @@ export default async function handler(request, response) {
   if (!root) return json(response, { error: 'Your private folder is not ready yet' }, 409);
   const action = request.headers['x-upload-action'];
   if (!['start', 'append', 'finish'].includes(action)) return json(response, { error: 'Invalid upload action' }, 400);
-  const name = String(request.headers['x-file-name'] || '').trim();
+  let name;
+  try { name = decodeURIComponent(String(request.headers['x-file-name'] || '')).trim(); }
+  catch { return json(response, { error: 'Invalid filename' }, 400); }
   if (!name || name.length > 180 || name === '.' || name === '..' || /[\\/\u0000-\u001f]/.test(name)) return json(response, { error: 'Invalid filename' }, 400);
   const sessionId = String(request.headers['x-upload-session'] || '');
   const offset = Number(request.headers['x-upload-offset'] || 0);

@@ -1,15 +1,18 @@
 {
   "name": "soundbunker-algarve-website",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node --check script.js && node --check client.js && node --check community.js && node --check gift-vouchers.js && node --check voucher-success.js && node --check admin.js && node --check api/availability.js && node --check api/create-checkout.js && node --check api/create-voucher-checkout.js && node --check api/stripe-webhook.js && node --check api/supabase-config.js && node --check api/client-profile.js && node --check api/client-vouchers.js && node --check api/client-galleries.js && node --check api/client-upload.js && node --check api/voucher-status.js && node --check api/community.js && node --check api/admin-dashboard.js && node --check api/admin-client-folder.js && node --check api/lib/dropbox.js && node --check api/lib/vouchers.js"
+    "test:vouchers": "node --experimental-vm-modules --test test/voucher.test.mjs",
+    "check": "for f in script.js service-page.js client.js admin.js prize-voucher.js redeem.js api/*.js api/lib/*.js; do node --check \"$f\" || exit 1; done",
+    "test": "node --experimental-vm-modules --test test/voucher.test.mjs"
   },
   "engines": {
     "node": ">=20"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.57.4"
+    "@supabase/supabase-js": "^2.57.4",
+    "pdf-lib": "^1.17.1"
   }
 }

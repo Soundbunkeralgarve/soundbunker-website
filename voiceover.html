@@ -14,7 +14,8 @@
   <link rel="stylesheet" href="detail-styles.css">
   <link rel="stylesheet" href="v5-styles.css">
   <script src="service-page.js" defer></script>
-  <script src="script.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="script.js" defer></script>
 </head>
 <body data-service-page="voiceover">
   <a class="skip-link" href="#main">Skip to content</a>
@@ -47,7 +48,8 @@
           <div class="field"><label for="phone" data-i18n="form.phone">Phone</label><input id="phone" name="phone" type="tel" autocomplete="tel" required></div>
           <div class="field"><label for="taxId" data-i18n="form.nif">NIF / tax number</label><input id="taxId" name="taxId"></div>
           <div class="field full-field"><label for="notes" data-i18n="form.notes">Session notes</label><textarea id="notes" name="notes" rows="3"></textarea></div>
-          <label class="check full-field"><input type="checkbox" name="terms" required><span><span data-i18n="form.terms">I accept the booking and cancellation terms.</span> <a href="terms.html" target="_blank">Terms</a></span></label>
+          <div class="field full-field"><label for="promoCode">VIP discount code <span class="muted">(optional)</span></label><input id="promoCode" name="promoCode" maxlength="40" autocomplete="off" placeholder="Enter your code at checkout"></div><p id="promoStatus" class="full-field" role="status"></p>
+<label class="check full-field"><input type="checkbox" name="terms" required><span><span data-i18n="form.terms">I accept the booking and cancellation terms.</span> <a href="terms.html" target="_blank">Terms</a></span></label>
           <div class="booking-total full-field"><div><span data-i18n="form.total">Session total</span><b id="session-total">€250</b></div><div><span data-i18n="form.due">Due now</span><b id="deposit-total">€100</b></div></div>
           <button class="button full full-field" type="submit" data-i18n="form.pay">Continue to secure payment</button><p class="form-status full-field" id="form-status" role="status" aria-live="polite"></p>
         </form>

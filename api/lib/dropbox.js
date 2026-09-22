@@ -63,7 +63,7 @@ async function ensureFolder(path) {
   }
 }
 
-async function sharedLink(path) {
+export async function sharedLink(path) {
   try {
     const created = await callDropbox('/sharing/create_shared_link_with_settings', {
       path,
@@ -110,4 +110,34 @@ export async function uploadClientFile({ path, chunk, sessionId, offset, finish 
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.error_summary || 'Dropbox upload failed');
   return data;
+}
+
+export async function listDropboxFolder(path) {
+  let page = await callDropbox('/files/list_folder', { path, recursive: false, limit: 200 });
+  const entries = [...(page.entries || [])];
+  while (page.has_more && entries.length < 1000) {
+    page = await callDropbox('/files/list_folder/continue', { cursor: page.cursor });
+    entries.push(...(page.entries || []));
+  }
+  return entries.map(item => ({ name: item.name, path: item.path_display,
+    type: item['.tag'], size: item.size || 0, modified: item.server_modified || null }));
+}
+
+export async function makeDropboxFolder(path) {
+  await ensureFolder(path);
+  return { path, url: await sharedLink(path) };
+}
+
+export async function moveDropboxEntry(from_path, to_path) {
+  return callDropbox('/files/move_v2', { from_path, to_path, autorename: false, allow_shared_folder: false });
+}
+
+export async function deleteDropboxEntry(path) {
+  return callDropbox('/files/delete_v2', { path });
+}
+
+export async function dropboxEntryLink(path, folder) {
+  if (folder) return sharedLink(path);
+  const result = await callDropbox('/files/get_temporary_link', { path });
+  return result.link;
 }

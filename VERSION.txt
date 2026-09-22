@@ -1,29 +1,9 @@
-SoundBunker Algarve Website - PREMIUM CLIENT, VOUCHER, SOUNDBUNKER SOCIAL & DROPBOX BUILD
-Build date: 21 September 2026
-Domain: www.soundbunker.pt
-Languages: EN / PT / DE / FR on the main website
-
-This build advances the current client-portal/admin master. It is not the old V6 build.
-
-Included in this release:
-- The Hub Academy homepage section and full-page design inspired by the supplied school proposal and Creative Clubs leaflet
-- Responsive Creative Clubs, achievement patches and school-partnership enquiry sections
-- The PDFs are not embedded or linked on the website
-- Premium image-led Gift Experience storefront based on the approved gift menu
-- No selectable valid-from date; vouchers run for 12 months from purchase
-- Print-aligned A4 voucher with To and From/message on one row
-- Automatic Stripe-to-client voucher attachment and existing-payment reconciliation
-- Live My Gift Vouchers cards with View / Print access in the Client Area
-- Premium image-led Client Area redesign
-- SoundBunker Social with live chat and online member presence
-- Editable member profiles with image, bio and creative roles
-- Gold-member verification tick with admin controls
-- Social feed with collaborations, marketplace, showcase, events, feedback, likes, comments, sharing and moderation
-- Admin voucher count and voucher list
-- Automatic Dropbox delivery folder for new and existing client accounts
-- Admin buttons to create or open each client Dropbox folder
-- Client view/download access through Open My Files
-- Mobile main-menu Client Login button
-
-Vercel: index.html is at the ZIP top level; Root Directory = ./
-Database: run SUPABASE_PORTAL_UPGRADE_17_SEPT_2026.sql once before testing the new portal features.
+SoundBunker Algarve Premium Portal + Studio Control
+Build date: 22 September 2026
+Source: latest 21 September 2026 Premium Portal ZIP, including Hub Academy redesign.
+Added: full admin controls, client inbox and updates, booking approvals, VIP codes, live calendar,
+Google reviews integration, gift voucher redemption and one-use prize voucher generator.
+Voucher refinement: exact no-charge booking for purchased gift experiences.
+Prize refinement: original Junction prize PDFs receive the generated code. Redeeming requires a client login. Paid recording has a two-hour minimum and mixing/mastering has clear prices, ordering and file upload access.
+Database setup: SUPABASE_ADMIN_PORTAL_21_SEPT_2026.sql after earlier portal migrations.
+Read README.md before deploying. This package is a source build, not a live deployment.

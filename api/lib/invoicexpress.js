@@ -41,7 +41,7 @@ export async function sendToInvoiceXpressAutomation(metadata, stripeSessionId) {
   }
 
   const total = Number(metadata.total);
-  const paid = Number(metadata.deposit);
+  const paid = Number(metadata.paid_now || metadata.deposit);
   if (!Number.isFinite(total) || total <= 0 || !Number.isFinite(paid) || paid <= 0) {
     throw new Error("Invalid InvoiceXpress totals");
   }

@@ -1,31 +1,11 @@
-SOUNDBUNKER CURRENT PREMIUM BUILD - 21 SEPTEMBER 2026
+SOUNDBUNKER STUDIO CONTROL — 22 SEPTEMBER 2026
 
-This is the current master, not the old V6 package.
+1. Run the existing portal/Dropbox/deliveries SQL if not already applied.
+2. Run (or rerun) SUPABASE_ADMIN_PORTAL_21_SEPT_2026.sql in Supabase SQL Editor.
+3. Confirm Vercel env for Supabase, Dropbox, Stripe, InvoiceXpress and Google Calendar.
+4. Add RESEND_API_KEY and NOTIFICATION_FROM_EMAIL for client and admin email alerts. Verify the sending domain first.
+5. Connect Business Profile OAuth for up to 15 genuine five-star reviews, or Places API for up to five.
+6. Extract this ZIP and deploy its contents with index.html at project root. Keep vercel.json.
+7. Test a payment, generated prize PDF, signed-in voucher redemption, purchased gift experience, mixing order, file upload, message and reschedule approval. Keep api/_prize_templates.
 
-ACADEMY UPDATE
-- Redesigned homepage Academy section and full Academy page
-- Inspired by the supplied Creative Clubs leaflet and school proposal
-- The two PDFs are not embedded or linked on the site
-
-VERCEL
-- Root Directory: blank or ./
-- index.html is at the top level
-- Extract the ZIP, then upload all extracted files together
-
-ONE-TIME DATABASE STEP
-- Run SUPABASE_PORTAL_UPGRADE_17_SEPT_2026.sql in Supabase SQL Editor
-- This enables automatic client vouchers, SoundBunker Social and Dropbox folder fields
-- If that upgrade was already run, run SUPABASE_SOUNDBUNKER_SOCIAL_18_SEPT_2026.sql instead
-
-DROPBOX CLIENT FOLDERS
-- Create a Dropbox Developer App with App Folder access
-- Enable files.metadata.read, files.metadata.write, files.content.read, files.content.write, sharing.read and sharing.write
-- Add DROPBOX_APP_KEY, DROPBOX_APP_SECRET and DROPBOX_REFRESH_TOKEN in Vercel Production environment variables
-- Optional: DROPBOX_CLIENT_ROOT=/SoundBunker Clients
-- Redeploy after adding the variables
-
-KEY AREAS TO TEST AFTER DEPLOYMENT
-- Gift Experiences purchase and Stripe return
-- A4 Print / Save as PDF voucher alignment
-- My Gift Vouchers in the Client Area
-- SoundBunker Social profiles, profile photos, online presence, live chat, Gold ticks, posts, likes, comments and marketplace listings
+See README.md for exact variable names, behavior and limitations.

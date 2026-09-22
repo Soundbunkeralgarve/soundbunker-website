@@ -67,7 +67,7 @@ function renderDetail(lang){
   const heroMedia=page.video?`<video autoplay muted loop playsinline preload="metadata" poster="party-poster.jpg" aria-label="${d.title}"><source src="${page.video}" type="video/mp4"></video>`:`<img src="${page.image}" alt="${d.title} at SoundBunker Algarve">`;
   document.title=`${d.title} | SoundBunker Algarve`;
   document.querySelector('meta[name="description"]').content=d.hero;
-  document.querySelector("#detail-hero").innerHTML=`<div class="detail-hero-media">${heroMedia}</div><div class="detail-hero-shade"></div><div class="detail-hero-content wrap"><p class="eyebrow">${d.eyebrow}</p><h1>${d.title}</h1><p class="detail-hero-copy">${d.hero}</p><div class="detail-hero-actions"><a class="button" href="#book">${lang==="pt"?"Reservar ou pedir orçamento":lang==="fr"?"Réserver ou demander un devis":"Book or request a quote"}</a><a class="text-link" href="index.html#services">← ${lang==="pt"?"Todos os serviços":lang==="fr"?"Tous les services":"All services"}</a></div></div>`;
+  document.querySelector("#detail-hero").innerHTML=`<div class="detail-hero-media">${heroMedia}</div><div class="detail-hero-shade"></div><div class="detail-hero-content wrap"><p class="eyebrow">${d.eyebrow}</p><h1>${d.title}</h1><p class="detail-hero-copy">${d.hero}</p><div class="detail-hero-actions"><a class="button" href="${pageKey==='mixing'?'#mix-prices-title':'#book'}">${pageKey==='mixing'?(lang==='pt'?'Ver preços e encomendar':lang==='fr'?'Voir les prix et commander':'View prices & order'):(lang==="pt"?"Reservar ou pedir orçamento":lang==="fr"?"Réserver ou demander un devis":"Book or request a quote")}</a><a class="text-link" href="index.html#services">← ${lang==="pt"?"Todos os serviços":lang==="fr"?"Tous les services":"All services"}</a></div></div>`;
   document.querySelector("#detail-content").innerHTML=`
     <section class="section wrap"><div class="detail-proof">${d.proof.map(x=>`<div><strong>${x[0]}</strong><span>${x[1]}</span></div>`).join("")}</div></section>
     <section class="section wrap detail-lead"><div><p class="eyebrow">${lang==="pt"?"A experiência":lang==="fr"?"L’expérience":"The experience"}</p><h2>${d.introTitle}</h2></div><div class="detail-lead-copy">${d.intro.map(x=>`<p>${x}</p>`).join("")}</div></section>${pageKey==="voiceover"?voiceClientWall(lang):""}
@@ -76,7 +76,19 @@ function renderDetail(lang){
     <section class="section wrap detail-price"><div class="detail-price-main"><p class="eyebrow">${lang==="pt"?"Preços":lang==="fr"?"Tarifs":"Pricing"}</p><h2>${d.priceTitle}</h2><div class="detail-price-list">${d.prices.map(x=>`<div><span>${x[0]}</span><strong>${x[1]}</strong></div>`).join("")}</div><p>${lang==="pt"?"Os preços apresentados incluem IVA quando aplicável. Os projetos por orçamento são confirmados antes de qualquer pagamento.":lang==="fr"?"Les prix affichés incluent la TVA lorsqu’elle s’applique. Tout devis est validé avant paiement.":"Displayed prices include VAT where applicable. Quoted projects are confirmed before any payment."}</p></div><aside class="detail-side-card"><h3>${d.sideTitle}</h3><ul>${d.side.map(x=>`<li>${x}</li>`).join("")}</ul><a class="button full" href="#book">${lang==="pt"?"Começar":lang==="fr"?"Commencer":"Get started"}</a></aside></section>
     <section class="section wrap detail-faq"><div><p class="eyebrow">FAQ</p><h2>${lang==="pt"?"Perguntas frequentes":lang==="fr"?"Questions fréquentes":"Useful answers"}</h2></div><div class="faq-list">${d.faq.map(x=>`<details><summary>${x[0]}</summary><p>${x[1]}</p></details>`).join("")}</div></section>
     <section class="section wrap"><p class="eyebrow">${lang==="pt"?"Continue a explorar":lang==="fr"?"Continuez à explorer":"Keep exploring"}</p><div class="related-links">${related[pageKey].map(x=>`<a href="${x[0]}">${x[1]} →</a>`).join("")}</div></section>`;
+  if(pageKey==='mixing')document.querySelector('.detail-price')?.remove();
 }
+
+servicePages.recording.en.side.unshift('Recording sessions have a two-hour minimum booking');
+servicePages.recording.en.proof[2]=['2-hour minimum','Standard recording bookings'];
+servicePages.recording.pt.side.unshift('As sessões de gravação têm reserva mínima de duas horas');
+servicePages.recording.fr.side.unshift('Les séances d’enregistrement se réservent pour deux heures minimum');
+servicePages.mixing.en.sideTitle='Order online';
+servicePages.mixing.en.faq[2][1]='We agree the revision scope for your selected service and track before work starts. Add any deadlines or requirements in the order notes.';
+servicePages.mixing.pt.sideTitle='Encomendar online';
+servicePages.mixing.fr.sideTitle='Commander en ligne';
+servicePages.mixing.pt.faq[2][1]='Combinamos o âmbito das revisões para o serviço escolhido antes de começar. Inclua prazos ou requisitos nas notas.';
+servicePages.mixing.fr.faq[2][1]='Nous convenons des révisions pour le service choisi avant de commencer. Ajoutez vos délais ou exigences dans les notes.';
 
 renderDetail(langNow());
 document.addEventListener("click",event=>{const button=event.target.closest(".lang");if(button)setTimeout(()=>renderDetail(button.dataset.lang),0)});

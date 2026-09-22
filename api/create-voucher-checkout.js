@@ -4,7 +4,7 @@ import { json, parseJson, safeText, validEmail } from "./lib/http.js";
 import { optionalUser } from "./lib/supabase-auth.js";
 
 const clean = (v,n=200) => safeText(v,n);
-const voucherCode = () => `SB-${new Date().getFullYear().toString().slice(-2)}-${randomBytes(3).toString("hex").toUpperCase()}`;
+const voucherCode = () => `SB-${new Date().getFullYear().toString().slice(-2)}-${randomBytes(12).toString("hex").toUpperCase()}`;
 
 export default async function handler(request,response){
   if(request.method!=="POST") return json(response,{error:"Method not allowed"},405);

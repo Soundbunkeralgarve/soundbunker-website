@@ -1,0 +1,30 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Redeem a SoundBunker Algarve gift voucher or prize voucher and book your studio session online.">
+<title>Redeem a voucher | SoundBunker Algarve</title><link rel="icon" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="redeem.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="redeem.js" defer></script>
+</head><body>
+<header class="redeem-nav"><a href="/"><img src="soundbunker-logo.png" alt="SoundBunker Algarve"></a><nav><a href="/client">Client Area</a><a href="gift-vouchers.html">Gift Experiences</a></nav></header>
+<main class="redeem-shell"><section class="redeem-intro"><span>01 / YOUR EXPERIENCE</span><h1>Make it yours.</h1><p>Got a SoundBunker gift or prize voucher? Create a client account or sign in, then enter your code and choose an available slot.</p>
+<div class="redeem-help"><strong>Gift voucher</strong><p>Use its value towards a studio service. Any unused balance stays on the voucher until it expires.</p><strong>Prize voucher</strong><p>Your one-hour recording or photoshoot is covered in full. Each prize code can be used once.</p></div>
+<img src="service-recording-new.jpg" alt="Recording session at SoundBunker Algarve"></section>
+<section class="redeem-card"><span class="eyebrow">REDEEM ONLINE</span><h2>Check your code.</h2>
+<div id="loginGate" class="redeem-gate" hidden><p>Sign in or create your free SoundBunker client account to redeem your voucher.</p><a href="/client?next=%2Fredeem">Create account / Sign in ↗</a></div>
+<div id="codeEntry" class="redeem-code" hidden><label for="voucherCode">Voucher code</label><input id="voucherCode" autocapitalize="characters" autocomplete="off" placeholder="SB-PRIZE-… or SB-26-…"><button id="checkCode" type="button">Check code</button></div>
+<p id="codeStatus" class="status" role="status"></p>
+<form id="redeemForm" hidden><label>Session<select id="service" name="service" required></select></label>
+<div id="voucherQuote" class="voucher-quote"></div>
+<div class="form-pair" id="slotFields"><label>Date<input id="date" name="date" type="date" required></label>
+<label>Available time<select id="time" name="time" required disabled><option value="">Choose a date first</option></select></label></div>
+<div class="form-pair"><label>Your name<input name="name" autocomplete="name" required maxlength="120"></label>
+<label>Email<input name="email" type="email" autocomplete="email" required></label></div>
+<div class="form-pair"><label>Phone<input name="phone" type="tel" autocomplete="tel" required></label>
+<label>NIF (optional)<input name="taxId" autocomplete="off"></label></div>
+<label>Session notes (optional)<textarea name="notes" rows="3" maxlength="450"></textarea></label>
+<label class="terms"><input type="checkbox" required> I accept the <a href="terms.html" target="_blank">booking terms</a>.</label>
+<button class="redeem-submit" type="submit">Redeem and book</button><p id="redeemStatus" class="status" role="status"></p></form>
+<a class="redeem-support" href="https://wa.me/351964895908" target="_blank" rel="noopener">Questions? WhatsApp the studio ↗</a>
+</section></main>
+</body></html>

@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
-export async function createCheckoutSession({ session, booking, origin, bookingRef }) {
+export async function createCheckoutSession({ session, booking, origin, bookingRef, quote, voucher }) {
   if (!process.env.STRIPE_SECRET_KEY) throw new Error("Stripe is not configured");
   const locale = booking.language === "pt" ? "pt" : booking.language === "fr" ? "fr" : "en-GB";
   const metadata = {
@@ -10,8 +10,13 @@ export async function createCheckoutSession({ session, booking, origin, bookingR
     date: booking.date,
     start: booking.time,
     hours: String(session.hours),
-    total: String(session.price),
+    total: String(quote.total),
     deposit: String(session.deposit),
+    discount_code: quote.code,
+    discount_eur: String(quote.discount),
+    paid_now: String(quote.due),
+    voucher_code: voucher?.code || '',
+    voucher_credit: String(voucher?.credit || 0),
     customer_name: booking.name,
     customer_email: booking.email,
     phone: booking.phone,
@@ -28,13 +33,16 @@ export async function createCheckoutSession({ session, booking, origin, bookingR
     customer_creation: "always",
     locale,
     client_reference_id: bookingRef,
+    expires_at: String(Math.floor(Date.now() / 1000) + 1805),
     "phone_number_collection[enabled]": "true",
     "tax_id_collection[enabled]": "true",
     "line_items[0][quantity]": "1",
     "line_items[0][price_data][currency]": "eur",
-    "line_items[0][price_data][unit_amount]": String(session.deposit * 100),
+    "line_items[0][price_data][unit_amount]": String(Math.round(quote.due * 100)),
     "line_items[0][price_data][product_data][name]": session.fullPayment ? `SoundBunker — ${session.name}` : `SoundBunker booking deposit — ${session.name}`,
-    "line_items[0][price_data][product_data][description]": session.noSlot ? `Paid in full. VAT included. Upload audio after payment.` : `${booking.date} at ${booking.time}. VAT included.${session.fullPayment ? " Paid in full." : " Balance due on the session day."}`
+    "line_items[0][price_data][product_data][description]": session.noSlot
+      ? `Paid in full. VAT included.${quote.code ? ` Code ${quote.code}: €${quote.discount} off.` : ''}${voucher ? ` Gift credit €${voucher.credit}.` : ''}`
+      : `${booking.date} at ${booking.time}. Total after credit €${quote.total}, paid today €${quote.due}; balance €${(quote.total - quote.due).toFixed(2)}.${quote.code ? ` Code ${quote.code} applied.` : ''}${voucher ? ` Gift credit €${voucher.credit}.` : ''}`
   });
   Object.entries(metadata).forEach(([key, value]) => body.set(`metadata[${key}]`, String(value).slice(0, 500)));
   const response = await fetch("https://api.stripe.com/v1/checkout/sessions", { method: "POST", headers: { authorization: `Bearer ${process.env.STRIPE_SECRET_KEY}`, "content-type": "application/x-www-form-urlencoded" }, body });

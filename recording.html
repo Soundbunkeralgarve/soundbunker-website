@@ -14,7 +14,8 @@
   <link rel="stylesheet" href="detail-styles.css">
   <link rel="stylesheet" href="v5-styles.css">
   <script src="service-page.js" defer></script>
-  <script src="script.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="script.js" defer></script>
 </head>
 <body data-service-page="recording">
   <a class="skip-link" href="#main">Skip to content</a>
@@ -36,7 +37,7 @@
     <section class="detail-hero" id="detail-hero"></section>
     <div id="detail-content"></div>
     <section class="booking section" id="book">
-      <div class="wrap detail-book-intro"><p class="eyebrow" data-i18n="booking.eyebrow">Online booking</p><h2 data-i18n="booking.title">Book your studio time.</h2><p data-i18n="booking.copy">Choose your session, select an available date and secure it with your VAT-inclusive deposit.</p></div>
+      <div class="wrap detail-book-intro"><p class="eyebrow" data-i18n="booking.eyebrow">Online booking</p><h2 data-i18n="booking.title">Book your studio time.</h2><p data-i18n="booking.copy">Choose your session, select an available date and secure it with your VAT-inclusive deposit.</p><p class="recording-minimum"><strong>Standard recording sessions have a two-hour minimum.</strong> The one-hour Junction prize is redeemed separately with its unique voucher code.</p></div>
       <div class="wrap booking-grid"><div class="booking-copy"><ul><li data-i18n="booking.rule1">Weekdays: 10:00, 13:00 or 16:00</li><li data-i18n="booking.rule2">Saturday: 16:00, two hours only</li><li data-i18n="booking.rule3">Sunday: 10:00, two or four hours</li><li data-i18n="booking.rule4">Free move with more than 24 hours' notice</li></ul><p class="policy" data-i18n="booking.policy">The deposit is non-refundable for cancellation or changes within 24 hours.</p><p>All timed services are reserved with a deposit and an available slot. Mixing and mastering are the only services paid in full online. Merchandise, when added, is also paid in full.</p></div>
         <form class="booking-form" id="booking-form" novalidate>
           <div class="field full-field"><label for="service" data-i18n="form.service">Session</label><select id="service" name="service" required></select></div>
@@ -47,7 +48,8 @@
           <div class="field"><label for="phone" data-i18n="form.phone">Phone</label><input id="phone" name="phone" type="tel" autocomplete="tel" required></div>
           <div class="field"><label for="taxId" data-i18n="form.nif">NIF / tax number</label><input id="taxId" name="taxId"></div>
           <div class="field full-field"><label for="notes" data-i18n="form.notes">Session notes</label><textarea id="notes" name="notes" rows="3"></textarea></div>
-          <label class="check full-field"><input type="checkbox" name="terms" required><span><span data-i18n="form.terms">I accept the booking and cancellation terms.</span> <a href="terms.html" target="_blank">Terms</a></span></label>
+          <div class="field full-field"><label for="promoCode">VIP discount code <span class="muted">(optional)</span></label><input id="promoCode" name="promoCode" maxlength="40" autocomplete="off" placeholder="Enter your code at checkout"></div><p id="promoStatus" class="full-field" role="status"></p>
+<label class="check full-field"><input type="checkbox" name="terms" required><span><span data-i18n="form.terms">I accept the booking and cancellation terms.</span> <a href="terms.html" target="_blank">Terms</a></span></label>
           <div class="booking-total full-field"><div><span data-i18n="form.total">Session total</span><b id="session-total">€250</b></div><div><span data-i18n="form.due">Due now</span><b id="deposit-total">€100</b></div></div>
           <button class="button full full-field" type="submit" data-i18n="form.pay">Continue to secure payment</button><p class="form-status full-field" id="form-status" role="status" aria-live="polite"></p>
         </form>

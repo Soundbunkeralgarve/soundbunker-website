@@ -1,1 +1,1 @@
-{"rewrites":[{"source":"/client","destination":"/client.html"},{"source":"/admin","destination":"/admin.html"},{"source":"/community","destination":"/community.html"}]}
+{"rewrites":[{"source":"/client","destination":"/client.html"},{"source":"/admin","destination":"/admin.html"},{"source":"/community","destination":"/community.html"},{"source":"/redeem","destination":"/redeem.html"}],"functions":{"api/admin-prize-voucher.js":{"includeFiles":"api/_prize_templates/**"}}}

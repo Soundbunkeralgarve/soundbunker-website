@@ -13,8 +13,10 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="detail-styles.css">
   <link rel="stylesheet" href="v5-styles.css">
+  <link rel="stylesheet" href="mixing-flow.css">
   <script src="service-page.js" defer></script>
-  <script src="script.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="script.js" defer></script>
 </head>
 <body data-service-page="mixing">
   <a class="skip-link" href="#main">Skip to content</a>
@@ -34,10 +36,25 @@
   </header>
   <main id="main">
     <section class="detail-hero" id="detail-hero"></section>
+    <section class="mix-flow section wrap" aria-labelledby="mix-prices-title">
+      <div class="mix-flow-head"><div><p class="eyebrow">Straightforward online ordering</p><h2 id="mix-prices-title">Choose your finish.</h2><p>Prices include VAT. Pick a service, pay securely, then upload your audio through your client account. No studio date is needed.</p></div><a class="button button-outline" href="#submit-audio">How to send files ↓</a></div>
+      <div class="mix-price-grid">
+        <div class="mix-price-group"><h3>Mixing</h3><p>Send consolidated stems for a full mix.</p>
+          <a href="#book" data-service="mix-12" data-mix-card="mix-12"><span>Up to 12 channels</span><strong data-mix-price="mix-12">€125</strong><small>Choose &amp; book ↗</small></a>
+          <a href="#book" data-service="mix-24" data-mix-card="mix-24"><span>Up to 24 channels</span><strong data-mix-price="mix-24">€185</strong><small>Choose &amp; book ↗</small></a>
+          <a href="#book" data-service="mix-48" data-mix-card="mix-48"><span>Up to 48 channels</span><strong data-mix-price="mix-48">€270</strong><small>Choose &amp; book ↗</small></a></div>
+        <div class="mix-price-group"><h3>Mix + master</h3><p>Complete track finish, ready for release.</p>
+          <a href="#book" data-service="mixmaster-12" data-mix-card="mixmaster-12"><span>Up to 12 channels</span><strong data-mix-price="mixmaster-12">€185</strong><small>Choose &amp; book ↗</small></a>
+          <a href="#book" data-service="mixmaster-24" data-mix-card="mixmaster-24"><span>Up to 24 channels</span><strong data-mix-price="mixmaster-24">€245</strong><small>Choose &amp; book ↗</small></a>
+          <a href="#book" data-service="mixmaster-48" data-mix-card="mixmaster-48"><span>Up to 48 channels</span><strong data-mix-price="mixmaster-48">€335</strong><small>Choose &amp; book ↗</small></a></div>
+        <div class="mix-price-group mix-master-only"><h3>Mastering</h3><p>Already have a final mix? Send a full-resolution stereo premaster.</p>
+          <a href="#book" data-service="master" data-mix-card="master"><span>One track</span><strong data-mix-price="master">€75</strong><small>Choose &amp; book ↗</small></a><p class="mix-flow-note">One track per order. For multiple tracks, place a separate order for each.</p></div>
+      </div>
+    </section>
     <div id="detail-content"></div>
-    <section class="section wrap"><div class="section-head"><div><p class="eyebrow">Upload your audio</p><h2>Send your stems or premaster.</h2></div><p>Choose your mixing or mastering service, enter your details and pay the full amount online. No studio date or time is required.</p></div><div class="submission-box"><h3>Upload directly to SoundBunker</h3><p><strong>Mixing:</strong> consolidated WAV/AIFF stems from the same start point, plus rough mix, BPM, sample rate and references.</p><p><strong>Mastering:</strong> full-resolution stereo premaster, without limiting on the master bus where possible, plus a reference if useful.</p><p><strong>Name files:</strong> YOUR NAME + SONG TITLE so we can match them to your order.</p><p><a class="button" href="client.html">Login to upload stems / premaster →</a></p></div></section><section class="booking section" id="book">
-      <div class="wrap detail-book-intro"><p class="eyebrow">Online mixing & mastering</p><h2>Choose your service and pay in full.</h2><p>No date or time is needed. After payment, upload your audio using the Dropbox button above.</p></div>
-      <div class="wrap booking-grid"><div class="booking-copy"><ul><li>Choose mixing, mastering or a mix + master package</li><li>Enter your contact and project details</li><li>Pay the full VAT-inclusive amount online</li><li>Upload your audio through the secure Dropbox request</li></ul><p class="policy">Mixing and mastering do not reserve a studio slot, so no date or start time is required.</p></div>
+    <section class="section wrap mix-submission" id="submit-audio"><div class="section-head"><div><p class="eyebrow">Your files</p><h2>Submit audio in your client area.</h2></div><p>Use the same email for your order and account. Your files go to your private My Music folder.</p></div><div class="submission-box"><h3>What to upload</h3><p><strong>Mixing:</strong> consolidated WAV/AIFF stems from the same start, rough mix, BPM and two or three references.</p><p><strong>Mastering:</strong> full-resolution stereo premaster with no limiter on the master bus where possible, plus a reference.</p><p><strong>File names:</strong> YOUR NAME + SONG TITLE to match your order. Include sample rate and project notes at checkout.</p><a class="button" href="/client#my-files">Sign in / create account and upload files ↗</a></div></section><section class="booking section" id="book">
+      <div class="wrap detail-book-intro"><p class="eyebrow">Order online</p><h2>Book your mix or master.</h2><p>Choose the price above or use this selector, enter your project details, and pay the full VAT-inclusive price. Upload through your client account.</p></div>
+      <div class="wrap booking-grid"><div class="booking-copy"><ul><li>Choose the channel count and service</li><li>Enter contact and project notes</li><li>Pay securely in full</li><li>Submit stems or premaster in My Music</li></ul><p class="policy">No studio date or start time is needed. Each order covers one track.</p><a class="button button-outline" href="/client#my-files">Open file upload ↗</a></div>
         <form class="booking-form" id="booking-form" novalidate>
           <div class="field full-field"><label for="service" data-i18n="form.service">Session</label><select id="service" name="service" required></select></div>
           <div class="field"><label for="name" data-i18n="form.name">Full name</label><input id="name" name="name" autocomplete="name" required></div>
@@ -45,7 +62,8 @@
           <div class="field"><label for="phone" data-i18n="form.phone">Phone</label><input id="phone" name="phone" type="tel" autocomplete="tel" required></div>
           <div class="field"><label for="taxId" data-i18n="form.nif">NIF / tax number</label><input id="taxId" name="taxId"></div>
           <div class="field full-field"><label for="notes">Project notes / references</label><textarea id="notes" name="notes" rows="3"></textarea></div>
-          <label class="check full-field"><input type="checkbox" name="terms" required><span><span data-i18n="form.terms">I accept the booking and cancellation terms.</span> <a href="terms.html" target="_blank">Terms</a></span></label>
+          <div class="field full-field"><label for="promoCode">VIP discount code <span class="muted">(optional)</span></label><input id="promoCode" name="promoCode" maxlength="40" autocomplete="off" placeholder="Enter your code at checkout"></div><p id="promoStatus" class="full-field" role="status"></p>
+<label class="check full-field"><input type="checkbox" name="terms" required><span><span data-i18n="form.terms">I accept the booking and cancellation terms.</span> <a href="terms.html" target="_blank">Terms</a></span></label>
           <div class="booking-total full-field"><div><span data-i18n="form.total">Session total</span><b id="session-total">€250</b></div><div><span data-i18n="form.due">Due now</span><b id="deposit-total">€100</b></div></div>
           <button class="button full full-field" type="submit" data-i18n="form.pay">Continue to secure payment</button><p class="form-status full-field" id="form-status" role="status" aria-live="polite"></p>
         </form>

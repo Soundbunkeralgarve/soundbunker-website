@@ -27,6 +27,7 @@ export function publicVoucher(row, userEmail = '') {
     serviceId: row.service_id,
     service: row.service_name,
     amount: Number(row.amount_eur || 0),
+    remaining: Number(row.remaining_eur ?? row.amount_eur ?? 0),
     currency: row.currency || 'EUR',
     to: row.recipient_name,
     from: row.display_from,
@@ -72,11 +73,12 @@ export async function persistVoucherFromCheckout(checkout, suppliedAdmin = null)
   };
   if (!record.code || !record.stripe_session_id) throw new Error('Voucher payment metadata is incomplete');
 
-  const existing = await admin.from('vouchers').select('id').eq('stripe_session_id', checkout.id).maybeSingle();
+  const existing = await admin.from('vouchers').select('*').eq('stripe_session_id', checkout.id).maybeSingle();
   if (existing.error) throw new Error('Voucher database setup is required');
-  const result = existing.data?.id
-    ? await admin.from('vouchers').update(record).eq('id', existing.data.id).select('*').single()
-    : await admin.from('vouchers').insert(record).select('*').single();
+  // Reconciliation runs on every portal sign-in. Never re-activate a redeemed
+  // voucher or reset its remaining balance when Stripe returns the old sale.
+  if (existing.data?.id) return existing.data;
+  const result = await admin.from('vouchers').insert(record).select('*').single();
   if (result.error) throw new Error('Voucher could not be attached to the client account');
   return result.data;
 }

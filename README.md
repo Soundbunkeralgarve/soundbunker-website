@@ -1,59 +1,36 @@
-# SoundBunker Algarve - Premium Portal Build
+# SoundBunker Algarve — Studio Control build
 
-This website package includes premium Gift Experiences, Client Area, Dropbox delivery, SoundBunker Social and the 21 September Hub Academy redesign.
+Updated 22 September 2026 from the current Premium Portal master. The existing Hub Academy redesign, Gift Experiences, SoundBunker Social, Dropbox folders and website assets remain in this ZIP.
 
-## Hub Academy design update
+## Included
 
-The homepage Academy feature and the full `/hub-academy.html` page now use the editorial colour system, club panels and patch motif from the supplied school proposal and Creative Clubs leaflet. The two PDFs are reference material only and are not embedded or linked on the site. Academy photography was extracted from the supplied leaflet; the Academy badge and original SoundBunker and Hub Culture logos retain their existing artwork.
+- /admin: Google Calendar upcoming sessions, website booking ledger, move approvals, client records, folder manager, projects, VIP discounts, service settings, client updates, vouchers and prize code generation.
+- /client: own bookings and move proposals, private member inbox, notifications, music and photo delivery, vouchers and Social.
+- /redeem: signed-in clients redeem purchased gift experiences and one-use prize codes using their account email. Studio Starter, Session Pro and Pop Star offer their exact purchased experience as the first booking choice, fully covered by the voucher; gift value can also be used towards another service, with unused value retained. The two Junction prizes match the supplied PDFs: one-hour recording (up to three songs, mixed and mastered), or 30-minute team photoshoot (10 edited images). Admin prints each code onto the original two-page PDF in its redeem box and downloads it immediately; repeat PDF download and booking-link copy are available in the register. Codes expire one calendar month after the quiz date entered by Admin. Free redemptions confirm directly; partial payments use Stripe.
+- /mixing-mastering: prominent VAT-inclusive prices, direct online booking and a link to the private My Music file upload. Paid recording sessions have a two-hour minimum; the one-hour Junction prize is a separate voucher exception. Photography uses the studio's 10:00, 13:00 and 16:00 weekday starts, with the published weekend slots subject to availability.
+- Homepage: genuine five-star Google review highlights with the actual overall rating/count, when a Google reviews API is configured.
 
-## Deploy
+## Deploy in order
 
-1. Extract the ZIP.
-2. Upload the contents together so `index.html` remains at the top level.
-3. In Vercel, leave Root Directory blank or set it to `./`.
-4. Keep the existing production environment variables for Stripe, Supabase, Google Calendar and InvoiceXpress.
+1. Extract the ZIP and place all contents at the Vercel project root so index.html is at the top level.
+2. If not already run, apply SUPABASE_PORTAL_UPGRADE_17_SEPT_2026.sql, SUPABASE_DROPBOX_CLIENT_FOLDERS_18_SEPT_2026.sql and SUPABASE_CLIENT_DELIVERIES_21_SEPT_2026.sql in Supabase.
+3. Run (or rerun) SUPABASE_ADMIN_PORTAL_21_SEPT_2026.sql in Supabase before deploying. It creates the booking ledger, private messages, notifications, discounts, prize codes, voucher redemption bookkeeping and code-check limits.
+4. Keep existing Supabase, Dropbox, Stripe, InvoiceXpress and Google Calendar Production variables. Verify the Stripe webhook still points to /api/stripe-webhook and subscribes to checkout.session.completed.
+5. For email alerts, set RESEND_API_KEY, NOTIFICATION_FROM_EMAIL (a verified sender) and optionally ADMIN_NOTIFICATION_EMAIL (defaults to steve@soundbunker.pt). RESEND_FROM_EMAIL is supported as a sender fallback. Failed move alerts are flagged in admin with Retry email.
+6. For 15 live review highlights, configure GOOGLE_BUSINESS_ACCOUNT_ID, GOOGLE_BUSINESS_LOCATION_ID, GOOGLE_BUSINESS_REFRESH_TOKEN, GOOGLE_OAUTH_CLIENT_ID and GOOGLE_OAUTH_CLIENT_SECRET. Your Google Cloud project needs Business Profile API access and owner OAuth consent. Alternatively use GOOGLE_PLACE_ID and GOOGLE_MAPS_API_KEY with Places API (New), which supplies at most five individual reviews.
+7. Deploy. Test a new paid booking, move approval, file upload notification, direct message, generated prize PDF, signed-in redemption and gift voucher in a test environment. Keep the api/_prize_templates folder when deploying.
 
-## One-time Supabase upgrade
+## Important operating details
 
-Before testing vouchers or SoundBunker Social, open the Supabase SQL Editor and run:
-
-`SUPABASE_PORTAL_UPGRADE_17_SEPT_2026.sql`
-
-It creates or upgrades the private voucher, social post, comment, reaction, live-chat, member-profile, presence and profile-image storage setup. The migration is additive and can be run again safely.
-
-For the updated client files and admin assignments, also run `SUPABASE_DROPBOX_CLIENT_FOLDERS_18_SEPT_2026.sql` and `SUPABASE_CLIENT_DELIVERIES_21_SEPT_2026.sql`. Both are safe to rerun. Run them before deploying this version so the admin dashboard can read the new folder links.
-
-If the earlier portal upgrade has already been run, you can run only:
-
-`SUPABASE_SOUNDBUNKER_SOCIAL_18_SEPT_2026.sql`
-
-## Automatic Dropbox client folders
-
-The Client Area creates one folder for each client, with `My Music` and `My Photos` subfolders. With email confirmation enabled, clients confirm their email before signing in. Existing clients receive the two subfolders in their existing folder when they next open the Client Area. Administrators can also add them from the dashboard. Clients can browse/download their files and upload directly to each private subfolder. Uploads use 2 MiB chunks with no total file size cap in the website; Dropbox account quotas still apply.
-
-Add these Vercel Production environment variables from a Dropbox Developer App:
-
-- `DROPBOX_APP_KEY`
-- `DROPBOX_APP_SECRET`
-- `DROPBOX_REFRESH_TOKEN`
-- `DROPBOX_CLIENT_ROOT` (optional; defaults to `/SoundBunker Clients`)
-
-For a short-lived test token, `DROPBOX_ACCESS_TOKEN` is also supported. When both credential sets are present, refresh-token credentials take priority. Enable `files.metadata.read`, `files.metadata.write`, `files.content.read`, `files.content.write`, `sharing.read` and `sharing.write`. Shared folder links are view/download; the signed-in upload control sends files through the website to the account's own Dropbox subfolder. Add the confirmed `/client` redirect URL to Supabase Auth's allowed redirects if email confirmation is enabled.
-
-## Admin and sessions
-
-An admin who signs in through `/client` is taken directly to `/admin`. The one-page dashboard lists clients, booking records, folder links, project/gallery assignment and vouchers. Assign a delivery by entering a title and an HTTPS share link under the correct client. The client dashboard displays those assignments and also exposes the full Dropbox subfolders.
-
-Manage Sessions links clients to the booking flow and a prefilled WhatsApp conversation with the studio. The page explains the 24-hour deposit rule. A booking move is arranged by the studio; this build does not automatically change a paid Stripe booking or Google Calendar event. The booking list on the admin page shows records already in the existing `bookings` table; this build does not backfill Stripe or calendar bookings into that table.
-
-## Voucher flow
-
-- The purchaser chooses an experience and enters the recipient plus a visible From/message line.
-- Voucher validity begins automatically on the Stripe purchase date and lasts 12 months.
-- Paid voucher data is stored through the Stripe webhook and linked to a matching Client Area account.
-- When a client signs in, older paid Stripe gift sessions using the same purchaser email are reconciled automatically.
-- The purchaser or recipient can view and print the voucher from My Gift Vouchers.
-
-## SoundBunker Social
-
-SoundBunker Social is private to authenticated Client Area members. It includes live chat with online status, editable member profiles, profile images, bios and creative roles, a searchable social feed, collaboration and marketplace posts, likes, comments and sharing. Gold members display a gold tick. Administrators can add or remove Gold status from the client list and moderate posts and comments.
+- Admin access depends on profiles.role = admin; client actions use Supabase authentication.
+- Older Stripe transactions are not automatically imported into the new booking ledger. Manually created Google Calendar sessions are visible in the separate upcoming calendar panel.
+- Clients propose a different day more than 24 hours before their original session; acceptance updates the existing Google event and retains the deposit. Inside 24 hours they need a new booking and deposit.
+- The studio calendar must be connected to confirm a dated free voucher booking. A confirmed calendar failure releases the code; an uncertain response is kept for admin review so the recipient cannot accidentally double-book.
+- In /admin → Vouchers, enter the quiz date and select the matching prize. The original Junction voucher is downloaded as a two-page PDF with its unique code printed on the supplied code line. The embedded QR on your supplied artwork leads to /redeem, where winners create an account or sign in. Gift recipients enter purchased gift codes at the same page.
+- VIP discounts apply to the full session total and reduce the remaining balance when the normal deposit still covers today's payment. VIP codes cannot be combined with gift/prize vouchers.
+- An individual client update is emailed when Resend is ready; all-client updates are portal notifications.
+- Service changes update the booking selector, mixing price cards and checkout. Review other fixed marketing prices elsewhere on the site separately after changing a price.
+- File uploads use 2 MiB chunks; the site adds no arbitrary total size cap. Dropbox quota and provider limits still apply.
+- Existing Dropbox shared links can be viewed by anyone holding the link. Authenticated portal/admin controls do not revoke previously shared links.
+- Confirm gift voucher invoice and tax treatment with the studio accountant before relying on redemption reports.
+- The reviews section selects genuine five-star reviews while displaying Google's true overall rating and count. It does not assert 15 unless 15 qualifying reviews are returned.

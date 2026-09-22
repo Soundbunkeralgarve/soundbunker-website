@@ -1,1 +1,63 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin | SoundBunker Algarve</title><link rel="stylesheet" href="client-gifts.css"><link rel="stylesheet" href="admin-dashboard.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="admin.js" defer></script></head><body class="portal-bg"><main class="portal-shell"><header class="portal-top"><a href="/" class="brand-link">SoundBunker Algarve</a><span class="role-badge">ADMIN ONLY</span></header><section class="client-hero"><p class="eyebrow">SoundBunker Algarve</p><h1>Admin Dashboard</h1><p>Bookings, clients, music and photo deliveries in one place.</p></section><p id="adminMessage" class="muted">Checking admin access...</p><section id="adminContent" hidden><nav class="admin-shortcuts"><a href="#bookings">Manage bookings ↘</a><a href="#clients-panel">Client folders ↘</a><a href="#vouchers-panel">Vouchers ↘</a></nav><div class="dashboard-grid"><div class="dash-card"><span>CLIENTS</span><h3 id="clientTotal">0</h3><p>Registered client profiles</p></div><div class="dash-card"><span>BOOKINGS</span><h3 id="bookingTotal">0</h3><p>Booking records</p></div><div class="dash-card"><span>PROJECTS</span><h3 id="projectTotal">0</h3><p>Assigned projects</p></div><div class="dash-card"><span>PHOTOS</span><h3 id="photoTotal">0</h3><p>Photo galleries</p></div><div class="dash-card voucher-card"><span>GIFT VOUCHERS</span><h3 id="voucherTotal">0</h3><p>Paid vouchers attached to clients</p></div></div><article class="panel" id="bookings" style="margin-top:24px"><p class="eyebrow">SESSIONS</p><h2>Manage bookings</h2><p class="muted">For moves more than 24 hours ahead, transfer the deposit to an available slot. Within 24 hours, the deposit is forfeited and a new deposit is required.</p><div id="bookingsList"></div></article><article class="panel admin-folder-panel" id="clients-panel" style="margin-top:24px"><div class="admin-panel-heading"><div><p class="eyebrow">CLIENT DELIVERY</p><h2>Client folders</h2><p class="muted">Each client has one folder with My Music and My Photos inside. Open the relevant folder to add mixes, masters or galleries.</p></div></div><p id="folderMessage" class="muted" role="status"></p><div id="clients" class="admin-client-grid"></div></article><article class="panel" id="vouchers-panel" style="margin-top:24px"><h2>Gift Vouchers</h2><div id="vouchers"></div></article></section></main></body></html>
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Studio Control | SoundBunker Algarve</title><link rel="icon" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin-dashboard.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="prize-voucher.js" defer></script><script src="admin.js" defer></script>
+</head><body>
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <a class="admin-brand" href="/"><img src="soundbunker-logo.png" alt="SoundBunker"><span>STUDIO CONTROL<small>SoundBunker Algarve</small></span></a>
+    <nav id="adminNav" aria-label="Dashboard sections">
+      <button class="active" data-tab="overview">Overview</button>
+      <button data-tab="clients">Clients & files</button>
+      <button data-tab="bookings">Sessions & calendar</button>
+      <button data-tab="codes">VIP discounts</button>
+      <button data-tab="services">Service settings</button>
+      <button data-tab="updates">Client updates</button>
+      <button data-tab="vouchers">Vouchers</button>
+    </nav>
+    <div class="admin-sidebar-foot"><a href="/client#inbox">My private inbox ↗</a><a href="/" target="_blank" rel="noopener">View website ↗</a><button id="adminSignOut">Sign out</button></div>
+  </aside>
+  <main class="admin-main">
+    <header class="admin-topbar"><div><span class="admin-overline">SOUNDBUNKER ALGARVE / OPERATIONS</span><h1 id="viewTitle">Overview</h1></div><button id="refreshAdmin" class="outline-btn" type="button">Refresh data ↻</button></header>
+    <p id="adminMessage" class="admin-message" role="status">Checking administrator access…</p>
+    <div id="adminContent" hidden>
+      <section id="view-overview" class="admin-view">
+        <div id="dashboardStats" class="stat-grid"></div>
+        <div class="admin-two-col"><article class="control-card"><div class="card-head"><div><span class="admin-overline">ACTION REQUIRED</span><h2>Move requests</h2></div><button data-tab="bookings" class="text-link">Open sessions ↗</button></div><div id="overviewMoves"></div></article>
+        <article class="control-card"><div class="card-head"><div><span class="admin-overline">LIVE CALENDAR</span><h2>Next sessions</h2></div><button data-tab="bookings" class="text-link">Full calendar ↗</button></div><div id="overviewCalendar"></div></article></div>
+        <div id="setupStatus" class="setup-status"></div>
+      </section>
+      <section id="view-clients" class="admin-view" hidden>
+        <div class="clients-layout">
+          <aside class="client-list control-card"><div class="card-head"><div><span class="admin-overline">DIRECTORY</span><h2>Clients <span id="clientTotal"></span></h2></div></div><label class="sr-only" for="clientSearch">Find client</label><input id="clientSearch" type="search" placeholder="Search name or email"><div id="clients"></div></aside>
+          <div id="clientDetail" class="client-detail"></div>
+        </div>
+      </section>
+      <section id="view-bookings" class="admin-view" hidden>
+        <div class="admin-two-col"><article class="control-card"><div class="card-head"><div><span class="admin-overline">REQUIRES REVIEW</span><h2>Requested moves</h2></div></div><div id="moveRequests"></div></article>
+        <article class="control-card"><div class="card-head"><div><span class="admin-overline">GOOGLE CALENDAR</span><h2>Upcoming sessions</h2></div></div><p id="calendarWarning" class="inline-warning" hidden></p><div id="calendarEvents"></div></article></div>
+        <article class="control-card"><div class="card-head"><div><span class="admin-overline">PAYMENT RECORDS</span><h2>Website bookings</h2></div></div><div id="bookingsList"></div></article>
+      </section>
+      <section id="view-codes" class="admin-view" hidden><div class="admin-two-col"><article class="control-card"><span class="admin-overline">STRIPE CHECKOUT</span><h2>Create VIP code</h2><p class="muted">Discount applies to the full session price. On deposit bookings, the payment today stays the same where possible; the reduced balance is due on the session day.</p>
+        <form id="codeForm" class="control-form"><label>Code<input name="code" required pattern="[A-Za-z0-9_-]{3,40}" placeholder="STEVEVIP25"></label><div class="form-row"><label>Type<select name="kind"><option value="percent">Percentage</option><option value="fixed">Amount in €</option></select></label><label>Value<input name="amount" type="number" min=".01" step=".01" required></label></div>
+        <label>For client<select name="clientUserId" id="codeClient"><option value="">Any client</option></select></label><label>Service<select name="serviceId" id="codeService"><option value="">Any service</option></select></label><div class="form-row"><label>Maximum uses<input name="maxUses" type="number" min="1" placeholder="Unlimited"></label><label>Expiry<input name="expiresAt" type="datetime-local"></label></div><button class="solid-btn" type="submit">Create discount</button></form></article>
+        <article class="control-card"><span class="admin-overline">ACTIVE & PAST</span><h2>Discount codes</h2><div id="codesList"></div></article></div></section>
+      <section id="view-services" class="admin-view" hidden><article class="control-card"><span class="admin-overline">BOOKING CATALOGUE</span><h2>Prices & availability</h2><p class="muted">Changes affect the booking selector and server checkout. Edit promotional copy on other website pages separately when you change an advertised price.</p><div id="servicesList"></div></article></section>
+      <section id="view-updates" class="admin-view" hidden><article class="control-card update-panel"><span class="admin-overline">CLIENT COMMUNICATIONS</span><h2>Send an update</h2><p class="muted">Individual updates appear in the client portal and are emailed when your sender is configured. An all-client update appears in every portal.</p><form id="updateForm" class="control-form"><label>Recipients<select id="updateClient" name="userId"><option value="all">All clients</option></select></label><label>Subject<input name="title" maxlength="120" required placeholder="New mix ready, studio news…"></label><label>Message<textarea name="body" maxlength="1500" rows="6" required></textarea></label><button class="solid-btn" type="submit">Send update</button></form></article></section>
+      <section id="view-vouchers" class="admin-view" hidden><div class="admin-two-col">
+        <article class="control-card"><span class="admin-overline">PRIZE VOUCHERS</span><h2>Generate a free session code</h2>
+          <p class="muted">Each one-use code prints on the matching original two-page Junction PDF. Clients create an account before redeeming. The PDF downloads when generated and is available again in the register.</p>
+          <form id="prizeForm" class="control-form"><label>Prize<select name="serviceId"><option value="prize-recording-1h">One-hour recording session</option><option value="prize-photo-30m">30-minute team photoshoot · 10 edited images</option></select></label>
+          <label>Quiz date<input name="quizDate" type="date" required></label><p class="admin-note">Valid for one calendar month from this date, as stated on the voucher.</p><button class="solid-btn">Generate code and download PDF</button></form>
+          <p id="generatedPrize" class="prize-result" hidden></p>
+        </article>
+        <article class="control-card"><span class="admin-overline">PRIZE REGISTER</span><h2>Generated codes</h2><div id="prizesList"></div></article>
+      </div><article class="control-card"><span class="admin-overline">GIFT EXPERIENCES</span><h2>Purchased gift vouchers</h2>
+        <p class="muted">Existing gift voucher codes can be entered on the Redeem page. Any unused balance remains available after a partial booking.</p><div id="vouchers"></div></article></section>
+    </div>
+  </main>
+</div>
+</body></html>

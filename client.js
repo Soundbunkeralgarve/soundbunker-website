@@ -3,6 +3,10 @@ let mode = 'login';
 let folderTimer;
 let folderChecks = 0;
 let profileRequest;
+let activePeer = null;
+let inboxAll = [];
+let inboxMembers = [];
+let inboxUserId = null;
 const $ = selector => document.querySelector(selector);
 const show = (selector, on = true) => { const element = $(selector); if (element) element.hidden = !on; };
 const escapeHtml = value => String(value || '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
@@ -58,7 +62,7 @@ async function authenticate(event) {
   $('#authSubmit').disabled = true;
   message(mode === 'signup' ? 'Creating your account...' : 'Signing in...');
   const result = mode === 'signup'
-    ? await supabaseClient.auth.signUp({ email, password, options: { emailRedirectTo: `${location.origin}/client`, data: { full_name: fullName, name: fullName } } })
+    ? await supabaseClient.auth.signUp({ email, password, options: { emailRedirectTo: `${location.origin}/client${new URLSearchParams(location.search).get('next') === '/redeem' ? '?next=%2Fredeem' : ''}`, data: { full_name: fullName, name: fullName } } })
     : await supabaseClient.auth.signInWithPassword({ email, password });
   $('#authSubmit').disabled = false;
   if (result.error) return message(result.error.message, true);
@@ -78,8 +82,10 @@ async function enterPortal(session) {
   show('#portalPanel', true);
   const profile = await refreshProfile(session, true);
   if (!profile) return;
-  if (profile.role === 'admin') { location.replace('/admin'); return; }
-  await Promise.all([loadProjects(session), loadGalleries(session), loadVouchers(session)]);
+  if (new URLSearchParams(location.search).get('next') === '/redeem') { location.replace('/redeem'); return; }
+  if (profile.role === 'admin' && !['#inbox','#notifications'].includes(location.hash)) { location.replace('/admin'); return; }
+  await Promise.all([loadProjects(session), loadGalleries(session), loadVouchers(session), loadBookings(), loadNotifications(), loadInbox()]);
+  if(location.hash==='#my-files') document.querySelector('#my-files')?.scrollIntoView({block:'start'});
 }
 
 async function refreshProfile(session, initial = false) {
@@ -155,7 +161,7 @@ async function uploadChunk(session, type, name, action, chunk, sessionId = '', o
   const response = await fetch('/api/client-upload', {
     method: 'POST',
     headers: { authorization: `Bearer ${session.access_token}`, 'content-type': 'application/octet-stream',
-      'x-file-type': type, 'x-file-name': name, 'x-upload-action': action,
+      'x-file-type': type, 'x-file-name': encodeURIComponent(name), 'x-upload-action': action,
       'x-upload-session': sessionId, 'x-upload-offset': String(offset) },
     body: chunk
   });
@@ -243,8 +249,9 @@ function renderVouchers(vouchers) {
         <div class="client-voucher-status ${expired ? 'expired' : ''}">${escapeHtml(status)}</div>
         <p>${escapeHtml(item.service || 'SoundBunker Gift Experience')}</p>
         <h3>For ${escapeHtml(item.to || 'gift recipient')}</h3>
-        <dl><div><dt>Code</dt><dd>${escapeHtml(item.code)}</dd></div><div><dt>Purchased</dt><dd>${escapeHtml(dateLabel(item.purchasedAt))}</dd></div><div><dt>Valid until</dt><dd>${escapeHtml(dateLabel(item.expiresAt))}</dd></div></dl>
+        <dl><div><dt>Code</dt><dd>${escapeHtml(item.code)}</dd></div><div><dt>Balance</dt><dd>€${Number(item.remaining ?? item.amount).toFixed(2)}</dd></div><div><dt>Valid until</dt><dd>${escapeHtml(dateLabel(item.expiresAt))}</dd></div></dl>
         <a href="voucher-success.html?voucher=${encodeURIComponent(item.code)}">View / print voucher →</a>
+        ${item.status === 'active' ? `<a href="/redeem?code=${encodeURIComponent(item.code)}">Redeem online →</a>` : ''}
       </div>
     </article>`;
   }).join('');
@@ -266,6 +273,107 @@ async function loadVouchers(session) {
   }
 }
 
+async function portalApi(path, payload) {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session) throw new Error('Please sign in again.');
+  const response = await fetch(path, { method: payload === undefined ? 'GET' : 'POST',
+    headers: { authorization: `Bearer ${session.access_token}`, ...(payload === undefined ? {} : { 'content-type': 'application/json' }) },
+    body: payload === undefined ? undefined : JSON.stringify(payload), cache: 'no-store' });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'Could not load this area');
+  return data;
+}
+async function loadBookings() {
+  try {
+    const data = await portalApi('/api/bookings');
+    const list = $('#myBookings');
+    list.innerHTML = data.bookings.length ? data.bookings.map(booking => {
+      const pending = data.moves.find(move => move.booking_id === booking.id && move.status === 'pending');
+      const eligible = booking.start_at && Date.parse(booking.start_at) - Date.now() > 86400000 && booking.status === 'confirmed';
+      return `<article class="client-booking-card"><div><strong>${escapeHtml(booking.service_name || 'Studio session')}</strong>
+        <small>${escapeHtml(booking.local_date || 'Date to be arranged')} · ${escapeHtml(booking.local_time || '')} · ${escapeHtml(booking.status)}</small>
+        <small>Booking ref: ${escapeHtml(booking.booking_ref || booking.id)}</small></div>
+        ${pending ? `<p>Move requested: ${escapeHtml(pending.proposed_date)} at ${escapeHtml(pending.proposed_time)} · Awaiting studio approval.</p>` :
+          eligible ? `<form class="client-move-form" data-booking-id="${escapeHtml(booking.id)}" data-service-id="${escapeHtml(booking.service_id)}" data-current-day="${escapeHtml(booking.local_date)}">
+          <label>Propose a different date<input name="date" type="date" required min="${new Date().toISOString().slice(0,10)}"></label>
+          <label>Available time<select name="time" required disabled><option value="">Choose a date first</option></select></label>
+          <button type="submit">Request move</button></form>` :
+          booking.start_at && booking.status === 'confirmed' ? '<p>The free change window has closed. A new booking and deposit are needed to choose another slot.</p>' : ''}
+        </article>`;
+    }).join('') : '<p>No website bookings are attached to this account yet. If an earlier booking is missing, contact the studio to have it linked.</p>';
+  } catch (err) { $('#myBookings').textContent = err.message; }
+}
+async function refreshMoveSlots(form) {
+  const select = form.querySelector('select[name=time]');
+  const day = form.querySelector('input[name=date]').value;
+  select.disabled = true;
+  select.innerHTML = '<option>Checking…</option>';
+  if (!day || day === form.dataset.currentDay) {
+    select.innerHTML = '<option value="">Choose a different day</option>'; return;
+  }
+  try {
+    const result = await fetch(`/api/availability?date=${encodeURIComponent(day)}&service=${encodeURIComponent(form.dataset.serviceId)}`).then(r=>r.json());
+    select.innerHTML = result.slots?.length ? '<option value="">Choose a time</option>' +
+      result.slots.map(slot => `<option value="${escapeHtml(slot)}">${escapeHtml(slot)}</option>`).join('') : '<option value="">No slots available</option>';
+    select.disabled = !result.slots?.length;
+  } catch { select.innerHTML = '<option value="">Could not load slots</option>'; }
+}
+async function loadNotifications() {
+  try {
+    const data = await portalApi('/api/notifications');
+    const unread = data.notifications.filter(item => !item.read_at);
+    $('#noticeBadge').textContent = unread.length ? `(${unread.length})` : '';
+    $('#notificationList').innerHTML = data.notifications.length ? data.notifications.map(item =>
+      `<article class="portal-notice ${item.read_at?'':'unread'}"><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.body)}</p>
+      <small>${escapeHtml(dateLabel(item.created_at))}</small></article>`).join('') : '<p>No updates yet.</p>';
+    $('#markRead').hidden = !unread.length;
+    $('#markRead').dataset.ids = unread.map(item => item.id).join(',');
+  } catch (err) { $('#notificationList').textContent = err.message; }
+}
+function renderInboxMembers() {
+  const search = $('#memberSearch').value.trim().toLowerCase();
+  const recent = [...inboxMembers].sort((a,b) => {
+    const aTime = inboxAll.filter(msg => msg.sender_id === a.id || msg.recipient_id === a.id).at(-1)?.created_at || '';
+    const bTime = inboxAll.filter(msg => msg.sender_id === b.id || msg.recipient_id === b.id).at(-1)?.created_at || '';
+    return bTime.localeCompare(aTime);
+  });
+  $('#inboxMembers').innerHTML = recent.filter(item => `${item.full_name} ${(item.creative_roles || []).join(' ')}`.toLowerCase().includes(search))
+    .slice(0,80).map(item => {
+      const unread = inboxAll.filter(msg => msg.sender_id === item.id && msg.recipient_id === inboxUserId && !msg.read_at).length;
+      return `<button type="button" class="inbox-member ${item.id === activePeer ? 'selected' : ''}" data-peer="${escapeHtml(item.id)}">
+        <strong>${escapeHtml(item.full_name || 'SoundBunker member')} ${item.gold_status ? '★' : ''}</strong>
+        <small>${escapeHtml((item.creative_roles || []).slice(0,2).join(', ') || 'SoundBunker member')}</small>
+        ${unread ? `<b>${unread}</b>` : ''}</button>`;
+    }).join('') || '<p>No members found.</p>';
+  const unreadTotal = inboxAll.filter(msg => msg.recipient_id === inboxUserId && !msg.read_at).length;
+  $('#inboxBadge').textContent = unreadTotal ? `(${unreadTotal})` : '';
+}
+async function loadInbox() {
+  try {
+    const result = await portalApi('/api/inbox');
+    inboxMembers = result.members || [];
+    inboxUserId = result.userId;
+    inboxAll = result.messages || [];
+    renderInboxMembers();
+    if (activePeer) await openThread(activePeer);
+  } catch (err) { $('#inboxMembers').textContent = err.message; }
+}
+async function openThread(peer) {
+  activePeer = peer;
+  try {
+    const result = await portalApi(`/api/inbox?peer=${encodeURIComponent(peer)}`);
+    const person = inboxMembers.find(item => item.id === peer);
+    $('#threadTitle').textContent = person?.full_name || 'Conversation';
+    const messages = result.messages || [];
+    $('#threadMessages').innerHTML = messages.length ? messages.map(msg =>
+      `<div class="thread-message ${msg.sender_id === result.userId ? 'outgoing' : 'incoming'}"><p>${escapeHtml(msg.body)}</p>
+      <small>${escapeHtml(new Intl.DateTimeFormat('en-GB',{dateStyle:'medium',timeStyle:'short'}).format(new Date(msg.created_at)))}</small></div>`).join('') : '<p>No messages yet. Say hello.</p>';
+    $('#threadMessages').scrollTop = $('#threadMessages').scrollHeight;
+    inboxAll.forEach(msg => { if (msg.sender_id === peer && msg.recipient_id === inboxUserId) msg.read_at ||= new Date().toISOString(); });
+    renderInboxMembers();
+  } catch (err) { $('#inboxStatus').textContent = err.message; }
+}
+
 async function signOut() {
   await supabaseClient.auth.signOut();
   location.reload();
@@ -280,9 +388,55 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#refreshDropbox').addEventListener('click', checkDropbox);
   $('#musicUpload').addEventListener('change', event => uploadFiles(event.target, 'music'));
   $('#photosUpload').addEventListener('change', event => uploadFiles(event.target, 'photos'));
+  $('#memberSearch').addEventListener('input', renderInboxMembers);
+  $('#markRead').addEventListener('click', async () => {
+    try {
+      await portalApi('/api/notifications', { ids: $('#markRead').dataset.ids.split(',').filter(Boolean) });
+      await loadNotifications();
+    } catch (err) { $('#notificationList').textContent = err.message; }
+  });
+  $('#privateMessageForm').addEventListener('submit', async event => {
+    event.preventDefault();
+    if (!activePeer) return $('#inboxStatus').textContent = 'Choose a member first.';
+    const body = $('#privateMessage').value.trim();
+    if (!body) return;
+    try {
+      await portalApi('/api/inbox', { recipientId: activePeer, body });
+      $('#privateMessage').value = '';
+      $('#inboxStatus').textContent = 'Message sent.';
+      await openThread(activePeer);
+    } catch (err) { $('#inboxStatus').textContent = err.message; }
+  });
+  document.addEventListener('click', event => {
+    const button = event.target.closest('[data-peer]');
+    if (button) openThread(button.dataset.peer);
+  });
+  document.addEventListener('change', event => {
+    const form = event.target.closest('.client-move-form');
+    if (form && event.target.name === 'date') refreshMoveSlots(form);
+  });
+  document.addEventListener('submit', async event => {
+    const form = event.target.closest('.client-move-form');
+    if (!form) return;
+    event.preventDefault();
+    const button = form.querySelector('button');
+    button.disabled = true;
+    try {
+      const fields = new FormData(form);
+      const result = await portalApi('/api/bookings', { action: 'propose', bookingId: form.dataset.bookingId,
+        date: fields.get('date'), time: fields.get('time') });
+      $('#bookingStatus').textContent = result.message;
+      await loadBookings();
+    } catch (err) { $('#bookingStatus').textContent = err.message; }
+    finally { button.disabled = false; }
+  });
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden && $('#portalPanel') && !$('#portalPanel').hidden && $('#clientDropboxLink').hidden) checkDropbox();
+    if (!document.hidden && !$('#portalPanel').hidden) { loadNotifications(); loadInbox(); loadBookings(); }
   });
+  setInterval(() => {
+    if (!document.hidden && !$('#portalPanel').hidden) { loadNotifications(); loadInbox(); }
+  }, 30000);
   setMode('login');
   boot();
 });
