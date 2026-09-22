@@ -7,5 +7,6 @@ export default async function handler(request,response){
  if(!token||!url||!pub||!secret)return json(response,{error:'Not signed in'},401);
  const auth=createClient(url,pub,{auth:{persistSession:false}});const {data}=await auth.auth.getUser(token);if(!data?.user)return json(response,{error:'Session expired'},401);
  const admin=createClient(url,secret,{auth:{persistSession:false}});const {data:projects,error}=await admin.from('projects').select('*').eq('user_id',data.user.id).order('created_at',{ascending:false});
- if(error)return json(response,{projects:[]});return json(response,{projects:projects||[]});
+ if(error)return json(response,{error:'Project list needs the client deliveries database migration'},503);
+ return json(response,{projects:projects||[]});
 }

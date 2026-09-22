@@ -48,7 +48,9 @@ async function refresh() {
     $('#adminContent').hidden=false;
     selectedId=data.profiles.some(x=>x.id===selectedId)?selectedId:data.profiles[0]?.id;
     render();
-    status(catalog.error?`Service settings unavailable: ${catalog.error}`:'',Boolean(catalog.error));
+    const missing=data.missingSections || [];
+    const setup=missing.length?`Database setup needed for ${missing.join(', ')}. Run the bundled SQL migrations in ADMIN_SETUP_ORDER.txt, then refresh. Sections with data remain available. `:'';
+    status(setup+(catalog.error?`Service settings unavailable: ${catalog.error}`:''),Boolean(missing.length||catalog.error));
   } catch(err) { status(err.message,true); }
 }
 function render() {
@@ -61,7 +63,8 @@ function render() {
     ['PHOTOS',data.photos.length,'Galleries']
   ].map(([name,value,note])=>`<article class="stat-card"><span>${name}</span><strong>${value}</strong><small>${note}</small></article>`).join('');
   $('#setupStatus').textContent=[!data.dropboxReady?'Dropbox credentials are not connected.':'',data.calendarWarning||'',
-    data.bookings.some(x=>['needs_attention','fulfilling'].includes(x.status))?'A paid booking needs manual attention.':''].filter(Boolean).join(' ');
+    data.bookings.some(x=>['needs_attention','fulfilling'].includes(x.status))?'A paid booking needs manual attention.':'',
+    (data.missingSections||[]).length?'Some admin sections need database setup. See the message above.':''].filter(Boolean).join(' ');
   $('#setupStatus').hidden=!$('#setupStatus').textContent;
   renderMoves();renderCalendar();renderBookings();renderClients();renderCodes();renderServices();renderVouchers();
 }
@@ -156,6 +159,10 @@ function renderServices() {
     :'<p class="inline-warning">Service settings could not load. Check the database migration before changing prices.</p>';
 }
 function renderVouchers() {
+  const missing=data.missingSections||[];
+  const prizeReady=!missing.includes('prizes')&&!missing.includes('voucherClaims');
+  $('#prizeForm button[type=submit]')?.toggleAttribute('disabled',!prizeReady);
+  $('#prizeSetupNotice').hidden=prizeReady;
   $('#vouchers').innerHTML=data.vouchers.length?data.vouchers.map(v=>`<div class="item-row"><div><strong>${esc(v.code||'Voucher')} · ${esc(v.service_name||'Experience')}</strong><small>For ${esc(v.recipient_name||'recipient')} · ${esc(v.buyer_email||'')} · €${esc(v.remaining_eur??v.amount_eur??0)} remaining · until ${esc(v.expires_at?fmt(v.expires_at):'—')}</small></div><span class="badge">${esc(v.status)}</span></div>`).join(''):'<p class="muted">No paid vouchers yet.</p>';
   $('#prizesList').innerHTML=data.prizes.length?data.prizes.map(prize=>{
     const used=data.voucherClaims.some(x=>x.prize_id===prize.id&&x.status==='used');
@@ -174,7 +181,7 @@ async function fileAction(action,relative,name,folder=false) {
   try {
     const result=await api('/api/admin-files',{userId:selectedId,action,relative,name,folder});
     if(action==='link' && isUrl(result.url)) { if(tab) tab.location.href=result.url; else location.href=result.url; }
-    else {await refresh();status(result.warning||'Folder updated.',Boolean(result.warning));}
+    else {await refresh();status(result.warning||`Folder updated. Client portal: ${result.notification?.inApp?'notified':'check My Files'}; email: ${result.notification?.email||'not sent'}.`,Boolean(result.warning));}
   } catch(err){tab?.close();status(err.message,true);}
 }
 async function uploadOne(file,index,total) {
@@ -209,7 +216,7 @@ async function uploadFiles(files) {
       $('#uploadStatus').textContent=`Uploading ${file.name}…`;
       const result=await uploadOne(file,succeeded,files.length);
       succeeded++;
-      $('#uploadStatus').textContent=`${succeeded}/${files.length} uploaded · Client portal ${result.notification?.inApp?'notified':'notification failed'} · Email ${result.notification?.email||'not configured'}`;
+      $('#uploadStatus').textContent=`${succeeded}/${files.length} uploaded · Client portal ${result.notification?.inApp?'notified':'notification failed'} · Email ${result.notification?.email||'not configured'}${result.registrationWarning?' · '+result.registrationWarning:''}`;
     }catch(err){status(`Upload stopped on ${file.name}: ${err.message}`,true);break;}
   }
   await loadFiles();
@@ -267,7 +274,11 @@ document.addEventListener('submit',async e=>{
   e.preventDefault();if(!form.reportValidity())return;
   const values=Object.fromEntries(new FormData(form));
   if(form.id==='editClient'){await mutate('/api/admin-dashboard',{action:'update_client',userId:selectedId,fullName:values.fullName,email:values.email,gold:form.elements.gold.checked},'Client updated.');return;}
-  if(form.id==='projectForm'){await mutate('/api/admin-dashboard',{action:'create_project',userId:selectedId,...values},'Project folder created.');return;}
+  if(form.id==='projectForm'){
+    const result=await mutate('/api/admin-dashboard',{action:'create_project',userId:selectedId,...values},'Project folder created.');
+    if(result)status(`Project appears in the client portal. Portal notification: ${result.notification?.inApp?'sent':'failed'}; email: ${result.notification?.email||'not configured'}.`,!result.notification?.inApp);
+    return;
+  }
   if(form.id==='assignForm'){const result=await mutate('/api/admin-dashboard',{action:'add_delivery',userId:selectedId,...values},'Delivery assigned and client notified.');if(result)status(`Delivery assigned. Portal: ${result.notification?.inApp?'notified':'failed'}; email: ${result.notification?.email||'not configured'}.`);return;}
   if(form.id==='codeForm'){await mutate('/api/admin-dashboard',{action:'create_code',...values},'Discount code created.');form.reset();return;}
   if(form.id==='prizeForm'){

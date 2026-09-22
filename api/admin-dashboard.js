@@ -26,13 +26,15 @@ export default async function handler(request, response) {
       upcomingCalendarEvents()
     ]);
     const names = ['profiles','projects','photos','vouchers','bookings','moves','codes','claims','prizes','voucherClaims'];
+    // A missing optional table must not hide every other admin section. Return
+    // the available sections and let the UI identify the migration still needed.
     const failed = names.filter((name,index) => queries[index].error).map(name => name);
-    if (failed.length) return json(response, { error: `Admin data unavailable (${failed.join(', ')}). Run SUPABASE_ADMIN_PORTAL_21_SEPT_2026.sql and the earlier portal migrations.` }, 503);
     return json(response, { profiles: queries[0].data || [], projects: queries[1].data || [], photos: queries[2].data || [],
       vouchers: queries[3].data || [], bookings: queries[4].data || [], moves: queries[5].data || [],
       codes: queries[6].data || [], claims: queries[7].data || [], prizes: queries[8].data || [],
       voucherClaims: queries[9].data || [], calendar: queries[10].events || [],
-      calendarWarning: queries[10].warning || '', dropboxReady: dropboxConfigured(), services: serviceList() });
+      calendarWarning: queries[10].warning || '', missingSections: failed,
+      dropboxReady: dropboxConfigured(), services: serviceList() });
   }
   if (request.method !== 'POST') return json(response,{error:'Method not allowed'},405);
   let input;
@@ -70,7 +72,11 @@ export default async function handler(request, response) {
       const result = await ctx.admin.from(table).insert({ user_id: userId, title, delivery_url: folder.url })
         .select('*').single();
       if (result.error) throw result.error;
-      return json(response, { delivery: result.data, folder });
+      let notification = { inApp: false, email: 'failed' };
+      try { notification = await notifyClient(ctx.admin,userId,'A new project is ready',
+        `${title} is now available in your SoundBunker client area.`, '/client#my-files'); }
+      catch (err) { console.error('Project created; notification failed',err); }
+      return json(response, { delivery: result.data, folder, notification });
     } catch (err) { return json(response, { error: 'Could not create the project. Check for a duplicate name.' }, 409); }
   }
   if (action === 'add_delivery') {

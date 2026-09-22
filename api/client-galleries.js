@@ -6,6 +6,6 @@ export default async function handler(request, response) {
   const context = await requireUser(request);
   if (context.error) return json(response, { error: context.error }, context.status);
   const result = await context.admin.from('photo_galleries').select('id,title,delivery_url,created_at').eq('user_id', context.user.id).order('created_at', { ascending: false });
-  if (result.error) return json(response, { galleries: [] });
+  if (result.error) return json(response, { error: 'Photo galleries need the client deliveries database migration' }, 503);
   return json(response, { galleries: result.data || [] });
 }

@@ -16,6 +16,18 @@ function filePath(root, relative = '') {
   return root + (pieces.length ? '/' + pieces.join('/') : '');
 }
 
+async function registerProject(admin, userId, relative, url) {
+  const parts = relative.split('/');
+  if (parts.length !== 2 || !['My Music', 'My Photos'].includes(parts[0])) return null;
+  const table = parts[0] === 'My Music' ? 'projects' : 'photo_galleries';
+  const existing = await admin.from(table).select('id').eq('user_id', userId).eq('title', parts[1]).maybeSingle();
+  if (existing.error) throw new Error('Project folder exists, but the client portal could not be updated');
+  if (existing.data) return null;
+  const saved = await admin.from(table).insert({ user_id: userId, title: parts[1], delivery_url: url }).select('id').single();
+  if (saved.error) throw new Error('Project folder exists, but the client portal could not be updated');
+  return parts[1];
+}
+
 export default async function handler(request, response) {
   if (!['GET','POST'].includes(request.method)) return json(response, { error: 'Method not allowed' }, 405);
   const ctx = await requireAdmin(request);
@@ -50,18 +62,33 @@ export default async function handler(request, response) {
       if (input.action !== 'finish') for await (const part of request) parts.push(Buffer.isBuffer(part) ? part : Buffer.from(part));
       const result = await uploadClientFile({ path: target, chunk: Buffer.concat(parts),
         sessionId: input.action === 'start' ? '' : sessionId, offset, finish: input.action === 'finish' });
-      let notification = null;
+      let notification = null, registrationWarning = null;
       if (input.action === 'finish') {
+        const parts = String(input.relative || '').split('/');
+        if (parts.length >= 2 && ['My Music', 'My Photos'].includes(parts[0])) {
+          try {
+            const folderPath = filePath(root, parts.slice(0, 2).join('/'));
+            await registerProject(ctx.admin, profile.id, parts.slice(0, 2).join('/'), await dropboxEntryLink(folderPath, true));
+          } catch (registrationError) { registrationWarning = registrationError.message; console.error('File saved; project registration failed', registrationError); }
+        }
         try { notification = await notifyClient(ctx.admin, profile.id, 'A new file is ready',
           `${input.name} has been added to your ${input.relative || 'SoundBunker'} folder.`, '/client#my-files'); }
         catch (notifyError) { console.error('File saved; portal notification failed', notifyError); notification = { inApp: false, email: 'failed' }; }
       }
       return json(response, { sessionId: result.session_id, uploaded: input.action === 'finish',
-        name: result.name, notification });
+        name: result.name, notification, registrationWarning });
     }
     if (input.action === 'mkdir') {
       if (!segment(input.name)) throw new Error('Choose a valid folder name');
-      return json(response, { folder: await makeDropboxFolder(filePath(path, input.name)) });
+      const folder = await makeDropboxFolder(filePath(path, input.name));
+      let notification = null, warning = null;
+      try {
+        const title = await registerProject(ctx.admin, profile.id,
+          input.relative ? `${input.relative}/${input.name}` : input.name, folder.url);
+        if (title) notification = await notifyClient(ctx.admin, profile.id,
+          'A new project is ready', `${title} is now available in your SoundBunker client area.`, '/client#my-files');
+      } catch (registrationError) { warning = registrationError.message; console.error(registrationError); }
+      return json(response, { folder, notification, warning });
     }
     if (input.action === 'link') {
       return json(response, { url: await dropboxEntryLink(path, Boolean(input.folder)) });

@@ -1,6 +1,8 @@
 -- Run after the earlier portal, Dropbox and deliveries migrations.
 -- These tables stay private: application endpoints authenticate every request
 -- and use the service role. Do not add public RLS policies for them.
+-- Existing portal installations can predate the Gold Card counter.
+alter table public.profiles add column if not exists qualifying_booking_count integer not null default 0;
 create table if not exists public.bookings (
   id uuid primary key default gen_random_uuid(),
   booking_ref uuid unique,

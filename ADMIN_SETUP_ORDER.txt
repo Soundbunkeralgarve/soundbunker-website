@@ -1,0 +1,37 @@
+SOUNDBUNKER ADMIN SETUP — 22 SEPTEMBER 2026
+
+Your screenshot's error means the live Supabase database is missing tables or
+columns required by the deployed admin console. Uploading a ZIP alone cannot
+create them. In the Supabase SQL Editor for the SAME project used by Vercel,
+run these bundled files one at a time, in this order:
+
+1. SUPABASE_PORTAL_UPGRADE_17_SEPT_2026.sql
+2. SUPABASE_DROPBOX_CLIENT_FOLDERS_18_SEPT_2026.sql
+3. SUPABASE_CLIENT_DELIVERIES_21_SEPT_2026.sql
+4. SUPABASE_ADMIN_PORTAL_21_SEPT_2026.sql
+
+These migrations use CREATE TABLE IF NOT EXISTS / ADD COLUMN IF NOT EXISTS,
+and are designed to be rerun. If a statement errors, stop and check the exact
+error before continuing. Do not delete tables or existing client data.
+
+Then deploy the contents of this ZIP to the existing Vercel project (index.html
+must be at the root), visit https://www.soundbunker.pt/admin, click Refresh
+data, and open "Vouchers & prizes" on the left. Select Recording or Photo,
+enter the quiz date, and click "Generate code and download PDF". The code is
+printed onto the matching supplied two-page voucher PDF. The same PDF can be
+retrieved in the prize register. Winners sign in at /redeem; the existing QR
+on the supplied voucher goes to that page.
+
+For client updates: Admin > Clients & files > Create folders sets up My Music
+and My Photos. Create a project in Projects & galleries, or create a new folder
+one level beneath My Music/My Photos; it appears in the client's project list.
+Uploading a file through this admin console sends an in-app notification and
+attempts an email. The admin upload status reports each outcome. Changes made
+directly in the Dropbox app bypass this website and do not send notifications.
+Existing manually created Dropbox folders become listed after an upload into
+them through the admin console. Clients can click "Refresh my files" or reopen
+their portal to see newly listed projects. Email requires RESEND_API_KEY and a
+verified NOTIFICATION_FROM_EMAIL (or RESEND_FROM_EMAIL) in Vercel.
+
+If the admin still reports a missing section, check Vercel SUPABASE_URL and
+SUPABASE_SECRET_KEY point to the same Supabase project where SQL was run.

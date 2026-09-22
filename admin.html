@@ -16,7 +16,7 @@
       <button data-tab="codes">VIP discounts</button>
       <button data-tab="services">Service settings</button>
       <button data-tab="updates">Client updates</button>
-      <button data-tab="vouchers">Vouchers</button>
+      <button data-tab="vouchers">Vouchers & prizes</button>
     </nav>
     <div class="admin-sidebar-foot"><a href="/client#inbox">My private inbox ↗</a><a href="/" target="_blank" rel="noopener">View website ↗</a><button id="adminSignOut">Sign out</button></div>
   </aside>
@@ -50,8 +50,9 @@
       <section id="view-vouchers" class="admin-view" hidden><div class="admin-two-col">
         <article class="control-card"><span class="admin-overline">PRIZE VOUCHERS</span><h2>Generate a free session code</h2>
           <p class="muted">Each one-use code prints on the matching original two-page Junction PDF. Clients create an account before redeeming. The PDF downloads when generated and is available again in the register.</p>
+          <p id="prizeSetupNotice" class="inline-warning" hidden>Prize codes need the admin database migration. Run the SQL files listed in ADMIN_SETUP_ORDER.txt and refresh this page.</p>
           <form id="prizeForm" class="control-form"><label>Prize<select name="serviceId"><option value="prize-recording-1h">One-hour recording session</option><option value="prize-photo-30m">30-minute team photoshoot · 10 edited images</option></select></label>
-          <label>Quiz date<input name="quizDate" type="date" required></label><p class="admin-note">Valid for one calendar month from this date, as stated on the voucher.</p><button class="solid-btn">Generate code and download PDF</button></form>
+          <label>Quiz date<input name="quizDate" type="date" required></label><p class="admin-note">Valid for one calendar month from this date, as stated on the voucher.</p><button class="solid-btn" type="submit">Generate code and download PDF</button></form>
           <p id="generatedPrize" class="prize-result" hidden></p>
         </article>
         <article class="control-card"><span class="admin-overline">PRIZE REGISTER</span><h2>Generated codes</h2><div id="prizesList"></div></article>

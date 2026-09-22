@@ -125,7 +125,7 @@ function renderProfile(profile, warning) {
   if (profile.dropbox_shared_url && profile.dropbox_music_url && profile.dropbox_photos_url) {
     dropboxLink.href = profile.dropbox_shared_url;
     show('#clientDropboxLink', true);
-    show('#refreshDropbox', false);
+    show('#refreshDropbox', true);
     show('#dropboxStatus', false);
     clearInterval(folderTimer);
     folderTimer = null;
@@ -154,7 +154,7 @@ function renderProfile(profile, warning) {
 
 async function checkDropbox() {
   const { data: { session } } = await supabaseClient.auth.getSession();
-  if (session) await refreshProfile(session);
+  if (session) await Promise.all([refreshProfile(session), loadProjects(session), loadGalleries(session), loadNotifications()]);
 }
 
 async function uploadChunk(session, type, name, action, chunk, sessionId = '', offset = 0) {
@@ -198,21 +198,21 @@ async function uploadFiles(input, type) {
 async function loadProjects(session) {
   try {
     const response = await fetch('/api/client-projects', { headers: { authorization: `Bearer ${session.access_token}` } });
-    if (!response.ok) return;
+    if (!response.ok) throw new Error('Projects are temporarily unavailable.');
     const data = await response.json();
     const projects = data.projects || [];
     $('#projectCount').textContent = String(projects.length);
     const list = $('#projectList');
     list.innerHTML = '';
-    projects.slice(0, 4).forEach(project => {
+    projects.forEach(project => {
       const element = document.createElement(project.delivery_url ? 'a' : 'span');
       element.className = 'client-mini-project';
       element.textContent = project.title || 'SoundBunker project';
       if (project.delivery_url) { element.href = project.delivery_url; element.target = '_blank'; element.rel = 'noopener'; }
       list.appendChild(element);
     });
-    if (projects.length) $('#projectSummary').textContent = 'Your latest SoundBunker deliveries:';
-    else list.innerHTML = '<span class="client-mini-project">No projects uploaded yet.</span>';
+    $('#projectSummary').textContent = projects.length ? 'Your SoundBunker projects and deliveries:' : 'New projects appear here when the studio creates them.';
+    if (!projects.length) list.innerHTML = '<span class="client-mini-project">No projects uploaded yet.</span>';
   } catch {
     $('#projectList').innerHTML = '<span class="client-mini-project">Projects are temporarily unavailable.</span>';
   }
@@ -221,12 +221,11 @@ async function loadProjects(session) {
 async function loadGalleries(session) {
   try {
     const response = await fetch('/api/client-galleries', { headers: { authorization: `Bearer ${session.access_token}` } });
-    if (!response.ok) return;
+    if (!response.ok) throw new Error('Photo galleries are temporarily unavailable.');
     const data = await response.json();
     const galleries = data.galleries || [];
-    if (!galleries.length) return;
-    $('#photoEmpty').innerHTML = galleries.slice(0, 5).map(gallery => `<a class="client-mini-project" href="${escapeHtml(gallery.delivery_url)}" target="_blank" rel="noopener">${escapeHtml(gallery.title || 'Photo gallery')} ↗</a>`).join('');
-  } catch { /* The main My Photos folder remains available. */ }
+    $('#photoEmpty').innerHTML = galleries.length ? galleries.map(gallery => `<a class="client-mini-project" href="${escapeHtml(gallery.delivery_url)}" target="_blank" rel="noopener">${escapeHtml(gallery.title || 'Photo gallery')} ↗</a>`).join('') : '<a href="#my-files">Open My Photos above ↗</a>';
+  } catch { $('#photoEmpty').textContent = 'Photo galleries are temporarily unavailable.'; }
 }
 
 function dateLabel(value) {
@@ -432,7 +431,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden && $('#portalPanel') && !$('#portalPanel').hidden && $('#clientDropboxLink').hidden) checkDropbox();
-    if (!document.hidden && !$('#portalPanel').hidden) { loadNotifications(); loadInbox(); loadBookings(); }
+    if (!document.hidden && !$('#portalPanel').hidden) {
+      supabaseClient.auth.getSession().then(({data:{session}})=>{if(session){loadProjects(session);loadGalleries(session);}});
+      loadNotifications(); loadInbox(); loadBookings();
+    }
   });
   setInterval(() => {
     if (!document.hidden && !$('#portalPanel').hidden) { loadNotifications(); loadInbox(); }
