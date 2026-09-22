@@ -18,3 +18,45 @@ body[data-service-page="mixing"] .detail-hero-media img{transform:scale(1.18);ob
 .mix-tools-note{margin:15px 0 0;color:#9f92a7;font-size:12px}
 @media(max-width:900px){.mix-brand-wall{grid-template-columns:repeat(3,1fr)}.mix-tools-cards{grid-template-columns:1fr}}
 @media(max-width:650px){body[data-service-page="mixing"] .detail-hero-media img{transform:scale(1.1);object-position:52% 64%}.mix-ssl-close img{transform:scale(1.18)}.mix-ssl-close:hover img{transform:scale(1.2)}.mix-brand-wall{grid-template-columns:repeat(2,1fr)}.mix-brand-wall span{min-height:68px}}
+
+
+/* Sep 22 photo refresh + full manufacturer wall */
+.mix-hardware-grid{grid-template-columns:1.1fr 1fr .9fr}
+.mix-hardware-grid .mix-ssl-close img{transform:scale(1.06);object-position:50% 48%}
+.mix-hardware-grid .mix-ssl-close:hover img{transform:scale(1.1)}
+.mix-hardware-grid .mix-ssl-controls img{object-position:50% 50%}
+.mix-hardware-grid .mix-monitor-rack img{object-position:50% 48%}
+.mix-tools-punch{margin:18px 0 22px;padding:22px 24px;border-left:4px solid #dda5ee;background:#17111d}
+.mix-tools-punch strong{display:block;font:700 clamp(22px,2.4vw,34px)/1.05 "Space Grotesk";letter-spacing:-.03em}
+.mix-tools-punch p{margin:8px 0 0;color:#cbbbcf}
+.mix-brand-wall{grid-template-columns:repeat(6,minmax(0,1fr));background:#0f0b13}
+.mix-brand-wall span{min-height:92px;background:#120d17;color:#f8f4fa;font-weight:800;letter-spacing:.01em;padding:15px}
+.mix-brand-wall .brand-ssl{font-family:"Space Grotesk";font-size:24px;letter-spacing:.08em}
+.mix-brand-wall .brand-maselec{font-size:15px;letter-spacing:.16em}
+.mix-brand-wall .brand-waves{font-size:22px;letter-spacing:.08em}
+.mix-brand-wall .brand-fabfilter{font-size:20px;font-weight:600}
+.mix-brand-wall .brand-izotope{font-size:18px;letter-spacing:.14em}
+.mix-brand-wall .brand-uad{font-size:14px;line-height:1.1}
+.mix-brand-wall .brand-pa{font-size:17px}
+.mix-brand-wall .brand-sonnox{font-size:18px;letter-spacing:.08em}
+.mix-brand-wall .brand-softube{font-size:20px;font-weight:600}
+.mix-brand-wall .brand-soundtoys{font-size:20px;text-transform:lowercase}
+.mix-brand-wall .brand-slate{font-size:14px;letter-spacing:.1em}
+.mix-brand-wall .brand-focusrite{font-family:Georgia,serif;font-size:20px;font-weight:500}
+.mix-brand-wall .brand-adam{font-size:16px;letter-spacing:.12em}
+.mix-brand-wall .brand-acustica{font-size:14px;letter-spacing:.1em}
+.mix-brand-wall .brand-oeksound{font-size:19px;font-weight:600}
+.mix-brand-wall .brand-celemony{font-size:18px;font-weight:600}
+.mix-brand-wall .brand-antares{font-size:18px;letter-spacing:.08em}
+.mix-brand-wall .brand-valhalla{font-size:16px;letter-spacing:.1em}
+@media(max-width:900px){
+  .mix-hardware-grid{grid-template-columns:1fr 1fr}
+  .mix-hardware-grid .mix-monitor-rack{grid-column:1/-1;min-height:420px}
+  .mix-brand-wall{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:650px){
+  .mix-hardware-grid{grid-template-columns:1fr}
+  .mix-hardware-grid .mix-monitor-rack{grid-column:auto;min-height:300px}
+  .mix-brand-wall{grid-template-columns:repeat(2,1fr)}
+  .mix-brand-wall span{min-height:74px}
+}

@@ -1,31 +1,32 @@
-SOUNDBUNKER MIXING PAGE UPDATE
-================================
+SOUNDBUNKER MIXING & MASTERING PHOTO + MANUFACTURER UPDATE
+=========================================================
 
-This ZIP contains the two replacement files for the latest Mixing & Mastering update:
+Replace these files in the ROOT of the soundbunker-website repository:
 
 - mixing-mastering.html
 - mixing-flow.css
+- service-mixing-desk.jpg
+- mix-ssl-controls.jpg
+- mix-monitor-rack.jpg
 
-What it adds:
-- tighter SSL desk crop
-- SSL G Bus Compressor section
-- high-end hybrid analogue/digital mastering explanation
-- plugin/manufacturer wall: SSL, Maselec, Waves, FabFilter, iZotope,
-  Universal Audio, Plugin Alliance, Sonnox, Softube, Soundtoys, Slate Digital
+This update:
+- uses your SSL meter / Solid State Logic close-up as the main mixing image
+- adds your SSL channel-control close-up
+- adds your ADAM Audio / Focusrite hardware photo
+- uses punchier mixing/mastering copy
+- calls out SSL G Bus Compressor + Maselec
+- adds ALL requested manufacturers:
+  SSL, Maselec, Waves, FabFilter, iZotope, Universal Audio,
+  Plugin Alliance, Sonnox, Softube, Soundtoys, Slate Digital,
+  Focusrite, ADAM Audio, Acustica Audio, oeksound, Celemony,
+  Antares and Valhalla DSP
 
-HOW TO USE
-----------
-1. In GitHub Desktop, open the SoundBunker repository and choose "Show in Finder".
-2. Unzip this file.
-3. Drag mixing-mastering.html and mixing-flow.css into the ROOT of the repository.
-4. Choose Replace when macOS asks.
-5. Go back to GitHub Desktop.
-6. Confirm the two changed files are listed.
-7. Commit with a message such as:
-   Update SSL mixing and mastering page
-8. Push origin.
-
-No DNS or Vercel settings need to be changed just to commit these files.
-
-Note: if the live domain is connected to a different Vercel project, a successful push may
-still deploy to more than one Vercel project. This ZIP only handles the website code update.
+HOW TO UPDATE
+-------------
+1. GitHub Desktop -> Repository -> Show in Finder
+2. Unzip this package.
+3. Drag the FIVE website files listed above into the ROOT of soundbunker-website.
+4. Choose Replace when asked.
+5. Return to GitHub Desktop.
+6. Commit: Update mixing photos and pro audio manufacturers
+7. Push origin.
