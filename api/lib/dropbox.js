@@ -107,9 +107,14 @@ export async function uploadClientFile({ path, chunk, sessionId, offset, finish 
     headers: { authorization: `Bearer ${token}`, 'content-type': 'application/octet-stream', 'dropbox-api-arg': JSON.stringify(argument) },
     body: chunk
   });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error_summary || 'Dropbox upload failed');
-  return data;
+  const data = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(data?.error_summary || 'Dropbox upload failed');
+
+  return {
+    ...(data || {}),
+    session_id: data?.session_id || sessionId || undefined,
+    name: data?.name || (finish ? path.split('/').pop() : undefined)
+  };
 }
 
 export async function listDropboxFolder(path) {
