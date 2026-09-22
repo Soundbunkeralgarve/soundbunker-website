@@ -6,7 +6,7 @@
   "scripts": {
     "test:vouchers": "node --experimental-vm-modules --test test/voucher.test.mjs",
     "check": "for f in script.js service-page.js client.js admin.js prize-voucher.js redeem.js api/*.js api/lib/*.js; do node --check \"$f\" || exit 1; done",
-    "test": "node --experimental-vm-modules --test test/voucher.test.mjs"
+    "test": "node --experimental-vm-modules --test test/*.test.mjs"
   },
   "engines": {
     "node": ">=20"

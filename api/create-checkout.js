@@ -10,6 +10,7 @@ import { optionalUser, requireUser } from './lib/supabase-auth.js';
 import { openSlots } from './lib/slot-availability.js';
 import { json, parseJson, safeText, validEmail } from './lib/http.js';
 import { createCheckoutSession } from './lib/stripe.js';
+import { sendBookingConfirmations } from './lib/notify.js';
 
 export default async function handler(request, response) {
   if (request.method !== 'POST') return json(response, { error: 'Method not allowed' }, 405);
@@ -77,6 +78,9 @@ export default async function handler(request, response) {
       });
       if(final.error) throw new Error('Could not confirm this voucher booking');
       freeConfirmed=true;
+      try {
+        await sendBookingConfirmations({ ...held, paid_eur: 0 });
+      } catch (emailError) { console.error('Free voucher booking email failed', ref, emailError); }
       return json(response,{confirmed:true,bookingRef:ref});
     }
     const checkout = await createCheckoutSession({ session, booking, origin, bookingRef: ref, quote, voucher });
@@ -94,7 +98,11 @@ export default async function handler(request, response) {
             const completed=await admin.rpc('finalize_site_booking',{
               p_id:held.id,p_stripe:null,p_calendar:calendarEventId,p_paid:0,p_user:held.user_id||null
             });
-            if(!completed.error)return json(response,{confirmed:true,bookingRef:ref});
+            if(!completed.error){
+              try { await sendBookingConfirmations({ ...held, paid_eur: 0 }); }
+              catch (emailError) { console.error('Recovered voucher booking email failed', ref, emailError); }
+              return json(response,{confirmed:true,bookingRef:ref});
+            }
           }
         }catch(lookupError){
           console.error('Voucher calendar needs review',held.id,lookupError);

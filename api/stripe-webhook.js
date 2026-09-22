@@ -2,6 +2,7 @@ import { verifyStripeSignature } from "./lib/stripe.js";
 import { createCalendarEvent } from "./lib/google-calendar.js";
 import { sendToInvoiceXpressAutomation } from "./lib/invoicexpress.js";
 import { persistVoucherFromCheckout } from "./lib/vouchers.js";
+import { sendBookingConfirmations, sendVoucherConfirmations } from './lib/notify.js';
 import { json, readRawBody } from "./lib/http.js";
 import { createClient } from '@supabase/supabase-js';
 
@@ -25,7 +26,10 @@ export default async function handler(request, response) {
       const result = await admin.from('bookings').select('*').eq('booking_ref', metadata.booking_ref).maybeSingle();
       if (result.error || !result.data) throw new Error('Paid booking record not found');
       booking = result.data;
-      if (booking.status === 'confirmed') return json(response, { received: true, duplicate: true });
+      if (booking.status === 'confirmed') {
+        await sendBookingConfirmations(booking);
+        return json(response, { received: true, duplicate: true });
+      }
       if (booking.stripe_session_id && booking.stripe_session_id !== checkout.id) throw new Error('Stripe booking mismatch');
       if (booking.status === 'expired') {
         await admin.from('bookings').update({ status: 'needs_attention', paid_eur: checkout.amount_total / 100 }).eq('id', booking.id);
@@ -48,7 +52,9 @@ export default async function handler(request, response) {
         p_paid: checkout.amount_total / 100, p_user: booking.user_id || profile.data?.id || null
       });
       if (updated.error) throw new Error('Could not confirm the paid booking and redeem its code');
+      await sendBookingConfirmations({ ...booking, status: 'confirmed', paid_eur: checkout.amount_total / 100 });
     }
+    if (voucher) await sendVoucherConfirmations(checkout, voucher);
     return json(response, { received: true, calendar, invoice, voucher: voucher ? { attached: true, code: voucher.code } : { skipped: true } });
   } catch (error) {
     console.error('Paid booking fulfilment failed', error);

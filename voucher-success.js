@@ -50,10 +50,13 @@ async function loadVoucher() {
   document.querySelector('#vService').textContent = data.service || 'SoundBunker Gift Experience';
   document.querySelector('#vPrice').innerHTML = `€${Number(data.total).toFixed(0)}<small>IVA included</small>`;
   document.querySelector('#vTo').textContent = data.to || '';
-  const fromLine = data.message || data.from || '';
+  const fromLine = data.from || '';
   const fromElement = document.querySelector('#vFrom');
   fromElement.textContent = fromLine;
   fromElement.classList.toggle('long-message', fromLine.length > 34);
+  const messageElement = document.querySelector('#vMessage');
+  messageElement.textContent = data.message || '';
+  messageElement.hidden = !data.message;
   document.querySelector('#vPurchase').textContent = formatDate(data.purchaseDate);
   document.querySelector('#vCode').textContent = data.code || '';
   document.querySelector('#vImage').src = details.image;
