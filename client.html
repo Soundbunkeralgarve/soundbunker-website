@@ -50,6 +50,24 @@
     </section>
 
     <section id="portalPanel" hidden>
+      <section class="client-session-upload" id="session-upload">
+        <div class="client-session-upload-copy">
+          <p class="eyebrow">Before your session</p>
+          <h2>Upload files for your session.</h2>
+          <p>Send us anything we need before you arrive — backing tracks, demos, reference tracks, stems, lyrics or other session files.</p>
+          <div class="client-session-file-types" aria-label="Session file examples"><span>Backing tracks</span><span>Demos</span><span>References</span><span>Stems</span><span>Lyrics</span></div>
+        </div>
+        <div class="client-session-upload-box">
+          <label class="client-session-dropzone" id="sessionDropzone" for="sessionUpload">
+            <span class="client-session-upload-icon" aria-hidden="true">↑</span>
+            <strong>Upload session files</strong>
+            <small>Drag &amp; drop files here or click to browse</small>
+            <input id="sessionUpload" type="file" multiple hidden>
+          </label>
+          <p id="sessionUploadStatus" class="client-session-upload-status" role="status" aria-live="polite">Files are saved securely to your private SoundBunker client folder.</p>
+        </div>
+      </section>
+
       <section class="client-dashboard-hero">
         <div class="client-dashboard-copy">
           <p class="eyebrow">Your SoundBunker</p>
