@@ -47,6 +47,15 @@
 /* Final service-card readability update */
 .service-card h3{font-size:clamp(1.8rem,2.4vw,2.65rem)!important;line-height:1.02!important;margin:.35rem 0 .7rem!important;}
 @media(max-width:760px){.service-card h3{font-size:clamp(1.55rem,7vw,2.15rem)!important;}}
+
+/* Client session-file prompt */
+.session-upload-prompt{background:#17111d;border-top:1px solid rgba(255,255,255,.1);border-bottom:1px solid rgba(255,255,255,.1)}
+.session-upload-prompt-inner{display:grid;grid-template-columns:minmax(0,1.25fr) auto;gap:48px;align-items:center;padding-top:34px;padding-bottom:34px}
+.session-upload-prompt .eyebrow{margin:0 0 8px!important}
+.session-upload-prompt h2{font:600 clamp(27px,3vw,43px)/1.02 'Space Grotesk';letter-spacing:-.035em;margin:0 0 10px}
+.session-upload-prompt p:last-child{margin:0;color:var(--muted);font-size:16px;line-height:1.5;max-width:760px}
+.session-upload-prompt .button{white-space:nowrap;align-self:center}
+@media(max-width:760px){.session-upload-prompt-inner{grid-template-columns:1fr;gap:20px;padding-top:28px;padding-bottom:30px}.session-upload-prompt .button{justify-self:start;white-space:normal}}
 </style>
 <link href="academy.css" rel="stylesheet"/>
 </head>
@@ -95,6 +104,12 @@
 <span data-i18n="hero.meta1">25+ years' experience</span><span data-i18n="hero.meta2">Release-ready sound</span><span data-i18n="hero.meta3">Prices include VAT</span>
 </div>
 </section>
+<section class="session-upload-prompt" aria-label="Client session file upload">
+<div class="wrap session-upload-prompt-inner">
+<div><p class="eyebrow">Already booked a session?</p><h2>Send your session files before you arrive.</h2><p>Upload backing tracks, demos, reference tracks, stems, lyrics or anything else we need for your session.</p></div>
+<a class="button" href="/client#session-upload">Client login &amp; upload files →</a>
+</div>
+</section>
 <section class="intro section wrap" id="studio">
 <div>
 <p class="eyebrow" data-i18n="intro.eyebrow">Built for artists</p>
@@ -110,7 +125,7 @@
 <div class="service-grid wrap">
 <article class="service-card service-card-wide"><img alt="Neumann studio microphone at SoundBunker Algarve" src="service-recording-new.jpg"/><div><span>01</span><h3 data-i18n="services.recording.title">Recording &amp; engineering</h3><p data-i18n="services.recording.copy">Vocals, instruments and complete sessions with an experienced engineer. Two-hour minimum booking.</p><a data-i18n="common.learnMore" href="recording.html">Explore service</a></div></article>
 <article class="service-card"><img alt="Music production equipment at SoundBunker Algarve" src="service-production-new.jpg"/><div><span>02</span><h3 data-i18n="services.production.title">Music production</h3><p data-i18n="services.production.copy">From the first idea to a bespoke, release-ready record.</p><a data-i18n="common.learnMore" href="production.html">Explore service</a></div></article>
-<article class="service-card mixing-card"><img alt="SoundBunker Algarve mixing desk and studio equipment" src="service-mixing-new.jpg"/><div><span>03</span><h3 data-i18n="services.mix.title">Mixing &amp; mastering</h3><p data-i18n="services.mix.copy">Detailed, powerful mixes and masters that translate everywhere.</p><a href="mixing-mastering.html">Pricing, booking &amp; file upload</a></div></article>
+<article class="service-card mixing-card"><img alt="SoundBunker Algarve mixing desk and studio equipment" src="service-mixing-desk.jpg"/><div><span>03</span><h3 data-i18n="services.mix.title">Mixing &amp; mastering</h3><p data-i18n="services.mix.copy">Detailed, powerful mixes and masters that translate everywhere.</p><a href="mixing-mastering.html">Pricing, booking &amp; file upload</a></div></article>
 <article class="service-card"><img alt="Singer recording at SoundBunker Algarve" src="service-voiceover-new.jpg"/><div><span>04</span><h3 data-i18n="services.voice.title">Remote voiceover</h3><p data-i18n="services.voice.copy">Broadcast-quality sessions for agencies, brands and talent worldwide.</p><a data-i18n="common.learnMore" href="voiceover.html">Explore service</a></div></article>
 <article class="service-card service-card-wide photography-card"><img alt="Professional photography session at SoundBunker Algarve" src="service-photography-new.jpg"/><div><span>05</span><h3>Photography Studio</h3><p>High-end portraits, artist imagery, family sessions, personal branding and polished content — professionally shot and edited in our Loulé studio.</p><a href="photography.html">View photography &amp; full pricing</a></div></article>
 <article class="service-card parties-card"><img alt="Balloons and party atmosphere at SoundBunker Algarve" src="parties-balloons.jpg"/><div><span>06</span><h3>Parties &amp; Experiences</h3><p>Birthday parties, Pop Star Experiences, hen &amp; stag sessions and creative celebrations inside The Hub Culture.</p><a href="experiences-parties.html">Explore parties &amp; experiences</a></div></article>

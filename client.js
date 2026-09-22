@@ -86,6 +86,7 @@ async function enterPortal(session) {
   if (profile.role === 'admin' && !['#inbox','#notifications'].includes(location.hash)) { location.replace('/admin'); return; }
   await Promise.all([loadProjects(session), loadGalleries(session), loadVouchers(session), loadBookings(), loadNotifications(), loadInbox()]);
   if(location.hash==='#my-files') document.querySelector('#my-files')?.scrollIntoView({block:'start'});
+  if(location.hash==='#session-upload') document.querySelector('#session-upload')?.scrollIntoView({block:'start'});
 }
 
 async function refreshProfile(session, initial = false) {
@@ -122,6 +123,8 @@ function renderProfile(profile, warning) {
   }
   $('#musicUpload').disabled = !profile.dropbox_music_url;
   $('#photosUpload').disabled = !profile.dropbox_photos_url;
+  $('#sessionUpload').disabled = !profile.dropbox_music_url;
+  $('#sessionDropzone')?.classList.toggle('disabled', !profile.dropbox_music_url);
   if (profile.dropbox_shared_url && profile.dropbox_music_url && profile.dropbox_photos_url) {
     dropboxLink.href = profile.dropbox_shared_url;
     show('#clientDropboxLink', true);
@@ -170,9 +173,9 @@ async function uploadChunk(session, type, name, action, chunk, sessionId = '', o
   return data;
 }
 
-async function uploadFiles(input, type) {
-  const status = $(`#${type}UploadStatus`);
-  const files = Array.from(input.files || []);
+async function uploadFiles(input, type, statusSelector = '', suppliedFiles = null) {
+  const status = $(statusSelector || `#${type}UploadStatus`);
+  const files = Array.from(suppliedFiles || input.files || []);
   if (!files.length) return;
   input.disabled = true;
   try {
@@ -191,6 +194,7 @@ async function uploadFiles(input, type) {
       await uploadChunk(session, type, file.name, 'finish', new Blob([]), first.sessionId, offset);
       status.textContent = `${fileIndex + 1}/${files.length} uploaded. ${file.name} is in My ${type === 'music' ? 'Music' : 'Photos'}.`;
     }
+    if (statusSelector === '#sessionUploadStatus') status.textContent = '✓ Upload complete — your files have been received by SoundBunker.';
   } catch (error) { status.textContent = error.message; }
   finally { input.value = ''; input.disabled = false; }
 }
@@ -387,6 +391,11 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#refreshDropbox').addEventListener('click', checkDropbox);
   $('#musicUpload').addEventListener('change', event => uploadFiles(event.target, 'music'));
   $('#photosUpload').addEventListener('change', event => uploadFiles(event.target, 'photos'));
+  $('#sessionUpload').addEventListener('change', event => uploadFiles(event.target, 'music', '#sessionUploadStatus'));
+  const sessionDropzone = $('#sessionDropzone');
+  ['dragenter','dragover'].forEach(name => sessionDropzone.addEventListener(name, event => { event.preventDefault(); if (!$('#sessionUpload').disabled) sessionDropzone.classList.add('dragging'); }));
+  ['dragleave','drop'].forEach(name => sessionDropzone.addEventListener(name, event => { event.preventDefault(); sessionDropzone.classList.remove('dragging'); }));
+  sessionDropzone.addEventListener('drop', event => { if (!$('#sessionUpload').disabled && event.dataTransfer?.files?.length) uploadFiles($('#sessionUpload'), 'music', '#sessionUploadStatus', event.dataTransfer.files); });
   $('#memberSearch').addEventListener('input', renderInboxMembers);
   $('#markRead').addEventListener('click', async () => {
     try {
