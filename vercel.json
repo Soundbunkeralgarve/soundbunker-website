@@ -39,6 +39,16 @@
       "source": "/hub-academy/",
       "destination": "/hub-academy.html",
       "permanent": true
+    },
+    {
+      "source": "/blog",
+      "destination": "/blog.html",
+      "permanent": true
+    },
+    {
+      "source": "/blog/",
+      "destination": "/blog.html",
+      "permanent": true
     }
   ],
   "rewrites": [

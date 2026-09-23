@@ -1,0 +1,9 @@
+SOUNDBUNKER CLIENT PORTAL MUSIC PLAYER
+
+Copy client.html, client-music.js, client-music.css and the api/client-music.js file into the matching locations in your website repository. Merge the api folder; do not replace or delete the existing api folder. Commit and push, then wait for Vercel to deploy.
+
+Existing downloads, uploads and portal features remain in place. No database migration or new environment variables are needed. The player uses your existing Supabase and Dropbox settings.
+
+Add demos to a client My Music folder or its project subfolders. Clients can select a folder and track in Listen to your music. Use Refresh tracks after adding files. MP3 is recommended for reliable playback across phones and desktop browsers. Other listed audio formats depend on browser codec support.
+
+Checked: JavaScript syntax, authenticated client ownership, traversal rejection, nested-folder links and filtering. Live playback requires a signed-in client and could not be tested against your production account here.

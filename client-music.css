@@ -1,0 +1,10 @@
+.portal-music{margin-top:20px;padding-top:18px;border-top:1px solid rgba(255,255,255,.15);min-width:0}
+.portal-music h4{font-size:17px;margin:0 0 12px}
+.portal-music button{font:inherit;color:inherit;background:rgba(139,92,246,.14);border:1px solid rgba(139,92,246,.4);border-radius:8px;padding:10px 12px;cursor:pointer;text-align:left;overflow-wrap:anywhere}
+.portal-music button:hover,.portal-music button:focus-visible{background:rgba(139,92,246,.3)}
+.portal-music-nav{display:flex;gap:8px;flex-wrap:wrap}
+.portal-music [data-tracks]{display:grid;gap:8px;max-height:280px;overflow:auto;margin:12px 0}
+.portal-music p{overflow-wrap:anywhere;font-size:13px!important}
+.portal-music [data-playing]{font-weight:700}
+.portal-music audio{display:block;width:100%;min-width:0;margin:12px 0}
+.portal-music [hidden]{display:none!important}

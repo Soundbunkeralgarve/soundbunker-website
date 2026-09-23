@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#100d14">
+  <meta name="description" content="SoundBunker Algarve studio news, recording advice, production guides and creative ideas from our Loulé recording studio.">
+  <title>Studio Blog & Music Guides | SoundBunker Algarve</title>
+  <link rel="canonical" href="https://www.soundbunker.pt/blog.html">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://app.trysoro.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="styles.css?v=hub-logo-20260923" rel="stylesheet">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="SoundBunker Algarve">
+  <meta property="og:title" content="Studio Blog & Music Guides | SoundBunker Algarve">
+  <meta property="og:description" content="Studio news, practical recording advice and creative guides from SoundBunker Algarve in Loulé.">
+  <meta property="og:url" content="https://www.soundbunker.pt/blog.html">
+  <meta property="og:image" content="https://www.soundbunker.pt/hero-studio.jpg">
+  <style>
+    .blog-hero{padding:180px 0 78px;background:radial-gradient(circle at 85% 15%,rgba(164,53,255,.28),transparent 34%),linear-gradient(145deg,#09070c,#18101f)}
+    .blog-hero h1{max-width:900px;margin:0;font:700 clamp(54px,8vw,110px)/.9 "Space Grotesk",sans-serif;letter-spacing:-.055em}
+    .blog-hero h1 span{color:var(--purple)}
+    .blog-hero-copy{max-width:720px;margin:28px 0 0;color:#d7cedb;font-size:clamp(18px,2vw,22px);line-height:1.55}
+    .blog-content{min-height:520px;padding:64px 0 110px;background:#f4f0f6;color:#171219}
+    .blog-intro{display:flex;justify-content:space-between;gap:40px;align-items:end;margin-bottom:34px;padding-bottom:24px;border-bottom:1px solid #d4cbd8}
+    .blog-intro h2{margin:0;font:600 clamp(32px,4vw,54px)/1 "Space Grotesk",sans-serif;letter-spacing:-.035em}
+    .blog-intro p{max-width:520px;margin:0;color:#665d69;line-height:1.6}
+    #soro-blog{width:100%;min-height:360px}
+    .blog-actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:36px}
+    @media(max-width:760px){.blog-hero{padding:140px 0 58px}.blog-content{padding:48px 0 80px}.blog-intro{display:block}.blog-intro p{margin-top:18px}}
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header" id="top">
+    <a class="brand" href="index.html" aria-label="SoundBunker Algarve home"><img src="soundbunker-logo.png" alt="SoundBunker Algarve" width="1100" height="160"></a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu"><span></span><span></span></button>
+    <nav id="site-nav" class="site-nav" aria-label="Main navigation">
+      <a href="index.html">Home</a>
+      <a href="index.html#services">Services</a>
+      <a href="experiences-parties.html">Experiences</a>
+      <a href="hub-academy.html">Hub Academy</a>
+      <a href="record-label.html">Label</a>
+      <a href="blog.html" aria-current="page">Blog</a>
+      <a href="client.html">Client Login</a>
+      <a href="index.html#contact">Contact</a>
+    </nav>
+    <div class="header-actions"><a class="button button-small" href="index.html#book">Book now</a></div>
+  </header>
+  <main id="main">
+    <section class="blog-hero">
+      <div class="wrap">
+        <p class="eyebrow">SoundBunker Algarve · Studio journal</p>
+        <h1>Ideas, insight and <span>studio knowledge.</span></h1>
+        <p class="blog-hero-copy">Recording advice, production guides, artist stories and the latest from our creative home in central Loulé.</p>
+      </div>
+    </section>
+    <section class="blog-content" aria-labelledby="latest-articles">
+      <div class="wrap">
+        <div class="blog-intro"><h2 id="latest-articles">Latest articles</h2><p>Explore practical music-making advice, studio news and useful guides for artists, creators and families.</p></div>
+        <div id="soro-blog"></div>
+        <script src="https://app.trysoro.com/api/embed/303355d5-99c6-4639-8dee-d1924f88d500" defer></script>
+        <noscript>Please enable JavaScript to view the SoundBunker blog.</noscript>
+        <div class="blog-actions"><a class="button" href="index.html#book">Book a session</a><a class="button button-outline" href="index.html#services">Explore services</a></div>
+      </div>
+    </section>
+  </main>
+  <footer class="site-footer"><div class="wrap footer-main"><a class="brand" href="index.html"><img src="soundbunker-logo.png" alt="SoundBunker Algarve" loading="lazy" decoding="async"></a><div><a href="index.html#services">Services</a><a href="hub-academy.html">Hub Academy</a><a href="blog.html">Blog</a><a href="index.html#book">Book now</a><a href="mailto:bookings@soundbunker.pt">Contact</a></div></div><div class="wrap footer-legal"><span>© <span id="year"></span> SoundBunker Algarve</span><span><a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a></span></div></footer>
+  <script>
+    const toggle=document.querySelector('.menu-toggle');
+    const nav=document.querySelector('#site-nav');
+    toggle.addEventListener('click',()=>{const open=nav.classList.toggle('open');toggle.setAttribute('aria-expanded',String(open));});
+    nav.querySelectorAll('a').forEach(link=>link.addEventListener('click',()=>{nav.classList.remove('open');toggle.setAttribute('aria-expanded','false');}));
+    document.querySelector('#year').textContent=new Date().getFullYear();
+  </script>
+</body>
+</html>

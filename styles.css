@@ -49,10 +49,28 @@
 }
 
 /* Respect the artwork's natural proportions across every page. */
+img{height:auto}
 .site-header .brand img,.footer-main img,.academy-partner-marks img,.hub-logo-only img{height:auto;object-fit:contain}
 .footer-main img{max-width:min(260px,100%);flex:none}
 .latest-release-mini img,.release-card img{height:auto}
+.label-art img{height:auto;aspect-ratio:auto;object-fit:contain}
 @media(max-width:680px){
+  .label-art{width:100%;max-width:320px;margin-inline:auto}
   .footer-main{flex-wrap:wrap}
   .footer-main img{width:min(190px,55vw)}
+}
+
+/* Transparent partner artwork: solid white on the dark Hub sections. */
+.partnership-logos img,
+.hub-logo-only img {
+  filter: brightness(0) invert(1);
+  background: transparent;
+  opacity: 1;
+  mix-blend-mode: normal;
+  object-fit: contain;
+  height: auto;
+}
+.partnership-logos img {
+  display: block;
+  max-width: 100%;
 }
