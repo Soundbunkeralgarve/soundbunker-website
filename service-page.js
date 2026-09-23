@@ -65,8 +65,12 @@ function langNow(){const saved=localStorage.getItem("sb-language");return ["en",
 function renderDetail(lang){
   const d=page[lang]||page.en;
   const heroMedia=page.video?`<video autoplay muted loop playsinline preload="metadata" poster="party-poster.jpg" aria-label="${d.title}"><source src="${page.video}" type="video/mp4"></video>`:`<img src="${page.image}" alt="${d.title} at SoundBunker Algarve">`;
-  document.title=`${d.title} | SoundBunker Algarve`;
-  document.querySelector('meta[name="description"]').content=d.hero;
+  // Keep the descriptive, page-specific server HTML metadata for English searches.
+  // The language switcher may localise it for visitors after the page loads.
+  if (lang !== 'en') {
+    document.title=`${d.title} | SoundBunker Algarve`;
+    document.querySelector('meta[name="description"]').content=d.hero;
+  }
   document.querySelector("#detail-hero").innerHTML=`<div class="detail-hero-media">${heroMedia}</div><div class="detail-hero-shade"></div><div class="detail-hero-content wrap"><p class="eyebrow">${d.eyebrow}</p><h1>${d.title}</h1><p class="detail-hero-copy">${d.hero}</p><div class="detail-hero-actions"><a class="button" href="${pageKey==='mixing'?'#mix-prices-title':'#book'}">${pageKey==='mixing'?(lang==='pt'?'Ver preços e encomendar':lang==='fr'?'Voir les prix et commander':'View prices & order'):(lang==="pt"?"Reservar ou pedir orçamento":lang==="fr"?"Réserver ou demander un devis":"Book or request a quote")}</a><a class="text-link" href="index.html#services">← ${lang==="pt"?"Todos os serviços":lang==="fr"?"Tous les services":"All services"}</a></div></div>`;
   document.querySelector("#detail-content").innerHTML=`
     <section class="section wrap"><div class="detail-proof">${d.proof.map(x=>`<div><strong>${x[0]}</strong><span>${x[1]}</span></div>`).join("")}</div></section>

@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://soundbunker.pt/sitemap.xml
+Sitemap: https://www.soundbunker.pt/sitemap.xml

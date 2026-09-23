@@ -9,14 +9,31 @@ const pages = {
   "experiences-parties.html":"parties"
 };
 
-const template = key => `<!doctype html>
+const seo = {
+  recording: ["Recording Studio in Loulé | Sessions with Engineer", "Book a recording studio session with an experienced engineer in Loulé, Algarve. Vocals and instruments, with mixing and mastering included. From €250.", "Recording with an engineer", "Record vocals and instruments in Loulé with an experienced engineer. Mixing and mastering are included in the booked session."],
+  production: ["Music Production in the Algarve | SoundBunker", "Create an original song at SoundBunker Algarve. Two focused production and vocal sessions in Loulé, followed by a professional mix and master.", "Music production in the Algarve", "Create an original song across two focused sessions, then finish it with a professional mix and master."],
+  mixing: ["Online Mixing & Mastering | SoundBunker Algarve", "Professional online mixing and mastering from SoundBunker Algarve. See clear prices, book online and upload your stems securely for a release-ready finish.", "Online mixing and mastering", "Choose your mixing or mastering service, book online and upload your stems securely."],
+  voiceover: ["Remote Voiceover Studio in Portugal | SoundBunker", "Broadcast-quality remote voiceover sessions from our treated studio in Loulé, Portugal. Live direction via SessionLink Pro, Neumann U87 and experienced engineering.", "Remote voiceover sessions", "Record broadcast-quality voiceover in Loulé with live direction available from anywhere."],
+  photography: ["Photography Studio in Loulé, Algarve | SoundBunker", "Book a professional studio photoshoot in central Loulé. Artist portraits, family photography and business branding with edited digital images.", "Photography studio in Loulé", "Book artist, family or business photography with professionally edited digital images."],
+  parties: ["Pop Star Experiences & Birthday Parties | Loulé", "Celebrate at SoundBunker Algarve with a Pop Star recording experience, birthday party, hen or stag session. Studio music and professional photography in Loulé.", "Studio parties and experiences", "Celebrate with recording, photography and creative activities at SoundBunker Algarve."]
+};
+
+const template = (file, key) => `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#100d14">
-  <meta name="description" content="SoundBunker Algarve professional creative service in Loulé.">
-  <title>SoundBunker Algarve</title>
+  <meta name="description" content="${seo[key][1]}">
+  <title>${seo[key][0]}</title>
+  <link rel="canonical" href="https://www.soundbunker.pt/${file}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="SoundBunker Algarve">
+  <meta property="og:title" content="${seo[key][0]}">
+  <meta property="og:description" content="${seo[key][1]}">
+  <meta property="og:url" content="https://www.soundbunker.pt/${file}">
+  <meta property="og:image" content="https://www.soundbunker.pt/hero-studio.jpg">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -43,8 +60,8 @@ const template = key => `<!doctype html>
     <div class="header-actions"><div class="language-switcher" role="group" aria-label="Language"><button class="lang active" type="button" data-lang="en" aria-pressed="true">EN</button><button class="lang" type="button" data-lang="pt" aria-pressed="false">PT</button><button class="lang" type="button" data-lang="fr" aria-pressed="false">FR</button></div><a class="button button-small" href="#book" data-i18n="common.book">Book now</a></div>
   </header>
   <main id="main">
-    <section class="detail-hero" id="detail-hero"></section>
-    <div id="detail-content"></div>
+    <section class="detail-hero" id="detail-hero"><div class="detail-hero-content wrap"><h1>${seo[key][2]}</h1><p class="detail-hero-copy">${seo[key][3]}</p></div></section>
+    <div id="detail-content"><section class="section wrap detail-lead"><h2>${seo[key][2]} at SoundBunker Algarve</h2><p>${seo[key][3]}</p></section></div>
     <section class="booking section" id="book">
       <div class="wrap detail-book-intro"><p class="eyebrow" data-i18n="booking.eyebrow">Online booking</p><h2 data-i18n="booking.title">Book your studio time.</h2><p data-i18n="booking.copy">Choose your session, select an available date and secure it with your VAT-inclusive deposit.</p></div>
       <div class="wrap booking-grid"><div class="booking-copy"><ul><li data-i18n="booking.rule1">Weekdays: 10:00, 13:00 or 16:00</li><li data-i18n="booking.rule2">Saturday: 16:00, two hours only</li><li data-i18n="booking.rule3">Sunday: 10:00, two or four hours</li><li data-i18n="booking.rule4">Free move with more than 24 hours' notice</li></ul><p class="policy" data-i18n="booking.policy">The deposit is non-refundable for cancellation or changes within 24 hours.</p><p>For parties, podcasts, voiceover, photography, mixing or a bespoke song, email <a href="mailto:bookings@soundbunker.pt">bookings@soundbunker.pt</a> for a tailored booking.</p></div>
@@ -68,4 +85,4 @@ const template = key => `<!doctype html>
 </body>
 </html>`;
 
-for (const [file,key] of Object.entries(pages)) writeFileSync(file,template(key));
+for (const [file,key] of Object.entries(pages)) writeFileSync(file,template(file,key));
