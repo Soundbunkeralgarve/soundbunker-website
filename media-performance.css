@@ -1,0 +1,8 @@
+/* Keep a still image visible while desktop video loads and on smaller screens. */
+.hero-media picture,
+.hero-media video { position:absolute; inset:0; width:100%; height:100%; }
+.hero-media picture img { display:block; width:100%; height:100%; object-fit:cover; object-position:center; }
+.hero-media video { z-index:1; }
+@media (max-width:767px) {
+  .hero-media video { display:none; }
+}

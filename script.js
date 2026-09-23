@@ -118,8 +118,22 @@ let currentLanguage = localStorage.getItem("sb-language") || (navigator.language
 let googleReviewData = null;
 const siteEsc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let promoTimer, promoSequence = 0;
+let supabaseSdkPromise;
+function loadSupabaseSdk(){
+  if(window.supabase)return Promise.resolve();
+  if(!supabaseSdkPromise){
+    supabaseSdkPromise=new Promise((resolve,reject)=>{
+      const script=document.createElement('script');
+      script.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+      script.onload=resolve;
+      script.onerror=()=>{supabaseSdkPromise=null;reject(new Error('Unable to load booking sign-in'));};
+      document.head.append(script);
+    });
+  }
+  return supabaseSdkPromise;
+}
 async function bookingBearer(){
-  if(!window.supabase)return '';
+  await loadSupabaseSdk();
   const cfg=await fetch('/api/supabase-config').then(r=>r.json());
   if(!cfg.url||!cfg.key)return '';
   const auth=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true}});

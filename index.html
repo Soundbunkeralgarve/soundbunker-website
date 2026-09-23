@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!DOCTYPE html>
 
 <!-- SoundBunker Website V5 — Distinct Service Layouts, Voiceover & Parties -->
 <html lang="en">
@@ -17,9 +16,10 @@
 <link href="styles.css" rel="stylesheet"/>
 <link href="v5-styles.css" rel="stylesheet"/>
 <link href="google-reviews.css" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script defer="" src="script.js"></script>
 <script defer="" src="newsletter.js"></script>
+<script defer src="media-performance.js"></script>
 <style>
 .mixing-card img{object-position:center;transform:scale(1.18)}.mixing-card:hover img{transform:scale(1.23)}
 .academy-home{display:grid;grid-template-columns:.7fr 1.3fr;gap:70px;align-items:center}.academy-home-logo{background:#f4f0eb;padding:26px;border-radius:8px}.academy-home-logo img{width:100%;border-radius:4px}.academy-home-copy>p:not(.eyebrow){font-size:19px;line-height:1.65;color:var(--muted)}
@@ -61,6 +61,7 @@
 </style>
 <link href="academy.css" rel="stylesheet"/>
 <link href="calendar-picker.css" rel="stylesheet"/>
+<link href="media-performance.css" rel="stylesheet"/>
 <script defer="" src="calendar-picker.js"></script>
 <link href="https://www.soundbunker.pt/" rel="canonical"/>
 <meta content="website" property="og:type"/>
@@ -103,7 +104,7 @@
 </header>
 <main id="main">
 <section aria-labelledby="hero-title" class="hero">
-<div class="hero-media"><video aria-label="SoundBunker Algarve studio" autoplay="" loop="" muted="" playsinline="" poster="hero-studio.webp" preload="metadata"><source src="soundbunker-header-black-and-white.mp4" type="video/mp4"/></video></div>
+<div class="hero-media"><picture><img src="hero-studio.webp" alt="SoundBunker Algarve recording studio" width="1400" height="933" fetchpriority="high" decoding="async"/></picture><video aria-label="SoundBunker Algarve studio" autoplay loop muted playsinline preload="none" data-video-src="soundbunker-header-black-and-white.mp4"></video></div>
 <div class="hero-shade"></div>
 <div class="hero-content wrap">
 <p class="eyebrow" data-i18n="hero.eyebrow">Recording studio · Loulé, Algarve</p>
@@ -152,7 +153,7 @@
 <section class="party-home section" id="parties">
 <div class="wrap party-home-head"><div><p class="eyebrow" data-i18n="partyHome.eyebrow">Birthday parties at SoundBunker</p><h2 data-i18n="partyHome.title">Not just a party. Their own studio moment.</h2></div><p data-i18n="partyHome.lead">A private three-hour celebration combining recording, photography, food and creative fun—with professionally finished music and photographs to keep.</p></div>
 <div class="wrap party-home-grid">
-<div class="party-video-frame"><video aria-label="SoundBunker children’s birthday party" autoplay="" loop="" muted="" playsinline="" poster="party-poster.jpg" preload="metadata"><source src="party-loop.mp4" type="video/mp4"/></video><div class="party-video-label"><span data-i18n="partyHome.videoLabel">Real SoundBunker birthday party</span><b>▶ 20 SEC</b></div></div>
+<div class="party-video-frame"><video aria-label="SoundBunker children’s birthday party" autoplay loop muted playsinline poster="party-poster.jpg" preload="none" data-video-src="party-loop.mp4"></video><div class="party-video-label"><span data-i18n="partyHome.videoLabel">Real SoundBunker birthday party</span><b>▶ 20 SEC</b></div></div>
 <div class="party-inclusions">
 <article><b>01</b><h3 data-i18n="partyHome.recordTitle">Record together</h3><p data-i18n="partyHome.recordCopy">One hour in the recording studio with an engineer. The party songs are professionally mixed and mastered.</p></article>
 <article><b>02</b><h3 data-i18n="partyHome.photoTitle">Professional photoshoot</h3><p data-i18n="partyHome.photoCopy">One hour of guided group photography with 15 professionally edited images included.</p></article>
@@ -197,7 +198,7 @@
 </ul>
 <a class="button" data-i18n="remoteHome.cta" href="voiceover.html">Explore remote sessions</a>
 </div>
-<div class="remote-visual"><img alt="Remote voiceover session at SoundBunker Algarve" decoding="async" height="1350" loading="lazy" src="vocals.webp" width="900"><span data-i18n="remoteHome.badge">Directed live · Delivered worldwide</span></img></div>
+<div class="remote-visual"><img alt="Remote voiceover session at SoundBunker Algarve" decoding="async" height="1350" loading="lazy" src="vocals.webp" width="900"><span data-i18n="remoteHome.badge">Directed live · Delivered worldwide</span></div>
 </div>
 <div aria-label="Selected remote session clients" class="wrap client-wall">
 <p data-i18n="remoteHome.clients">Selected brands and productions</p>
@@ -228,7 +229,7 @@
 <span class="label-pill">Artist development</span><span class="label-pill">Production</span><span class="label-pill">Releases</span><span class="label-pill">Events coming soon</span>
 <h3>More than a recording studio.</h3>
 <p>SoundBunker works with local and emerging artists to develop their sound and turn ideas into finished, release-ready records. From writing and production through recording, mixing, mastering and release strategy, we want to give Algarve talent a professional platform to build real catalogues and audiences.</p>
-<div class="latest-release-mini"><img alt="Lofty The Eclipse artwork" decoding="async" height="1254" loading="lazy" src="latest-eclipse.webp" width="1254"><img alt="Africa Juice Me Myself and I artwork" decoding="async" height="1254" loading="lazy" src="latest-africa-juice.webp" width="1254"/></img></div>
+<div class="latest-release-mini"><img alt="Lofty The Eclipse artwork" decoding="async" height="1254" loading="lazy" src="latest-eclipse.webp" width="1254"><img alt="Africa Juice Me Myself and I artwork" decoding="async" height="1254" loading="lazy" src="latest-africa-juice.webp" width="1254"/></div>
 <div class="label-actions"><a class="button" href="record-label.html">Explore the Record Label</a><a class="button button-outline" href="https://open.spotify.com/artist/4EVUQ7kHLkDjq92K6H3GNZ" rel="noopener" target="_blank">Listen on Spotify</a></div>
 </div>
 </div>
