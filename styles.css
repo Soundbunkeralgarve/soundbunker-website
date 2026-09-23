@@ -47,3 +47,12 @@
   .site-header .lang{width:25px}
   .site-header .menu-toggle{margin-left:5px}
 }
+
+/* Respect the artwork's natural proportions across every page. */
+.site-header .brand img,.footer-main img,.academy-partner-marks img,.hub-logo-only img{height:auto;object-fit:contain}
+.footer-main img{max-width:min(260px,100%);flex:none}
+.latest-release-mini img,.release-card img{height:auto}
+@media(max-width:680px){
+  .footer-main{flex-wrap:wrap}
+  .footer-main img{width:min(190px,55vw)}
+}

@@ -14,8 +14,14 @@ function startVideo(video) {
   video.play().catch(() => {});
 }
 
+// First paint the much smaller hero image and the text. Start the decorative
+// video only after the page load, leaving booking controls responsive.
 if (!mobileScreen.matches && !reducedMotion.matches && !saveData) {
-  startVideo(document.querySelector('.hero-media video'));
+  window.addEventListener('load', () => {
+    const loadVideo = () => startVideo(document.querySelector('.hero-media video'));
+    if ('requestIdleCallback' in window) requestIdleCallback(loadVideo, { timeout: 2500 });
+    else setTimeout(loadVideo, 1000);
+  }, { once:true });
 }
 
 const partyVideo = document.querySelector('.party-video-frame video');
