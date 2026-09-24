@@ -26,3 +26,19 @@ export function marginCheck(subtotal, shipping, supplierTotal) {
   const contribution = revenue - supplierTotal - fees;
   return { allowed: contribution >= Math.ceil(revenue * minimum), contribution, revenue, fees, minimum };
 }
+
+export function productLabel(name = '') {
+  const base = name.split(' / ')[0].trim();
+  const design = base.match(/^Unisex Organic Cotton Creator 2\.0 T-Shirt (.+)$/i);
+  const slogans = {EXCELLENCE:'Excellence',DRUNK:'Drunk','LAST TAKE':'Last Take',MUM:'My Mum Loves My Music',GOD:'Rap God',DJ:'I’m Not a DJ',AUTOTUNE:'Autotune',BANGERS:'I Only Make Bangers','WARM UP':'Warm Up',TALENT:'Talent'};
+  if (design) return `${slogans[design[1].toUpperCase()] || design[1]} T-Shirt`;
+  if (/^SoundBunker /i.test(base)) {
+    if (productCategory(base)==='tshirts') return 'SoundBunker T-Shirt';
+    if (productCategory(base)==='hoodies') return /zip/i.test(base)?'SoundBunker Zip Hoodie':'SoundBunker Hoodie';
+    if (/bucket hat/i.test(base)) return 'SoundBunker Bucket Hat';
+    if (/trucker/i.test(base)) return 'SoundBunker Trucker Cap';
+    if (/polo/i.test(base)) return 'SoundBunker Polo';
+    if (/water bottle/i.test(base)) return 'SoundBunker Water Bottle';
+  }
+  return base;
+}

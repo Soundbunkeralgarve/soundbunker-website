@@ -1,4 +1,4 @@
-import { retailPrice, productCategory, marginCheck } from './shop-pricing.js';
+import { retailPrice, productCategory, productLabel, marginCheck } from './shop-pricing.js';
 import { campaignImages } from './shop-artwork.js';
 import { randomUUID, randomBytes, timingSafeEqual } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
@@ -36,7 +36,7 @@ export async function shopProduct(id) {
   const artwork = campaignImages[key];
   const campaign = artwork && images.includes(artwork.sourceImage) ? artwork.image : '';
   if (campaign) images.unshift(campaign);
-  const value = { category: productCategory(detail.sync_product.name), colors: [...new Set(variants.map(v => v.color).filter(Boolean))], campaign: Boolean(campaign), id: detail.sync_product.id, name: detail.sync_product.name, image: images[0] || '', images, variants,
+  const value = { display_name: productLabel(detail.sync_product.name), category: productCategory(detail.sync_product.name), colors: [...new Set(variants.map(v => v.color).filter(Boolean))], campaign: Boolean(campaign), id: detail.sync_product.id, name: detail.sync_product.name, image: images[0] || '', images, variants,
     price: variants.length ? Math.min(...variants.map(v => v.price)) : null };
   if (productCache.size > 200) productCache.clear();
   productCache.set(key, { until: Date.now() + 60000, value });
@@ -54,7 +54,7 @@ export function publicVariant(v, productName = v.name) {
   let price = retailPrice(productName);
   if (price === undefined) { try { price = cents(v.retail_price); } catch { return null; } }
   if (price < 50) return null;
-  return { id: v.id, name: v.name, size: v.size, color: v.color, price, image: httpsURL(v.files?.find(f => f.type === 'preview')?.preview_url ) };
+  return { id: v.id, name: [productLabel(productName), v.color, v.size].filter(Boolean).join(' / '), size: v.size, color: v.color, price, image: httpsURL(v.files?.find(f => f.type === 'preview')?.preview_url ) };
 }
 const text = (v, n = 150) => typeof v === 'string' ? v.trim().slice(0, n) : '';
 export function cleanRecipient(value = {}) {
