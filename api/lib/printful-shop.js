@@ -1,5 +1,5 @@
 import { campaignImages } from './shop-artwork.js';
-import { retailPrice, productCategory, productLabel, marginCheck, minimumShopPrice, applyShopDiscount, loadShopDiscount } from './shop-pricing.js';
+import { supplierCost, deliveryRetailPrice, retailPrice, productCategory, productLabel, marginCheck, minimumShopPrice, applyShopDiscount, loadShopDiscount } from './shop-pricing.js';
 import { randomUUID, randomBytes, timingSafeEqual } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import { sendTransactionalEmail } from './notify.js';
@@ -123,13 +123,14 @@ export async function quoteOrder(input, db) {
   const available = rates.filter(r => r.currency === 'EUR' && r.id && Number(r.rate) >= 0);
   const rate = available.find(r => r.id === 'STANDARD') || available.sort((a,b) => Number(a.rate)-Number(b.rate))[0];
   if (!rate) throw new Error('Delivery is not available for this basket and address.');
-  const shipping = cents(rate.rate);
+  const shipping = deliveryRetailPrice(cents(rate.rate));
   const subtotal = items.reduce((n,i) => n+i.price*i.quantity,0);
   stage = 'estimate_data';
   const estimate = await pf('/orders/estimate-costs', { recipient, items: pfItems, shipping: rate.id });
   if (estimate.costs?.currency !== 'EUR') {const error=new Error('This basket needs a price review. Please contact bookings@soundbunker.pt.');error.shopStage='estimate_currency_'+(/^[A-Z]{3}$/.test(estimate.costs?.currency)?estimate.costs.currency:'missing');throw error;}
+  const supplierTotal = supplierCost(cents(estimate.costs.total), cents(estimate.costs.vat ?? '0'));
   const review=[];
-  if (!marginCheck(subtotal, shipping, cents(estimate.costs.total)).allowed) review.push({scope:'basket',minimum_subtotal:minimumShopPrice(shipping,cents(estimate.costs.total))});
+  if (!marginCheck(subtotal, shipping, supplierTotal).allowed) review.push({scope:'basket',minimum_subtotal:minimumShopPrice(shipping,supplierTotal)});
   // Do not let a profitable item subsidise a loss-making product in a mixed basket.
   if (items.length > 1) {
     for (const item of items) {
@@ -137,7 +138,7 @@ export async function quoteOrder(input, db) {
       const line = await pf('/orders/estimate-costs', { recipient, items: [{ sync_variant_id: item.id, quantity: item.quantity }], shipping: rate.id });
       const costs = line.costs;
       if (costs?.currency !== 'EUR') throw new Error('This basket needs a price review. Please contact bookings@soundbunker.pt.');
-      const production = cents(costs.total) - cents(costs.shipping);
+      const production = supplierCost(cents(costs.total), cents(costs.vat ?? '0')) - cents(costs.shipping);
       if (production < 0) throw new Error('This basket needs a price review. Please contact bookings@soundbunker.pt.');
       if (!marginCheck(item.price * item.quantity, 0, production).allowed) review.push({id:item.id,name:item.name,minimum_unit_price:Math.ceil(minimumShopPrice(0,production)/item.quantity)});
     }

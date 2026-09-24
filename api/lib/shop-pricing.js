@@ -1,5 +1,5 @@
 // Retail prices in cents, including VAT. Never trust browser or supplier retail prices.
-export const retailPrices = Object.freeze({ tshirts: 6000, hoodies: 9000, hats: 4000, polos: 6000 });
+export const retailPrices = Object.freeze({ tshirts: 4500, hoodies: 7000, hats: 3500, polos: 5000 });
 export function productCategory(name = '') {
   if (/\bpolo\b/i.test(name)) return 'polos';
   if (/\bhood(?:ie|y|ies)\b/i.test(name)) return 'hoodies';
@@ -8,7 +8,7 @@ export function productCategory(name = '') {
   return 'accessories';
 }
 export function retailPrice(name, fallback) {
-  if (/\bshotta bag\b/i.test(name)) return 5000;
+  if (/\bshotta bag\b/i.test(name)) return 4000;
   return retailPrices[productCategory(name)] ?? fallback;
 }
 function setting(name, fallback, min, max) {
@@ -16,8 +16,8 @@ function setting(name, fallback, min, max) {
   if (!Number.isFinite(value) || value < min || value > max) throw new Error('Shop margin settings need attention');
   return value;
 }
-// Conservative contribution estimate, not accounting profit. Supplier VAT is not
-// assumed recoverable. Rates are configurable to match the merchant's tax/fee setup.
+// Contribution estimate, not accounting profit. Pass supplier costs after
+// eligible VAT recovery. Rates remain configurable for the merchant tax/fee setup.
 export function marginCheck(subtotal, shipping, supplierTotal) {
   const vat = setting('SHOP_MARGIN_VAT_RATE', 0.23, 0, 1);
   const feeRate = setting('SHOP_MARGIN_PAYMENT_RATE', 0.035, 0, 1);
@@ -79,4 +79,21 @@ export function minimumShopPrice(shipping, supplierTotal) {
  let low=0,high=10000000;
  while(low<high){const mid=Math.floor((low+high)/2);if(marginCheck(mid,shipping,supplierTotal).allowed)high=mid;else low=mid+1;}
  return low;
+}
+
+// Owner confirms eligible Printful invoice VAT is reclaimed. Subtract only the
+// explicit VAT field; never infer VAT from a gross price or deduct other taxes.
+// Set SHOP_RECOVER_PRINTFUL_VAT=false if the accounting treatment changes.
+export function supplierCost(total, vat = 0) {
+  if (![total, vat].every(n => Number.isSafeInteger(n) && n >= 0) || vat > total) throw new Error('Invalid supplier VAT');
+  return total - (process.env.SHOP_RECOVER_PRINTFUL_VAT === 'false' ? 0 : vat);
+}
+// Delivery includes sales VAT and its variable payment fee, rounded up to 50c.
+// Fixed payment fees remain in the basket margin calculation.
+export function deliveryRetailPrice(netShipping) {
+  const vat = setting('SHOP_MARGIN_VAT_RATE', 0.23, 0, 1);
+  const fee = setting('SHOP_MARGIN_PAYMENT_RATE', 0.035, 0, 1);
+  const divisor = 1 - fee * (1 + vat);
+  if (!Number.isSafeInteger(netShipping) || netShipping < 0 || divisor <= 0) throw new Error('Invalid delivery pricing');
+  return Math.ceil(netShipping * (1 + vat) / divisor / 50) * 50;
 }
