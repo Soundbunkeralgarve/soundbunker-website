@@ -1,3 +1,4 @@
+import { retailPrice, productCategory, marginCheck } from './shop-pricing.js';
 import { campaignImages } from './shop-artwork.js';
 import { randomUUID, randomBytes, timingSafeEqual } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
@@ -30,12 +31,12 @@ export async function shopProduct(id) {
   const cached = productCache.get(key);
   if (cached && cached.until > Date.now()) return cached.value;
   const detail = await pf(`/store/products/${key}`);
-  const variants = detail.sync_product.is_ignored ? [] : detail.sync_variants.map(publicVariant).filter(Boolean);
+  const variants = detail.sync_product.is_ignored ? [] : detail.sync_variants.map(v => publicVariant(v, detail.sync_product.name)).filter(Boolean);
   const images = [...new Set(variants.map(v => v.image).filter(Boolean))];
   const artwork = campaignImages[key];
   const campaign = artwork && images.includes(artwork.sourceImage) ? artwork.image : '';
   if (campaign) images.unshift(campaign);
-  const value = { campaign: Boolean(campaign), id: detail.sync_product.id, name: detail.sync_product.name, image: images[0] || '', images, variants,
+  const value = { category: productCategory(detail.sync_product.name), colors: [...new Set(variants.map(v => v.color).filter(Boolean))], campaign: Boolean(campaign), id: detail.sync_product.id, name: detail.sync_product.name, image: images[0] || '', images, variants,
     price: variants.length ? Math.min(...variants.map(v => v.price)) : null };
   if (productCache.size > 200) productCache.clear();
   productCache.set(key, { until: Date.now() + 60000, value });
@@ -48,9 +49,10 @@ export function cents(value) {
   return amount;
 }
 export function httpsURL(value) { try { const url = new URL(value); return url.protocol === 'https:' ? url.href : ''; } catch { return ''; } }
-export function publicVariant(v) {
+export function publicVariant(v, productName = v.name) {
   if (!v.synced || v.is_ignored || (v.availability_status && v.availability_status !== 'active') || v.currency !== 'EUR') return null;
-  let price; try { price = cents(v.retail_price); } catch { return null; }
+  let price = retailPrice(productName);
+  if (price === undefined) { try { price = cents(v.retail_price); } catch { return null; } }
   if (price < 50) return null;
   return { id: v.id, name: v.name, size: v.size, color: v.color, price, image: httpsURL(v.files?.find(f => f.type === 'preview')?.preview_url ) };
 }
@@ -89,12 +91,20 @@ export async function quoteOrder(input, db = shopDB()) {
   const available = rates.filter(r => r.currency === 'EUR' && r.id && Number(r.rate) >= 0);
   const rate = available.find(r => r.id === 'STANDARD') || available.sort((a,b) => Number(a.rate)-Number(b.rate))[0];
   if (!rate) throw new Error('Delivery is not available for this basket and address.');
-  const multiplier = Number(process.env.SHOP_SHIPPING_MULTIPLIER || '1');
-  if (!Number.isFinite(multiplier) || multiplier < 1 || multiplier > 3) throw new Error('Shop shipping settings need attention');
-  const shipping = Math.ceil(cents(rate.rate) * multiplier);
+  const shipping = cents(rate.rate);
   const subtotal = items.reduce((n,i) => n+i.price*i.quantity,0);
   const estimate = await pf('/orders/estimate-costs', { recipient, items: pfItems, shipping: rate.id });
-  if (estimate.costs?.currency !== 'EUR' || cents(estimate.costs.total) > subtotal+shipping) throw new Error('This basket needs a price review. Please contact bookings@soundbunker.pt.');
+  if (estimate.costs?.currency !== 'EUR' || !marginCheck(subtotal, shipping, cents(estimate.costs.total)).allowed) throw new Error('This basket needs a price review. Please contact bookings@soundbunker.pt.');
+  // Do not let a profitable item subsidise a loss-making product in a mixed basket.
+  if (items.length > 1) {
+    for (const item of items) {
+      const line = await pf('/orders/estimate-costs', { recipient, items: [{ sync_variant_id: item.id, quantity: item.quantity }], shipping: rate.id });
+      const costs = line.costs;
+      if (costs?.currency !== 'EUR') throw new Error('This basket needs a price review. Please contact bookings@soundbunker.pt.');
+      const production = cents(costs.total) - cents(costs.shipping);
+      if (production < 0 || !marginCheck(item.price * item.quantity, 0, production).allowed) throw new Error('This basket needs a price review. Please contact bookings@soundbunker.pt.');
+    }
+  }
   const row = { id: randomUUID(), access_token: randomBytes(32).toString('hex'), recipient, items, subtotal_cents: subtotal, shipping_cents: shipping, total_cents: subtotal+shipping, shipping_method: rate.id, shipping_label: text(rate.name,250), status: 'quoted', expires_at: new Date(Date.now()+30*60*1000).toISOString() };
   const saved = await db.from('shop_orders').insert(row);
   if (saved.error) throw new Error('Could not save shop quote');
@@ -109,6 +119,7 @@ export async function stripeRequest(path, body, key) {
   const result = await response.json(); if (!response.ok) throw new Error(`Stripe request failed (${response.status})`); return result;
 }
 export async function checkoutOrder(row, db = shopDB()) {
+  if (row.items.some(item => retailPrice(item.name, item.price) !== item.price)) throw new Error('Prices have changed. Please calculate delivery again.');
   if (row.items.some(item => hiddenVariantIds.has(item.id))) throw new Error('An item has been removed from the collection. Please refresh your basket.');
   if (/^(sk|rk)_live_/.test(process.env.STRIPE_SECRET_KEY || '') && process.env.PRINTFUL_AUTO_FULFILL !== 'true') throw new Error('Shop is not open for live payments yet');
   if (row.stripe_session_id) {
@@ -126,6 +137,8 @@ export async function checkoutOrder(row, db = shopDB()) {
   row.items.forEach((item,i) => {
     body.set(`line_items[${i}][quantity]`,String(item.quantity));
     body.set(`line_items[${i}][price_data][currency]`,'eur');
+    body.set(`line_items[${i}][price_data][tax_behavior]`,'inclusive');
+    body.set(`line_items[${i}][price_data][product_data][description]`,'Price includes VAT');
     body.set(`line_items[${i}][price_data][unit_amount]`,String(item.price));
     body.set(`line_items[${i}][price_data][product_data][name]`,item.name.slice(0,250));
   });
