@@ -202,7 +202,10 @@ export function validatePayment(row, checkout) {
   if (checkout.metadata?.purchase_type !== 'merchandise' || checkout.metadata.shop_order_id !== row.id || checkout.client_reference_id !== row.id || checkout.payment_status !== 'paid' || checkout.currency !== 'eur' || checkout.amount_total !== row.total_cents || (row.stripe_session_id && row.stripe_session_id !== checkout.id)) throw new Error('Shop payment mismatch');
 }
 export async function ensurePrintfulOrder(row, api = pf) {
-  const external = `sb-${row.id}`;
+  // Printful external IDs allow at most 32 characters. Keep every UUID digit
+  // so retries use a stable, collision-free reference without truncation.
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(row.id)) throw new Error('Invalid shop order reference');
+  const external = row.id.replaceAll('-', '').toLowerCase();
   let order;
   try { order = await api(`/orders/@${external}`); } catch (error) { if (error.status !== 404) throw error; }
   if (!order) {
