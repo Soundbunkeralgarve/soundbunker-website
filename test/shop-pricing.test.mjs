@@ -16,11 +16,11 @@ test('margin accounts for VAT, full supplier cost and processing fees', () => {
  const good=marginCheck(5000,500,2200);
  assert.equal(good.revenue,4471);assert.equal(good.fees,223);assert.equal(good.contribution,2048);assert.equal(good.allowed,true);
  // Gross cash exceeds costs, but the contribution after VAT/fees is too low.
- assert.equal(marginCheck(5000,500,3500).allowed,false);
+ assert.equal(marginCheck(5000,500,3700).allowed,false);
 });
 test('expensive production is stopped before a quote is saved', async () => {
  const original=global.fetch;process.env.PRINTFUL_TOKEN='test';let writes=0;
- global.fetch=async(url)=>({ok:true,json:async()=>({result:url.includes('/store/variants/')?{sync_variant:{id:111,variant_id:222,name:'T-shirt / 3XL',synced:true,currency:'EUR',retail_price:'1'}}:url.includes('/shipping/rates')?[{id:'STANDARD',currency:'EUR',rate:'5.00'}]:{costs:{currency:'EUR',total:'40.00'}}})});
+ global.fetch=async(url)=>({ok:true,json:async()=>({result:url.includes('/store/variants/')?{sync_variant:{id:111,variant_id:222,name:'T-shirt / 3XL',synced:true,currency:'EUR',retail_price:'1'}}:url.includes('/shipping/rates')?[{id:'STANDARD',currency:'EUR',rate:'5.00'}]:{costs:{currency:'EUR',total:'45.00'}}})});
  try {await assert.rejects(quoteOrder({items:[{id:111,quantity:1}],recipient:{name:'Test',email:'test@example.com',address1:'Test street',city:'Loule',zip:'8100-000',country_code:'PT'}},{from:()=>({insert:async()=>{writes++;return {};}})}),/price review/);assert.equal(writes,0);}finally{global.fetch=original;}
 });
 test('old quoted prices cannot be paid after the fixed price change',async()=>{
@@ -54,4 +54,13 @@ test('only active shop-specific codes without unsupported restrictions can be re
  const db=value=>({from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:value})})})})});
  assert.equal((await loadShopDiscount(db(offer),' shop10 ')).code,'SHOP10');
  for(const patch of [{active:false},{service_id:null},{service_id:'recording'},{max_uses:1},{client_user_id:'someone'},{expires_at:'2020-01-01'}])await assert.rejects(loadShopDiscount(db({...offer,...patch}),'SHOP10'),/unavailable/);
+});
+
+test('owner-approved 15 percent safeguard applies even with a stale environment setting',()=>{
+ const previous=process.env.SHOP_MIN_MARGIN;process.env.SHOP_MIN_MARGIN='0.25';
+ try {
+  const accepted=marginCheck(5000,0,3200);
+  assert.equal(accepted.minimum,0.15);assert.equal(accepted.allowed,true);
+  assert.equal(marginCheck(5000,0,3300).allowed,false);
+ } finally {if(previous===undefined)delete process.env.SHOP_MIN_MARGIN;else process.env.SHOP_MIN_MARGIN=previous;}
 });

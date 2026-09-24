@@ -22,7 +22,7 @@ export function marginCheck(subtotal, shipping, supplierTotal) {
   const vat = setting('SHOP_MARGIN_VAT_RATE', 0.23, 0, 1);
   const feeRate = setting('SHOP_MARGIN_PAYMENT_RATE', 0.035, 0, 1);
   const feeFixed = setting('SHOP_MARGIN_PAYMENT_FIXED_CENTS', 30, 0, 10000);
-  const minimum = setting('SHOP_MIN_MARGIN', 0.25, 0, 0.9);
+  const minimum = 0.15; // Owner-approved minimum contribution margin, including discounted orders.
   const revenue = Math.floor((subtotal + shipping) / (1 + vat));
   const fees = Math.ceil((subtotal + shipping) * feeRate + feeFixed);
   const contribution = revenue - supplierTotal - fees;

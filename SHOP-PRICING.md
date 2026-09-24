@@ -6,13 +6,13 @@ Shipping is the exact EUR STANDARD rate (or cheapest available rate) returned by
 
 ## Margin protection
 
-Before a quote can be saved, Printful's order estimate supplies its complete cost including printing, shipping, supplier taxes and extras. A basket must retain at least 25% of estimated net revenue after that cost and an assumed payment fee. The defaults reserve 23% VAT from customer gross receipts and 3.5% + €0.30 payment fees. Supplier VAT is conservatively treated as a cost rather than assumed recoverable. These are planning allowances, not a guarantee of accounting profit or a destination-specific tax calculation. Overheads, refunds and currency adjustments are not included.
+Before a quote can be saved, Printful's order estimate supplies its complete cost including printing, shipping, supplier taxes and extras. A basket must retain at least 15% of estimated net revenue after that cost and an assumed payment fee. The defaults reserve 23% VAT from customer gross receipts and 3.5% + €0.30 payment fees. Supplier VAT is conservatively treated as a cost rather than assumed recoverable. These are planning allowances, not a guarantee of accounting profit or a destination-specific tax calculation. Overheads, refunds and currency adjustments are not included.
 
 Vercel environment overrides, if required for the actual tax and payment setup:
 - `SHOP_MARGIN_VAT_RATE` (default `0.23`)
 - `SHOP_MARGIN_PAYMENT_RATE` (default `0.035`)
 - `SHOP_MARGIN_PAYMENT_FIXED_CENTS` (default `30`)
-- `SHOP_MIN_MARGIN` (default `0.25`)
+The owner-approved minimum margin is fixed at 15% in `shop-pricing.js`, including discounts and bulk baskets. It is not overridden by an older deployment environment value.
 
 A failing basket is blocked before payment with a price-review message. Customer prices are never automatically raised. Mixed baskets also check each product line separately using its own supplier estimate less base shipping, so a profitable item cannot subsidise an expensive product. Actual product/size/destination estimates should be reviewed when adding products or changing costs.
 
