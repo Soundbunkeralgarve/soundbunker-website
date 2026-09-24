@@ -4,7 +4,7 @@ import { productCategory, retailPrice, marginCheck } from '../api/lib/shop-prici
 import { publicVariant, quoteOrder, checkoutOrder } from '../api/lib/printful-shop.js';
 
 test('fixed prices cover every garment and size regardless of supplier retail price', () => {
- for(const [name,category,price] of [['Unisex Organic Cotton Creator 2.0 T-Shirt EXCELLENCE / 3XL','tshirts',5000],['SoundBunker tee / S','tshirts',5000],['SoundBunker Unisex heavy blend zip hoodie / XL','hoodies',8000],['SoundBunker Old School Bucket Hat','hats',4000],['SoundBunker Trucker Cap','hats',4000]]) {
+ for(const [name,category,price] of [['Unisex Organic Cotton Creator 2.0 T-Shirt EXCELLENCE / 3XL','tshirts',6000],['SoundBunker tee / S','tshirts',6000],['SoundBunker Unisex heavy blend zip hoodie / XL','hoodies',8000],['SoundBunker Old School Bucket Hat','hats',4000],['SoundBunker Trucker Cap','hats',4000],['SoundBunker Polo / Black / 5XL','polos',5500],['SoundBunker Shotta Bag / White / One size','accessories',5000]]) {
   assert.equal(productCategory(name),category);
   assert.equal(retailPrice(name,100),price);
   for(const supplierPrice of ['0','99.00',undefined])assert.equal(publicVariant({name,synced:true,currency:'EUR',retail_price:supplierPrice}).price,price);
@@ -20,7 +20,7 @@ test('margin accounts for VAT, full supplier cost and processing fees', () => {
 });
 test('expensive production is stopped before a quote is saved', async () => {
  const original=global.fetch;process.env.PRINTFUL_TOKEN='test';let writes=0;
- global.fetch=async(url)=>({ok:true,json:async()=>({result:url.includes('/store/variants/')?{sync_variant:{id:111,variant_id:222,name:'T-shirt / 3XL',synced:true,currency:'EUR',retail_price:'1'}}:url.includes('/shipping/rates')?[{id:'STANDARD',currency:'EUR',rate:'5.00'}]:{costs:{currency:'EUR',total:'35.00'}}})});
+ global.fetch=async(url)=>({ok:true,json:async()=>({result:url.includes('/store/variants/')?{sync_variant:{id:111,variant_id:222,name:'T-shirt / 3XL',synced:true,currency:'EUR',retail_price:'1'}}:url.includes('/shipping/rates')?[{id:'STANDARD',currency:'EUR',rate:'5.00'}]:{costs:{currency:'EUR',total:'40.00'}}})});
  try {await assert.rejects(quoteOrder({items:[{id:111,quantity:1}],recipient:{name:'Test',email:'test@example.com',address1:'Test street',city:'Loule',zip:'8100-000',country_code:'PT'}},{from:()=>({insert:async()=>{writes++;return {};}})}),/price review/);assert.equal(writes,0);}finally{global.fetch=original;}
 });
 test('old quoted prices cannot be paid after the fixed price change',async()=>{

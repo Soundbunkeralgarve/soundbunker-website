@@ -1,5 +1,5 @@
 // Retail prices in cents, including VAT. Never trust browser or supplier retail prices.
-export const retailPrices = Object.freeze({ tshirts: 5000, hoodies: 8000, hats: 4000 });
+export const retailPrices = Object.freeze({ tshirts: 6000, hoodies: 8000, hats: 4000, polos: 5500 });
 export function productCategory(name = '') {
   if (/\bpolo\b/i.test(name)) return 'polos';
   if (/\bhood(?:ie|y|ies)\b/i.test(name)) return 'hoodies';
@@ -8,6 +8,7 @@ export function productCategory(name = '') {
   return 'accessories';
 }
 export function retailPrice(name, fallback) {
+  if (/\bshotta bag\b/i.test(name)) return 5000;
   return retailPrices[productCategory(name)] ?? fallback;
 }
 function setting(name, fallback, min, max) {
