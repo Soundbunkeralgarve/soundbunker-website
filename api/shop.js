@@ -71,6 +71,7 @@ export default async function handler(req,res) {
   } catch (error) {
     // Detailed provider responses may contain customer data. Never return them publicly.
     console.error('Shop request failed', action, error.message);
-    return json(res,{error: action === 'quote' && /^(Please |An item |Delivery is |This basket)/.test(error.message) ? error.message : 'The shop could not complete this request. Please try again or contact bookings@soundbunker.pt.'},503);
+    const quoteErrors={delivery:'Delivery rates are temporarily unavailable. Please try again shortly.',estimate:'We could not confirm production costs for this item. Please contact bookings@soundbunker.pt.',variant:'We could not check this item with Printful. Please try again shortly.',save_quote:'We could not save your delivery quote. Please contact bookings@soundbunker.pt.'};
+    return json(res,{error: action === 'quote' && /^(Please |An item |Delivery is |This basket)/.test(error.message) ? error.message : action==='quote' && quoteErrors[error.shopStage] ? quoteErrors[error.shopStage] : 'The shop could not complete this request. Please try again or contact bookings@soundbunker.pt.',...(action==='quote'&&error.shopStage?{code:error.shopStage,...(Number.isInteger(error.status)?{provider_status:error.status}:{})}: {})},503);
   }
 }

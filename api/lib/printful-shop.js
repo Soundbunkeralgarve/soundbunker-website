@@ -14,13 +14,15 @@ export function shopDB() {
 }
 export async function pf(path, body) {
   if (!process.env.PRINTFUL_TOKEN) throw new Error('Printful is not configured');
-  const response = await fetch(`https://api.printful.com${path}`, {
+  const stage=path.startsWith('/shipping/rates')?'delivery':path.startsWith('/orders/estimate-costs')?'estimate':path.startsWith('/store/variants/')?'variant':'provider';
+  let response;
+  try { response = await fetch(`https://api.printful.com${path}`, {
     method: body === undefined ? 'GET' : 'POST',
     headers: { authorization: `Bearer ${process.env.PRINTFUL_TOKEN}`, 'content-type': 'application/json', ...(process.env.PRINTFUL_STORE_ID ? { 'X-PF-Store-Id': process.env.PRINTFUL_STORE_ID } : {}) },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(15000)
-  });
+  }); } catch(error) {error.shopStage=stage;throw error;}
   const data = await response.json();
-  if (!response.ok || data.code >= 400) { const error = new Error(`Printful request failed (${response.status})`); error.status = response.status; throw error; }
+  if (!response.ok || data.code >= 400) { const error = new Error(`Printful request failed (${response.status})`); error.status = response.status; error.shopStage=stage; throw error; }
   return data.result;
 }
 // Short-lived product details cache avoids repeated Printful calls across browsing requests.
@@ -129,7 +131,7 @@ export async function quoteOrder(input, db = shopDB()) {
   }
   const row = { id: randomUUID(), access_token: randomBytes(32).toString('hex'), recipient, items, subtotal_cents: subtotal, shipping_cents: shipping, total_cents: subtotal+shipping, shipping_method: rate.id, shipping_label: text(rate.name,250), status: 'quoted', expires_at: new Date(Date.now()+30*60*1000).toISOString() };
   const saved = await db.from('shop_orders').insert(row);
-  if (saved.error) throw new Error('Could not save shop quote');
+  if (saved.error) { const error=new Error('Could not save shop quote');error.shopStage='save_quote';console.error('Shop quote persistence failed', saved.error.code);throw error; }
   return row;
 }
 export function hasAccess(row, token) {

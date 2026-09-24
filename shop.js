@@ -26,7 +26,7 @@ function productRow(category) {
 }
 try { const saved=JSON.parse(localStorage.getItem('sb-shop-basket') || '[]'); if(Array.isArray(saved)) basket=saved.filter(i=>Number.isSafeInteger(i.id)&&Number.isInteger(i.quantity)&&i.quantity>0&&i.quantity<=10&&typeof i.name==='string'&&Number.isSafeInteger(i.price)).slice(0,15); } catch {}
 const el = (tag,text,cls) => {const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
-async function api(action,body,params='') { const r=await fetch(`/api/shop?action=${action}${params}`,{method:body?'POST':'GET',headers:body?{'content-type':'application/json'}:{},...(body?{body:JSON.stringify(body)}:{})});const d=await r.json();if(!r.ok)throw Error(d.error||'Please try again.');return d; }
+async function api(action,body,params='') { const r=await fetch(`/api/shop?action=${action}${params}`,{method:body?'POST':'GET',headers:body?{'content-type':'application/json'}:{},...(body?{body:JSON.stringify(body)}:{})});const d=await r.json();if(!r.ok)throw Error((d.error||'Please try again.')+(d.code?` (Reference: ${d.code}${d.provider_status?'-'+d.provider_status:''})`:''));return d; }
 function message(value,error=false){$('#basket-message').textContent=value;$('#basket-message').classList.toggle('shop-error',error);}
 function invalidate(){revision++;quote=null;$('#quote').hidden=true;}
 function save(){try{localStorage.setItem('sb-shop-basket',JSON.stringify(basket));}catch{}invalidate();renderBasket();}
