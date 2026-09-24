@@ -1,7 +1,7 @@
 const $ = s => document.querySelector(s);
 const money = n => new Intl.NumberFormat('en-IE',{style:'currency',currency:'EUR'}).format(n/100);
 let basket = [], quote = null, revision = 0, busy = false, next = 0, selectedCategory = 'all';
-const groups = {tshirts: 'T-shirts · €60', hoodies: 'Hoodies · €80', hats: 'Hats · €40', polos: 'Polo Shirts · €55', accessories: 'Accessories'};
+const groups = {tshirts: 'T-shirts · €60', hoodies: 'Hoodies · €90', hats: 'Hats · €40', polos: 'Polo Shirts · €60', accessories: 'Accessories'};
 function displayName(p) { return p.display_name || p.name; }
 function filterProducts() {
  const category=selectedCategory, color=$('#color-filter').value, query=$('#design-search').value.trim().toLowerCase();
