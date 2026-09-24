@@ -110,10 +110,11 @@ export async function quoteOrder(input, db) {
   for (const item of cart) {
     stage = "variant_data";
     const result = await pf(`/store/variants/${item.id}`);
-    if (hiddenProductIds.has(Number(result.sync_variant.sync_product_id))) throw new Error('An item has been removed from the collection. Please remove it from your basket.');
-    const variant = publicVariant(result.sync_variant);
+    const syncVariant = result.sync_variant ?? result;
+    if (hiddenProductIds.has(Number(syncVariant.sync_product_id))) throw new Error('An item has been removed from the collection. Please remove it from your basket.');
+    const variant = publicVariant(syncVariant);
     if (!variant) throw new Error('An item is unavailable or has no EUR selling price. Please refresh your basket.');
-    items.push({ ...variant, catalog_variant_id: result.sync_variant.variant_id, quantity: item.quantity });
+    items.push({ ...variant, catalog_variant_id: syncVariant.variant_id, quantity: item.quantity });
   }
   applyShopDiscount(items, input.discount_code);
   const pfItems = items.map(i => ({ sync_variant_id: i.id, quantity: i.quantity }));
