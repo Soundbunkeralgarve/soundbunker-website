@@ -10,7 +10,7 @@ test('fixed prices cover every garment and size regardless of supplier retail pr
   for(const supplierPrice of ['0','99.00',undefined])assert.equal(publicVariant({name,synced:true,currency:'EUR',retail_price:supplierPrice}).price,price);
  }
  assert.equal(retailPrice('SoundBunker bottle',3500),3500);
- assert.equal(productCategory('SoundBunker Premium pique polo shirt'),'accessories');
+ assert.equal(productCategory('SoundBunker Premium pique polo shirt'),'polos');
 });
 test('margin accounts for VAT, full supplier cost and processing fees', () => {
  const good=marginCheck(5000,500,2200);

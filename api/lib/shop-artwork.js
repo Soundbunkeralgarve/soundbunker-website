@@ -38,5 +38,9 @@ export const campaignImages = {
   "413278892": {
     "image": "/assets/shop/413278892.webp",
     "sourceImage": "https://files.cdn.printful.com/files/462/462cfd5e1c9619cfecca3c8a5d5360b3_preview.png"
+  },
+  "475033389": {
+    "image": "/assets/shop/475033389.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/77c/77cd83405a1685cc114f78d5d1601cf6_preview.png"
   }
 };

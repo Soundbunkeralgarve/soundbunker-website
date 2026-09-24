@@ -18,7 +18,7 @@ A failing basket is blocked before payment with a price-review message. Customer
 
 ## Catalogue
 
-All Printful product pages load automatically. Separate swipeable collections, category and black/white filters, design search, visible VAT wording, and current synced variant previews support the new 20-shirt collection. All product cards use current synced Printful variant mockups for a consistent product-image style; lifestyle campaign overrides are disabled.
+All Printful product pages load automatically. A full wrapping product grid with sidebar categories (including Polo Shirts), black/white filters and design search, visible VAT wording, and current synced variant previews support the new 20-shirt collection. Matching generated model photos are primary covers. Clicking a tile or its image reveals the synced Printful product mockup and loads size options. Gallery controls can switch back to the model photo. Products without a matching generated model image use the exact Printful preview. Covers are only enabled while their source image still matches the synced artwork.
 
 ## Verification
 

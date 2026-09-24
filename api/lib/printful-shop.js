@@ -1,3 +1,4 @@
+import { campaignImages } from './shop-artwork.js';
 import { retailPrice, productCategory, productLabel, marginCheck } from './shop-pricing.js';
 import { randomUUID, randomBytes, timingSafeEqual } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
@@ -32,7 +33,10 @@ export async function shopProduct(id) {
   const detail = await pf(`/store/products/${key}`);
   const variants = detail.sync_product.is_ignored ? [] : detail.sync_variants.map(v => publicVariant(v, detail.sync_product.name)).filter(Boolean);
   const images = [...new Set(variants.map(v => v.image).filter(Boolean))];
-  const value = { display_name: productLabel(detail.sync_product.name), category: productCategory(detail.sync_product.name), colors: [...new Set(variants.map(v => v.color).filter(Boolean))], campaign: false, id: detail.sync_product.id, name: detail.sync_product.name, image: images[0] || '', images, variants,
+  const artwork = campaignImages[key];
+  const campaign = artwork && images.includes(artwork.sourceImage) ? artwork.image : '';
+  if (campaign) images.unshift(campaign);
+  const value = { display_name: productLabel(detail.sync_product.name), category: productCategory(detail.sync_product.name), colors: [...new Set(variants.map(v => v.color).filter(Boolean))], campaign: Boolean(campaign), id: detail.sync_product.id, name: detail.sync_product.name, image: images[0] || '', images, variants,
     price: variants.length ? Math.min(...variants.map(v => v.price)) : null };
   if (productCache.size > 200) productCache.clear();
   productCache.set(key, { until: Date.now() + 60000, value });
