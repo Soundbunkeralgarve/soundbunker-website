@@ -50,7 +50,6 @@ export const shirtPairs = [
  [475033228,475032986], [475033196,475032265],
  [475033099,475032775], [475033049,475032431]
 ];
-export const pairedSecondaryIds = new Set(shirtPairs.map(pair=>pair[1]));
 export async function storefrontProduct(id) {
  const pair=shirtPairs.find(pair=>pair.includes(Number(id)));
  if(!pair)return shopProduct(id);

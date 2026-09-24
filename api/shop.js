@@ -1,6 +1,6 @@
 import { json, parseJson } from './lib/http.js';
 import { requireAdmin } from './lib/supabase-auth.js';
-import { pf, countries, shopProduct, storefrontProduct, hiddenProductIds, httpsURL, quoteOrder, checkoutOrder, shopDB, hasAccess, stripeRequest, fulfillShopCheckout } from './lib/printful-shop.js';
+import { pf, countries, shopProduct, storefrontProduct, shirtPairs, hiddenProductIds, httpsURL, quoteOrder, checkoutOrder, shopDB, hasAccess, stripeRequest, fulfillShopCheckout } from './lib/printful-shop.js';
 
 export const config = { maxDuration: 60 };
 export default async function handler(req,res) {
@@ -11,6 +11,8 @@ export default async function handler(req,res) {
       const offset = Math.max(0,Math.min(10000,Number(url.searchParams.get('offset')) || 0));
       const products = await pf(`/store/products?limit=24&offset=${Math.floor(offset)}`);
       const selected = products.filter(p => !p.is_ignored && p.synced > 0 && !hiddenProductIds.has(Number(p.id)));
+      const displayOrder=shirtPairs.flat();
+      selected.sort((a,b)=>{const rank=id=>{const i=displayOrder.indexOf(Number(id));return i<0?displayOrder.length:i;};return rank(a.id)-rank(b.id);});
       const hydrated = [];
       // Bound concurrency so a large collection does not flood the provider.
       for (let i = 0; i < selected.length; i += 4) {
