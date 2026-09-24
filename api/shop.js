@@ -17,7 +17,9 @@ export default async function handler(req,res) {
         hydrated.push(...await Promise.all(selected.slice(i,i+4).map(p => shopProduct(p.id))));
       }
       res.setHeader('Cache-Control','public, max-age=60, s-maxage=60');
-      return json(res,{ products: hydrated.filter(p => p.variants.length).map(({variants,...p}) => p), next: products.length === 24 ? offset+24 : null, countries: countries() });
+      res.statusCode = 200;
+      res.setHeader('Content-Type','application/json; charset=utf-8');
+      return res.end(JSON.stringify({ products: hydrated.filter(p => p.variants.length).map(({variants,...p}) => p), next: products.length === 24 ? offset+24 : null, countries: countries() }));
     }
     if (req.method === 'GET' && action === 'product') {
       const id = url.searchParams.get('id'); if (!/^\d+$/.test(id || '')) return json(res,{error:'Invalid product'},400);

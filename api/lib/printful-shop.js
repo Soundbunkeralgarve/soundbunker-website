@@ -79,6 +79,7 @@ export async function quoteOrder(input, db = shopDB()) {
   // Sequential requests stay within Printful's rate limit for small baskets.
   for (const item of cart) {
     const result = await pf(`/store/variants/${item.id}`);
+    if (hiddenProductIds.has(Number(result.sync_variant.sync_product_id))) throw new Error('An item has been removed from the collection. Please remove it from your basket.');
     const variant = publicVariant(result.sync_variant);
     if (!variant) throw new Error('An item is unavailable or has no EUR selling price. Please refresh your basket.');
     items.push({ ...variant, catalog_variant_id: result.sync_variant.variant_id, quantity: item.quantity });
