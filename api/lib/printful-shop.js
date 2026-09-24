@@ -98,12 +98,17 @@ export function cleanCart(cart) {
   if ([...merged.values()].some(q => q > 10) || [...merged.values()].reduce((a,b) => a+b,0) > 30) throw new Error('Please contact us for larger orders.');
   return [...merged].map(([id,quantity]) => ({ id, quantity }));
 }
-export async function quoteOrder(input, db = shopDB()) {
+export async function quoteOrder(input, db) {
+  let stage = "quote_setup";
+  try {
+  db ||= shopDB();
   const recipient = cleanRecipient(input.recipient);
+  stage = "cart_validation";
   const cart = cleanCart(input.items);
   const items = [];
   // Sequential requests stay within Printful's rate limit for small baskets.
   for (const item of cart) {
+    stage = "variant_data";
     const result = await pf(`/store/variants/${item.id}`);
     if (hiddenProductIds.has(Number(result.sync_variant.sync_product_id))) throw new Error('An item has been removed from the collection. Please remove it from your basket.');
     const variant = publicVariant(result.sync_variant);
@@ -111,17 +116,20 @@ export async function quoteOrder(input, db = shopDB()) {
     items.push({ ...variant, catalog_variant_id: result.sync_variant.variant_id, quantity: item.quantity });
   }
   const pfItems = items.map(i => ({ sync_variant_id: i.id, quantity: i.quantity }));
+  stage = 'delivery_data';
   const rates = await pf('/shipping/rates', { recipient, items: items.map(i => ({ variant_id: i.catalog_variant_id, quantity: i.quantity })), currency: 'EUR' });
   const available = rates.filter(r => r.currency === 'EUR' && r.id && Number(r.rate) >= 0);
   const rate = available.find(r => r.id === 'STANDARD') || available.sort((a,b) => Number(a.rate)-Number(b.rate))[0];
   if (!rate) throw new Error('Delivery is not available for this basket and address.');
   const shipping = cents(rate.rate);
   const subtotal = items.reduce((n,i) => n+i.price*i.quantity,0);
+  stage = 'estimate_data';
   const estimate = await pf('/orders/estimate-costs', { recipient, items: pfItems, shipping: rate.id });
   if (estimate.costs?.currency !== 'EUR' || !marginCheck(subtotal, shipping, cents(estimate.costs.total)).allowed) throw new Error('This basket needs a price review. Please contact bookings@soundbunker.pt.');
   // Do not let a profitable item subsidise a loss-making product in a mixed basket.
   if (items.length > 1) {
     for (const item of items) {
+      stage = 'line_estimate_data';
       const line = await pf('/orders/estimate-costs', { recipient, items: [{ sync_variant_id: item.id, quantity: item.quantity }], shipping: rate.id });
       const costs = line.costs;
       if (costs?.currency !== 'EUR') throw new Error('This basket needs a price review. Please contact bookings@soundbunker.pt.');
@@ -129,10 +137,15 @@ export async function quoteOrder(input, db = shopDB()) {
       if (production < 0 || !marginCheck(item.price * item.quantity, 0, production).allowed) throw new Error('This basket needs a price review. Please contact bookings@soundbunker.pt.');
     }
   }
+  stage = 'save_quote';
   const row = { id: randomUUID(), access_token: randomBytes(32).toString('hex'), recipient, items, subtotal_cents: subtotal, shipping_cents: shipping, total_cents: subtotal+shipping, shipping_method: rate.id, shipping_label: text(rate.name,250), status: 'quoted', expires_at: new Date(Date.now()+30*60*1000).toISOString() };
   const saved = await db.from('shop_orders').insert(row);
   if (saved.error) { const error=new Error('Could not save shop quote');error.shopStage='save_quote';console.error('Shop quote persistence failed', saved.error.code);throw error; }
   return row;
+  } catch(error) {
+    error.shopStage ||= stage + (error.message === "Invalid price" ? "_price" : "");
+    throw error;
+  }
 }
 export function hasAccess(row, token) {
   return typeof token === 'string' && /^[a-f0-9]{64}$/.test(token) && typeof row.access_token === 'string' && row.access_token.length === 64 && timingSafeEqual(Buffer.from(row.access_token), Buffer.from(token));
