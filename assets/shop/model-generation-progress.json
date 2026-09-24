@@ -1,5 +1,5 @@
 {
-  "style": "Premium square ecommerce lifestyle photos with varied adult models, poses, studio settings, record shops and Algarve street/coastal settings. Exact Printful garment artwork and colour; chest unobstructed. Original ten campaign photos reused.",
+  "style": "Varied premium SoundBunker music lifestyle photos: different adult models, ages, builds, poses, expressions, studio/backstage/record-room and Algarve settings. Close waist-up or upper-thigh framing keeps exact shirt slogans visible. Original ten campaign photos reused.",
   "existing_images_reused": 10,
   "completed_new": [
     475033389,
@@ -25,5 +25,17 @@
   ],
   "pending": [],
   "generation_method": "Built-in image generation",
-  "completed_prompt": "Exact black Excellence shirt on an adult male model. Preserve I WAKE UP EVERY DAY AND PISS EXCELLENCE, white chest text, purple quotation marks, tiny logo and sleeve logo. Reference garment and existing model style. Square, realistic Mediterranean lifestyle product photograph."
+  "completed_prompt": "Exact black Excellence shirt on an adult male model. Preserve I WAKE UP EVERY DAY AND PISS EXCELLENCE, white chest text, purple quotation marks, tiny logo and sleeve logo. Reference garment and existing model style. Square, realistic Mediterranean lifestyle product photograph.",
+  "revised_for_variety_and_readable_print": [
+    475033389,
+    475033342,
+    475033316,
+    475033293,
+    475033270,
+    475033253,
+    475033099,
+    475032727,
+    475032634,
+    475032431
+  ]
 }
