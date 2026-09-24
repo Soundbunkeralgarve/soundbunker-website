@@ -43,3 +43,22 @@ export function productLabel(name = '') {
   }
   return base;
 }
+
+// Codes are enabled by the shop owner; none are invented or enabled by default.
+// SHOP_DISCOUNT_CODES example: {"EXAMPLE":{"percent_off":10}}
+export function applyShopDiscount(items, value) {
+  const code = typeof value === 'string' ? value.trim().toUpperCase() : '';
+  if (!code) return;
+  if (!/^[A-Z0-9_-]{1,40}$/.test(code)) throw new Error('Please enter a valid discount code.');
+  let codes;
+  try { codes = JSON.parse(process.env.SHOP_DISCOUNT_CODES || '{}'); }
+  catch { throw new Error('Please try your discount code again later.'); }
+  const offer = Object.hasOwn(codes, code) ? codes[code] : null;
+  const percent = offer?.percent_off;
+  if (!offer || offer.active === false || typeof percent !== 'number' || !Number.isFinite(percent) || percent <= 0 || percent >= 100 || (offer.expires_at && (!Number.isFinite(Date.parse(offer.expires_at)) || Date.parse(offer.expires_at) <= Date.now()))) throw new Error('Please check your discount code; it is invalid or expired.');
+  for (const item of items) {
+    item.list_price = item.price;
+    item.price = Math.max(1, Math.round(item.price * (1 - percent / 100)));
+    item.discount_code = code;
+  }
+}

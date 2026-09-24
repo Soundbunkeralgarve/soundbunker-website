@@ -1,5 +1,5 @@
 import { campaignImages } from './shop-artwork.js';
-import { retailPrice, productCategory, productLabel, marginCheck } from './shop-pricing.js';
+import { retailPrice, productCategory, productLabel, marginCheck, applyShopDiscount } from './shop-pricing.js';
 import { randomUUID, randomBytes, timingSafeEqual } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import { sendTransactionalEmail } from './notify.js';
@@ -115,6 +115,7 @@ export async function quoteOrder(input, db) {
     if (!variant) throw new Error('An item is unavailable or has no EUR selling price. Please refresh your basket.');
     items.push({ ...variant, catalog_variant_id: result.sync_variant.variant_id, quantity: item.quantity });
   }
+  applyShopDiscount(items, input.discount_code);
   const pfItems = items.map(i => ({ sync_variant_id: i.id, quantity: i.quantity }));
   stage = 'delivery_data';
   const rates = await pf('/shipping/rates', { recipient, items: items.map(i => ({ variant_id: i.catalog_variant_id, quantity: i.quantity })), currency: 'EUR' });
@@ -156,7 +157,7 @@ export async function stripeRequest(path, body, key) {
   const result = await response.json(); if (!response.ok) throw new Error(`Stripe request failed (${response.status})`); return result;
 }
 export async function checkoutOrder(row, db = shopDB()) {
-  if (row.items.some(item => retailPrice(item.name, item.price) !== item.price)) throw new Error('Prices have changed. Please calculate delivery again.');
+  if (row.items.some(item => retailPrice(item.name, item.list_price ?? item.price) !== (item.list_price ?? item.price))) throw new Error('Prices have changed. Please calculate delivery again.');
   if (row.items.some(item => hiddenVariantIds.has(item.id))) throw new Error('An item has been removed from the collection. Please refresh your basket.');
   if (/^(sk|rk)_live_/.test(process.env.STRIPE_SECRET_KEY || '') && process.env.PRINTFUL_AUTO_FULFILL !== 'true') throw new Error('Shop is not open for live payments yet');
   if (row.stripe_session_id) {

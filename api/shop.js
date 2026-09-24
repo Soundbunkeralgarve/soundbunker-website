@@ -30,7 +30,7 @@ export default async function handler(req,res) {
     if (req.method === 'POST' && action === 'quote') {
       const input = await parseJson(req);
       const row = await quoteOrder(input);
-      return json(res,{ id:row.id,token:row.access_token,items:row.items,subtotal:row.subtotal_cents,shipping:row.shipping_cents,total:row.total_cents,delivery:row.shipping_label });
+      return json(res,{ id:row.id,token:row.access_token,items:row.items,subtotal:row.subtotal_cents,discount:row.items.reduce((sum,i)=>sum+((i.list_price??i.price)-i.price)*i.quantity,0),shipping:row.shipping_cents,total:row.total_cents,delivery:row.shipping_label });
     }
     if (req.method === 'POST' && ['checkout','status'].includes(action)) {
       const input = await parseJson(req);
