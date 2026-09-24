@@ -1,6 +1,6 @@
 import { json, parseJson } from './lib/http.js';
 import { requireAdmin } from './lib/supabase-auth.js';
-import { pf, countries, publicVariant, httpsURL, quoteOrder, checkoutOrder, shopDB, hasAccess, stripeRequest, fulfillShopCheckout } from './lib/printful-shop.js';
+import { pf, countries, shopProduct, hiddenProductIds, httpsURL, quoteOrder, checkoutOrder, shopDB, hasAccess, stripeRequest, fulfillShopCheckout } from './lib/printful-shop.js';
 
 export const config = { maxDuration: 60 };
 export default async function handler(req,res) {
@@ -10,12 +10,18 @@ export default async function handler(req,res) {
     if (req.method === 'GET' && action === 'products') {
       const offset = Math.max(0,Math.min(10000,Number(url.searchParams.get('offset')) || 0));
       const products = await pf(`/store/products?limit=24&offset=${Math.floor(offset)}`);
-      return json(res,{ products: products.filter(p => !p.is_ignored && p.synced > 0).map(p => ({ id:p.id,name:p.name,image:httpsURL(p.thumbnail_url) })), next: products.length === 24 ? offset+24 : null, countries: countries() });
+      const selected = products.filter(p => !p.is_ignored && p.synced > 0 && !hiddenProductIds.has(Number(p.id)));
+      const hydrated = [];
+      // Bound concurrency so a large collection does not flood the provider.
+      for (let i = 0; i < selected.length; i += 4) {
+        hydrated.push(...await Promise.all(selected.slice(i,i+4).map(p => shopProduct(p.id))));
+      }
+      res.setHeader('Cache-Control','public, max-age=60, s-maxage=60');
+      return json(res,{ products: hydrated.filter(p => p.variants.length).map(({variants,...p}) => p), next: products.length === 24 ? offset+24 : null, countries: countries() });
     }
     if (req.method === 'GET' && action === 'product') {
       const id = url.searchParams.get('id'); if (!/^\d+$/.test(id || '')) return json(res,{error:'Invalid product'},400);
-      const p = await pf(`/store/products/${id}`);
-      return json(res,{ id:p.sync_product.id,name:p.sync_product.name,image:httpsURL(p.sync_product.thumbnail_url), variants: p.sync_product.is_ignored ? [] : p.sync_variants.map(publicVariant).filter(Boolean) });
+      return json(res,await shopProduct(id));
     }
     if (req.method === 'POST' && action === 'quote') {
       const input = await parseJson(req);

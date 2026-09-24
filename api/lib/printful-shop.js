@@ -1,7 +1,10 @@
+import { campaignImages } from './shop-artwork.js';
 import { randomUUID, randomBytes, timingSafeEqual } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import { sendTransactionalEmail } from './notify.js';
 
+export const hiddenProductIds = new Set([413279131,413279051]);
+const hiddenVariantIds = new Set([5138797987, 5138797988, 5138797989, 5138797990, 5138797991, 5138796724, 5138796725, 5138796726, 5138796727, 5138796728]);
 export const shopOrigin = () => (process.env.SITE_URL || 'https://www.soundbunker.pt').replace(/\/$/, '');
 export const countries = () => (process.env.SHOP_COUNTRIES || 'PT,ES,FR,DE,IT,NL,BE,AT,IE,LU,DK,SE,FI,PL,CZ,SK,HU,RO,BG,HR,SI,EE,LV,LT,GR,CY,MT,GB').split(',').map(x => x.trim().toUpperCase()).filter(x => /^[A-Z]{2}$/.test(x));
 export function shopDB() {
@@ -19,6 +22,25 @@ export async function pf(path, body) {
   if (!response.ok || data.code >= 400) { const error = new Error(`Printful request failed (${response.status})`); error.status = response.status; throw error; }
   return data.result;
 }
+// Short-lived product details cache avoids repeated Printful calls across browsing requests.
+const productCache = new Map();
+export async function shopProduct(id) {
+  const key = String(id);
+  if (hiddenProductIds.has(Number(id))) return { id:Number(id), name:'Unavailable', image:'', images:[], variants:[], price:null };
+  const cached = productCache.get(key);
+  if (cached && cached.until > Date.now()) return cached.value;
+  const detail = await pf(`/store/products/${key}`);
+  const variants = detail.sync_product.is_ignored ? [] : detail.sync_variants.map(publicVariant).filter(Boolean);
+  const images = [...new Set(variants.map(v => v.image).filter(Boolean))];
+  const artwork = campaignImages[key];
+  const campaign = artwork && images.includes(artwork.sourceImage) ? artwork.image : '';
+  if (campaign) images.unshift(campaign);
+  const value = { campaign: Boolean(campaign), id: detail.sync_product.id, name: detail.sync_product.name, image: images[0] || '', images, variants,
+    price: variants.length ? Math.min(...variants.map(v => v.price)) : null };
+  if (productCache.size > 200) productCache.clear();
+  productCache.set(key, { until: Date.now() + 60000, value });
+  return value;
+}
 export function cents(value) {
   if (!/^\d+(\.\d{1,2})?$/.test(String(value))) throw new Error('Invalid price');
   const amount = Math.round(Number(value) * 100);
@@ -30,7 +52,7 @@ export function publicVariant(v) {
   if (!v.synced || v.is_ignored || (v.availability_status && v.availability_status !== 'active') || v.currency !== 'EUR') return null;
   let price; try { price = cents(v.retail_price); } catch { return null; }
   if (price < 50) return null;
-  return { id: v.id, name: v.name, size: v.size, color: v.color, price, image: httpsURL(v.files?.find(f => f.type === 'preview')?.preview_url || v.product?.image) };
+  return { id: v.id, name: v.name, size: v.size, color: v.color, price, image: httpsURL(v.files?.find(f => f.type === 'preview')?.preview_url ) };
 }
 const text = (v, n = 150) => typeof v === 'string' ? v.trim().slice(0, n) : '';
 export function cleanRecipient(value = {}) {
@@ -44,6 +66,7 @@ export function cleanCart(cart) {
   const merged = new Map();
   for (const item of cart) {
     if (!Number.isSafeInteger(item.id) || item.id < 1 || !Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 10) throw new Error('Invalid item or quantity.');
+    if (hiddenVariantIds.has(item.id)) throw new Error('An item has been removed from the collection. Please remove it from your basket.');
     merged.set(item.id, (merged.get(item.id) || 0) + item.quantity);
   }
   if ([...merged.values()].some(q => q > 10) || [...merged.values()].reduce((a,b) => a+b,0) > 30) throw new Error('Please contact us for larger orders.');
@@ -85,6 +108,7 @@ export async function stripeRequest(path, body, key) {
   const result = await response.json(); if (!response.ok) throw new Error(`Stripe request failed (${response.status})`); return result;
 }
 export async function checkoutOrder(row, db = shopDB()) {
+  if (row.items.some(item => hiddenVariantIds.has(item.id))) throw new Error('An item has been removed from the collection. Please refresh your basket.');
   if (/^(sk|rk)_live_/.test(process.env.STRIPE_SECRET_KEY || '') && process.env.PRINTFUL_AUTO_FULFILL !== 'true') throw new Error('Shop is not open for live payments yet');
   if (row.stripe_session_id) {
     const existing = await stripeRequest(`/checkout/sessions/${encodeURIComponent(row.stripe_session_id)}`);
