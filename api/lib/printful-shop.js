@@ -42,6 +42,29 @@ export async function shopProduct(id) {
   productCache.set(key, { until: Date.now() + 60000, value });
   return value;
 }
+// Explicit pairs keep different artwork separate and preserve Printful variant IDs.
+export const shirtPairs = [
+ [475033389,475032727], [475033342,475032797],
+ [475033316,475032684], [475033293,475032615],
+ [475033270,475032829], [475033253,475032634],
+ [475033228,475032986], [475033196,475032265],
+ [475033099,475032775], [475033049,475032431]
+];
+export const pairedSecondaryIds = new Set(shirtPairs.map(pair=>pair[1]));
+export async function storefrontProduct(id) {
+ const pair=shirtPairs.find(pair=>pair.includes(Number(id)));
+ if(!pair)return shopProduct(id);
+ const ordered=[Number(id),...pair.filter(value=>value!==Number(id))];
+ const products=await Promise.all(ordered.map(shopProduct));
+ const available=products.filter(p=>p.variants.length);
+ const base=available[0]||products[0];
+ const variants=available.flatMap(p=>p.variants);
+ const images=[...new Set(available.flatMap(p=>p.images))];
+ return {...base,id:Number(id),image:base.image,campaign:base.campaign,
+  images,
+  colors:[...new Set(variants.map(v=>v.color).filter(Boolean))],variants,
+  price:variants.length?Math.min(...variants.map(v=>v.price)):null};
+}
 export function cents(value) {
   if (!/^\d+(\.\d{1,2})?$/.test(String(value))) throw new Error('Invalid price');
   const amount = Math.round(Number(value) * 100);

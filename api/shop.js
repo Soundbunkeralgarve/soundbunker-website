@@ -1,6 +1,6 @@
 import { json, parseJson } from './lib/http.js';
 import { requireAdmin } from './lib/supabase-auth.js';
-import { pf, countries, shopProduct, hiddenProductIds, httpsURL, quoteOrder, checkoutOrder, shopDB, hasAccess, stripeRequest, fulfillShopCheckout } from './lib/printful-shop.js';
+import { pf, countries, shopProduct, storefrontProduct, hiddenProductIds, httpsURL, quoteOrder, checkoutOrder, shopDB, hasAccess, stripeRequest, fulfillShopCheckout } from './lib/printful-shop.js';
 
 export const config = { maxDuration: 60 };
 export default async function handler(req,res) {
@@ -23,7 +23,7 @@ export default async function handler(req,res) {
     }
     if (req.method === 'GET' && action === 'product') {
       const id = url.searchParams.get('id'); if (!/^\d+$/.test(id || '')) return json(res,{error:'Invalid product'},400);
-      return json(res,await shopProduct(id));
+      return json(res,await storefrontProduct(id));
     }
     if (req.method === 'POST' && action === 'quote') {
       const input = await parseJson(req);

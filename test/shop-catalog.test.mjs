@@ -11,3 +11,10 @@ test('removed Verse3 products cannot be browsed or purchased',async()=>{
 });
 
 test('old basket and checkout reject withdrawn variants',async()=>{for(const id of [5138797987, 5138797988, 5138797989, 5138797990, 5138797991, 5138796724, 5138796725, 5138796726, 5138796727, 5138796728]){assert.throws(()=>cleanCart([{id,quantity:1}]),/removed/);await assert.rejects(checkoutOrder({items:[{id}]},{}),/removed/);}});
+
+test('either shirt colour exposes both real Printful variants with clicked colour first',async()=>{
+ const {storefrontProduct}=await import('../api/lib/printful-shop.js');
+ const original=global.fetch;process.env.PRINTFUL_TOKEN='test';
+ global.fetch=async url=>{const id=Number(url.split('/').pop());const color=id===475033389?'Black':'White';return {ok:true,json:async()=>({result:{sync_product:{id,name:'Unisex Organic Cotton Creator 2.0 T-Shirt EXCELLENCE'},sync_variants:[{id:id+1000000000,synced:true,currency:'EUR',retail_price:'30.00',color,size:'M',files:[{type:'preview',preview_url:`https://example.com/${color}.png`}]}]}})};};
+ try{for(const [id,color] of [[475033389,'Black'],[475032727,'White']]){const p=await storefrontProduct(id);assert.equal(p.id,id);assert.equal(p.colors[0],color);assert.equal(p.image,`https://example.com/${color}.png`);assert.deepEqual(new Set(p.variants.map(v=>v.id)),new Set([1475033389,1475032727]));assert.ok(p.variants.every(v=>v.price===5000));}}finally{global.fetch=original;}
+});
