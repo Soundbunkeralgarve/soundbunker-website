@@ -18,7 +18,7 @@ A failing basket is blocked before payment with a price-review message. Customer
 
 ## Catalogue
 
-All Printful product pages load automatically. Separate swipeable collections, category and black/white filters, design search, visible VAT wording, and current synced variant previews support the new 20-shirt collection. Existing campaign mockups are only used while their source preview still matches the synced artwork.
+All Printful product pages load automatically. Separate swipeable collections, category and black/white filters, design search, visible VAT wording, and current synced variant previews support the new 20-shirt collection. All product cards use current synced Printful variant mockups for a consistent product-image style; lifestyle campaign overrides are disabled.
 
 ## Verification
 
