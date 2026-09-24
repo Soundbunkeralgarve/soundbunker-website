@@ -1,0 +1,185 @@
+import { randomUUID, randomBytes, timingSafeEqual } from 'node:crypto';
+import { createClient } from '@supabase/supabase-js';
+import { sendTransactionalEmail } from './notify.js';
+
+export const shopOrigin = () => (process.env.SITE_URL || 'https://www.soundbunker.pt').replace(/\/$/, '');
+export const countries = () => (process.env.SHOP_COUNTRIES || 'PT,ES,FR,DE,IT,NL,BE,AT,IE,LU,DK,SE,FI,PL,CZ,SK,HU,RO,BG,HR,SI,EE,LV,LT,GR,CY,MT,GB').split(',').map(x => x.trim().toUpperCase()).filter(x => /^[A-Z]{2}$/.test(x));
+export function shopDB() {
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SECRET_KEY) throw new Error('Shop database is not configured');
+  return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SECRET_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
+}
+export async function pf(path, body) {
+  if (!process.env.PRINTFUL_TOKEN) throw new Error('Printful is not configured');
+  const response = await fetch(`https://api.printful.com${path}`, {
+    method: body === undefined ? 'GET' : 'POST',
+    headers: { authorization: `Bearer ${process.env.PRINTFUL_TOKEN}`, 'content-type': 'application/json', ...(process.env.PRINTFUL_STORE_ID ? { 'X-PF-Store-Id': process.env.PRINTFUL_STORE_ID } : {}) },
+    ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(15000)
+  });
+  const data = await response.json();
+  if (!response.ok || data.code >= 400) { const error = new Error(`Printful request failed (${response.status})`); error.status = response.status; throw error; }
+  return data.result;
+}
+export function cents(value) {
+  if (!/^\d+(\.\d{1,2})?$/.test(String(value))) throw new Error('Invalid price');
+  const amount = Math.round(Number(value) * 100);
+  if (!Number.isSafeInteger(amount) || amount < 0 || amount > 10000000) throw new Error('Invalid price');
+  return amount;
+}
+export function httpsURL(value) { try { const url = new URL(value); return url.protocol === 'https:' ? url.href : ''; } catch { return ''; } }
+export function publicVariant(v) {
+  if (!v.synced || v.is_ignored || (v.availability_status && v.availability_status !== 'active') || v.currency !== 'EUR') return null;
+  let price; try { price = cents(v.retail_price); } catch { return null; }
+  if (price < 50) return null;
+  return { id: v.id, name: v.name, size: v.size, color: v.color, price, image: httpsURL(v.files?.find(f => f.type === 'preview')?.preview_url || v.product?.image) };
+}
+const text = (v, n = 150) => typeof v === 'string' ? v.trim().slice(0, n) : '';
+export function cleanRecipient(value = {}) {
+  const r = Object.fromEntries(['name','email','phone','address1','address2','city','state_code','zip','country_code'].map(k => [k, text(value[k], k === 'email' ? 200 : 150)]));
+  r.country_code = r.country_code.toUpperCase(); r.state_code = r.state_code.toUpperCase();
+  if (!r.name || !r.address1 || !r.city || !r.zip || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r.email) || !countries().includes(r.country_code)) throw new Error('Please enter a complete delivery address and valid email.');
+  return r;
+}
+export function cleanCart(cart) {
+  if (!Array.isArray(cart) || !cart.length || cart.length > 15) throw new Error('Please select between 1 and 15 different items.');
+  const merged = new Map();
+  for (const item of cart) {
+    if (!Number.isSafeInteger(item.id) || item.id < 1 || !Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 10) throw new Error('Invalid item or quantity.');
+    merged.set(item.id, (merged.get(item.id) || 0) + item.quantity);
+  }
+  if ([...merged.values()].some(q => q > 10) || [...merged.values()].reduce((a,b) => a+b,0) > 30) throw new Error('Please contact us for larger orders.');
+  return [...merged].map(([id,quantity]) => ({ id, quantity }));
+}
+export async function quoteOrder(input, db = shopDB()) {
+  const recipient = cleanRecipient(input.recipient);
+  const cart = cleanCart(input.items);
+  const items = [];
+  // Sequential requests stay within Printful's rate limit for small baskets.
+  for (const item of cart) {
+    const result = await pf(`/store/variants/${item.id}`);
+    const variant = publicVariant(result.sync_variant);
+    if (!variant) throw new Error('An item is unavailable or has no EUR selling price. Please refresh your basket.');
+    items.push({ ...variant, catalog_variant_id: result.sync_variant.variant_id, quantity: item.quantity });
+  }
+  const pfItems = items.map(i => ({ sync_variant_id: i.id, quantity: i.quantity }));
+  const rates = await pf('/shipping/rates', { recipient, items: items.map(i => ({ variant_id: i.catalog_variant_id, quantity: i.quantity })), currency: 'EUR' });
+  const available = rates.filter(r => r.currency === 'EUR' && r.id && Number(r.rate) >= 0);
+  const rate = available.find(r => r.id === 'STANDARD') || available.sort((a,b) => Number(a.rate)-Number(b.rate))[0];
+  if (!rate) throw new Error('Delivery is not available for this basket and address.');
+  const multiplier = Number(process.env.SHOP_SHIPPING_MULTIPLIER || '1');
+  if (!Number.isFinite(multiplier) || multiplier < 1 || multiplier > 3) throw new Error('Shop shipping settings need attention');
+  const shipping = Math.ceil(cents(rate.rate) * multiplier);
+  const subtotal = items.reduce((n,i) => n+i.price*i.quantity,0);
+  const estimate = await pf('/orders/estimate-costs', { recipient, items: pfItems, shipping: rate.id });
+  if (estimate.costs?.currency !== 'EUR' || cents(estimate.costs.total) > subtotal+shipping) throw new Error('This basket needs a price review. Please contact bookings@soundbunker.pt.');
+  const row = { id: randomUUID(), access_token: randomBytes(32).toString('hex'), recipient, items, subtotal_cents: subtotal, shipping_cents: shipping, total_cents: subtotal+shipping, shipping_method: rate.id, shipping_label: text(rate.name,250), status: 'quoted', expires_at: new Date(Date.now()+30*60*1000).toISOString() };
+  const saved = await db.from('shop_orders').insert(row);
+  if (saved.error) throw new Error('Could not save shop quote');
+  return row;
+}
+export function hasAccess(row, token) {
+  return typeof token === 'string' && /^[a-f0-9]{64}$/.test(token) && typeof row.access_token === 'string' && row.access_token.length === 64 && timingSafeEqual(Buffer.from(row.access_token), Buffer.from(token));
+}
+export async function stripeRequest(path, body, key) {
+  if (!process.env.STRIPE_SECRET_KEY) throw new Error('Stripe is not configured');
+  const response = await fetch(`https://api.stripe.com/v1${path}`, { method: body ? 'POST' : 'GET', headers: { authorization: `Bearer ${process.env.STRIPE_SECRET_KEY}`, 'content-type': 'application/x-www-form-urlencoded', 'Stripe-Version': '2024-06-20', ...(key ? { 'Idempotency-Key': key } : {}) }, ...(body ? { body } : {}), signal: AbortSignal.timeout(15000) });
+  const result = await response.json(); if (!response.ok) throw new Error(`Stripe request failed (${response.status})`); return result;
+}
+export async function checkoutOrder(row, db = shopDB()) {
+  if (/^(sk|rk)_live_/.test(process.env.STRIPE_SECRET_KEY || '') && process.env.PRINTFUL_AUTO_FULFILL !== 'true') throw new Error('Shop is not open for live payments yet');
+  if (row.stripe_session_id) {
+    const existing = await stripeRequest(`/checkout/sessions/${encodeURIComponent(row.stripe_session_id)}`);
+    if (existing.status === 'open' && existing.url) return existing.url;
+    throw new Error('This checkout is no longer open. Please request a new total.');
+  }
+  if (row.status !== 'quoted' || Date.parse(row.expires_at) < Date.now()) throw new Error('Your quote has expired. Please calculate delivery again.');
+  const body = new URLSearchParams({ mode: 'payment', 'payment_method_types[0]': 'card', customer_email: row.recipient.email, client_reference_id: row.id,
+    success_url: `${shopOrigin()}/shop-order.html?order=${row.id}&token=${row.access_token}`, cancel_url: `${shopOrigin()}/shop.html#basket`,
+    'metadata[purchase_type]': 'merchandise', 'metadata[shop_order_id]': row.id,
+    'payment_intent_data[metadata][shop_order_id]': row.id,
+    'custom_text[submit][message]': `Delivery to: ${row.recipient.name}, ${row.recipient.address1}, ${row.recipient.address2}, ${row.recipient.city}, ${row.recipient.zip}, ${row.recipient.country_code}. Return to shop to change address.`.slice(0,1200),
+    expires_at: String(Math.floor(Date.parse(row.expires_at)/1000)+1800) });
+  row.items.forEach((item,i) => {
+    body.set(`line_items[${i}][quantity]`,String(item.quantity));
+    body.set(`line_items[${i}][price_data][currency]`,'eur');
+    body.set(`line_items[${i}][price_data][unit_amount]`,String(item.price));
+    body.set(`line_items[${i}][price_data][product_data][name]`,item.name.slice(0,250));
+  });
+  body.set('shipping_options[0][shipping_rate_data][display_name]',row.shipping_label || 'Delivery');
+  body.set('shipping_options[0][shipping_rate_data][type]','fixed_amount');
+  body.set('shipping_options[0][shipping_rate_data][fixed_amount][amount]',String(row.shipping_cents));
+  body.set('shipping_options[0][shipping_rate_data][fixed_amount][currency]','eur');
+  const session = await stripeRequest('/checkout/sessions',body,`shop-checkout-${row.id}`);
+  const saved = await db.from('shop_orders').update({ stripe_session_id: session.id, status: 'awaiting_payment' }).eq('id',row.id).eq('status','quoted');
+  if (saved.error) throw new Error('Could not save checkout');
+  return session.url;
+}
+async function update(db,id,values) {
+  const result = await db.from('shop_orders').update({ ...values, updated_at: new Date().toISOString() }).eq('id',id);
+  if (result.error) throw new Error('Could not update shop order');
+}
+export function validatePayment(row, checkout) {
+  if (checkout.metadata?.purchase_type !== 'merchandise' || checkout.metadata.shop_order_id !== row.id || checkout.client_reference_id !== row.id || checkout.payment_status !== 'paid' || checkout.currency !== 'eur' || checkout.amount_total !== row.total_cents || (row.stripe_session_id && row.stripe_session_id !== checkout.id)) throw new Error('Shop payment mismatch');
+}
+export async function ensurePrintfulOrder(row, api = pf) {
+  const external = `sb-${row.id}`;
+  let order;
+  try { order = await api(`/orders/@${external}`); } catch (error) { if (error.status !== 404) throw error; }
+  if (!order) {
+    try {
+      order = await api('/orders', { external_id: external, shipping: row.shipping_method, recipient: row.recipient,
+        items: row.items.map(i => ({ sync_variant_id: i.id, quantity: i.quantity, retail_price: (i.price/100).toFixed(2) })),
+        retail_costs: { currency: 'EUR', subtotal: (row.subtotal_cents/100).toFixed(2), shipping: (row.shipping_cents/100).toFixed(2), total: (row.total_cents/100).toFixed(2) } });
+    } catch (error) {
+      // Covers a lost create response or an external-ID collision from a retry.
+      try { order = await api(`/orders/@${external}`); } catch { throw error; }
+    }
+  }
+  if (order.external_id !== external) throw new Error('Printful order mismatch');
+  if (order.status === 'draft') {
+    try { order = await api(`/orders/${order.id}/confirm`, {}); }
+    catch (error) { const latest = await api(`/orders/@${external}`); if (latest.status === 'draft') throw error; order = latest; }
+  }
+  if (['draft','failed','canceled'].includes(order.status)) throw new Error(`Printful order requires attention: ${order.status}`);
+  return order;
+}
+export async function sendShopEmails(db,row) {
+  const link = `${shopOrigin()}/shop-order.html?order=${row.id}&token=${row.access_token}`;
+  const summary = row.items.map(i => `${i.quantity} × ${i.name} — €${(i.price*i.quantity/100).toFixed(2)}`).join('\n');
+  const details = `${summary}\nDelivery: €${(row.shipping_cents/100).toFixed(2)}\nTotal paid: €${(row.total_cents/100).toFixed(2)}\nOrder reference: ${row.id}`;
+  if (!row.customer_email_sent) {
+    await sendTransactionalEmail({ to: row.recipient.email, subject: 'Your SoundBunker shop order', key: `shop-buyer-${row.id}`, text: `Hi ${row.recipient.name},\n\nThank you — we have received your payment.\n\n${details}\n\nDelivery address:\n${row.recipient.address1}\n${row.recipient.address2}\n${row.recipient.city}, ${row.recipient.zip}\n${row.recipient.country_code}\n\nFollow production and tracking here (keep this link private):\n${link}\n\nQuestions? Reply to this email.\nSoundBunker Algarve` });
+    await update(db,row.id,{ customer_email_sent: true }); row.customer_email_sent = true;
+  }
+  if (!row.studio_email_sent) {
+    await sendTransactionalEmail({ to: process.env.BOOKING_NOTIFICATION_EMAIL || 'bookings@soundbunker.pt', subject: 'New paid SoundBunker merchandise order', key: `shop-studio-${row.id}`, text: `${details}\n\nCustomer: ${row.recipient.name}\nPayment received. Check the order link for current fulfilment status.\n\nFollow the order: ${link}\nPrintful dashboard: https://www.printful.com/dashboard/orders\nIf the status needs attention, check Printful billing and the shop_orders table.` });
+    await update(db,row.id,{ studio_email_sent: true });
+  }
+}
+export async function fulfillShopCheckout(checkout, db = shopDB()) {
+  const id = checkout.metadata?.shop_order_id;
+  const found = await db.from('shop_orders').select('*').eq('id',id).single();
+  if (found.error || !found.data) throw new Error('Shop order not found');
+  const row = found.data; validatePayment(row,checkout);
+  // Test payments must never reach Printful, which has no free production sandbox.
+  if (!checkout.livemode) { await update(db,id,{ status: 'test_paid', stripe_session_id: checkout.id }); return; }
+  const lock = randomUUID();
+  const claimed = await db.rpc('claim_shop_order', { p_id: id, p_lock: lock });
+  if (claimed.error || !claimed.data) throw new Error('Shop order is busy; retry delivery');
+  try {
+    if (!row.printful_order_id) {
+      await update(db,id,{ stripe_session_id: checkout.id, status: 'paid_pending' });
+      if (process.env.PRINTFUL_AUTO_FULFILL !== 'true') throw new Error('Automatic fulfilment is not enabled');
+      const order = await ensurePrintfulOrder(row);
+      row.status = order.status; row.printful_order_id = order.id;
+      await update(db,id,{ status: order.status, printful_order_id: order.id, last_error: null });
+    }
+    await sendShopEmails(db,row);
+  } catch (error) {
+    await update(db,id,{ last_error: String(error.message).slice(0,300) });
+    // A paid customer still needs a receipt when the supplier cannot fulfil yet.
+    try { await sendShopEmails(db,row); } catch {}
+    throw error;
+  } finally {
+    await db.from('shop_orders').update({ lock_id: null, lock_until: null }).eq('id',id).eq('lock_id',lock);
+  }
+}

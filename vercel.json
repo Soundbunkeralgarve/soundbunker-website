@@ -49,6 +49,16 @@
       "source": "/blog/",
       "destination": "/blog.html",
       "permanent": true
+    },
+    {
+      "source": "/shop",
+      "destination": "/shop.html",
+      "permanent": true
+    },
+    {
+      "source": "/shop/",
+      "destination": "/shop.html",
+      "permanent": true
     }
   ],
   "rewrites": [
@@ -72,6 +82,12 @@
   "functions": {
     "api/admin-prize-voucher.js": {
       "includeFiles": "api/_prize_templates/**"
+    },
+    "api/shop.js": {
+      "maxDuration": 60
+    },
+    "api/stripe-webhook.js": {
+      "maxDuration": 60
     }
   }
 }

@@ -1,3 +1,4 @@
+import { fulfillShopCheckout } from './lib/printful-shop.js';
 import { verifyStripeSignature } from "./lib/stripe.js";
 import { createCalendarEvent } from "./lib/google-calendar.js";
 import { sendToInvoiceXpressAutomation } from "./lib/invoicexpress.js";
@@ -13,11 +14,16 @@ export default async function handler(request, response) {
   const rawBody = await readRawBody(request);
   if (!verifyStripeSignature(rawBody, request.headers["stripe-signature"])) return json(response, { error: "Invalid signature" }, 400);
   const event = JSON.parse(rawBody);
-  if (event.type !== "checkout.session.completed") return json(response, { received: true });
+  if (!["checkout.session.completed", "checkout.session.async_payment_succeeded"].includes(event.type)) return json(response, { received: true });
   const checkout = event.data?.object;
   if (!checkout || checkout.payment_status !== "paid") return json(response, { received: true });
   try {
     const metadata = checkout.metadata || {};
+    if (metadata.purchase_type === "merchandise") {
+      await fulfillShopCheckout(checkout);
+      return json(response, { received: true, merchandise: true });
+    }
+    if (event.type !== "checkout.session.completed") return json(response, { received: true });
     const admin = process.env.SUPABASE_URL && process.env.SUPABASE_SECRET_KEY
       ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SECRET_KEY, { auth: { persistSession: false } }) : null;
     let booking = null;
