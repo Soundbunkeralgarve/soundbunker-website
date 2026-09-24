@@ -38,16 +38,20 @@ test('a high-margin shirt cannot subsidise an expensive hat in a mixed basket', 
  try {await assert.rejects(quoteOrder({items:[{id:111,quantity:1},{id:112,quantity:1}],recipient:{name:'Test',email:'test@example.com',address1:'Test street',city:'Loule',zip:'8100-000',country_code:'PT'}},{from:()=>({insert:async()=>{writes++;return {};}})}),/price review/);assert.equal(writes,0);}finally{global.fetch=original;}
 });
 
-test('discount codes are validated server-side and preserve fixed list prices', async()=>{
+test('shop discounts preserve list prices and allocate fixed or percentage savings', async()=>{
  const {applyShopDiscount}=await import('../api/lib/shop-pricing.js');
- const before=process.env.SHOP_DISCOUNT_CODES;
- process.env.SHOP_DISCOUNT_CODES=JSON.stringify({TEST10:{percent_off:10},OLD:{percent_off:10,expires_at:'2020-01-01'}});
- try {
+ for(const offer of [{code:'TEST10',kind:'percent',amount:10},{code:'TENEURO',kind:'fixed',amount:10}]) {
   const items=[{price:5000,quantity:1},{price:3500,quantity:1}];
-  applyShopDiscount(items,' test10 ');
-  assert.deepEqual(items.map(i=>[i.price,i.list_price,i.discount_code]),[[4500,5000,'TEST10'],[3150,3500,'TEST10']]);
-  assert.throws(()=>applyShopDiscount([{price:5000}],'unknown'),/invalid or expired/);
-  assert.throws(()=>applyShopDiscount([{price:5000}],'OLD'),/invalid or expired/);
-  assert.throws(()=>applyShopDiscount([{price:5000}],'constructor'),/invalid or expired/);
- } finally {if(before===undefined)delete process.env.SHOP_DISCOUNT_CODES;else process.env.SHOP_DISCOUNT_CODES=before;}
+  applyShopDiscount(items,offer);
+  assert.deepEqual(items.map(i=>i.list_price),[5000,3500]);
+  assert.equal(items.reduce((n,i)=>n+i.price,0),offer.kind==='percent'?7650:7500);
+ }
+ assert.throws(()=>applyShopDiscount([{price:5000,quantity:1}],{kind:'percent',amount:101}),/check your discount/);
+});
+test('only active shop-specific codes without unsupported restrictions can be redeemed',async()=>{
+ const {loadShopDiscount}=await import('../api/lib/shop-pricing.js');
+ const offer={code:'SHOP10',kind:'percent',amount:10,service_id:'shop',active:true};
+ const db=value=>({from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:value})})})})});
+ assert.equal((await loadShopDiscount(db(offer),' shop10 ')).code,'SHOP10');
+ for(const patch of [{active:false},{service_id:null},{service_id:'recording'},{max_uses:1},{client_user_id:'someone'},{expires_at:'2020-01-01'}])await assert.rejects(loadShopDiscount(db({...offer,...patch}),'SHOP10'),/unavailable/);
 });

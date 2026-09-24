@@ -142,12 +142,12 @@ function renderCodes() {
     $(selector).innerHTML=initial+profiles.map(p=>`<option value="${esc(p.id)}">${esc(p.full_name||p.email)}</option>`).join('');
     if([...$(selector).options].some(o=>o.value===keep)) $(selector).value=keep;
   }
-  $('#codeService').innerHTML='<option value="">Any service</option>'+data.services.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('');
+  $('#codeService').innerHTML='<option value="">Any booking service</option><option value="shop">Shop merchandise</option>'+data.services.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('');
   $('#codesList').innerHTML=data.codes.length?data.codes.map(code=>{
     const uses=data.claims.filter(c=>c.code_id===code.id && c.status==='used').length;
     const owner=profile(code.client_user_id);
     return `<div class="item-row"><div><strong>${esc(code.code)} · ${code.kind==='percent'?esc(code.amount)+'%':'€'+esc(code.amount)} off</strong>
-      <small>${owner?'For '+esc(owner.full_name||owner.email):'Any client'} · ${esc(code.service_id||'Any service')} · ${uses}/${code.max_uses||'∞'} uses${code.expires_at?' · expires '+esc(fmt(code.expires_at)):''}</small></div>
+      <small>${owner?'For '+esc(owner.full_name||owner.email):'Any client'} · ${esc(code.service_id||'Any service')} · ${code.service_id==='shop'?'Unlimited shop uses':uses+'/'+(code.max_uses||'∞')+' uses'}${code.expires_at?' · expires '+esc(fmt(code.expires_at)):''}</small></div>
       <button class="${code.active?'danger-btn':'small-btn'}" data-code-id="${esc(code.id)}" data-code-active="${code.active?'false':'true'}">${code.active?'Disable':'Enable'}</button></div>`;
   }).join(''):'<p class="muted">No VIP codes yet.</p>';
 }
@@ -304,3 +304,9 @@ document.addEventListener('change',e=>{if(e.target.id==='adminFiles'){uploadFile
 document.addEventListener('dragover',e=>{const zone=e.target.closest('#dropZone');if(zone){e.preventDefault();zone.classList.add('drag');}});
 document.addEventListener('dragleave',e=>{const zone=e.target.closest('#dropZone');if(zone)zone.classList.remove('drag');});
 document.addEventListener('drop',e=>{const zone=e.target.closest('#dropZone');if(zone){e.preventDefault();zone.classList.remove('drag');uploadFiles([...e.dataTransfer.files]);}});
+
+$('#codeService').addEventListener('change',()=>{
+ const shop=$('#codeService').value==='shop';
+ for(const field of [$('#codeClient'),$('#codeForm [name="maxUses"]')]) {field.disabled=shop;if(shop)field.value='';}
+ $('#shop-code-note').hidden=!shop;
+});

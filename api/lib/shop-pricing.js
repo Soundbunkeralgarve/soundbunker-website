@@ -44,21 +44,38 @@ export function productLabel(name = '') {
   return base;
 }
 
-// Codes are enabled by the shop owner; none are invented or enabled by default.
-// SHOP_DISCOUNT_CODES example: {"EXAMPLE":{"percent_off":10}}
-export function applyShopDiscount(items, value) {
-  const code = typeof value === 'string' ? value.trim().toUpperCase() : '';
-  if (!code) return;
-  if (!/^[A-Z0-9_-]{1,40}$/.test(code)) throw new Error('Please enter a valid discount code.');
-  let codes;
-  try { codes = JSON.parse(process.env.SHOP_DISCOUNT_CODES || '{}'); }
-  catch { throw new Error('Please try your discount code again later.'); }
-  const offer = Object.hasOwn(codes, code) ? codes[code] : null;
-  const percent = offer?.percent_off;
-  if (!offer || offer.active === false || typeof percent !== 'number' || !Number.isFinite(percent) || percent <= 0 || percent >= 100 || (offer.expires_at && (!Number.isFinite(Date.parse(offer.expires_at)) || Date.parse(offer.expires_at) <= Date.now()))) throw new Error('Please check your discount code; it is invalid or expired.');
+// Apply an owner-created shop code. Keep catalogue prices for later validation.
+export function applyShopDiscount(items, offer) {
+  if (!offer) return;
+  const amount = Number(offer.amount);
+  if (!['fixed','percent'].includes(offer.kind) || !Number.isFinite(amount) || amount <= 0 || (offer.kind === 'percent' && amount > 100)) throw new Error('Please check your discount code.');
+  const subtotal = items.reduce((n,i)=>n+i.price*i.quantity,0);
+  const requested = offer.kind === 'percent' ? Math.round(subtotal*amount/100) : Math.round(amount*100);
+  const discount = Math.min(requested, subtotal-items.reduce((n,i)=>n+i.quantity,0));
+  let applied = 0;
   for (const item of items) {
     item.list_price = item.price;
-    item.price = Math.max(1, Math.round(item.price * (1 - percent / 100)));
-    item.discount_code = code;
+    const unitOff = Math.min(item.price-1, Math.floor(discount*item.price/subtotal));
+    item.price -= unitOff;
+    applied += unitOff*item.quantity;
+    item.discount_code = offer.code;
   }
+  for (const item of items) {
+    const extra = Math.min(item.price-1, Math.floor((discount-applied)/item.quantity));
+    item.price -= extra; applied += extra*item.quantity;
+  }
+}
+export async function loadShopDiscount(db, value) {
+  const code = typeof value === 'string' ? value.trim().toUpperCase() : '';
+  if (!code) return null;
+  if (!/^[A-Z0-9_-]{3,40}$/.test(code)) throw new Error('Please enter a valid discount code.');
+  const {data:offer,error}=await db.from('discount_codes').select('*').eq('code',code).maybeSingle();
+  if (error || !offer || !offer.active || offer.service_id !== 'shop' || offer.client_user_id || offer.max_uses || (offer.expires_at && (!Number.isFinite(Date.parse(offer.expires_at)) || Date.parse(offer.expires_at)<=Date.now()))) throw new Error('Please check your discount code; it is unavailable for the shop or has expired.');
+  return offer;
+}
+
+export function minimumShopPrice(shipping, supplierTotal) {
+ let low=0,high=10000000;
+ while(low<high){const mid=Math.floor((low+high)/2);if(marginCheck(mid,shipping,supplierTotal).allowed)high=mid;else low=mid+1;}
+ return low;
 }

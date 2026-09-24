@@ -1,5 +1,5 @@
 import { campaignImages } from './shop-artwork.js';
-import { retailPrice, productCategory, productLabel, marginCheck, applyShopDiscount } from './shop-pricing.js';
+import { retailPrice, productCategory, productLabel, marginCheck, minimumShopPrice, applyShopDiscount, loadShopDiscount } from './shop-pricing.js';
 import { randomUUID, randomBytes, timingSafeEqual } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import { sendTransactionalEmail } from './notify.js';
@@ -116,7 +116,7 @@ export async function quoteOrder(input, db) {
     if (!variant) throw new Error('An item is unavailable or has no EUR selling price. Please refresh your basket.');
     items.push({ ...variant, catalog_variant_id: syncVariant.variant_id, quantity: item.quantity });
   }
-  applyShopDiscount(items, input.discount_code);
+  applyShopDiscount(items, await loadShopDiscount(db, input.discount_code));
   const pfItems = items.map(i => ({ sync_variant_id: i.id, quantity: i.quantity }));
   stage = 'delivery_data';
   const rates = await pf('/shipping/rates', { recipient, items: items.map(i => ({ variant_id: i.catalog_variant_id, quantity: i.quantity })), currency: 'EUR' });
@@ -127,7 +127,9 @@ export async function quoteOrder(input, db) {
   const subtotal = items.reduce((n,i) => n+i.price*i.quantity,0);
   stage = 'estimate_data';
   const estimate = await pf('/orders/estimate-costs', { recipient, items: pfItems, shipping: rate.id });
-  if (estimate.costs?.currency !== 'EUR' || !marginCheck(subtotal, shipping, cents(estimate.costs.total)).allowed) throw new Error('This basket needs a price review. Please contact bookings@soundbunker.pt.');
+  if (estimate.costs?.currency !== 'EUR') {const error=new Error('This basket needs a price review. Please contact bookings@soundbunker.pt.');error.shopStage='estimate_currency_'+(/^[A-Z]{3}$/.test(estimate.costs?.currency)?estimate.costs.currency:'missing');throw error;}
+  const review=[];
+  if (!marginCheck(subtotal, shipping, cents(estimate.costs.total)).allowed) review.push({scope:'basket',minimum_subtotal:minimumShopPrice(shipping,cents(estimate.costs.total))});
   // Do not let a profitable item subsidise a loss-making product in a mixed basket.
   if (items.length > 1) {
     for (const item of items) {
@@ -136,9 +138,11 @@ export async function quoteOrder(input, db) {
       const costs = line.costs;
       if (costs?.currency !== 'EUR') throw new Error('This basket needs a price review. Please contact bookings@soundbunker.pt.');
       const production = cents(costs.total) - cents(costs.shipping);
-      if (production < 0 || !marginCheck(item.price * item.quantity, 0, production).allowed) throw new Error('This basket needs a price review. Please contact bookings@soundbunker.pt.');
+      if (production < 0) throw new Error('This basket needs a price review. Please contact bookings@soundbunker.pt.');
+      if (!marginCheck(item.price * item.quantity, 0, production).allowed) review.push({id:item.id,name:item.name,minimum_unit_price:Math.ceil(minimumShopPrice(0,production)/item.quantity)});
     }
   }
+  if(review.length){const error=new Error('This basket needs a price review. Please contact bookings@soundbunker.pt.');error.priceReview=review;throw error;}
   stage = 'save_quote';
   const row = { id: randomUUID(), access_token: randomBytes(32).toString('hex'), recipient, items, subtotal_cents: subtotal, shipping_cents: shipping, total_cents: subtotal+shipping, shipping_method: rate.id, shipping_label: text(rate.name,250), status: 'quoted', expires_at: new Date(Date.now()+30*60*1000).toISOString() };
   const saved = await db.from('shop_orders').insert(row);

@@ -114,8 +114,9 @@ export default async function handler(request, response) {
     if (!/^[A-Z0-9_-]{3,40}$/.test(code) || !['fixed','percent'].includes(kind) ||
       !Number.isFinite(amount) || amount <= 0 || (kind === 'percent' && amount > 100) ||
       (kind === 'fixed' && amount > 10000) || (maxUses !== null && (!Number.isInteger(maxUses) || maxUses < 1)) ||
-      (assigned && !uuid.test(assigned)) || (service && !serviceList().some(item => item.id === service)))
+      (assigned && !uuid.test(assigned)) || (service && service !== 'shop' && !serviceList().some(item => item.id === service)))
       return json(response,{error:'Check code, value, use limit and client'},400);
+    if (service === 'shop' && (assigned || maxUses)) return json(response,{error:'Shop codes support any customer and unlimited uses. Set an expiry or disable the code to end the offer.'},400);
     const expires = input.expiresAt ? new Date(input.expiresAt) : null;
     if (expires && (!Number.isFinite(expires.getTime()) || expires.getTime() <= Date.now()))
       return json(response,{error:'Expiry must be in the future'},400);
