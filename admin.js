@@ -280,7 +280,7 @@ document.addEventListener('submit',async e=>{
     return;
   }
   if(form.id==='assignForm'){const result=await mutate('/api/admin-dashboard',{action:'add_delivery',userId:selectedId,...values},'Delivery assigned and client notified.');if(result)status(`Delivery assigned. Portal: ${result.notification?.inApp?'notified':'failed'}; email: ${result.notification?.email||'not configured'}.`);return;}
-  if(form.id==='codeForm'){await mutate('/api/admin-dashboard',{action:'create_code',...values},'Discount code created.');form.reset();return;}
+  if(form.id==='codeForm'){await mutate('/api/admin-dashboard',{action:'create_code',...values},'Discount code created.');form.reset();$('#codeClient').disabled=false;$('#codeForm [name="maxUses"]').disabled=false;$('#shop-code-note').hidden=true;return;}
   if(form.id==='prizeForm'){
     const result=await mutate('/api/admin-dashboard',{action:'create_prize',...values},'Prize code generated.');
     if(result?.prize){
