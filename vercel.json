@@ -63,6 +63,106 @@
   ],
   "rewrites": [
     {
+      "source": "/",
+      "destination": "/crude-city.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "crude-city\\.com"
+        }
+      ]
+    },
+    {
+      "source": "/index.html",
+      "destination": "/crude-city.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "crude-city\\.com"
+        }
+      ]
+    },
+    {
+      "source": "/shop.html",
+      "destination": "/crude-city.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "crude-city\\.com"
+        }
+      ]
+    },
+    {
+      "source": "/order",
+      "destination": "/crude-order.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "crude-city\\.com"
+        }
+      ]
+    },
+    {
+      "source": "/shop-order.html",
+      "destination": "/crude-order.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "crude-city\\.com"
+        }
+      ]
+    },
+    {
+      "source": "/",
+      "destination": "/crude-city.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "www\\.crude-city\\.com"
+        }
+      ]
+    },
+    {
+      "source": "/index.html",
+      "destination": "/crude-city.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "www\\.crude-city\\.com"
+        }
+      ]
+    },
+    {
+      "source": "/shop.html",
+      "destination": "/crude-city.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "www\\.crude-city\\.com"
+        }
+      ]
+    },
+    {
+      "source": "/order",
+      "destination": "/crude-order.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "www\\.crude-city\\.com"
+        }
+      ]
+    },
+    {
+      "source": "/shop-order.html",
+      "destination": "/crude-order.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "www\\.crude-city\\.com"
+        }
+      ]
+    },
+    {
       "source": "/client",
       "destination": "/client.html"
     },
