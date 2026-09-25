@@ -63,6 +63,46 @@
   ],
   "rewrites": [
     {
+      "source": "/robots.txt",
+      "destination": "/crude-robots.txt",
+      "has": [
+        {
+          "type": "host",
+          "value": "crude-city\\.com"
+        }
+      ]
+    },
+    {
+      "source": "/sitemap.xml",
+      "destination": "/crude-sitemap.xml",
+      "has": [
+        {
+          "type": "host",
+          "value": "crude-city\\.com"
+        }
+      ]
+    },
+    {
+      "source": "/robots.txt",
+      "destination": "/crude-robots.txt",
+      "has": [
+        {
+          "type": "host",
+          "value": "www\\.crude-city\\.com"
+        }
+      ]
+    },
+    {
+      "source": "/sitemap.xml",
+      "destination": "/crude-sitemap.xml",
+      "has": [
+        {
+          "type": "host",
+          "value": "www\\.crude-city\\.com"
+        }
+      ]
+    },
+    {
       "source": "/",
       "destination": "/crude-city.html",
       "has": [
