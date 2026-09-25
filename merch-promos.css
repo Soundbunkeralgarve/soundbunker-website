@@ -3,3 +3,16 @@
 .client-auth-form-wrap .merch-mini-promo{margin:20px 0 0;padding:0;width:100%}.client-auth-form-wrap .merch-mini-promo img{height:125px}.client-auth-form-wrap .merch-mini-promo strong{font-size:17px}.client-page #portalPanel .merch-mini-promo{max-width:900px;margin:24px auto;}
 
 .crude-content-notice{aspect-ratio:450/260;display:grid;place-items:center;background:#201526;color:#d9abf5;font-size:clamp(18px,3vw,30px);font-weight:900;letter-spacing:.04em;border-bottom:1px solid #704883}
+
+/* Crude City teaser: branded poster only. Never show the product designs in adverts. */
+.collection-promos .crude-promo{border:1px solid #8b42ae;background:#0e0813;box-shadow:0 0 0 1px #4a2358}
+.collection-promos .crude-promo img{width:100%;height:auto;aspect-ratio:450/251;object-fit:contain;background:#0e0813}
+.crude-promo .collection-promo-copy{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 14px;background:#12091a}
+.crude-promo .crude-age-badge{color:#fff;background:#813ba4;border:1px solid #c87bf2;border-radius:4px;font-size:11px;letter-spacing:.12em;padding:6px 9px;white-space:nowrap}
+.crude-promo .collection-promo-copy span{color:#f5e1ff;font-weight:700;font-size:13px;padding:0;margin:0}
+.merch-mini-promo .crude-promo{display:block;background:#100916;border-color:#8b42ae}
+.merch-mini-promo .crude-promo img{display:block;width:100%;height:auto;aspect-ratio:450/251;object-fit:contain}
+.merch-mini-promo .crude-promo .collection-promo-copy{padding:12px 16px}
+.merch-mini-promo .crude-promo .collection-promo-copy span{margin:0}
+.collection-promo:focus-visible{outline:3px solid #e7b5ff;outline-offset:3px}
+@media(max-width:520px){.crude-promo .collection-promo-copy{flex-wrap:wrap}.merch-mini-promo .crude-promo .collection-promo-copy{padding:10px}}
