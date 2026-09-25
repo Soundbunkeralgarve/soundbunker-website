@@ -17,3 +17,11 @@ test('direct adult product link is gated before calling supplier',async()=>{
 test('kids and adult prices remain distinct across garments and variant suffixes',()=>{
  for(const [name,expected] of [['Youth classic tee RECORD / Natural / XL',3000],['Youth heavy blend hoodie RECORD / White / S',5000],['Youth crewneck sweatshirt JINGLE / L',4000],['Unisex t-shirt BED / XL',4500],['Unisex Hoodie JUNGLIST / 5XL',7500],['Unisex Sweatshirt TREE / M',6000]])assert.equal(retailPrice(name),expected);
 });
+
+test('couples combo requires both shirts in equal quantities',async()=>{
+ const {validateCouplesCombo}=await import('../api/lib/shop-collections.js');
+ assert.throws(()=>validateCouplesCombo([{product_id:475188276,quantity:1}]),/both shirts/);
+ assert.throws(()=>validateCouplesCombo([{product_id:475188276,quantity:2},{product_id:475188366,quantity:1}]),/matching quantities/);
+ assert.doesNotThrow(()=>validateCouplesCombo([{product_id:475188276,quantity:2},{product_id:475188366,quantity:2}]));
+ assert.doesNotThrow(()=>validateCouplesCombo([{product_id:475185188,quantity:1}]));
+});

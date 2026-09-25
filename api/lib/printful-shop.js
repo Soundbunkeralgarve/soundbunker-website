@@ -1,4 +1,4 @@
-import { collectionFor, productTitles } from './shop-collections.js';
+import { collectionFor, productTitles, validateCouplesCombo } from './shop-collections.js';
 import { campaignImages } from './shop-artwork.js';
 import { supplierCost, deliveryRetailPrice, retailPrice, productCategory, productLabel, marginCheck, minimumShopPrice, applyShopDiscount, loadShopDiscount } from './shop-pricing.js';
 import { randomUUID, randomBytes, timingSafeEqual } from 'node:crypto';
@@ -116,8 +116,9 @@ export async function quoteOrder(input, db) {
     if (collectionFor(syncVariant.sync_product_id)==='crude-city' && !input.adult_confirmed) throw new Error('Please confirm you are 18 or over before ordering Crude City.');
     const variant = publicVariant(syncVariant);
     if (!variant) throw new Error('An item is unavailable or has no EUR selling price. Please refresh your basket.');
-    items.push({ ...variant, collection:collectionFor(syncVariant.sync_product_id), catalog_variant_id: syncVariant.variant_id, quantity: item.quantity });
+    items.push({ ...variant, collection:collectionFor(syncVariant.sync_product_id), product_id:syncVariant.sync_product_id, catalog_variant_id: syncVariant.variant_id, quantity: item.quantity });
   }
+  validateCouplesCombo(items);
   applyShopDiscount(items, await loadShopDiscount(db, input.discount_code));
   const pfItems = items.map(i => ({ sync_variant_id: i.id, quantity: i.quantity }));
   stage = 'delivery_data';

@@ -18,3 +18,9 @@ export const productTitles={
 475184534:'Record My Songs · Kids’ Hoodie',475184507:'Squishes, Not Records · Kids’ Hoodie',475184443:'Keep Calm · Kids’ Hoodie',475184289:'Singing & Chicken Nuggets · Kids’ T-Shirt',475184250:'Record My Songs · Kids’ T-Shirt',475183711:'Squishes, Not Records · Kids’ T-Shirt',475181951:'My Dad Is a DJ · Kids’ T-Shirt',475181285:'Bad Singing · Kids’ T-Shirt',475181217:'Keep Calm · Kids’ T-Shirt',475181120:'My First Real Loves · Kids’ T-Shirt',
 475186347:'Jingle Beats · Kids’ Sweatshirt',475186223:'Sleigh the Mic · Kids’ Sweatshirt',475186142:'Fa La La Loud · Kids’ T-Shirt',475186071:'Santa’s Little Producer · Kids’ T-Shirt',475185948:'SoundBunker Christmas Sweatshirt',475185873:'More Gear · Christmas Sweatshirt',475185852:'Silent Night · Christmas Sweatshirt',475185759:'Waveform Tree · Christmas Sweatshirt',475185686:'Deck the Halls · Christmas Sweatshirt'
 };
+
+export const couplesComboIds=[475188276,475188366];
+export function validateCouplesCombo(items){
+ const counts=couplesComboIds.map(id=>items.filter(i=>Number(i.product_id)===id).reduce((n,i)=>n+i.quantity,0));
+ if(counts[0]!==counts[1])throw new Error('Please select both shirts in the Crude City couples’ combo, with matching quantities.');
+}
