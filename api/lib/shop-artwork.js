@@ -235,7 +235,7 @@ Object.assign(campaignImages, {
     "sourceImage": "https://files.cdn.printful.com/files/447/447bee0b02a9014b0503c92a5d41fd25_preview.png"
   },
   "475186347": {
-    "image": "/assets/shop/mockups/475186347.webp",
+    "image": "/assets/shop/mockups/475186347-v2.webp",
     "sourceImage": "https://files.cdn.printful.com/files/86b/86bf5677872e0f80d0a29e341763ecd8_preview.png"
   },
   "475186223": {
