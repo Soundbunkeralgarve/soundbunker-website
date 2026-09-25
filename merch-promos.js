@@ -1,6 +1,6 @@
 (()=>{
  const data=[['standard','SoundBunker Standard','The original studio essentials.'],['slogans','SoundBunker Slogans','Say it with your T-shirt.'],['rave','Rave Collection','Made for the after-hours crowd.'],['kids','SoundBunker Kids','Big personalities. Little music lovers.'],['christmas','Christmas Collection','Festive gifts for music lovers.']];
- const path=location.pathname;const isShop=/shop\.html$/.test(path);
+ const path=location.pathname;if(path==='/'||/index\.html$/.test(path))return;const isShop=/shop\.html$/.test(path);
  const host=document.createElement('aside');host.className=isShop?'wrap collection-promos':'merch-mini-promo';host.setAttribute('aria-label','Explore SoundBunker merchandise');
  let entries=data;
  if(!isShop){let index=[...path].reduce((n,c)=>n+c.charCodeAt(0),0)%data.length;if(/academy|parties|education/.test(path))index=3;if(/production|mixing/.test(path))index=2;entries=[data[index]];}

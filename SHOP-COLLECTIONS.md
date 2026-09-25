@@ -6,6 +6,6 @@ Prices including VAT: adult tees €45, hoodies €75, sweatshirts €60; kids t
 
 Campaign images in `api/lib/shop-artwork.js` are tied to exact supplier preview URLs; if artwork changes in Printful, the lifestyle image is dropped until rechecked. Product options retain exact supplier previews. Do not substitute a T-shirt lifestyle photo for a sweatshirt or hoodie.
 
-Small public-page adverts are in `merch-promos.js` and never include Crude City. Homepage uses a five-product featured API feed.
+Small public-page adverts are in `merch-promos.js` and never include Crude City. Homepage uses a six-product featured API feed.
 
 The Horny Bitch / Horny Bastard designs are sold only as a €90 two-shirt combo. Their individual cards are omitted; checkout verifies equal quantities of the two actual Printful products. Each shirt has a separate size choice.

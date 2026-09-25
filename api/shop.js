@@ -9,7 +9,7 @@ export default async function handler(req,res) {
   const action = url.searchParams.get('action') || 'products';
   try {
     if (req.method === 'GET' && action === 'featured') {
-      const products=await Promise.all([422179281,475033196,475185188,475184250,475186071].map(shopProduct));
+      const products=await Promise.all([475033196,475185407,475184250,475185759,413283381,413293723].map(shopProduct));
       res.setHeader('Cache-Control','public, max-age=60, s-maxage=60');
       return json(res,{products:products.filter(p=>p.variants.length).map(({variants,...p})=>p),next:null});
     }
