@@ -1,0 +1,50 @@
+/* Crude City — separate adult storefront on the shared fulfilment backend. */
+.crude-city-store{--shop-accent:#bafa49;--shop-line:#3c4436;background:#0b0d0c;color:#f5f8f2}
+.crude-city-store .site-header{background:rgba(9,11,10,.96);border-bottom:1px solid #283323}
+.crude-header{display:flex;align-items:center;justify-content:space-between;gap:26px;padding:14px clamp(18px,3vw,54px)}
+.crude-wordmark{color:#f8fff0;text-decoration:none;font-family:'Space Grotesk',Impact,Arial,sans-serif;font-weight:900;font-size:clamp(22px,2.6vw,40px);line-height:.82;letter-spacing:-.085em;white-space:nowrap}
+.crude-wordmark span{color:#bafa49}.crude-wordmark small{display:block;margin-top:9px;font:700 8px/1.2 Arial,sans-serif;letter-spacing:.36em;color:#c5eb89}
+.crude-city-store .shop-top-links a{font-size:12px;letter-spacing:.13em;font-weight:800}
+.crude-city-store .shop-top-links a:hover,.crude-city-store a:focus-visible{color:#bafa49}
+.crude-city-store .shop-count{background:#bafa49;color:#090c08}
+.crude-city-store .shop-hero{background:linear-gradient(90deg,#080a08 4%,rgba(8,10,8,.87) 44%,rgba(8,10,8,.26) 95%),radial-gradient(circle at 72% 20%,#65213e,transparent 48%),#080a08;min-height:600px}
+.crude-city-store:not(.age-cleared) .crude-hero .shop-hero-photo{visibility:hidden}
+.crude-city-store .shop-hero-photo{object-fit:cover;filter:contrast(1.16) saturate(.85)}
+.crude-city-store .shop-hero-content{position:relative;z-index:1;padding-top:168px;padding-bottom:50px}
+.crude-city-store .shop-hero-content h1{font-family:'Space Grotesk',Impact,Arial,sans-serif;font-weight:900;letter-spacing:-.075em;font-size:clamp(55px,8.6vw,132px);max-width:1000px;text-transform:uppercase}
+.crude-city-store .shop-hero-content h1 span{color:#bafa49}
+.crude-city-store .eyebrow{color:#bafa49;letter-spacing:.18em;font-size:11px;font-weight:800}
+.crude-city-store .shop-hero-content>p:not(.eyebrow){max-width:570px;color:#e3e8d8;font-size:clamp(15px,1.7vw,19px);line-height:1.5}
+.crude-city-store .shop-button,.crude-city-store .hero-cta{background:#bafa49;color:#11150c;border:1px solid #bafa49;border-radius:5px;font-weight:900;text-transform:uppercase;letter-spacing:.06em}
+.crude-city-store .shop-button:hover{background:#d7ff9b}
+.crude-city-store .shop-button.secondary{background:#182019;color:#ddf7c4;border:1px solid #4e6844}
+.crude-city-store .shop-strip{background:#bafa49;color:#10170b;font-weight:900;letter-spacing:.14em}
+.crude-city-store .collection-heading h2{font-weight:900;letter-spacing:-.055em;text-transform:uppercase}
+.crude-city-store .collection-mark{color:#bafa49}
+.crude-city-store .shop-sidebar,.crude-city-store .shop-card,.crude-city-store .shop-basket{background:#141a15;border-color:#334034}
+.crude-city-store .shop-sidebar h3,.crude-city-store .shop-results-tools{color:#dcf9ca}
+.crude-city-store .shop-categories button,.crude-city-store .shop-collection-chips button{background:#162118;border-color:#4d6647;color:#e5fbd9}
+.crude-city-store .shop-collection-chips button[aria-pressed=true],.crude-city-store .shop-categories button[aria-pressed=true]{background:#bafa49;color:#0e160b;border-color:#bafa49}
+.crude-city-store .shop-product-grid .shop-card{background:#141a15;border-color:#364438}
+.crude-city-store .shop-product-grid .shop-card:hover{border-color:#bafa49}
+.crude-city-store .shop-image-button img{background:#d9d9d1}
+.crude-city-store .product-eyebrow{color:#bafa49}
+.crude-city-store .shop-card h3{font-weight:800}
+.crude-city-store .shop-note,.crude-city-store .shop-price-guide{color:#c5d2c0}
+.crude-city-store .shop-basket input,.crude-city-store .shop-basket select,.crude-city-store .shop-card select{background:#1a241c;border-color:#5d7359}
+.crude-city-store .shop-line,.crude-city-store .shop-summary{border-color:#405040}
+.crude-city-store .shop-footer{background:#0a0f0b;display:flex;gap:22px;flex-wrap:wrap;align-items:center;border-top:1px solid #354435}
+.crude-city-store .shop-footer span{margin-left:auto;font-size:11px;color:#a0b398}
+.crude-about{display:grid;grid-template-columns:1fr 1fr;gap:45px;align-items:center;padding-top:60px;padding-bottom:80px}
+.crude-about img{width:100%;border:1px solid #3b4935;border-radius:8px}
+.crude-about h2{font-size:clamp(30px,5vw,66px);line-height:.95;letter-spacing:-.07em;margin:12px 0}
+.crude-about p{max-width:520px;color:#d4dfc9}
+.crude-city-store #age-gate{width:min(510px,calc(100% - 28px));max-height:calc(100dvh - 28px);box-sizing:border-box;border:1px solid #bafa49;border-radius:12px;background:#111811;color:#f5f8ee;padding:clamp(24px,4vw,38px);box-shadow:0 35px 120px #000}
+.crude-city-store #age-gate::backdrop{background:rgba(0,0,0,.94);backdrop-filter:blur(14px)}
+.crude-city-store #age-gate h2{font-size:clamp(29px,5vw,43px);line-height:1;letter-spacing:-.06em;margin:0 0 16px;color:#bafa49}
+.crude-city-store #age-gate p{line-height:1.55;color:#e0e7d8}
+.crude-city-store #age-gate button{display:block;width:100%;margin-top:15px}
+.crude-city-store #age-gate .secondary{background:transparent;color:#e5efe1;border-color:#5a6d56}
+@media(max-width:780px){.crude-header{padding:13px 15px}.crude-wordmark{font-size:26px}.crude-wordmark small{font-size:6px}.crude-city-store .shop-top-links{gap:8px}.crude-city-store .shop-top-links a{font-size:10px;letter-spacing:0}.crude-city-store .shop-hero{min-height:470px}.crude-city-store .shop-hero-content{padding-top:140px}.crude-city-store .shop-hero-content h1{font-size:clamp(47px,12vw,80px)}.crude-about{grid-template-columns:1fr;padding-top:35px;padding-bottom:48px;gap:20px}.crude-city-store .shop-footer span{margin-left:0;flex-basis:100%}}
+@media(max-width:390px){.crude-header{gap:9px}.crude-wordmark{font-size:21px}.crude-city-store .shop-top-links a[href="#about"]{display:none}}
+@media(prefers-reduced-motion:reduce){.crude-city-store *{scroll-behavior:auto!important}}
