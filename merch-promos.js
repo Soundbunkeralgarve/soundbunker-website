@@ -6,7 +6,7 @@
  if(!isShop){let index=[...path].reduce((n,c)=>n+c.charCodeAt(0),0)%data.length;if(isClient)index=0;if(isFamilyPage)index=3;if(/production|mixing/.test(path))index=2;entries=[data[index]];if(!isFamilyPage&&!isClient)entries.push(['crude-city','Crude City · 18+','Festival & ravewear. Adults only.']);}
  for(const [key,title,copy] of entries){
   const a=document.createElement('a');a.className='collection-promo'+(key==='crude-city'?' crude-promo':'');
-  a.href='shop.html?collection='+encodeURIComponent(key)+'#collection';
+  a.href=key==='crude-city'?'https://crude-city.com/':'shop.html?collection='+encodeURIComponent(key)+'#collection';
   if(key==='crude-city')a.setAttribute('aria-label','Crude City adult-only collection. Confirm you are 18 or over before viewing products.');
   const image=document.createElement('img');image.src=key==='crude-city'?'/assets/shop/collections/crude-city-promo.webp':'/assets/shop/collections/'+key+'.webp';
   image.alt=key==='crude-city'?'Branded Crude City purple underground city skyline advert, without explicit product images.':title;
