@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { json } from './lib/http.js';
 import { listDropboxFolder, dropboxEntryLink } from './lib/dropbox.js';
 
-const audioFile = name => /\.(mp3|wav|m4a|aac|ogg|oga|opus|flac|aif|aiff)$/i.test(name);
+const audioFile = name => /\.(mp3|wav|m4a|aac|ogg|oga|opus|flac|aif|aiff|mp4|webm)$/i.test(name);
 export function musicPath(root, relative) {
   if (typeof relative !== 'string' || relative.startsWith('/') || /[\\\u0000-\u001f]/.test(relative) || relative.split('/').some(part => part === '.' || part === '..')) return null;
   return root.replace(/\/+$/, '') + (relative ? '/' + relative : '');

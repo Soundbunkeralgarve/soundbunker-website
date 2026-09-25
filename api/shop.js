@@ -1,13 +1,16 @@
 import { visibleProduct, couplesComboIds } from './lib/shop-collections.js';
 import { json, parseJson } from './lib/http.js';
 import { requireAdmin } from './lib/supabase-auth.js';
-import { pf, countries, shopProduct, storefrontProduct, shirtPairs, hiddenProductIds, httpsURL, quoteOrder, checkoutOrder, shopDB, hasAccess, stripeRequest, fulfillShopCheckout } from './lib/printful-shop.js';
+import { pf, countries, shippingDestinations, shopProduct, storefrontProduct, shirtPairs, hiddenProductIds, httpsURL, quoteOrder, checkoutOrder, shopDB, hasAccess, stripeRequest, fulfillShopCheckout } from './lib/printful-shop.js';
 
 export const config = { maxDuration: 60 };
 export default async function handler(req,res) {
   const url = new URL(req.url,'https://shop.local');
   const action = url.searchParams.get('action') || 'products';
   try {
+    if (req.method === 'GET' && action === 'destinations') {
+      return json(res,{destinations:await shippingDestinations()});
+    }
     if (req.method === 'GET' && action === 'featured') {
       const products=await Promise.all([475033196,475185407,475184250,475185759,413283381,413293723].map(shopProduct));
       res.setHeader('Cache-Control','public, max-age=60, s-maxage=60');

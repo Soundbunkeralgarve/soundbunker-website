@@ -28,3 +28,14 @@
 
 .collection-nav{display:grid;gap:6px;margin-bottom:24px}.collection-nav button{font:inherit;text-align:left;padding:11px 14px;border:1px solid #6a587a;background:#19131f;color:white;border-radius:8px;cursor:pointer}.collection-nav button[aria-pressed=true]{background:#7446a6}.shop-card[hidden],.shop-product-section[hidden]{display:none!important}#age-gate{max-width:460px;background:#17101e;color:#fff;border:1px solid #916cb2;border-radius:16px;padding:30px}#age-gate::backdrop{background:#09060de8}#age-gate button{margin-top:14px;width:100%}.collection-promos{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:28px auto}.collection-promo{position:relative;text-decoration:none;color:#fff;border-radius:12px;overflow:hidden;background:#24172d}.collection-promo img{width:100%;height:190px;object-fit:cover;display:block}.collection-promo strong,.collection-promo span{display:block;padding:6px 16px}.collection-promo span{padding-bottom:16px;font-size:14px}@media(max-width:650px){.collection-promos{grid-template-columns:repeat(2,1fr)}.collection-promo img{height:140px}}
 .couples-combo{grid-column:1/-1;max-width:900px}.couples-combo>img{aspect-ratio:3/2!important;height:auto!important;object-fit:cover!important}.combo-previews{display:grid;grid-template-columns:1fr 1fr;gap:12px}.combo-previews img{width:100%;height:180px;object-fit:contain;background:#f4f4f4}.combo-previews p{font-size:14px}
+
+/* Enlarge the actual selected product photograph without affecting the grid. */
+.shop-image-button{overflow:hidden;cursor:zoom-in}
+.shop-image-button img{transition:transform .2s ease}
+@media(hover:hover) and (pointer:fine){.shop-image-button:hover img{transform:scale(1.16)}}
+@media(prefers-reduced-motion:reduce){.shop-image-button img{transition:none}}
+.product-lightbox{color:#fff;background:#17101f;border:1px solid #a765d5;border-radius:16px;padding:20px;width:min(900px,94vw);max-width:94vw;max-height:94dvh;overflow:auto;box-sizing:border-box}
+.product-lightbox::backdrop{background:rgba(0,0,0,.88)}
+.product-lightbox h2{font-size:20px;padding-right:70px}.product-lightbox>img{display:block;width:100%;height:65dvh;object-fit:contain;background:#211729;touch-action:pinch-zoom}
+.product-lightbox button{font:inherit;padding:12px;color:white;background:#382246;border:1px solid #9564b4;border-radius:8px;cursor:pointer}
+.gallery-close{float:right}.gallery-controls{display:flex;justify-content:space-between;gap:16px}.gallery-controls[hidden]{display:none}.product-lightbox input{width:100%;font-size:16px}.product-views{flex-wrap:wrap}

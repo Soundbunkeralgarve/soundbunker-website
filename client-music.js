@@ -74,6 +74,15 @@
     player.addEventListener('play', () => {
       document.querySelectorAll('audio,video').forEach(media => { if (media !== player) media.pause(); });
     });
+    document.addEventListener('sb-browse-music', async event => {
+      section.scrollIntoView({block:'center',behavior:'smooth'});
+      try {
+        const root = await api({path:''});
+        const folder = root.entries.find(entry => entry.type === 'folder' && entry.name === event.detail?.folder);
+        browse(folder?.path || '');
+      } catch(error) { status.textContent=error.message; }
+    });
+    document.addEventListener('sb-music-uploaded', () => browse());
     el('[data-refresh]').addEventListener('click', () => browse());
     el('[data-up]').addEventListener('click', () => browse(currentFolder.split('/').slice(0,-1).join('/')));
     el('[data-retry]').addEventListener('click', () => { if (currentTrack) play(currentTrack); });
@@ -82,7 +91,7 @@
     function sync() {
       if (panel.hidden) { if (owner !== null) { owner = null; reset(); } return; }
       const email = document.querySelector('#clientEmail')?.textContent;
-      if (email && email !== owner && !document.querySelector('#musicFolderLink').hidden) {
+      if (email && email !== owner) {
         reset(); owner = email; browse('');
       }
     }

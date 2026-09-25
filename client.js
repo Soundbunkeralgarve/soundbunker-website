@@ -194,6 +194,7 @@ async function uploadFiles(input, type, statusSelector = '', suppliedFiles = nul
       await uploadChunk(session, type, file.name, 'finish', new Blob([]), first.sessionId, offset);
       status.textContent = `${fileIndex + 1}/${files.length} uploaded. ${file.name} is in My ${type === 'music' ? 'Music' : 'Photos'}.`;
     }
+    if(type === 'music') document.dispatchEvent(new Event('sb-music-uploaded'));
     if (statusSelector === '#sessionUploadStatus') status.textContent = '✓ Upload complete — your files have been received by SoundBunker.';
   } catch (error) { status.textContent = error.message; }
   finally { input.value = ''; input.disabled = false; }
@@ -213,7 +214,29 @@ async function loadProjects(session) {
       element.className = 'client-mini-project';
       element.textContent = project.title || 'SoundBunker project';
       if (project.delivery_url) { element.href = project.delivery_url; element.target = '_blank'; element.rel = 'noopener'; }
-      list.appendChild(element);
+      const row = document.createElement('div');
+      row.appendChild(element);
+      let delivery;
+      try { delivery = new URL(project.delivery_url); } catch {}
+      if (delivery?.protocol === 'https:') {
+        const fileName = decodeURIComponent(delivery.pathname).split('/').pop();
+        if (/\.(mp3|wav|m4a|aac|ogg|oga|opus|flac|aif|aiff|mp4|webm)$/i.test(fileName)) {
+          if (delivery.hostname === 'www.dropbox.com' || delivery.hostname === 'dropbox.com') {
+            delivery.searchParams.delete('dl'); delivery.searchParams.set('raw', '1');
+          }
+          const player = document.createElement('audio');
+          player.controls = true; player.preload = 'none'; player.src = delivery.href;
+          player.setAttribute('aria-label', project.title || 'Project audio');
+          player.style.cssText = 'display:block;width:100%;margin:10px 0';
+          player.addEventListener('play', () => document.querySelectorAll('audio,video').forEach(media => { if (media !== player) media.pause(); }));
+          row.append(player);
+        } else {
+          const listen = document.createElement('button');listen.type='button';listen.className='client-mini-project';listen.textContent='Listen on site';
+          listen.onclick=()=>document.dispatchEvent(new CustomEvent('sb-browse-music',{detail:{folder:project.title}}));
+          row.append(listen);
+        }
+      }
+      list.appendChild(row);
     });
     $('#projectSummary').textContent = projects.length ? 'Your SoundBunker projects and deliveries:' : 'New projects appear here when the studio creates them.';
     if (!projects.length) list.innerHTML = '<span class="client-mini-project">No projects uploaded yet.</span>';

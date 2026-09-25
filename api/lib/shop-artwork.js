@@ -219,3 +219,71 @@ Object.assign(campaignImages, {
     "sourceImage": "https://files.cdn.printful.com/files/ce7/ce7240417c229639e9686eea3151d9dd_preview.png"
   }
 });
+
+// Additional product-specific lifestyle photographs, matched to current supplier artwork.
+Object.assign(campaignImages, {
+  "475187578": {
+    "image": "/assets/shop/mockups/475187578.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/142/142b07d259dbbb100cd2fd9cd2d65c12_preview.png"
+  },
+  "475187361": {
+    "image": "/assets/shop/mockups/475187361.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/55d/55d2fd5269dcfca8e957d763079756f5_preview.png"
+  },
+  "475187212": {
+    "image": "/assets/shop/mockups/475187212.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/447/447bee0b02a9014b0503c92a5d41fd25_preview.png"
+  },
+  "475186347": {
+    "image": "/assets/shop/mockups/475186347.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/86b/86bf5677872e0f80d0a29e341763ecd8_preview.png"
+  },
+  "475186223": {
+    "image": "/assets/shop/mockups/475186223.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/e4f/e4f151e8fdaa0e3e379b1863c3bde968_preview.png"
+  },
+  "475185948": {
+    "image": "/assets/shop/mockups/475185948.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/a37/a3709d1410fbbd658c4a20631c279afb_preview.png"
+  },
+  "475185873": {
+    "image": "/assets/shop/mockups/475185873.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/f69/f6998bd07011b121294ed322ef7ca685_preview.png"
+  },
+  "475185852": {
+    "image": "/assets/shop/mockups/475185852.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/46f/46f9e4fe704e7feb02a23b6d473a8fb4_preview.png"
+  },
+  "475185686": {
+    "image": "/assets/shop/mockups/475185686.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/ae9/ae97eb7b64d9a9095a6f6fadce72cc09_preview.png"
+  },
+  "475185407": {
+    "image": "/assets/shop/mockups/475185407.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/0ac/0ac455f7581c9f27754c808709f235ba_preview.png"
+  },
+  "475185384": {
+    "image": "/assets/shop/mockups/475185384.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/0ac/0ac455f7581c9f27754c808709f235ba_preview.png"
+  },
+  "475185349": {
+    "image": "/assets/shop/mockups/475185349.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/75a/75a3e8d031828c6f8b7c5388e9b8bc1e_preview.png"
+  }
+});
+
+// Additional product-specific lifestyle photographs, matched to current supplier artwork.
+Object.assign(campaignImages, {
+  "475184534": {
+    "image": "/assets/shop/mockups/475184534.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/94c/94cd0e3bd3047c0d54ebb7aaa8ef09d4_preview.png"
+  },
+  "475184507": {
+    "image": "/assets/shop/mockups/475184507.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/94c/94cd0e3bd3047c0d54ebb7aaa8ef09d4_preview.png"
+  },
+  "475184443": {
+    "image": "/assets/shop/mockups/475184443.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/94c/94cd0e3bd3047c0d54ebb7aaa8ef09d4_preview.png"
+  }
+});

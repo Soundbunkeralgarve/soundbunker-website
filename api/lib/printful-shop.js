@@ -8,7 +8,16 @@ import { sendTransactionalEmail } from './notify.js';
 export const hiddenProductIds = new Set([413279131,413279051]);
 const hiddenVariantIds = new Set([5138797987, 5138797988, 5138797989, 5138797990, 5138797991, 5138796724, 5138796725, 5138796726, 5138796727, 5138796728]);
 export const shopOrigin = () => (process.env.SITE_URL || 'https://www.soundbunker.pt').replace(/\/$/, '');
-export const countries = () => (process.env.SHOP_COUNTRIES || 'PT,ES,FR,DE,IT,NL,BE,AT,IE,LU,DK,SE,FI,PL,CZ,SK,HU,RO,BG,HR,SI,EE,LV,LT,GR,CY,MT,GB').split(',').map(x => x.trim().toUpperCase()).filter(x => /^[A-Z]{2}$/.test(x));
+let destinationCache=null;
+const originalDestinations='PT,ES,FR,DE,IT,NL,BE,AT,IE,LU,DK,SE,FI,PL,CZ,SK,HU,RO,BG,HR,SI,EE,LV,LT,GR,CY,MT,GB'.split(',');
+export const countries = () => destinationCache?.rows.map(c=>c.code) || originalDestinations;
+export async function shippingDestinations(){
+ if(destinationCache && destinationCache.until>Date.now())return destinationCache.rows;
+ const data=await pf('/countries');
+ if(!Array.isArray(data)||!data.length)throw new Error('Delivery destinations are temporarily unavailable.');
+ const rows=data.filter(c=>/^[A-Z]{2}$/.test(c.code)).map(c=>({code:c.code,name:c.name,states:(c.states||[]).map(s=>({code:s.code,name:s.name}))}));
+ destinationCache={rows,until:Date.now()+3600000};return rows;
+}
 export function shopDB() {
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SECRET_KEY) throw new Error('Shop database is not configured');
   return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SECRET_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
@@ -35,11 +44,12 @@ export async function shopProduct(id) {
   if (cached && cached.until > Date.now()) return cached.value;
   const detail = await pf(`/store/products/${key}`);
   const variants = detail.sync_product.is_ignored ? [] : detail.sync_variants.map(v => publicVariant(v, detail.sync_product.name)).filter(Boolean);
-  const images = [...new Set(variants.map(v => v.image).filter(Boolean))];
+  const views = [...new Map(variants.flatMap(v => v.views || []).map(v => [v.url, v])).values()];
+  const images = [...new Set([...variants.map(v => v.image), ...views.map(v => v.url)].filter(Boolean))];
   const artwork = campaignImages[key];
   const campaign = artwork && images.includes(artwork.sourceImage) ? artwork.image : '';
   if (campaign) images.unshift(campaign);
-  const value = { collection: collectionFor(id), display_name: productTitles[id] || productLabel(detail.sync_product.name), category: productCategory(detail.sync_product.name), colors: [...new Set(variants.map(v => v.color).filter(Boolean))], campaign: Boolean(campaign), id: detail.sync_product.id, name: detail.sync_product.name, image: images[0] || '', images, variants,
+  const value = { collection: collectionFor(id), display_name: productTitles[id] || productLabel(detail.sync_product.name), category: productCategory(detail.sync_product.name), colors: [...new Set(variants.map(v => v.color).filter(Boolean))], campaign: Boolean(campaign), id: detail.sync_product.id, name: detail.sync_product.name, image: images[0] || '', images, views, variants,
     price: variants.length ? Math.min(...variants.map(v => v.price)) : null };
   if (productCache.size > 200) productCache.clear();
   productCache.set(key, { until: Date.now() + 60000, value });
@@ -63,7 +73,7 @@ export async function storefrontProduct(id) {
  const variants=available.flatMap(p=>p.variants);
  const images=[...new Set(available.flatMap(p=>p.images))];
  return {...base,id:Number(id),image:base.image,campaign:base.campaign,
-  images,
+  images, views:[...new Map(available.flatMap(p=>p.views||[]).map(v=>[v.url,v])).values()],
   colors:[...new Set(variants.map(v=>v.color).filter(Boolean))],variants,
   price:variants.length?Math.min(...variants.map(v=>v.price)):null};
 }
@@ -79,7 +89,8 @@ export function publicVariant(v, productName = v.name) {
   let price = retailPrice(productName);
   if (price === undefined) { try { price = cents(v.retail_price); } catch { return null; } }
   if (price < 50) return null;
-  return { id: v.id, name: [productLabel(productName), v.color, v.size].filter(Boolean).join(' / '), size: v.size, color: v.color, price, image: httpsURL(v.files?.find(f => f.type === 'preview')?.preview_url ) };
+  const views=(v.files||[]).filter(f=>f.type==='preview'||/^(front|back|sleeve_left|sleeve_right)$/.test(f.type)).map(f=>({url:httpsURL(f.preview_url),label:(f.type==='preview'?'Garment preview':({front:'Front print detail',back:'Back print detail',sleeve_left:'Left sleeve print detail',sleeve_right:'Right sleeve print detail'}[f.type]))+(v.color?' · '+v.color:'')})).filter(f=>f.url);
+  return { views, id: v.id, name: [productLabel(productName), v.color, v.size].filter(Boolean).join(' / '), size: v.size, color: v.color, price, image: httpsURL(v.files?.find(f => f.type === 'preview')?.preview_url ) };
 }
 const text = (v, n = 150) => typeof v === 'string' ? v.trim().slice(0, n) : '';
 export function cleanRecipient(value = {}) {
@@ -103,7 +114,9 @@ export async function quoteOrder(input, db) {
   let stage = "quote_setup";
   try {
   db ||= shopDB();
+  if(!countries().includes(String(input.recipient?.country_code||'').toUpperCase())) await shippingDestinations();
   const recipient = cleanRecipient(input.recipient);
+  if(['US','CA','AU'].includes(recipient.country_code)&&!recipient.state_code)throw new Error('Please choose your state or province.');
   stage = "cart_validation";
   const cart = cleanCart(input.items);
   const items = [];
