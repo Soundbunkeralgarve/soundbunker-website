@@ -322,30 +322,76 @@ export const campaignBackViews = {
   }
 };
 
-// September Crude City model images, tied to the exact supplier preview.
+// Owner preference: product-only Crude City displays, no male models.
 Object.assign(campaignImages, {
-  "475220757": {
-    "image": "/assets/shop/mockups/475220757.webp",
-    "sourceImage": "https://files.cdn.printful.com/files/a93/a93f3831f89d6ef029f1896e61fe875d_preview.png"
+  "475220707": {
+    "image": "/assets/shop/mockups/475220707-display.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/d27/d2726a1fa5ee4a516e540c6ad9392401_preview.png",
+    "presentation": "product-only"
   },
-  "475220640": {
-    "image": "/assets/shop/mockups/475220640.webp",
-    "sourceImage": "https://files.cdn.printful.com/files/2af/2af16efece09310afb664e9da143c507_preview.png"
+  "475220500": {
+    "image": "/assets/shop/mockups/475220500-display.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/c05/c05c7b656dcb7b5edf05d081931719a5_preview.png",
+    "presentation": "product-only"
   },
   "475220822": {
-    "image": "/assets/shop/mockups/475220822.webp",
-    "sourceImage": "https://files.cdn.printful.com/files/8eb/8eba422c3774526932eef46d34969dcd_preview.png"
+    "image": "/assets/shop/mockups/475220822-display.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/8eb/8eba422c3774526932eef46d34969dcd_preview.png",
+    "presentation": "product-only"
   },
-  "475220707": {
-    "image": "/assets/shop/mockups/475220707.webp",
-    "sourceImage": "https://files.cdn.printful.com/files/d27/d2726a1fa5ee4a516e540c6ad9392401_preview.png"
+  "475220757": {
+    "image": "/assets/shop/mockups/475220757-display.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/a93/a93f3831f89d6ef029f1896e61fe875d_preview.png",
+    "presentation": "product-only"
+  },
+  "475220640": {
+    "image": "/assets/shop/mockups/475220640-display.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/2af/2af16efece09310afb664e9da143c507_preview.png",
+    "presentation": "product-only"
+  },
+  "475220419": {
+    "image": "/assets/shop/mockups/475220419-display.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/212/2125f208a13f8d800363b34e6799963e_preview.png",
+    "presentation": "product-only"
+  },
+  "475220308": {
+    "image": "/assets/shop/mockups/475220308-display.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/f11/f11a48a05f37133e057949c060750a1c_preview.png",
+    "presentation": "product-only"
+  },
+  "475220171": {
+    "image": "/assets/shop/mockups/475220171-display.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/e56/e56431ec7398782d7ea7343692676301_preview.png",
+    "presentation": "product-only"
   },
   "475220067": {
-    "image": "/assets/shop/mockups/475220067.webp",
-    "sourceImage": "https://files.cdn.printful.com/files/9e1/9e1769ca088a67b9304f3dc752fe3af4_preview.png"
+    "image": "/assets/shop/mockups/475220067-display.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/9e1/9e1769ca088a67b9304f3dc752fe3af4_preview.png",
+    "presentation": "product-only"
+  },
+  "475219934": {
+    "image": "/assets/shop/mockups/475219934-display.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/ff0/ff0b713ed6e098b29ed6f9fe1c0dbd12_preview.png",
+    "presentation": "product-only"
+  },
+  "475219863": {
+    "image": "/assets/shop/mockups/475219863-display.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/d72/d72b1f32878c572a40ee8e678dbda6a6_preview.png",
+    "presentation": "product-only"
+  },
+  "475219622": {
+    "image": "/assets/shop/mockups/475219622-display.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/07c/07c60c1917d96349060c0ba1fbd99970_preview.png",
+    "presentation": "product-only"
   },
   "475219541": {
-    "image": "/assets/shop/mockups/475219541.webp",
-    "sourceImage": "https://files.cdn.printful.com/files/1d3/1d3531cbf2c3d2de5148eb27c8804eb8_preview.png"
+    "image": "/assets/shop/mockups/475219541-display.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/1d3/1d3531cbf2c3d2de5148eb27c8804eb8_preview.png",
+    "presentation": "product-only"
+  },
+  "475219158": {
+    "image": "/assets/shop/mockups/475219158-display.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/d52/d527622d7265bbe901773ab715b81e80_preview.png",
+    "presentation": "product-only"
   }
 });

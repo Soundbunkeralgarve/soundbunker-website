@@ -47,7 +47,8 @@ export async function shopProduct(id) {
   const views = [...new Map(variants.flatMap(v => v.views || []).map(v => [v.url, v])).values()];
   const images = [...new Set([...variants.map(v => v.image), ...views.map(v => v.url)].filter(Boolean))];
   const artwork = campaignImages[key];
-  const campaign = artwork && images.includes(artwork.sourceImage) ? artwork.image : '';
+  const allowedPresentation = collectionFor(id, detail.sync_product.name) !== 'crude-city' || artwork?.presentation === 'product-only';
+  const campaign = allowedPresentation && artwork && images.includes(artwork.sourceImage) ? artwork.image : '';
   if (campaign) {
     const back = campaignBackViews[key];
     if (back && images.includes(back.sourceImage)) {
@@ -56,7 +57,7 @@ export async function shopProduct(id) {
     }
     images.unshift(campaign);
   }
-  const value = { collection: collectionFor(id, detail.sync_product.name), display_name: displayProductTitle(id, detail.sync_product.name) || productLabel(detail.sync_product.name), category: productCategory(detail.sync_product.name), colors: [...new Set(variants.map(v => v.color).filter(Boolean))], campaign: Boolean(campaign), id: detail.sync_product.id, name: detail.sync_product.name, image: images[0] || '', images, views, variants,
+  const value = { collection: collectionFor(id, detail.sync_product.name), display_name: displayProductTitle(id, detail.sync_product.name) || productLabel(detail.sync_product.name), category: productCategory(detail.sync_product.name), colors: [...new Set(variants.map(v => v.color).filter(Boolean))], campaign: Boolean(campaign), presentation: campaign ? (artwork.presentation || 'model') : null, id: detail.sync_product.id, name: detail.sync_product.name, image: images[0] || '', images, views, variants,
     price: variants.length ? Math.min(...variants.map(v => v.price)) : null };
   if (productCache.size > 200) productCache.clear();
   productCache.set(key, { until: Date.now() + 60000, value });
