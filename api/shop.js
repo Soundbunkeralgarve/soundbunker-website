@@ -1,4 +1,4 @@
-import { visibleProduct, couplesComboIds } from './lib/shop-collections.js';
+import { visibleProduct, collectionFor, couplesComboIds } from './lib/shop-collections.js';
 import { json, parseJson } from './lib/http.js';
 import { requireAdmin } from './lib/supabase-auth.js';
 import { pf, countries, shippingDestinations, shopProduct, storefrontProduct, shirtPairs, hiddenProductIds, httpsURL, quoteOrder, checkoutOrder, shopDB, hasAccess, stripeRequest, fulfillShopCheckout } from './lib/printful-shop.js';
@@ -7,6 +7,8 @@ export const config = { maxDuration: 60 };
 export default async function handler(req,res) {
   const url = new URL(req.url,'https://shop.local');
   const action = url.searchParams.get('action') || 'products';
+  const host = String(req.headers?.host || '').split(':')[0].toLowerCase();
+  const brand = host === 'crude-city.com' || host === 'www.crude-city.com' || req.headers?.['x-sb-shop-brand'] === 'crude-city' ? 'crude-city' : 'soundbunker';
   try {
     if (req.method === 'GET' && action === 'destinations') {
       return json(res,{destinations:await shippingDestinations()});
@@ -20,7 +22,7 @@ export default async function handler(req,res) {
       const offset = Math.max(0,Math.min(10000,Number(url.searchParams.get('offset')) || 0));
       const products = await pf(`/store/products?limit=24&offset=${Math.floor(offset)}`);
       const adult = req.headers['x-sb-adult-confirmed'] === 'true';
-      const selected = products.filter(p => visibleProduct(p.id, adult, p.name) && !couplesComboIds.includes(Number(p.id)) && !p.is_ignored && p.synced > 0 && !hiddenProductIds.has(Number(p.id)));
+      const selected = products.filter(p => visibleProduct(p.id, adult, p.name) && (brand === 'crude-city' ? collectionFor(p.id,p.name) === 'crude-city' : collectionFor(p.id,p.name) !== 'crude-city') && !couplesComboIds.includes(Number(p.id)) && !p.is_ignored && p.synced > 0 && !hiddenProductIds.has(Number(p.id)));
       const displayOrder=shirtPairs.flat();
       selected.sort((a,b)=>{const rank=id=>{const i=displayOrder.indexOf(Number(id));return i<0?displayOrder.length:i;};return rank(a.id)-rank(b.id);});
       const hydrated = [];
@@ -36,15 +38,16 @@ export default async function handler(req,res) {
     if (req.method === 'GET' && action === 'product') {
       const id = url.searchParams.get('id'); if (!/^\d+$/.test(id || '')) return json(res,{error:'Invalid product'},400);
       const adult = req.headers['x-sb-adult-confirmed']==='true';
-      if (!adult && !visibleProduct(id)) return json(res,{error:'Confirm you are 18 or over to view this collection.'},403);
+      if (brand === 'crude-city' && !adult) return json(res,{error:'Confirm you are 18 or over to view this collection.'},403);
       res.setHeader('Cache-Control','private, no-store');
       const product = await storefrontProduct(id);
-      if (!visibleProduct(product.id,adult,product.name)) return json(res,{error:'Product is not published.'},404);
+      if (!visibleProduct(product.id,adult,product.name) || (brand === 'crude-city' ? product.collection !== 'crude-city' : product.collection === 'crude-city')) return json(res,{error:'Product is not published in this shop.'},404);
       return json(res,product);
     }
     if (req.method === 'POST' && action === 'quote') {
       const input = await parseJson(req);
       input.adult_confirmed = req.headers['x-sb-adult-confirmed'] === 'true';
+      input.brand = brand;
       const row = await quoteOrder(input);
       return json(res,{ id:row.id,token:row.access_token,items:row.items,subtotal:row.subtotal_cents,discount:row.items.reduce((sum,i)=>sum+((i.list_price??i.price)-i.price)*i.quantity,0),shipping:row.shipping_cents,total:row.total_cents,delivery:row.shipping_label });
     }
