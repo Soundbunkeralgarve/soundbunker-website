@@ -43,3 +43,13 @@ test('worldwide destinations accept provider-listed countries and require US sta
   await assert.rejects(quoteOrder({recipient,items:[]},{}),/state or province/);
  }finally{global.fetch=original;}
 });
+
+test('hoodie front/back lifestyle views require matching current supplier back artwork',async()=>{
+ const {campaignImages,campaignBackViews}=await import('../api/lib/shop-artwork.js');
+ const original=global.fetch;process.env.PRINTFUL_TOKEN='test';
+ global.fetch=async url=>{const id=url.split('/').pop();return {ok:true,json:async()=>({result:{sync_product:{id:Number(id),name:'Hoodie'},sync_variants:[{id:90909,synced:true,currency:'EUR',retail_price:'50.00',files:[{type:'preview',preview_url:campaignImages[id].sourceImage},{type:'back',preview_url:id==='475185407'?campaignBackViews[id].sourceImage:'https://example.com/changed-back.png'}]}]}})};};
+ try {
+ const match=await shopProduct(475185407);assert.deepEqual(match.images.slice(0,2),[campaignImages['475185407'].image,campaignBackViews['475185407'].url]);assert.equal(match.views.find(v=>v.url===match.images[0]).label,'Front');assert.equal(match.views.find(v=>v.url===match.images[1]).label,'Back');
+ const changed=await shopProduct(475185384);assert.ok(!changed.images.includes(campaignBackViews['475185384'].url));
+ }finally{global.fetch=original;}
+});

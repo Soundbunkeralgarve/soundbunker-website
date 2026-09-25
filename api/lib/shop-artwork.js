@@ -287,3 +287,37 @@ Object.assign(campaignImages, {
     "sourceImage": "https://files.cdn.printful.com/files/94c/94cd0e3bd3047c0d54ebb7aaa8ef09d4_preview.png"
   }
 });
+
+// Back views are only shown while the exact supplier print still matches.
+export const campaignBackViews = {
+  "475185407": {
+    "url": "/assets/shop/mockups/475185407-back.webp",
+    "label": "Back",
+    "sourceImage": "https://files.cdn.printful.com/files/630/6300e58d43f2a227f5a68da3d2a1b5f0_preview.png"
+  },
+  "475185384": {
+    "url": "/assets/shop/mockups/475185384-back.webp",
+    "label": "Back",
+    "sourceImage": "https://files.cdn.printful.com/files/807/8073c811f7529cb67d7f5b99702b8d70_preview.png"
+  },
+  "475185349": {
+    "url": "/assets/shop/mockups/475185349-back.webp",
+    "label": "Back",
+    "sourceImage": "https://files.cdn.printful.com/files/e31/e31953e43a352149b2583dce856d7d33_preview.png"
+  },
+  "475184534": {
+    "url": "/assets/shop/mockups/475184534-back.webp",
+    "label": "Back",
+    "sourceImage": "https://files.cdn.printful.com/files/e76/e76d0560bbc1962e816cce0b3171afce_preview.png"
+  },
+  "475184507": {
+    "url": "/assets/shop/mockups/475184507-back.webp",
+    "label": "Back",
+    "sourceImage": "https://files.cdn.printful.com/files/7f4/7f4896fec446ba8a7d3226f3b3e221e9_preview.png"
+  },
+  "475184443": {
+    "url": "/assets/shop/mockups/475184443-back.webp",
+    "label": "Back",
+    "sourceImage": "https://files.cdn.printful.com/files/a9c/a9cd4085b1fa04cfe9fad0eb142bfd1d_preview.png"
+  }
+};

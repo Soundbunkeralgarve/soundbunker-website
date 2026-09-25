@@ -1,5 +1,5 @@
 import { collectionFor, productTitles, validateCouplesCombo } from './shop-collections.js';
-import { campaignImages } from './shop-artwork.js';
+import { campaignImages, campaignBackViews } from './shop-artwork.js';
 import { supplierCost, deliveryRetailPrice, retailPrice, productCategory, productLabel, marginCheck, minimumShopPrice, applyShopDiscount, loadShopDiscount } from './shop-pricing.js';
 import { randomUUID, randomBytes, timingSafeEqual } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
@@ -48,7 +48,14 @@ export async function shopProduct(id) {
   const images = [...new Set([...variants.map(v => v.image), ...views.map(v => v.url)].filter(Boolean))];
   const artwork = campaignImages[key];
   const campaign = artwork && images.includes(artwork.sourceImage) ? artwork.image : '';
-  if (campaign) images.unshift(campaign);
+  if (campaign) {
+    const back = campaignBackViews[key];
+    if (back && images.includes(back.sourceImage)) {
+      images.unshift(back.url);
+      views.unshift({url:back.url,label:'Back'}, {url:campaign,label:'Front'});
+    }
+    images.unshift(campaign);
+  }
   const value = { collection: collectionFor(id), display_name: productTitles[id] || productLabel(detail.sync_product.name), category: productCategory(detail.sync_product.name), colors: [...new Set(variants.map(v => v.color).filter(Boolean))], campaign: Boolean(campaign), id: detail.sync_product.id, name: detail.sync_product.name, image: images[0] || '', images, views, variants,
     price: variants.length ? Math.min(...variants.map(v => v.price)) : null };
   if (productCache.size > 200) productCache.clear();
