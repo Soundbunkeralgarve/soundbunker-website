@@ -20,7 +20,7 @@ export default async function handler(req,res) {
       const offset = Math.max(0,Math.min(10000,Number(url.searchParams.get('offset')) || 0));
       const products = await pf(`/store/products?limit=24&offset=${Math.floor(offset)}`);
       const adult = req.headers['x-sb-adult-confirmed'] === 'true';
-      const selected = products.filter(p => visibleProduct(p.id, adult) && !couplesComboIds.includes(Number(p.id)) && !p.is_ignored && p.synced > 0 && !hiddenProductIds.has(Number(p.id)));
+      const selected = products.filter(p => visibleProduct(p.id, adult, p.name) && !couplesComboIds.includes(Number(p.id)) && !p.is_ignored && p.synced > 0 && !hiddenProductIds.has(Number(p.id)));
       const displayOrder=shirtPairs.flat();
       selected.sort((a,b)=>{const rank=id=>{const i=displayOrder.indexOf(Number(id));return i<0?displayOrder.length:i;};return rank(a.id)-rank(b.id);});
       const hydrated = [];
@@ -35,9 +35,12 @@ export default async function handler(req,res) {
     }
     if (req.method === 'GET' && action === 'product') {
       const id = url.searchParams.get('id'); if (!/^\d+$/.test(id || '')) return json(res,{error:'Invalid product'},400);
-      if (!visibleProduct(id,req.headers['x-sb-adult-confirmed']==='true')) return json(res,{error:'Confirm you are 18 or over to view this collection.'},403);
+      const adult = req.headers['x-sb-adult-confirmed']==='true';
+      if (!adult && !visibleProduct(id)) return json(res,{error:'Confirm you are 18 or over to view this collection.'},403);
       res.setHeader('Cache-Control','private, no-store');
-      return json(res,await storefrontProduct(id));
+      const product = await storefrontProduct(id);
+      if (!visibleProduct(product.id,adult,product.name)) return json(res,{error:'Product is not published.'},404);
+      return json(res,product);
     }
     if (req.method === 'POST' && action === 'quote') {
       const input = await parseJson(req);

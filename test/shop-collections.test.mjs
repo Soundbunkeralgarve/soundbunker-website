@@ -25,3 +25,15 @@ test('couples combo requires both shirts in equal quantities',async()=>{
  assert.doesNotThrow(()=>validateCouplesCombo([{product_id:475188276,quantity:2},{product_id:475188366,quantity:2}]));
  assert.doesNotThrow(()=>validateCouplesCombo([{product_id:475185188,quantity:1}]));
 });
+
+test('approved new Crude City names are assigned but remain age gated',()=>{
+ for(const name of ['SEX WORKER','ONLY FANS','LEGS','HORNY','GYNO','STD','DEEP']) {
+  for(const suffix of ['', ' / Black / M', ' / White / XL']) {
+   const supplierName='Unisex classic tee '+name+suffix;
+   assert.equal(collectionFor(900123,supplierName),'crude-city');
+   assert.equal(visibleProduct(900123,false,supplierName),false);
+   assert.equal(visibleProduct(900123,true,supplierName),true);
+  }
+ }
+ for(const name of ['Unisex classic tee NEW','Youth classic tee HORNY','Unisex classic tee HORNY BITCH']) assert.equal(collectionFor(900123,name),null);
+});

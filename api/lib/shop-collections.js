@@ -8,8 +8,19 @@ export const collectionProducts = {
  christmas: [475186347,475186223,475186142,475186071,475185948,475185873,475185852,475185759,475185686],
  'crude-city': [475188683,475188616,475188577,475188515,475188413,475188366,475188276,475188058,475187845]
 };
-export function collectionFor(id) { return Object.keys(collectionProducts).find(key=>collectionProducts[key].includes(Number(id))) || null; }
-export function visibleProduct(id, adult=false) { const c=collectionFor(id);return Boolean(c && (c!=='crude-city'||adult)); }
+// These seven exact supplier names are the new designs approved by the owner.
+// Recognise colour/size suffixes on variants, but never publish arbitrary new names.
+export function approvedCrudeDesign(name='') {
+ return /^Unisex classic tee (SEX WORKER|ONLY FANS|LEGS|HORNY|GYNO|STD|DEEP)(?:\s*\/.*)?$/i.exec(String(name).trim())?.[1].toUpperCase() || null;
+}
+export function collectionFor(id, name='') {
+ return Object.keys(collectionProducts).find(key=>collectionProducts[key].includes(Number(id))) || (approvedCrudeDesign(name) ? 'crude-city' : null);
+}
+export function visibleProduct(id, adult=false, name='') { const c=collectionFor(id,name);return Boolean(c && (c!=='crude-city'||adult)); }
+export function displayProductTitle(id, name) {
+ const design=approvedCrudeDesign(name);
+ return productTitles[id] || (design ? `${design} · Crude City T-Shirt` : null);
+}
 
 export const productTitles={
 475188683:'Go to Bed · Crude City T-Shirt',475188616:'Coke Head · Crude City T-Shirt',475188577:'Finger Dip · Crude City T-Shirt',475188515:'The Minivan · Crude City T-Shirt',475188413:'I’m Mixing · Crude City T-Shirt',475188366:'Horny Bitch · Crude City T-Shirt',475188276:'Horny Bastard · Crude City T-Shirt',475188058:'Rum & Bass · Crude City T-Shirt',475187845:'Sausage · Crude City T-Shirt',
