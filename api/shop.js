@@ -4,6 +4,16 @@ import { requireAdmin } from './lib/supabase-auth.js';
 import { pf, countries, shippingDestinations, shopProduct, storefrontProduct, shirtPairs, hiddenProductIds, httpsURL, quoteOrder, checkoutOrder, shopDB, hasAccess, stripeRequest, fulfillShopCheckout } from './lib/printful-shop.js';
 
 export const config = { maxDuration: 60 };
+// Six varied, pre-approved products on the first screen. Full browsing is opt-in.
+const initialProductIds = [475033196,475185407,475184250,475185759,413283381,413293723];
+const initialAdultProductIds = [475234129,475188366,475188276];
+async function initialProducts(ids) {
+  const hydrated = [];
+  for (let i = 0; i < ids.length; i += 2) {
+    hydrated.push(...await Promise.all(ids.slice(i,i+2).map(shopProduct)));
+  }
+  return hydrated.filter(p=>p.variants.length).map(({variants,...p})=>p);
+}
 export default async function handler(req,res) {
   const url = new URL(req.url,'https://shop.local');
   const action = url.searchParams.get('action') || 'products';
@@ -12,11 +22,16 @@ export default async function handler(req,res) {
       return json(res,{destinations:await shippingDestinations()});
     }
     if (req.method === 'GET' && action === 'featured') {
-      const products=await Promise.all([475033196,475185407,475184250,475185759,413283381,413293723].map(shopProduct));
+      const products=await initialProducts(initialProductIds);
       res.setHeader('Cache-Control','public, max-age=60, s-maxage=60');
-      return json(res,{products:products.filter(p=>p.variants.length).map(({variants,...p})=>p),next:null});
+      return json(res,{products,next:null});
     }
     if (req.method === 'GET' && action === 'products') {
+      if (url.searchParams.get('offset') === 'initial') {
+        const adult = req.headers['x-sb-adult-confirmed'] === 'true';
+        res.setHeader('Cache-Control','private, no-store');
+        return json(res,{products:await initialProducts(adult ? [...initialProductIds,...initialAdultProductIds] : initialProductIds),next:0,countries:countries()});
+      }
       const offset = Math.max(0,Math.min(10000,Number(url.searchParams.get('offset')) || 0));
       const products = await pf(`/store/products?limit=24&offset=${Math.floor(offset)}`);
       const adult = req.headers['x-sb-adult-confirmed'] === 'true';
@@ -25,8 +40,8 @@ export default async function handler(req,res) {
       selected.sort((a,b)=>{const rank=id=>{const i=displayOrder.indexOf(Number(id));return i<0?displayOrder.length:i;};return rank(a.id)-rank(b.id);});
       const hydrated = [];
       // Bound concurrency so a large collection does not flood the provider.
-      for (let i = 0; i < selected.length; i += 4) {
-        hydrated.push(...await Promise.all(selected.slice(i,i+4).map(p => shopProduct(p.id))));
+      for (let i = 0; i < selected.length; i += 2) {
+        hydrated.push(...await Promise.all(selected.slice(i,i+2).map(p => shopProduct(p.id))));
       }
       res.setHeader('Cache-Control','private, no-store');
       res.statusCode = 200;

@@ -72,3 +72,28 @@
 @media(max-width:780px){.merch-shop .shop-layout{width:calc(100% - 28px)}.merch-shop .shop-catalog-layout{grid-template-columns:minmax(0,1fr);gap:16px}.merch-shop .shop-sidebar{position:static;padding:14px}.merch-shop .shop-sidebar .collection-nav{display:none}.merch-shop .shop-sidebar>h3:first-child{display:none}.merch-shop .shop-sidebar>h3{margin-bottom:10px}.merch-shop .shop-categories{display:flex;gap:7px;overflow-x:auto;scrollbar-width:thin;padding-bottom:5px}.merch-shop .shop-categories button{flex:0 0 auto;min-height:39px;padding:8px 13px;border:1px solid #45364d;border-radius:100px;font-size:12px}.merch-shop .shop-sidebar .shop-filters{display:grid;grid-template-columns:minmax(0,1fr) 125px;gap:10px;margin:13px 0 0}.merch-shop .shop-sidebar .shop-filters label{font-size:11px}.merch-shop .shop-sidebar .shop-filters input,.merch-shop .shop-sidebar .shop-filters select{margin-top:5px;min-height:42px}.merch-shop .shop-collection-bar{display:block;margin:15px 0;padding:14px 0}.merch-shop .shop-collection-bar>span{display:block;margin-bottom:10px}.merch-shop .shop-product-grid{gap:10px}.merch-shop .shop-product-grid .shop-card-body{padding:11px!important}.merch-shop .shop-card h3{font-size:13px}.merch-shop .shop-card .product-views{gap:3px}.merch-shop .shop-card .product-views button{font-size:10px;min-height:34px;padding:5px 7px}.merch-shop .shop-product-section>h3{font-size:20px}.merch-shop .shop-hero{min-height:400px}.merch-shop .shop-hero-content{padding-bottom:20px}}
 @media(max-width:370px){.merch-shop .shop-product-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.merch-shop .shop-collection-chips button{padding:8px 11px}.merch-shop .shop-card .shop-button{font-size:12px}}
 @media(prefers-reduced-motion:reduce){.merch-shop .shop-product-grid .shop-card{transition:none}.merch-shop .shop-product-grid .shop-card:hover{transform:none}}
+
+/* Compact, fully visible collection and category navigation on narrow screens. */
+.mobile-basket-jump{display:none}
+@media(max-width:780px){
+ .merch-shop .shop-collection-bar{display:block}
+ .merch-shop .shop-collection-chips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;overflow:visible;padding:0}
+ .merch-shop .shop-collection-chips button{width:100%;white-space:normal;min-height:48px;font-size:13px;padding:10px 8px;line-height:1.2;text-align:center}
+ .merch-shop .shop-collection-chips button[data-collection="crude-city"]{grid-column:1/-1}
+ .merch-shop .shop-sidebar .shop-categories{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;overflow:visible;padding:0}
+ .merch-shop .shop-sidebar .shop-categories button{white-space:normal;min-height:45px;line-height:1.2;text-align:center;padding:8px 5px}
+ .merch-shop .shop-sidebar .shop-filters{grid-template-columns:minmax(0,1fr) minmax(100px,34%)}
+ .merch-shop .shop-sidebar .shop-filters input,.merch-shop .shop-sidebar .shop-filters select{width:100%;max-width:100%;box-sizing:border-box}
+ .merch-shop .shop-card h3{font-size:15px}
+ .merch-shop .shop-product-grid .shop-card-body{padding:13px!important}
+ .merch-shop .shop-results-tools{gap:8px;letter-spacing:.06em}
+ .merch-shop .mobile-basket-jump{display:block;text-align:center;margin-top:12px;padding:12px;border-radius:8px;border:1px solid #76568b;background:#2f213a;color:#fff;font-size:14px;font-weight:750;text-decoration:none}
+ .merch-shop #collection,.merch-shop #basket{scroll-margin-top:90px}
+ .merch-shop #load-more{display:block;max-width:440px;width:100%;margin:15px auto}
+ .merch-shop #load-more[hidden]{display:none}
+}
+@media(max-width:410px){
+ .merch-shop .shop-sidebar .shop-filters{grid-template-columns:1fr}
+ .merch-shop .shop-product-grid{gap:9px}
+ .merch-shop .shop-collection-chips button{font-size:12px}
+}

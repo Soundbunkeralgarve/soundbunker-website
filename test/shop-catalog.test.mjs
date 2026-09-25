@@ -53,3 +53,36 @@ test('hoodie front/back lifestyle views require matching current supplier back a
  const changed=await shopProduct(475185384);assert.ok(!changed.images.includes(campaignBackViews['475185384'].url));
  }finally{global.fetch=original;}
 });
+
+test('concurrent requests for one product reuse one supplier lookup',async()=>{
+ const original=global.fetch;process.env.PRINTFUL_TOKEN='test';
+ let lookups=0;
+ const id=90077;
+ global.fetch=async()=>{lookups++;await new Promise(resolve=>setTimeout(resolve,5));return {ok:true,json:async()=>({result:{sync_product:{id,name:'Test T-Shirt'},sync_variants:[{id:90078,synced:true,currency:'EUR',retail_price:'45.00',files:[{type:'preview',preview_url:'https://example.com/test.png'}]}]}})};};
+ try{
+  const [first,second,third]=await Promise.all([shopProduct(id),shopProduct(id),shopProduct(id)]);
+  assert.equal(lookups,1);
+  assert.deepEqual(first,second);
+  assert.deepEqual(second,third);
+  await shopProduct(id);
+  assert.equal(lookups,1);
+ }finally{global.fetch=original;}
+});
+
+test('all approved products reference an existing matching lifestyle or product-only image',async()=>{
+ const {access}=await import('node:fs/promises');
+ const {campaignImages,campaignBackViews}=await import('../api/lib/shop-artwork.js');
+ const {collectionProducts}=await import('../api/lib/shop-collections.js');
+ for(const ids of Object.values(collectionProducts))for(const id of ids){
+  const art=campaignImages[id];
+  assert.ok(art?.sourceImage && art?.image,`Missing approved artwork mapping for ${id}`);
+  assert.match(art.sourceImage,/^https:\/\/files\.cdn\.printful\.com\//);
+  await access(new URL('..'+art.image.split('?')[0],import.meta.url));
+ }
+ for(const art of Object.values(campaignBackViews))await access(new URL('..'+art.url.split('?')[0],import.meta.url));
+ for(const id of [475220757,475220640,475220822,475220707,475220067,475219541]){
+  assert.equal(campaignImages[id].presentation,'product-only');
+  assert.match(campaignImages[id].image,/-display\.webp$/);
+ }
+ await access(new URL('../assets/shop/mockups/crude-city-couples-display.webp',import.meta.url));
+});

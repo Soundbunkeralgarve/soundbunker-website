@@ -16,7 +16,7 @@ export async function shippingDestinations(){
  const data=await pf('/countries');
  if(!Array.isArray(data)||!data.length)throw new Error('Delivery destinations are temporarily unavailable.');
  const rows=data.filter(c=>/^[A-Z]{2}$/.test(c.code)).map(c=>({code:c.code,name:c.name,states:(c.states||[]).map(s=>({code:s.code,name:s.name}))}));
- destinationCache={rows,until:Date.now()+3600000};return rows;
+ destinationCache={rows,until:Date.now()+86400000};return rows;
 }
 export function shopDB() {
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SECRET_KEY) throw new Error('Shop database is not configured');
@@ -37,11 +37,14 @@ export async function pf(path, body) {
 }
 // Short-lived product details cache avoids repeated Printful calls across browsing requests.
 const productCache = new Map();
+const productPending = new Map();
 export async function shopProduct(id) {
   const key = String(id);
   if (hiddenProductIds.has(Number(id))) return { id:Number(id), name:'Unavailable', image:'', images:[], variants:[], price:null };
   const cached = productCache.get(key);
   if (cached && cached.until > Date.now()) return cached.value;
+  if (productPending.has(key)) return productPending.get(key);
+  const pending = (async () => {
   const detail = await pf(`/store/products/${key}`);
   const variants = detail.sync_product.is_ignored ? [] : detail.sync_variants.map(v => publicVariant(v, detail.sync_product.name)).filter(Boolean);
   const views = [...new Map(variants.flatMap(v => v.views || []).map(v => [v.url, v])).values()];
@@ -59,8 +62,17 @@ export async function shopProduct(id) {
   const value = { collection: collectionFor(id, detail.sync_product.name), display_name: displayProductTitle(id, detail.sync_product.name) || productLabel(detail.sync_product.name), category: productCategory(detail.sync_product.name), colors: [...new Set(variants.map(v => v.color).filter(Boolean))], campaign: Boolean(campaign), presentation: campaign ? (artwork.presentation || 'model') : null, id: detail.sync_product.id, name: detail.sync_product.name, image: images[0] || '', images, views, variants,
     price: variants.length ? Math.min(...variants.map(v => v.price)) : null };
   if (productCache.size > 200) productCache.clear();
-  productCache.set(key, { until: Date.now() + 60000, value });
+  productCache.set(key, { until: Date.now() + 300000, staleUntil: Date.now() + 3600000, value });
   return value;
+  })();
+  productPending.set(key,pending);
+  try { return await pending; }
+  catch (error) {
+    // Stale previews may be shown while Printful rate-limits browsing.
+    // Purchase quotes still validate variants, shipping and costs live.
+    if (error.status === 429 && cached?.staleUntil > Date.now()) return cached.value;
+    throw error;
+  } finally { productPending.delete(key); }
 }
 // Explicit pairs keep different artwork separate and preserve Printful variant IDs.
 export const shirtPairs = [

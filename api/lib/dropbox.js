@@ -7,6 +7,9 @@ export function dropboxConfigured() {
   );
 }
 
+let cachedToken = '';
+let tokenExpiry = 0;
+let tokenPending = null;
 async function accessToken() {
   const key = process.env.DROPBOX_APP_KEY;
   const secret = process.env.DROPBOX_APP_SECRET;
@@ -17,6 +20,9 @@ async function accessToken() {
     if (process.env.DROPBOX_ACCESS_TOKEN) return process.env.DROPBOX_ACCESS_TOKEN;
     throw new Error('Dropbox is not configured');
   }
+  if (cachedToken && Date.now() < tokenExpiry) return cachedToken;
+  if (tokenPending) return tokenPending;
+  tokenPending = (async () => {
   const response = await fetch('https://api.dropboxapi.com/oauth2/token', {
     method: 'POST',
     headers: {
@@ -27,7 +33,12 @@ async function accessToken() {
   });
   const data = await response.json();
   if (!response.ok || !data.access_token) throw new Error(data.error_description || 'Could not refresh Dropbox access');
-  return data.access_token;
+  cachedToken = data.access_token;
+  tokenExpiry = Date.now() + Math.max(0, Number(data.expires_in || 14400) - 60) * 1000;
+  return cachedToken;
+  })();
+  try { return await tokenPending; }
+  finally { tokenPending = null; }
 }
 
 async function callDropbox(endpoint, body) {
@@ -88,10 +99,12 @@ export async function ensureClientDropboxFolder({ userId, fullName, email, exist
   await ensureFolder(folderPath);
   const musicPath = `${folderPath}/My Music`;
   const photosPath = `${folderPath}/My Photos`;
-  await Promise.all([ensureFolder(musicPath), ensureFolder(photosPath)]);
-  const [url, musicUrl, photosUrl] = await Promise.all([
-    sharedLink(folderPath), sharedLink(musicPath), sharedLink(photosPath)
-  ]);
+  // Client logins must not burst several concurrent Dropbox requests.
+  await ensureFolder(musicPath);
+  await ensureFolder(photosPath);
+  const url = await sharedLink(folderPath);
+  const musicUrl = await sharedLink(musicPath);
+  const photosUrl = await sharedLink(photosPath);
   return { path: folderPath, url, musicPath, musicUrl, photosPath, photosUrl };
 }
 
