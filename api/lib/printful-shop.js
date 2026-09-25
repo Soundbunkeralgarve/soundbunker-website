@@ -1,3 +1,4 @@
+import { collectionFor, productTitles } from './shop-collections.js';
 import { campaignImages } from './shop-artwork.js';
 import { supplierCost, deliveryRetailPrice, retailPrice, productCategory, productLabel, marginCheck, minimumShopPrice, applyShopDiscount, loadShopDiscount } from './shop-pricing.js';
 import { randomUUID, randomBytes, timingSafeEqual } from 'node:crypto';
@@ -38,7 +39,7 @@ export async function shopProduct(id) {
   const artwork = campaignImages[key];
   const campaign = artwork && images.includes(artwork.sourceImage) ? artwork.image : '';
   if (campaign) images.unshift(campaign);
-  const value = { display_name: productLabel(detail.sync_product.name), category: productCategory(detail.sync_product.name), colors: [...new Set(variants.map(v => v.color).filter(Boolean))], campaign: Boolean(campaign), id: detail.sync_product.id, name: detail.sync_product.name, image: images[0] || '', images, variants,
+  const value = { collection: collectionFor(id), display_name: productTitles[id] || productLabel(detail.sync_product.name), category: productCategory(detail.sync_product.name), colors: [...new Set(variants.map(v => v.color).filter(Boolean))], campaign: Boolean(campaign), id: detail.sync_product.id, name: detail.sync_product.name, image: images[0] || '', images, variants,
     price: variants.length ? Math.min(...variants.map(v => v.price)) : null };
   if (productCache.size > 200) productCache.clear();
   productCache.set(key, { until: Date.now() + 60000, value });
@@ -112,9 +113,10 @@ export async function quoteOrder(input, db) {
     const result = await pf(`/store/variants/${item.id}`);
     const syncVariant = result.sync_variant ?? result;
     if (hiddenProductIds.has(Number(syncVariant.sync_product_id))) throw new Error('An item has been removed from the collection. Please remove it from your basket.');
+    if (collectionFor(syncVariant.sync_product_id)==='crude-city' && !input.adult_confirmed) throw new Error('Please confirm you are 18 or over before ordering Crude City.');
     const variant = publicVariant(syncVariant);
     if (!variant) throw new Error('An item is unavailable or has no EUR selling price. Please refresh your basket.');
-    items.push({ ...variant, catalog_variant_id: syncVariant.variant_id, quantity: item.quantity });
+    items.push({ ...variant, collection:collectionFor(syncVariant.sync_product_id), catalog_variant_id: syncVariant.variant_id, quantity: item.quantity });
   }
   applyShopDiscount(items, await loadShopDiscount(db, input.discount_code));
   const pfItems = items.map(i => ({ sync_variant_id: i.id, quantity: i.quantity }));

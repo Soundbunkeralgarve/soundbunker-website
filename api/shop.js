@@ -1,3 +1,4 @@
+import { visibleProduct } from './lib/shop-collections.js';
 import { json, parseJson } from './lib/http.js';
 import { requireAdmin } from './lib/supabase-auth.js';
 import { pf, countries, shopProduct, storefrontProduct, shirtPairs, hiddenProductIds, httpsURL, quoteOrder, checkoutOrder, shopDB, hasAccess, stripeRequest, fulfillShopCheckout } from './lib/printful-shop.js';
@@ -7,10 +8,16 @@ export default async function handler(req,res) {
   const url = new URL(req.url,'https://shop.local');
   const action = url.searchParams.get('action') || 'products';
   try {
+    if (req.method === 'GET' && action === 'featured') {
+      const products=await Promise.all([422179281,475033196,475185188,475184250,475186071].map(shopProduct));
+      res.setHeader('Cache-Control','public, max-age=60, s-maxage=60');
+      return json(res,{products:products.filter(p=>p.variants.length).map(({variants,...p})=>p),next:null});
+    }
     if (req.method === 'GET' && action === 'products') {
       const offset = Math.max(0,Math.min(10000,Number(url.searchParams.get('offset')) || 0));
       const products = await pf(`/store/products?limit=24&offset=${Math.floor(offset)}`);
-      const selected = products.filter(p => !p.is_ignored && p.synced > 0 && !hiddenProductIds.has(Number(p.id)));
+      const adult = req.headers['x-sb-adult-confirmed'] === 'true';
+      const selected = products.filter(p => visibleProduct(p.id, adult) && !p.is_ignored && p.synced > 0 && !hiddenProductIds.has(Number(p.id)));
       const displayOrder=shirtPairs.flat();
       selected.sort((a,b)=>{const rank=id=>{const i=displayOrder.indexOf(Number(id));return i<0?displayOrder.length:i;};return rank(a.id)-rank(b.id);});
       const hydrated = [];
@@ -18,17 +25,20 @@ export default async function handler(req,res) {
       for (let i = 0; i < selected.length; i += 4) {
         hydrated.push(...await Promise.all(selected.slice(i,i+4).map(p => shopProduct(p.id))));
       }
-      res.setHeader('Cache-Control','public, max-age=60, s-maxage=60');
+      res.setHeader('Cache-Control','private, no-store');
       res.statusCode = 200;
       res.setHeader('Content-Type','application/json; charset=utf-8');
       return res.end(JSON.stringify({ products: hydrated.filter(p => p.variants.length).map(({variants,...p}) => p), next: products.length === 24 ? offset+24 : null, countries: countries() }));
     }
     if (req.method === 'GET' && action === 'product') {
       const id = url.searchParams.get('id'); if (!/^\d+$/.test(id || '')) return json(res,{error:'Invalid product'},400);
+      if (!visibleProduct(id,req.headers['x-sb-adult-confirmed']==='true')) return json(res,{error:'Confirm you are 18 or over to view this collection.'},403);
+      res.setHeader('Cache-Control','private, no-store');
       return json(res,await storefrontProduct(id));
     }
     if (req.method === 'POST' && action === 'quote') {
       const input = await parseJson(req);
+      input.adult_confirmed = req.headers['x-sb-adult-confirmed'] === 'true';
       const row = await quoteOrder(input);
       return json(res,{ id:row.id,token:row.access_token,items:row.items,subtotal:row.subtotal_cents,discount:row.items.reduce((sum,i)=>sum+((i.list_price??i.price)-i.price)*i.quantity,0),shipping:row.shipping_cents,total:row.total_cents,delivery:row.shipping_label });
     }

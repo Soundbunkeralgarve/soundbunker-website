@@ -120,3 +120,102 @@ export const campaignImages = {
     "sourceImage": "https://files.cdn.printful.com/files/198/1988bf0ac9f7c6ad03948301a842c640_preview.png"
   }
 };
+
+Object.assign(campaignImages, {
+  "475181120": {
+    "image": "/assets/shop/mockups/475181120.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/bc3/bc3996c96ebfb7687acb827a8742c129_preview.png"
+  },
+  "475181217": {
+    "image": "/assets/shop/mockups/475181217.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/d7f/d7fc973cda803bc00a4cf6ff7e263381_preview.png"
+  },
+  "475181285": {
+    "image": "/assets/shop/mockups/475181285.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/9ed/9ed3540ea3d06dc2d9ee3ca80ef7aa0b_preview.png"
+  },
+  "475181951": {
+    "image": "/assets/shop/mockups/475181951.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/1bf/1bf742543f08c22cdcf9b82304b1bec6_preview.png"
+  },
+  "475183711": {
+    "image": "/assets/shop/mockups/475183711.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/f43/f43a97d13b901ed44ca290b6e773250b_preview.png"
+  },
+  "475184250": {
+    "image": "/assets/shop/mockups/475184250.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/1f3/1f3b024a1f2d689e20a17eb8aa42e89d_preview.png"
+  },
+  "475184289": {
+    "image": "/assets/shop/mockups/475184289.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/fd4/fd425ce076151f83135df6ee1bdc6d45_preview.png"
+  },
+  "475184928": {
+    "image": "/assets/shop/mockups/475184928.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/501/5012aaac5ecdd244230edc6adf1c9d57_preview.png"
+  },
+  "475185071": {
+    "image": "/assets/shop/mockups/475185071.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/acf/acf0c5979b04c9719002515117a1e90d_preview.png"
+  },
+  "475185087": {
+    "image": "/assets/shop/mockups/475185087.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/9ba/9ba1cb79917c53b1ca8efad3275d6c13_preview.png"
+  },
+  "475185126": {
+    "image": "/assets/shop/mockups/475185126.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/b58/b583ca797d8d3f1bc50b9ccb62177915_preview.png"
+  },
+  "475185188": {
+    "image": "/assets/shop/mockups/475185188.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/f6f/f6f016fca40b46f8b9a1dc99ee28d5ea_preview.png"
+  },
+  "475185759": {
+    "image": "/assets/shop/mockups/475185759.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/80c/80c81bed27d36ff55ed1830acb9e75e5_preview.png"
+  },
+  "475186071": {
+    "image": "/assets/shop/mockups/475186071.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/042/042076c1e6bdf2532edfaf81341e4639_preview.png"
+  },
+  "475186142": {
+    "image": "/assets/shop/mockups/475186142.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/edc/edc6c79bfde09252cf8d99cfe0bb674e_preview.png"
+  },
+  "475187845": {
+    "image": "/assets/shop/mockups/475187845.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/b9d/b9dcde6f4cfff2f706f553a695d38f05_preview.png"
+  },
+  "475188058": {
+    "image": "/assets/shop/mockups/475188058.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/23e/23e8388116e85feff5749e8c5a3b1e18_preview.png"
+  },
+  "475188276": {
+    "image": "/assets/shop/mockups/475188276.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/704/704b8c15f2e9923e5196b46d6030a584_preview.png"
+  },
+  "475188366": {
+    "image": "/assets/shop/mockups/475188366.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/c1d/c1d2430449e2f0e1049d498690300f34_preview.png"
+  },
+  "475188413": {
+    "image": "/assets/shop/mockups/475188413.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/86c/86cad41b2eeecbfd310c141657aaa6bf_preview.png"
+  },
+  "475188515": {
+    "image": "/assets/shop/mockups/475188515.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/665/665e17bd9cb965b32df6293cdd598586_preview.png"
+  },
+  "475188577": {
+    "image": "/assets/shop/mockups/475188577.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/667/667767172892cb43d4fcfd77e2d3963f_preview.png"
+  },
+  "475188616": {
+    "image": "/assets/shop/mockups/475188616.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/022/022834a78940a64ef720f50563ce946e_preview.png"
+  },
+  "475188683": {
+    "image": "/assets/shop/mockups/475188683.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/ce7/ce7240417c229639e9686eea3151d9dd_preview.png"
+  }
+});
