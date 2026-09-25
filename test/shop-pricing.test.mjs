@@ -20,7 +20,7 @@ test('margin accounts for VAT, full supplier cost and processing fees', () => {
 });
 test('expensive production is stopped before a quote is saved', async () => {
  const original=global.fetch;process.env.PRINTFUL_TOKEN='test';let writes=0;
- global.fetch=async(url)=>({ok:true,json:async()=>({result:url.includes('/store/variants/')?{sync_variant:{id:111,variant_id:222,name:'T-shirt / 3XL',synced:true,currency:'EUR',retail_price:'1'}}:url.includes('/shipping/rates')?[{id:'STANDARD',currency:'EUR',rate:'5.00'}]:{costs:{currency:'EUR',total:'45.00'}}})});
+ global.fetch=async(url)=>({ok:true,json:async()=>({result:url.includes('/store/variants/')?{sync_variant:{id:111,sync_product_id:413293723,variant_id:222,name:'T-shirt / 3XL',synced:true,currency:'EUR',retail_price:'1'}}:url.includes('/shipping/rates')?[{id:'STANDARD',currency:'EUR',rate:'5.00'}]:{costs:{currency:'EUR',total:'45.00'}}})});
  try {await assert.rejects(quoteOrder({items:[{id:111,quantity:1}],recipient:{name:'Test',email:'test@example.com',address1:'Test street',city:'Loule',zip:'8100-000',country_code:'PT'}},{from:()=>({insert:async()=>{writes++;return {};}})}),/price review/);assert.equal(writes,0);}finally{global.fetch=original;}
 });
 test('old quoted prices cannot be paid after the fixed price change',async()=>{
