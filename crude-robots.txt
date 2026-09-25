@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /client
+Disallow: /shop-order.html
+Disallow: /order
+Disallow: /recording.html
+Disallow: /production.html
+Disallow: /photography.html
+Disallow: /hub-academy.html
+Disallow: /gift-vouchers.html
+Sitemap: https://crude-city.com/sitemap.xml
