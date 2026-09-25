@@ -395,3 +395,17 @@ Object.assign(campaignImages, {
     "presentation": "product-only"
   }
 });
+
+// Traffic Cone: matching underground product displays.
+Object.assign(campaignImages,{
+  "475234129": {
+    "image": "/assets/shop/mockups/475234129-display.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/4af/4af7e1b01b865c1d24a27b0f84f3e038_preview.png",
+    "presentation": "product-only"
+  },
+  "475233992": {
+    "image": "/assets/shop/mockups/475233992-display.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/e29/e2977bcf0e148647c599b33c9aff3a1a_preview.png",
+    "presentation": "product-only"
+  }
+});
