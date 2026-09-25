@@ -71,7 +71,7 @@ renderBasket();loadProducts();
 function addCouplesCombo(){
  if(document.getElementById('couples-combo'))return;
  const card=el('article',undefined,'shop-card couples-combo');card.id='couples-combo';card.dataset.category='tshirts';card.dataset.collection='crude-city';card.dataset.colors='white|asphalt|natural';card.dataset.search='crude city couples combo horny bitch horny bastard matching shirts';
- const image=el('img');image.src='/assets/shop/mockups/crude-city-couples-display.webp';image.alt='Horny Bastard and Horny Bitch T-shirts displayed side by side';image.width=900;image.height=600;image.loading='lazy';image.className='campaign-image';
+ const image=el('img');image.src='/assets/shop/mockups/crude-city-couples.webp';image.alt='Models wearing the Horny Bastard and Horny Bitch T-shirts';image.width=900;image.height=600;image.loading='lazy';image.className='campaign-image';
  const body=el('div',undefined,'shop-card-body');body.append(el('p','CRUDE CITY · 18+','product-eyebrow'),el('h3','Horny Bitch + Horny Bastard · Couples’ Combo'),el('p','€90.00 for both T-shirts · VAT included','product-price'),el('p','Two matching shirts. Choose a separate size for each.','shop-note'));
  const choose=el('button','Choose both sizes','shop-button secondary');choose.type='button';body.append(shareProductButton({id:'couples-combo',display_name:'Crude City couples’ combo',collection:'crude-city'}),choose);const cover=el('button',undefined,'shop-image-button');cover.type='button';cover.setAttribute('aria-label','Enlarge couples’ combo');cover.append(image);cover.onclick=()=>openProductGallery({display_name:'Crude City couples’ combo',images:[image.src]});card.append(cover,body);productRow('tshirts').prepend(card);
  choose.onclick=async()=>{

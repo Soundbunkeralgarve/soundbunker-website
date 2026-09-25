@@ -399,13 +399,47 @@ Object.assign(campaignImages, {
 // Traffic Cone: matching underground product displays.
 Object.assign(campaignImages,{
   "475234129": {
-    "image": "/assets/shop/mockups/475234129-display.webp",
+    "image": "/assets/shop/mockups/475234129-club.webp",
     "sourceImage": "https://files.cdn.printful.com/files/4af/4af7e1b01b865c1d24a27b0f84f3e038_preview.png",
     "presentation": "product-only"
   },
   "475233992": {
-    "image": "/assets/shop/mockups/475233992-display.webp",
+    "image": "/assets/shop/mockups/475233992-club.webp",
     "sourceImage": "https://files.cdn.printful.com/files/e29/e2977bcf0e148647c599b33c9aff3a1a_preview.png",
     "presentation": "product-only"
+  }
+});
+
+// September Crude City model images, tied to the exact supplier preview.
+Object.assign(campaignImages, {
+  "475220757": {
+    "presentation": "model",
+    "image": "/assets/shop/mockups/475220757.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/a93/a93f3831f89d6ef029f1896e61fe875d_preview.png"
+  },
+  "475220640": {
+    "presentation": "model",
+    "image": "/assets/shop/mockups/475220640.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/2af/2af16efece09310afb664e9da143c507_preview.png"
+  },
+  "475220822": {
+    "presentation": "model",
+    "image": "/assets/shop/mockups/475220822.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/8eb/8eba422c3774526932eef46d34969dcd_preview.png"
+  },
+  "475220707": {
+    "presentation": "model",
+    "image": "/assets/shop/mockups/475220707.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/d27/d2726a1fa5ee4a516e540c6ad9392401_preview.png"
+  },
+  "475220067": {
+    "presentation": "model",
+    "image": "/assets/shop/mockups/475220067.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/9e1/9e1769ca088a67b9304f3dc752fe3af4_preview.png"
+  },
+  "475219541": {
+    "presentation": "model",
+    "image": "/assets/shop/mockups/475219541.webp",
+    "sourceImage": "https://files.cdn.printful.com/files/1d3/1d3531cbf2c3d2de5148eb27c8804eb8_preview.png"
   }
 });

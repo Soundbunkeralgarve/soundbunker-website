@@ -47,8 +47,7 @@ export async function shopProduct(id) {
   const views = [...new Map(variants.flatMap(v => v.views || []).map(v => [v.url, v])).values()];
   const images = [...new Set([...variants.map(v => v.image), ...views.map(v => v.url)].filter(Boolean))];
   const artwork = campaignImages[key];
-  const allowedPresentation = collectionFor(id, detail.sync_product.name) !== 'crude-city' || artwork?.presentation === 'product-only';
-  const campaign = allowedPresentation && artwork && images.includes(artwork.sourceImage) ? artwork.image : '';
+  const campaign = artwork && images.includes(artwork.sourceImage) ? artwork.image : '';
   if (campaign) {
     const back = campaignBackViews[key];
     if (back && images.includes(back.sourceImage)) {
