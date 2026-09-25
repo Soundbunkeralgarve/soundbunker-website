@@ -30,7 +30,7 @@ test('a high-margin shirt cannot subsidise an expensive hat in a mixed basket', 
  const original=global.fetch;process.env.PRINTFUL_TOKEN='test';let writes=0;
  global.fetch=async(url,opts)=>{
   const body=opts.body?JSON.parse(opts.body):{};let result;
-  if(url.includes('/store/variants/'))result={sync_variant:{id:url.endsWith('/111')?111:112,variant_id:222,name:url.endsWith('/111')?'T-shirt / M':'Bucket Hat',synced:true,currency:'EUR'}};
+  if(url.includes('/store/variants/'))result={sync_variant:{id:url.endsWith('/111')?111:112,sync_product_id:url.endsWith('/111')?413293723:413281983,variant_id:222,name:url.endsWith('/111')?'T-shirt / M':'Bucket Hat',synced:true,currency:'EUR'}};
   else if(url.includes('/shipping/rates'))result=[{id:'STANDARD',currency:'EUR',rate:'5.00'}];
   else result={costs:{currency:'EUR',total:body.items.length===2?'39.00':body.items[0].sync_variant_id===111?'8.00':'36.00',shipping:'5.00'}};
   return {ok:true,json:async()=>({result})};
