@@ -7,7 +7,9 @@ import { sendTransactionalEmail } from './notify.js';
 
 export const hiddenProductIds = new Set([413279131,413279051]);
 const hiddenVariantIds = new Set([5138797987, 5138797988, 5138797989, 5138797990, 5138797991, 5138796724, 5138796725, 5138796726, 5138796727, 5138796728]);
-export const shopOrigin = () => (process.env.SITE_URL || 'https://www.soundbunker.pt').replace(/\/$/, '');
+export const shopOrigin = brand => (brand === 'crude-city' ? (process.env.CRUDE_CITY_SITE_URL || 'https://crude-city.com') : (process.env.SITE_URL || 'https://www.soundbunker.pt')).replace(/\/$/, '');
+export const isCrudeCityOrder = row => Array.isArray(row?.items) && row.items.length > 0 && row.items.every(item => item.collection === 'crude-city');
+export const shopOrderUrl = row => isCrudeCityOrder(row) ? `${shopOrigin('crude-city')}/order?order=${row.id}&token=${row.access_token}` : `${shopOrigin()}/shop-order.html?order=${row.id}&token=${row.access_token}`;
 let destinationCache=null;
 const originalDestinations='PT,ES,FR,DE,IT,NL,BE,AT,IE,LU,DK,SE,FI,PL,CZ,SK,HU,RO,BG,HR,SI,EE,LV,LT,GR,CY,MT,GB'.split(',');
 export const countries = () => destinationCache?.rows.map(c=>c.code) || originalDestinations;
@@ -123,6 +125,8 @@ export async function quoteOrder(input, db) {
   db ||= shopDB();
   if(!countries().includes(String(input.recipient?.country_code||'').toUpperCase())) await shippingDestinations();
   const recipient = cleanRecipient(input.recipient);
+   const brand = input.brand || 'soundbunker';
+   if (!['soundbunker','crude-city'].includes(brand)) throw new Error('Unknown shop. Please refresh and try again.');
   if(['US','CA','AU'].includes(recipient.country_code)&&!recipient.state_code)throw new Error('Please choose your state or province.');
   stage = "cart_validation";
   const cart = cleanCart(input.items);
@@ -135,6 +139,7 @@ export async function quoteOrder(input, db) {
     if (hiddenProductIds.has(Number(syncVariant.sync_product_id))) throw new Error('An item has been removed from the collection. Please remove it from your basket.');
     const collection = collectionFor(syncVariant.sync_product_id, syncVariant.name);
     if (!collection) throw new Error('An item is not published. Please refresh your basket.');
+    if (brand === 'crude-city' ? collection !== 'crude-city' : collection === 'crude-city') throw new Error('Items from the two shops cannot be combined. Please use the correct store.');
     if (collection==='crude-city' && !input.adult_confirmed) throw new Error('Please confirm you are 18 or over before ordering Crude City.');
     const variant = publicVariant(syncVariant);
     if (!variant) throw new Error('An item is unavailable or has no EUR selling price. Please refresh your basket.');
@@ -190,6 +195,7 @@ export async function stripeRequest(path, body, key) {
 export async function checkoutOrder(row, db = shopDB()) {
   if (row.items.some(item => retailPrice(item.name, item.list_price ?? item.price) !== (item.list_price ?? item.price))) throw new Error('Prices have changed. Please calculate delivery again.');
   if (row.items.some(item => hiddenVariantIds.has(item.id))) throw new Error('An item has been removed from the collection. Please refresh your basket.');
+   if (isCrudeCityOrder(row) && !process.env.CRUDE_CITY_SITE_URL) throw new Error('Crude City checkout is not enabled until the domain is connected.');
   if (/^(sk|rk)_live_/.test(process.env.STRIPE_SECRET_KEY || '') && process.env.PRINTFUL_AUTO_FULFILL !== 'true') throw new Error('Shop is not open for live payments yet');
   if (row.stripe_session_id) {
     const existing = await stripeRequest(`/checkout/sessions/${encodeURIComponent(row.stripe_session_id)}`);
@@ -198,7 +204,7 @@ export async function checkoutOrder(row, db = shopDB()) {
   }
   if (row.status !== 'quoted' || Date.parse(row.expires_at) < Date.now()) throw new Error('Your quote has expired. Please calculate delivery again.');
   const body = new URLSearchParams({ mode: 'payment', 'payment_method_types[0]': 'card', customer_email: row.recipient.email, client_reference_id: row.id,
-    success_url: `${shopOrigin()}/shop-order.html?order=${row.id}&token=${row.access_token}`, cancel_url: `${shopOrigin()}/shop.html#basket`,
+    success_url: shopOrderUrl(row), cancel_url: isCrudeCityOrder(row) ? `${shopOrigin('crude-city')}/#basket` : `${shopOrigin()}/shop.html#basket`,
     'metadata[purchase_type]': 'merchandise', 'metadata[shop_order_id]': row.id,
     'payment_intent_data[metadata][shop_order_id]': row.id,
     'custom_text[submit][message]': `Delivery to: ${row.recipient.name}, ${row.recipient.address1}, ${row.recipient.address2}, ${row.recipient.city}, ${row.recipient.zip}, ${row.recipient.country_code}. Return to shop to change address.`.slice(0,1200),
@@ -253,15 +259,16 @@ export async function ensurePrintfulOrder(row, api = pf) {
   return order;
 }
 export async function sendShopEmails(db,row) {
-  const link = `${shopOrigin()}/shop-order.html?order=${row.id}&token=${row.access_token}`;
+  const link = shopOrderUrl(row);
+  const brand = isCrudeCityOrder(row) ? 'Crude City' : 'SoundBunker';
   const summary = row.items.map(i => `${i.quantity} × ${i.name} — €${(i.price*i.quantity/100).toFixed(2)}`).join('\n');
   const details = `${summary}\nDelivery: €${(row.shipping_cents/100).toFixed(2)}\nTotal paid: €${(row.total_cents/100).toFixed(2)}\nOrder reference: ${row.id}`;
   if (!row.customer_email_sent) {
-    await sendTransactionalEmail({ to: row.recipient.email, subject: 'Your SoundBunker shop order', key: `shop-buyer-${row.id}`, text: `Hi ${row.recipient.name},\n\nThank you — we have received your payment.\n\n${details}\n\nDelivery address:\n${row.recipient.address1}\n${row.recipient.address2}\n${row.recipient.city}, ${row.recipient.zip}\n${row.recipient.country_code}\n\nFollow production and tracking here (keep this link private):\n${link}\n\nQuestions? Reply to this email.\nSoundBunker Algarve` });
+    await sendTransactionalEmail({ to: row.recipient.email, subject: `Your ${brand} shop order`, key: `shop-buyer-${row.id}`, text: `Hi ${row.recipient.name},\n\nThank you — we have received your payment.\n\n${details}\n\nDelivery address:\n${row.recipient.address1}\n${row.recipient.address2}\n${row.recipient.city}, ${row.recipient.zip}\n${row.recipient.country_code}\n\nFollow production and tracking here (keep this link private):\n${link}\n\nQuestions? Reply to this email.\n${brand} — operated by SoundBunker Algarve` });
     await update(db,row.id,{ customer_email_sent: true }); row.customer_email_sent = true;
   }
   if (!row.studio_email_sent) {
-    await sendTransactionalEmail({ to: process.env.BOOKING_NOTIFICATION_EMAIL || 'bookings@soundbunker.pt', subject: 'New paid SoundBunker merchandise order', key: `shop-studio-${row.id}`, text: `${details}\n\nCustomer: ${row.recipient.name}\nPayment received. Check the order link for current fulfilment status.\n\nFollow the order: ${link}\nPrintful dashboard: https://www.printful.com/dashboard/orders\nIf the status needs attention, check Printful billing and the shop_orders table.` });
+    await sendTransactionalEmail({ to: process.env.BOOKING_NOTIFICATION_EMAIL || 'bookings@soundbunker.pt', subject: `New paid ${brand} merchandise order`, key: `shop-studio-${row.id}`, text: `${details}\n\nCustomer: ${row.recipient.name}\nPayment received. Check the order link for current fulfilment status.\n\nFollow the order: ${link}\nPrintful dashboard: https://www.printful.com/dashboard/orders\nIf the status needs attention, check Printful billing and the shop_orders table.` });
     await update(db,row.id,{ studio_email_sent: true });
   }
 }
