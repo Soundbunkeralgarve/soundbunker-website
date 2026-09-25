@@ -39,6 +39,7 @@ export default async function handler(req,res) {
       const id = url.searchParams.get('id'); if (!/^\d+$/.test(id || '')) return json(res,{error:'Invalid product'},400);
       const adult = req.headers['x-sb-adult-confirmed']==='true';
       if (brand === 'crude-city' && !adult) return json(res,{error:'Confirm you are 18 or over to view this collection.'},403);
+      if (!adult && !visibleProduct(id)) return json(res,{error:'Confirm you are 18 or over to view this collection.'},403);
       res.setHeader('Cache-Control','private, no-store');
       const product = await storefrontProduct(id);
       if (!visibleProduct(product.id,adult,product.name) || (brand === 'crude-city' ? product.collection !== 'crude-city' : product.collection === 'crude-city')) return json(res,{error:'Product is not published in this shop.'},404);
