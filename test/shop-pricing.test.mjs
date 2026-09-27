@@ -4,7 +4,7 @@ import { productCategory, retailPrice, marginCheck } from '../api/lib/shop-prici
 import { publicVariant, quoteOrder, checkoutOrder } from '../api/lib/printful-shop.js';
 
 test('fixed prices cover every garment and size regardless of supplier retail price', () => {
- for(const [name,category,price] of [['Unisex Organic Cotton Creator 2.0 T-Shirt EXCELLENCE / 3XL','tshirts',4500],['SoundBunker tee / S','tshirts',4500],['SoundBunker Unisex heavy blend zip hoodie / XL','hoodies',7500],['SoundBunker Old School Bucket Hat','hats',3500],['SoundBunker Trucker Cap','hats',3500],['SoundBunker Polo / Black / 5XL','polos',5000],['SoundBunker Shotta Bag / White / One size','accessories',4000]]) {
+ for(const [name,category,price] of [['Unisex Organic Cotton Creator 2.0 T-Shirt EXCELLENCE / 3XL','tshirts',4200],['SoundBunker tee / S','tshirts',4200],['SoundBunker Unisex heavy blend zip hoodie / XL','hoodies',6500],['SoundBunker Old School Bucket Hat','hats',3000],['SoundBunker Trucker Cap','hats',3000],['SoundBunker Polo / Black / 5XL','polos',4500],['SoundBunker Shotta Bag / White / One size','accessories',3500]]) {
   assert.equal(productCategory(name),category);
   assert.equal(retailPrice(name,100),price);
   for(const supplierPrice of ['0','99.00',undefined])assert.equal(publicVariant({name,synced:true,currency:'EUR',retail_price:supplierPrice}).price,price);
@@ -56,12 +56,12 @@ test('only active shop-specific codes without unsupported restrictions can be re
  for(const patch of [{active:false},{service_id:null},{service_id:'recording'},{max_uses:1},{client_user_id:'someone'},{expires_at:'2020-01-01'}])await assert.rejects(loadShopDiscount(db({...offer,...patch}),'SHOP10'),/unavailable/);
 });
 
-test('owner-approved 15 percent safeguard applies even with a stale environment setting',()=>{
+test('owner-approved 10 percent safeguard applies even with a stale environment setting',()=>{
  const previous=process.env.SHOP_MIN_MARGIN;process.env.SHOP_MIN_MARGIN='0.25';
  try {
   const accepted=marginCheck(5000,0,3200);
-  assert.equal(accepted.minimum,0.15);assert.equal(accepted.allowed,true);
-  assert.equal(marginCheck(5000,0,3300).allowed,false);
+  assert.equal(accepted.minimum,0.10);assert.equal(accepted.allowed,true);
+  assert.equal(marginCheck(5000,0,3500).allowed,false);
  } finally {if(previous===undefined)delete process.env.SHOP_MIN_MARGIN;else process.env.SHOP_MIN_MARGIN=previous;}
 });
 
@@ -81,13 +81,13 @@ test('invoice-backed 5XL shirt and bag pass BUNKER10 together and separately',as
  const {supplierCost,deliveryRetailPrice}=await import('../api/lib/shop-pricing.js');
  // Actual invoice: 24.84 shirt + 20.70 bag + 5.74 delivery + 11.80 VAT.
  const shipping=deliveryRetailPrice(574);
- const combined=marginCheck(4050+3600,shipping,supplierCost(6308,1180));
+ const combined=marginCheck(3780+3150,shipping,supplierCost(6308,1180));
  assert.equal(combined.allowed,true);
- assert.equal(combined.contribution,1377);
- for(const [discounted,production] of [[4050,2484],[3600,2070]]){
+ assert.equal(combined.contribution,816);
+ for(const [discounted,production] of [[3780,2484],[3150,2070]]){
   assert.equal(marginCheck(discounted,shipping,production+574).allowed,true);
   assert.equal(marginCheck(discounted,0,production).allowed,true);
  }
  // Deeper discounts remain blocked when they eat through the minimum margin.
- assert.equal(marginCheck(3600,shipping,2484+574).allowed,false);
+ assert.equal(marginCheck(3150,shipping,2484+574).allowed,false);
 });
