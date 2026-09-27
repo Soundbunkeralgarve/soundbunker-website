@@ -6,7 +6,6 @@ import { pf, countries, shippingDestinations, shopProduct, storefrontProduct, sh
 export const config = { maxDuration: 60 };
 // Six varied, pre-approved products on the first screen. Full browsing is opt-in.
 const initialProductIds = [475033196,475185407,475184250,475185759,413283381,413293723];
-const initialAdultProductIds = [475234129,475188366,475188276];
 async function initialProducts(ids) {
   const hydrated = [];
   for (let i = 0; i < ids.length; i += 2) {
@@ -28,14 +27,12 @@ export default async function handler(req,res) {
     }
     if (req.method === 'GET' && action === 'products') {
       if (url.searchParams.get('offset') === 'initial') {
-        const adult = req.headers['x-sb-adult-confirmed'] === 'true';
         res.setHeader('Cache-Control','private, no-store');
-        return json(res,{products:await initialProducts(adult ? [...initialProductIds,...initialAdultProductIds] : initialProductIds),next:0,countries:countries()});
+        return json(res,{products:await initialProducts(initialProductIds),next:0,countries:countries()});
       }
       const offset = Math.max(0,Math.min(10000,Number(url.searchParams.get('offset')) || 0));
       const products = await pf(`/store/products?limit=24&offset=${Math.floor(offset)}`);
-      const adult = req.headers['x-sb-adult-confirmed'] === 'true';
-      const selected = products.filter(p => visibleProduct(p.id, adult, p.name) && !couplesComboIds.includes(Number(p.id)) && !p.is_ignored && p.synced > 0 && !hiddenProductIds.has(Number(p.id)));
+      const selected = products.filter(p => visibleProduct(p.id, false, p.name) && !couplesComboIds.includes(Number(p.id)) && !p.is_ignored && p.synced > 0 && !hiddenProductIds.has(Number(p.id)));
       const displayOrder=shirtPairs.flat();
       selected.sort((a,b)=>{const rank=id=>{const i=displayOrder.indexOf(Number(id));return i<0?displayOrder.length:i;};return rank(a.id)-rank(b.id);});
       const hydrated = [];
@@ -50,16 +47,14 @@ export default async function handler(req,res) {
     }
     if (req.method === 'GET' && action === 'product') {
       const id = url.searchParams.get('id'); if (!/^\d+$/.test(id || '')) return json(res,{error:'Invalid product'},400);
-      const adult = req.headers['x-sb-adult-confirmed']==='true';
-      if (!adult && !visibleProduct(id)) return json(res,{error:'Confirm you are 18 or over to view this collection.'},403);
+      if (!visibleProduct(id)) return json(res,{error:'This product is not sold on SoundBunker. Visit https://crude-city.com/ for Crude City.'},404);
       res.setHeader('Cache-Control','private, no-store');
       const product = await storefrontProduct(id);
-      if (!visibleProduct(product.id,adult,product.name)) return json(res,{error:'Product is not published.'},404);
+      if (!visibleProduct(product.id,false,product.name)) return json(res,{error:'Product is not published.'},404);
       return json(res,product);
     }
     if (req.method === 'POST' && action === 'quote') {
       const input = await parseJson(req);
-      input.adult_confirmed = req.headers['x-sb-adult-confirmed'] === 'true';
       const row = await quoteOrder(input);
       return json(res,{ id:row.id,token:row.access_token,items:row.items,subtotal:row.subtotal_cents,discount:row.items.reduce((sum,i)=>sum+((i.list_price??i.price)-i.price)*i.quantity,0),shipping:row.shipping_cents,total:row.total_cents,delivery:row.shipping_label });
     }
