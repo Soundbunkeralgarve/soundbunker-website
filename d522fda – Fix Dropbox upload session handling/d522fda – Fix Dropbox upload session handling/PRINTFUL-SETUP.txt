@@ -1,0 +1,147 @@
+SOUNDBUNKER SHOP — INSTALL AND ACTIVATE
+
+This update adds /shop.html, a basket, live Printful product options and EUR
+selling prices, delivery quotes, Stripe Checkout, automatic paid-order
+submission, private order status/tracking, customer/studio confirmation
+emails, and an admin shop-order page.
+
+NOT ACTIVATED YET: no private credentials were supplied. No live payment,
+Printful charge, email, database migration or deployment has been performed.
+Local tests use simulated provider responses. Complete the setup and one
+real order before advertising the shop.
+
+1. INSTALL
+Copy the CONTENTS of this ZIP into your existing repository folder, replacing
+matching files. Keep your existing .git folder and environment settings.
+Commit and push as usual. The API needs the existing npm dependencies.
+No real token belongs in the repository, this ZIP, frontend JS or screenshots.
+
+2. SUPABASE
+Open the SAME Supabase project used by the website.
+SQL Editor > New query > paste the entire SHOP_SETUP.sql > Run.
+This creates a separate shop_orders table and a service-role-only locking
+function; it does not change your booking or client tables.
+
+3. VERCEL ENVIRONMENT VARIABLES
+Project > Settings > Environment Variables. Add:
+
+PRINTFUL_TOKEN = the private token you just created for SOUNDBUNKER EU
+PRINTFUL_AUTO_FULFILL = true   (production only, after configuration review)
+SITE_URL = https://www.soundbunker.pt   (use your actual canonical live URL)
+
+The single-store token does not need PRINTFUL_STORE_ID. Leave it unset unless
+you deliberately use an account-wide token; then supply the correct store ID.
+Token scopes: View/manage orders and View store products. The webhook scope
+you selected is optional here: tracking is fetched directly from Printful
+when the customer opens or refreshes their private order page. This version
+does not change your old Printful webhook settings or send shipping emails.
+
+Keep existing settings:
+STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET
+SUPABASE_URL, SUPABASE_SECRET_KEY, SUPABASE_PUBLISHABLE_KEY
+RESEND_API_KEY and NOTIFICATION_FROM_EMAIL (or RESEND_FROM_EMAIL)
+BOOKING_NOTIFICATION_EMAIL (optional; defaults to bookings@soundbunker.pt)
+
+Set secrets only on the server. Do not prefix them with NEXT_PUBLIC or VITE.
+Redeploy after adding/changing variables. Keep all keys in the same intended
+live/test environment. Do not replace working live booking Stripe keys with
+test keys on your production deployment.
+
+OPTIONAL
+SHOP_COUNTRIES: comma-separated country codes. Default: EU countries + GB.
+Other countries may need extra address/tax-ID fields, so do not enable them
+without extending and checking the address form.
+SHOP_SHIPPING_MULTIPLIER: default 1. The Printful EUR shipping quote multiplied
+by this number is the delivery charge shown to the customer. Allowed 1–3.
+Decide any shipping markup/tax allowance before launch; this is not automatic
+VAT calculation. Product retail prices must be your intended final customer
+prices. Review them to cover your tax obligations, Stripe fees and margin.
+The quote checks Printful estimated costs against the sale total, but this
+is NOT a profit calculation and cannot guarantee a margin.
+
+4. PRINTFUL
+Keep your existing SOUNDBUNKER EU store and designs.
+Set store/billing currency to EUR. Check every sellable variant has:
+- the correct print design and synced status;
+- a positive EUR retail selling price;
+- the intended size/colour and a preview image.
+Unsynced, ignored, unavailable and non-EUR variants cannot be bought.
+Products added to this store appear in the collection without editing code.
+Add a valid billing method in Printful and ensure funds are available.
+Review Printful's order notifications so production/billing errors reach you.
+
+The old website connection does not automatically connect this new site.
+This code uses your store token to read products and create orders directly.
+It confirms each order via API after verified Stripe payment; a dashboard
+'auto-confirm imported orders' switch is not what powers this flow.
+
+5. STRIPE WEBHOOK
+Keep your existing endpoint:
+https://www.soundbunker.pt/api/stripe-webhook
+It must be enabled for checkout.session.completed.
+checkout.session.async_payment_succeeded is also supported for shop orders.
+The shop currently offers card payments (including eligible card wallets).
+Use the signing secret for THIS endpoint in STRIPE_WEBHOOK_SECRET. Do not
+create a second endpoint pointing to the same URL with a different secret.
+The merchandise branch runs separately from bookings and gift vouchers.
+
+6. VERIFY BEFORE LAUNCH
+On a separate preview/test deployment with test Stripe keys and its own
+webhook secret, leave PRINTFUL_AUTO_FULFILL unset/false. Set SITE_URL to that
+preview URL. Test a full checkout. A Stripe test payment is marked test_paid
+and NEVER creates/charges a Printful order or sends live confirmation emails.
+Use an isolated test database if you do not want test rows in production.
+Do not enable public previews with live credentials.
+
+On production, enable PRINTFUL_AUTO_FULFILL=true, redeploy, and place ONE
+real order you want to receive. It will charge your card through Stripe and
+charge your saved Printful billing method for production/shipping.
+Check:
+- /shop.html loads your real products, sizes and correct selling prices;
+- delivery quote matches the address and total you expect;
+- payment succeeds and the customer order page says paid/processing;
+- exactly one matching order appears in Printful (external ID sb-<order UUID>);
+- customer and studio confirmation emails arrive;
+- the correct design/size/address are on the Printful order;
+- tracking becomes visible when Printful ships it.
+Do not use a test card with live Stripe keys.
+
+7. DAY-TO-DAY MANAGEMENT
+Studio admin > Shop orders (or /shop-admin.html), using your existing admin login.
+It lists the latest 100 checkouts, statuses, email flags and recorded errors.
+'Awaiting payment' may simply be an abandoned checkout.
+Check the Printful dashboard for current production status and cancellations.
+For a failed paid order, fix the underlying billing/design/address problem,
+then use 'Retry paid order / emails'. Payment is re-verified through Stripe.
+Existing Printful orders are looked up by stable external ID to avoid duplicates.
+A failed or cancelled Printful order is not blindly resubmitted; handle it in
+Printful first, then retry to reconcile the website record.
+Stripe retries failed webhook deliveries; the admin retry is available if its
+retry window has passed. Do not manually create a replacement order before
+checking whether Printful already received the original.
+
+Refunds and cancellations need coordination in Stripe and Printful. A Stripe
+refund does not automatically cancel production, and a Printful cancellation
+does not automatically refund your customer. Existing studio invoice automation
+is not used for merchandise; arrange merchandise invoices through your normal
+accounting process. The receipt email is an order confirmation, not a tax invoice.
+
+The private status link in the customer confirmation email shows live Printful
+status and carrier tracking without revealing their delivery address. It uses
+a random access token: customers should not share it publicly. The basket is
+stored locally; address details are not stored in browser localStorage.
+Quotes are saved server-side. Set a suitable retention policy for abandoned
+quotes and customer records in your normal data-management process.
+
+TECHNICAL VALIDATION
+npm run check
+npm run test:shop
+Tests cover authoritative prices, quantity validation, payment amount/currency/
+reference checks, private status access, test-mode protection, duplicate-order
+recovery and live-checkout activation. Browser checks use mocked products, not
+your live Printful store. Production credentials and end-to-end delivery remain
+to be verified after deployment.
+
+API REFERENCES
+https://developers.printful.com/docs/
+https://docs.stripe.com/api/checkout/sessions/create

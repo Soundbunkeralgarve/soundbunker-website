@@ -1,6 +1,6 @@
 # Shop retail pricing
 
-Adult T-shirts: €42. Hoodies: €65. Sweatshirts: €55. Hats/caps: €30. Polos: €45. Shotta Bags: €35. Kids' T-shirts: €25, hoodies: €45, sweatshirts: €35. All sizes use the same VAT-inclusive customer price. Other accessories retain their existing EUR retail prices. Rules live in `api/lib/shop-pricing.js`; both the catalogue and server quote use them. Printful retail prices no longer control these categories and Shotta Bags.
+Adult T-shirts: €40. Hoodies: €65. Sweatshirts: €55. Hats/caps: €30. Polos: €45. Shotta Bags: €35. Kids' T-shirts: €25, hoodies: €45, sweatshirts: €35. All sizes use the same VAT-inclusive customer price. Other accessories retain their existing EUR retail prices. Rules live in `api/lib/shop-pricing.js`; both the catalogue and server quote use them. Printful retail prices no longer control these categories and Shotta Bags.
 
 Shipping is the exact EUR STANDARD rate (or cheapest available rate) returned by Printful for the basket and destination. There is no shipping multiplier. The final total is displayed before Stripe payment. Stripe product prices are marked inclusive; this does not enable Stripe Tax or replace tax reporting.
 

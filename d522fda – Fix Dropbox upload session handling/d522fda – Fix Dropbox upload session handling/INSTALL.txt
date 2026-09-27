@@ -1,0 +1,14 @@
+SOUNDBUNKER EMAIL + MAILING LIST UPDATE — 22 SEPT 2026
+
+Copy the files and folders in this ZIP into the root of your soundbunker-website repository, replacing the matching files. Commit and push; Vercel will deploy from GitHub.
+
+Includes:
+- Paid booking confirmation to the customer and bookings@soundbunker.pt.
+- Paid gift certificate email with a link to print/save the personalized PDF, plus studio notice.
+- Free prize/gift booking confirmation.
+- Explicit promotional mailing list form on the homepage, sent to Resend Contacts. This does not import existing clients.
+- Gift voucher names and personal messages corrected for new purchases.
+
+Vercel environment variables to check: RESEND_API_KEY and RESEND_FROM_EMAIL (or NOTIFICATION_FROM_EMAIL). Optional BOOKING_NOTIFICATION_EMAIL overrides bookings@soundbunker.pt. Keep the existing Stripe webhook listening for checkout.session.completed. Never put API keys in this repository.
+
+After deployment, make one test booking and one test gift purchase (using Stripe test mode if available); confirm both inboxes and the PDF link. Join the list with an address you control and check Resend Contacts. Create promotional campaigns in Resend Broadcasts, which manages unsubscribe links.
