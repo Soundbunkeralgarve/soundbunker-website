@@ -16,7 +16,8 @@ export function approvedCrudeDesign(name='') {
 export function collectionFor(id, name='') {
  return Object.keys(collectionProducts).find(key=>collectionProducts[key].includes(Number(id))) || (approvedCrudeDesign(name) ? 'crude-city' : null);
 }
-export function visibleProduct(id, adult=false, name='') { const c=collectionFor(id,name);return Boolean(c && (c!=='crude-city'||adult)); }
+// Crude City now has a separate storefront. Historical mappings remain for order audit.
+export function visibleProduct(id, adult=false, name='') { const c=collectionFor(id,name);return Boolean(c && c!=='crude-city'); }
 export function displayProductTitle(id, name) {
  const design=approvedCrudeDesign(name);
  return productTitles[id] || (design ? `${design} · Crude City T-Shirt` : null);
