@@ -1,9 +1,0 @@
-SoundBunker Algarve Premium Portal + Studio Control
-Build date: 22 September 2026
-Source: latest 21 September 2026 Premium Portal ZIP, including Hub Academy redesign.
-Added: full admin controls, client inbox and updates, booking approvals, VIP codes, live calendar,
-Google reviews integration, gift voucher redemption and one-use prize voucher generator.
-Voucher refinement: exact no-charge booking for purchased gift experiences.
-Prize refinement: original Junction prize PDFs receive the generated code. Redeeming requires a client login. Paid recording has a two-hour minimum and mixing/mastering has clear prices, ordering and file upload access.
-Database setup: SUPABASE_ADMIN_PORTAL_21_SEPT_2026.sql after earlier portal migrations.
-Read README.md before deploying. This package is a source build, not a live deployment.
