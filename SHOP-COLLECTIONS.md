@@ -9,3 +9,5 @@ Campaign images in `api/lib/shop-artwork.js` are tied to exact supplier preview 
 Small public-page adverts are in `merch-promos.js` and never include Crude City. Homepage uses a six-product featured API feed.
 
 The Horny Bitch / Horny Bastard designs are sold only as a €90 two-shirt combo. Their individual cards are omitted; checkout verifies equal quantities of the two actual Printful products. Each shirt has a separate size choice.
+
+Crude City now has its own https://crude-city.com/ storefront. SoundBunker's Rave collection remains here. No Crude City product catalogue or checkout appears locally: only a branded external advert. Historical supplier IDs remain mapped for paid order auditing.
