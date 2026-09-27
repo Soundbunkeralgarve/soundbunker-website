@@ -147,7 +147,7 @@ export async function quoteOrder(input, db) {
     if (hiddenProductIds.has(Number(syncVariant.sync_product_id))) throw new Error('An item has been removed from the collection. Please remove it from your basket.');
     const collection = collectionFor(syncVariant.sync_product_id, syncVariant.name);
     if (!collection) throw new Error('An item is not published. Please refresh your basket.');
-    if (collection==='crude-city' && !input.adult_confirmed) throw new Error('Please confirm you are 18 or over before ordering Crude City.');
+    if (collection==='crude-city') throw new Error('Crude City is sold separately at https://crude-city.com/. Please remove it from your SoundBunker basket.');
     const variant = publicVariant(syncVariant);
     if (!variant) throw new Error('An item is unavailable or has no EUR selling price. Please refresh your basket.');
     items.push({ ...variant, collection, product_id:syncVariant.sync_product_id, catalog_variant_id: syncVariant.variant_id, quantity: item.quantity });
@@ -200,6 +200,7 @@ export async function stripeRequest(path, body, key) {
   const result = await response.json(); if (!response.ok) throw new Error(`Stripe request failed (${response.status})`); return result;
 }
 export async function checkoutOrder(row, db = shopDB()) {
+  if (row.items.some(item => item.collection==='crude-city' || collectionFor(item.product_id,item.name)==='crude-city')) throw new Error('Crude City is sold separately at https://crude-city.com/. Please start a new SoundBunker basket.');
   if (row.items.some(item => retailPrice(item.name, item.list_price ?? item.price) !== (item.list_price ?? item.price))) throw new Error('Prices have changed. Please calculate delivery again.');
   if (row.items.some(item => hiddenVariantIds.has(item.id))) throw new Error('An item has been removed from the collection. Please refresh your basket.');
   if (/^(sk|rk)_live_/.test(process.env.STRIPE_SECRET_KEY || '') && process.env.PRINTFUL_AUTO_FULFILL !== 'true') throw new Error('Shop is not open for live payments yet');
