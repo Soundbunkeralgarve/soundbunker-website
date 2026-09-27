@@ -1,0 +1,21 @@
+.merch-mini-promo{max-width:760px;margin:40px auto;padding:0 20px}.merch-mini-promo .collection-promo{display:flex;align-items:center;gap:20px;background:#21152d;border:1px solid #694887;border-radius:14px;overflow:hidden;color:#fff;text-decoration:none;box-shadow:0 10px 30px #0002}.merch-mini-promo img{width:34%;height:150px;object-fit:cover;display:block}.merch-mini-promo strong{display:block;font-size:20px;line-height:1.25}.merch-mini-promo span{display:block;font-size:14px;margin:8px 0}.merch-mini-promo span:last-child{color:#dac4ff;font-weight:700}@media(max-width:520px){.merch-mini-promo{padding:0 16px}.merch-mini-promo .collection-promo{gap:14px}.merch-mini-promo strong{font-size:17px}.merch-mini-promo img{width:35%;height:165px}.merch-mini-promo .collection-promo div{padding-right:10px}}
+
+.client-auth-form-wrap .merch-mini-promo{margin:20px 0 0;padding:0;width:100%}.client-auth-form-wrap .merch-mini-promo img{height:125px}.client-auth-form-wrap .merch-mini-promo strong{font-size:17px}.client-page #portalPanel .merch-mini-promo{max-width:900px;margin:24px auto;}
+
+.crude-content-notice{aspect-ratio:450/260;display:grid;place-items:center;background:#201526;color:#d9abf5;font-size:clamp(18px,3vw,30px);font-weight:900;letter-spacing:.04em;border-bottom:1px solid #704883}
+
+/* Separate sister-brand advert, without old purple-grid imagery or adult designs. */
+.collection-promos .crude-promo,.merch-mini-promo .crude-promo{display:block;overflow:hidden;border:1px solid #a3fe33;background:#09090d;color:#fff;box-shadow:0 12px 28px #0003}
+.crude-poster{min-height:210px;aspect-ratio:450/251;display:flex;flex-direction:column;justify-content:space-between;padding:22px 26px;background:radial-gradient(circle at 93% 18%,#a3fe3327,transparent 30%),linear-gradient(130deg,#09090d,#17151d);color:#fff;position:relative;isolation:isolate}
+.crude-poster:after{content:'///';position:absolute;top:45%;right:8%;color:#f64fc9;font-size:54px;font-weight:900;letter-spacing:-.1em;transform:rotate(-16deg)}
+.crude-poster-kicker,.crude-poster-sub{font-size:11px;letter-spacing:.13em;font-weight:800;color:#a3fe33}
+.crude-official-logo{display:block;width:auto;max-width:65%;height:140px;max-height:140px;object-fit:contain;object-position:left center}
+.crude-promo .collection-promo-copy{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 17px;background:#0a0a0b;color:#fff}
+.crude-promo .crude-age-badge{color:#080a05;background:#a3fe33;border-radius:3px;font-size:11px;letter-spacing:.09em;padding:7px 9px;white-space:nowrap}
+.crude-promo .collection-promo-copy span{margin:0;color:#fff;font-weight:800;font-size:13px}
+.merch-mini-promo .crude-promo{display:block}
+.merch-mini-promo .crude-promo .collection-promo-copy{padding:12px 16px}
+.merch-mini-promo .crude-promo .collection-promo-copy span{margin:0}
+.shop-collection-chips .crude-external-chip,.collection-nav a[href^="https://crude-city.com"]{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;border:1px solid #8daa30;color:#a3fe33;background:#151710;padding:10px 13px;font-weight:800}
+.collection-promo:focus-visible{outline:3px solid #e7b5ff;outline-offset:3px}
+@media(max-width:520px){.crude-promo .collection-promo-copy{flex-wrap:wrap}.merch-mini-promo .crude-promo .collection-promo-copy{padding:10px}}
