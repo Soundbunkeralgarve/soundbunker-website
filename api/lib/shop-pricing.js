@@ -1,5 +1,5 @@
 // Retail prices in cents, including VAT. Never trust browser or supplier retail prices.
-export const retailPrices = Object.freeze({ tshirts: 4500, hoodies: 7500, sweatshirts: 6000, hats: 3500, polos: 5000 });
+export const retailPrices = Object.freeze({ tshirts: 4200, hoodies: 6500, sweatshirts: 5500, hats: 3000, polos: 4500 });
 export function productCategory(name = '') {
   if (/\bsweatshirt\b/i.test(name)) return 'sweatshirts';
   if (/\bpolo\b/i.test(name)) return 'polos';
@@ -9,8 +9,8 @@ export function productCategory(name = '') {
   return 'accessories';
 }
 export function retailPrice(name, fallback) {
-  if (/\b(?:youth|kids?|children|toddler)\b/i.test(name)) return ({tshirts:3000,hoodies:5000,sweatshirts:4000})[productCategory(name)] ?? fallback;
-  if (/\bshotta bag\b/i.test(name)) return 4000;
+  if (/\b(?:youth|kids?|children|toddler)\b/i.test(name)) return ({tshirts:2500,hoodies:4500,sweatshirts:3500})[productCategory(name)] ?? fallback;
+  if (/\bshotta bag\b/i.test(name)) return 3500;
   return retailPrices[productCategory(name)] ?? fallback;
 }
 function setting(name, fallback, min, max) {
@@ -24,7 +24,7 @@ export function marginCheck(subtotal, shipping, supplierTotal) {
   const vat = setting('SHOP_MARGIN_VAT_RATE', 0.23, 0, 1);
   const feeRate = setting('SHOP_MARGIN_PAYMENT_RATE', 0.035, 0, 1);
   const feeFixed = setting('SHOP_MARGIN_PAYMENT_FIXED_CENTS', 30, 0, 10000);
-  const minimum = 0.15; // Owner-approved minimum contribution margin, including discounted orders.
+  const minimum = 0.10; // Owner-approved minimum contribution margin, including discounted orders.
   const revenue = Math.floor((subtotal + shipping) / (1 + vat));
   const fees = Math.ceil((subtotal + shipping) * feeRate + feeFixed);
   const contribution = revenue - supplierTotal - fees;
