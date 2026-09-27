@@ -9,8 +9,7 @@
 .crude-poster{min-height:210px;aspect-ratio:450/251;display:flex;flex-direction:column;justify-content:space-between;padding:22px 26px;background:radial-gradient(circle at 93% 18%,#a3fe3327,transparent 30%),linear-gradient(130deg,#09090d,#17151d);color:#fff;position:relative;isolation:isolate}
 .crude-poster:after{content:'///';position:absolute;top:45%;right:8%;color:#f64fc9;font-size:54px;font-weight:900;letter-spacing:-.1em;transform:rotate(-16deg)}
 .crude-poster-kicker,.crude-poster-sub{font-size:11px;letter-spacing:.13em;font-weight:800;color:#a3fe33}
-.crude-poster strong{font-size:clamp(42px,6vw,70px);line-height:.77;font-weight:1000;letter-spacing:-.085em;font-family:Impact,'Arial Narrow',sans-serif}
-.crude-city-dot{color:#f64fc9}
+.crude-official-logo{display:block;width:auto;max-width:65%;height:140px;max-height:140px;object-fit:contain;object-position:left center}
 .crude-promo .collection-promo-copy{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 17px;background:#0a0a0b;color:#fff}
 .crude-promo .crude-age-badge{color:#080a05;background:#a3fe33;border-radius:3px;font-size:11px;letter-spacing:.09em;padding:7px 9px;white-space:nowrap}
 .crude-promo .collection-promo-copy span{margin:0;color:#fff;font-weight:800;font-size:13px}

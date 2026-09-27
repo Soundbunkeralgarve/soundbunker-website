@@ -9,7 +9,7 @@
   a.href=key==='crude-city'?'https://crude-city.com/':'shop.html?collection='+encodeURIComponent(key)+'#collection';
   if(key==='crude-city'){a.target='_blank';a.rel='noopener noreferrer';a.setAttribute('aria-label','Visit Crude City, our separate underground ravewear brand. Adults only.');}
   const visual=document.createElement(key==='crude-city'?'div':'img');
-  if(key==='crude-city'){visual.className='crude-poster';visual.innerHTML='<span class="crude-poster-kicker">SOUNDBUNKER PRESENTS / 18+</span><strong>CRUDE<br>CITY<span class="crude-city-dot">.</span></strong><span class="crude-poster-sub">UNDERGROUND RAVEWEAR · DARK HUMOUR</span>';}
+  if(key==='crude-city'){visual.className='crude-poster';visual.innerHTML='<span class="crude-poster-kicker">SOUNDBUNKER PRESENTS / 18+</span><img class="crude-official-logo" src="https://www.crude-city.com/assets/brand/crude-city-logo.png" alt="Original Crude City logo" width="512" height="611" loading="lazy" decoding="async"><span class="crude-poster-sub">UNDERGROUND RAVEWEAR · DARK HUMOUR</span>';}
   else {visual.src='/assets/shop/collections/'+key+'.webp';visual.alt=title;visual.loading='lazy';visual.decoding='async';visual.width=450;visual.height=260;}
   const info=document.createElement('div');info.className='collection-promo-copy';
   if(key==='crude-city'){const age=document.createElement('strong');age.className='crude-age-badge';age.textContent='18+ ONLY';const cta=document.createElement('span');cta.textContent='Visit our separate ravewear site ↗';info.append(age,cta);}
