@@ -44,7 +44,7 @@ async function loadProducts(){const epoch=catalogEpoch;const button=$('#load-mor
  if(next!==null)button.textContent='Load more products';
  }catch(e){$('#catalog-message').textContent='The collection is temporarily unavailable. Please try again shortly or contact bookings@soundbunker.pt.';button.hidden=false;button.textContent='Retry loading';}finally{button.disabled=false;}}
 $('#load-more').onclick=loadProducts;
-$('#clear-shop-filters').onclick=()=>{selectedCategory='all';$('#design-search').value='';$('#color-filter').value='all';document.querySelectorAll('.shop-categories button[data-category]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.category==='all')));filterProducts();};
+$('#clear-shop-filters').onclick=()=>selectCollection('all');
 document.querySelectorAll('.shop-categories button[data-category]').forEach(button=>button.onclick=()=>{selectedCategory=button.dataset.category;document.querySelectorAll('.shop-categories button[data-category]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));filterProducts();});
 for(const id of ['color-filter','design-search'])$('#'+id).addEventListener('input',filterProducts);
 $('#open-checkout').onclick=()=>{$('#checkout-details').hidden=false;$('#open-checkout').hidden=true;$('#checkout-details').scrollIntoView({behavior:'auto',block:'start'});$('#delivery-form input').focus({preventScroll:true});};
