@@ -1,10 +1,12 @@
+import { studioEmailContent } from './email-template.js';
+
 export async function sendStudioEmail(to, subject, body) {
   const from = process.env.NOTIFICATION_FROM_EMAIL || process.env.RESEND_FROM_EMAIL;
   if (!process.env.RESEND_API_KEY || !from || !to) return { status: 'not configured' };
   try {
     const response = await fetch('https://api.resend.com/emails', { method: 'POST', headers: {
       authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'content-type': 'application/json'
-    }, body: JSON.stringify({ from, to: [to], subject, text: body }) });
+    }, body: JSON.stringify({ from, to: [to], subject, ...studioEmailContent(body) }) });
     return { status: response.ok ? 'sent' : 'failed' };
   } catch { return { status: 'failed' }; }
 }
@@ -22,7 +24,7 @@ export async function sendTransactionalEmail({ to, subject, text, key }) {
       'content-type': 'application/json',
       'Idempotency-Key': key
     },
-    body: JSON.stringify({ from, to: [to], subject, text, reply_to: 'bookings@soundbunker.pt' })
+    body: JSON.stringify({ from, to: [to], subject, ...studioEmailContent(text), reply_to: 'bookings@soundbunker.pt' })
   });
   if (!result.ok) throw new Error(`Resend rejected confirmation (${result.status})`);
 }
