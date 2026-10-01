@@ -1,3 +1,4 @@
+(()=>{if(document.querySelector('script[data-sb-consent-loader]'))return;const l=document.createElement('link');l.rel='stylesheet';l.href='/consent-tracking.css';document.head.append(l);const s=document.createElement('script');s.src='/consent-tracking.js';s.defer=true;s.dataset.sbConsentLoader='1';document.head.append(s)})();
 const translations = {
   en: {
     nav:{studio:"Home",services:"Services",experiences:"Parties & Experiences",education:"Hub Academy",partnership:"The Hub Culture",upload:"Upload Files",client:"Client Login",contact:"Contact"},
