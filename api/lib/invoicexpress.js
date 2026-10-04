@@ -153,37 +153,45 @@ export async function sendToInvoiceXpressAutomation(metadata, stripeSessionId) {
 
 
 async function ensureCrudeCitySequence() {
+  const normalize = data => {
+    if (Array.isArray(data?.sequences)) return data.sequences;
+    if (data?.sequences && typeof data.sequences === "object") return [data.sequences];
+    if (data?.sequence && typeof data.sequence === "object") return [data.sequence];
+    return [];
+  };
+  const findCrude = data => normalize(data).find(row =>
+    String(row?.serie || "").trim().toLowerCase() === "crude city"
+  ) || null;
+  const receiptId = sequence => sequence?.current_invoice_receipt_sequence_id || null;
+
   const listed = await ixRequest("/sequences.json");
   if (!listed.response.ok) throw new Error(`InvoiceXpress Crude City sequence lookup failed (${listed.response.status})`);
-  const sequences = Array.isArray(listed.data?.sequences)
-    ? listed.data.sequences
-    : (listed.data?.sequences ? [listed.data.sequences] : []);
-  let sequence = sequences.find(row => String(row?.serie || "").trim().toLowerCase() === "crude city");
+  let sequence = findCrude(listed.data);
+  if (receiptId(sequence)) return String(receiptId(sequence));
 
   if (!sequence) {
     const created = await ixRequest("/sequences.json", {
       method: "POST",
       body: { sequence: { serie: "Crude City" } }
     });
-    if (!created.response.ok && ![409, 422].includes(created.response.status)) {
+    if (created.response.ok) sequence = findCrude(created.data) || normalize(created.data)[0] || null;
+    else if (![409, 422].includes(created.response.status)) {
       throw new Error(`InvoiceXpress Crude City sequence creation failed (${created.response.status})`);
     }
-    sequence = created.data?.sequences || null;
-    if (!sequence) {
-      const refreshed = await ixRequest("/sequences.json");
-      const rows = Array.isArray(refreshed.data?.sequences)
-        ? refreshed.data.sequences
-        : (refreshed.data?.sequences ? [refreshed.data.sequences] : []);
-      sequence = rows.find(row => String(row?.serie || "").trim().toLowerCase() === "crude city");
-    }
+    if (receiptId(sequence)) return String(receiptId(sequence));
   }
 
-  const sequenceId =
-    sequence?.current_invoice_receipt_sequence_id ||
-    sequence?.current_invoice_sequence_id ||
-    sequence?.id;
-  if (!sequenceId) throw new Error("InvoiceXpress Crude City sequence is unavailable");
-  return String(sequenceId);
+  // Portuguese sequence registration can take a moment after creation.
+  // Re-read the registered sequence briefly rather than falling back to the wrong document-type ID.
+  for (let attempt = 0; attempt < 6; attempt++) {
+    if (attempt) await new Promise(resolve => setTimeout(resolve, 750));
+    const refreshed = await ixRequest("/sequences.json");
+    if (!refreshed.response.ok) continue;
+    sequence = findCrude(refreshed.data);
+    if (receiptId(sequence)) return String(receiptId(sequence));
+  }
+
+  throw new Error("InvoiceXpress Crude City invoice-receipt sequence is not registered yet");
 }
 
 export async function probeCrudeCityInvoiceXpress() {
@@ -216,7 +224,7 @@ export async function sendCrudeCityInvoice(payload) {
     const name = String(item?.name || "Crude City item").trim().slice(0, 120);
     const quantity = Math.max(1, Math.min(100, Number(item?.quantity || 1)));
     return `${name} x${quantity}`;
-  }).join("; ").slice(0, 1000);
+  }).join("; ").slice(0, 200);
 
   const body = {
     invoice_receipt: {
