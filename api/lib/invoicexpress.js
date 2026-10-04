@@ -160,7 +160,7 @@ async function ensureCrudeCitySequence() {
     return [];
   };
   const findCrude = data => normalize(data).find(row =>
-    String(row?.serie || "").trim().toLowerCase() === "crude city"
+    String(row?.serie || "").trim().toLowerCase() === "crude-city"
   ) || null;
   const receiptId = sequence => sequence?.current_invoice_receipt_sequence_id || null;
 
@@ -173,7 +173,7 @@ async function ensureCrudeCitySequence() {
   if (!sequence) {
     const created = await ixRequest("/sequences.json", {
       method: "POST",
-      body: { sequence: { serie: "Crude City" } }
+      body: { sequence: { serie: "Crude-City" } }
     });
     creationStatus = {
       status: created.response.status,
