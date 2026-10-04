@@ -150,3 +150,134 @@ export async function sendToInvoiceXpressAutomation(metadata, stripeSessionId) {
     receipt_id: payment.data?.receipt?.id || null
   };
 }
+
+
+async function ensureCrudeCitySequence() {
+  const listed = await ixRequest("/sequences.json");
+  if (!listed.response.ok) throw new Error(`InvoiceXpress Crude City sequence lookup failed (${listed.response.status})`);
+  const sequences = Array.isArray(listed.data?.sequences)
+    ? listed.data.sequences
+    : (listed.data?.sequences ? [listed.data.sequences] : []);
+  let sequence = sequences.find(row => String(row?.serie || "").trim().toLowerCase() === "crude city");
+
+  if (!sequence) {
+    const created = await ixRequest("/sequences.json", {
+      method: "POST",
+      body: { sequence: { serie: "Crude City" } }
+    });
+    if (!created.response.ok && ![409, 422].includes(created.response.status)) {
+      throw new Error(`InvoiceXpress Crude City sequence creation failed (${created.response.status})`);
+    }
+    sequence = created.data?.sequences || null;
+    if (!sequence) {
+      const refreshed = await ixRequest("/sequences.json");
+      const rows = Array.isArray(refreshed.data?.sequences)
+        ? refreshed.data.sequences
+        : (refreshed.data?.sequences ? [refreshed.data.sequences] : []);
+      sequence = rows.find(row => String(row?.serie || "").trim().toLowerCase() === "crude city");
+    }
+  }
+
+  const sequenceId =
+    sequence?.current_invoice_receipt_sequence_id ||
+    sequence?.current_invoice_sequence_id ||
+    sequence?.id;
+  if (!sequenceId) throw new Error("InvoiceXpress Crude City sequence is unavailable");
+  return String(sequenceId);
+}
+
+export async function probeCrudeCityInvoiceXpress() {
+  const sequenceId = await ensureCrudeCitySequence();
+  return { ok: true, series: "Crude City", sequence_id: sequenceId };
+}
+
+export async function sendCrudeCityInvoice(payload) {
+  if (!process.env.INVOICEXPRESS_ACCOUNT_NAME || !process.env.INVOICEXPRESS_API_KEY) {
+    throw new Error("InvoiceXpress is not configured");
+  }
+
+  const orderId = String(payload?.order_id || "").trim().slice(0, 100);
+  const stripeSessionId = String(payload?.stripe_session_id || "").trim().slice(0, 255);
+  const totalCents = Number(payload?.total_cents);
+  const recipient = payload?.recipient && typeof payload.recipient === "object" ? payload.recipient : {};
+  const items = Array.isArray(payload?.items) ? payload.items : [];
+  if (!orderId || !/^cs_(?:test_)?[A-Za-z0-9_]+$/.test(stripeSessionId) || !Number.isSafeInteger(totalCents) || totalCents <= 0) {
+    throw new Error("Invalid Crude City invoice payload");
+  }
+
+  const sequenceId = await ensureCrudeCitySequence();
+  const today = ixDate();
+  const gross = totalCents / 100;
+  const netUnitPrice = Number((gross / 1.23).toFixed(6));
+  const customerName = String(recipient.name || "Crude City customer").trim().slice(0, 100);
+  const customerEmail = String(recipient.email || "").trim().toLowerCase().slice(0, 254);
+  const clientCode = String(customerEmail || `crude-city-${orderId}`).slice(0, 100);
+  const itemSummary = items.slice(0, 8).map(item => {
+    const name = String(item?.name || "Crude City item").trim().slice(0, 120);
+    const quantity = Math.max(1, Math.min(100, Number(item?.quantity || 1)));
+    return `${name} x${quantity}`;
+  }).join("; ").slice(0, 1000);
+
+  const body = {
+    invoice_receipt: {
+      date: today,
+      due_date: today,
+      sequence_id: sequenceId,
+      reference: `Crude City ${orderId}`.slice(0, 255),
+      observations: [
+        "Crude City online purchase",
+        `Order: ${orderId}`,
+        `Paid via Stripe: €${gross.toFixed(2)}`,
+        `Stripe session: ${stripeSessionId}`
+      ].join("\n"),
+      client: {
+        name: customerName,
+        code: clientCode,
+        ...(customerEmail ? { email: customerEmail } : {}),
+        ...(recipient.address1 ? { address: [recipient.address1, recipient.address2].filter(Boolean).join(", ").slice(0, 255) } : {}),
+        ...(recipient.city ? { city: String(recipient.city).slice(0, 100) } : {}),
+        ...(recipient.zip ? { postal_code: String(recipient.zip).slice(0, 20) } : {})
+      },
+      items: [{
+        name: "Crude City online order",
+        description: itemSummary || "Crude City online purchase",
+        unit_price: netUnitPrice,
+        quantity: 1,
+        unit: "unit",
+        tax: { name: "IVA23" }
+      }]
+    },
+    proprietary_uid: `crude-city-stripe-${stripeSessionId}`
+  };
+
+  const created = await ixRequest("/invoice_receipts.json", { method: "POST", body });
+  if (created.response.status === 409) {
+    return { duplicate: true, stripe_session_id: stripeSessionId, series: "Crude City" };
+  }
+  if (!created.response.ok) {
+    console.error("Crude City InvoiceXpress create failed", created.response.status, created.data);
+    throw new Error(`InvoiceXpress Crude City create failed (${created.response.status})`);
+  }
+
+  const invoice = created.data?.invoice_receipt;
+  if (!invoice?.id) throw new Error("InvoiceXpress returned no Crude City invoice id");
+
+  if (invoice.status === "draft") {
+    const finalized = await ixRequest(`/invoice_receipts/${invoice.id}/change-state.json`, {
+      method: "PUT",
+      body: { invoice: { state: "finalized" } }
+    });
+    if (!finalized.response.ok) {
+      console.error("Crude City InvoiceXpress finalize failed", finalized.response.status, finalized.data);
+      throw new Error(`InvoiceXpress Crude City finalize failed (${finalized.response.status})`);
+    }
+  }
+
+  return {
+    created: true,
+    invoice_id: invoice.id,
+    invoice_number: invoice.sequence_number || null,
+    invoice_total: gross,
+    series: "Crude City"
+  };
+}
