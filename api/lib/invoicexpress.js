@@ -169,14 +169,25 @@ async function ensureCrudeCitySequence() {
   let sequence = findCrude(listed.data);
   if (receiptId(sequence)) return String(receiptId(sequence));
 
+  let creationStatus = null;
   if (!sequence) {
     const created = await ixRequest("/sequences.json", {
       method: "POST",
       body: { sequence: { serie: "Crude City" } }
     });
+    creationStatus = {
+      status: created.response.status,
+      code: String(created.data?.code || ""),
+      message: String(created.data?.message || "").slice(0, 120)
+    };
     if (created.response.ok) sequence = findCrude(created.data) || normalize(created.data)[0] || null;
-    else if (![409, 422].includes(created.response.status)) {
-      throw new Error(`InvoiceXpress Crude City sequence creation failed (${created.response.status})`);
+    else {
+      const retryable =
+        (created.response.status === 409 && creationStatus.code === "006") ||
+        (created.response.status === 422 && creationStatus.code === "002");
+      if (!retryable) {
+        throw new Error(`InvoiceXpress Crude City sequence creation rejected ${creationStatus.status}/${creationStatus.code || "unknown"}: ${creationStatus.message || "no message"}`);
+      }
     }
     if (receiptId(sequence)) return String(receiptId(sequence));
   }
@@ -191,7 +202,7 @@ async function ensureCrudeCitySequence() {
     if (receiptId(sequence)) return String(receiptId(sequence));
   }
 
-  throw new Error("InvoiceXpress Crude City invoice-receipt sequence is not registered yet");
+  throw new Error(`InvoiceXpress Crude City invoice-receipt sequence is not registered yet${creationStatus ? ` (create ${creationStatus.status}/${creationStatus.code || "unknown"}: ${creationStatus.message || "no message"})` : ""}`);
 }
 
 export async function probeCrudeCityInvoiceXpress() {
