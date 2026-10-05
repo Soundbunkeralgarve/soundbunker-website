@@ -91,3 +91,10 @@ test('invoice-backed 5XL shirt and bag pass BUNKER10 together and separately',as
  // Deeper discounts remain blocked when they eat through the minimum margin.
  assert.equal(marginCheck(3150,shipping,2484+574).allowed,false);
 });
+
+
+test('Guest List retail bands are fixed across adult sizes',()=>{
+ assert.equal(retailPrice('SoundBunker T-Shirt / 5XL',100),4500);
+ assert.equal(retailPrice('SoundBunker Hoodie / 5XL',100),7000);
+ assert.equal(retailPrice('SoundBunker Trucker Cap / One size',100),3500);
+});
