@@ -4,7 +4,7 @@ import { productCategory, retailPrice, marginCheck } from '../api/lib/shop-prici
 import { publicVariant, quoteOrder, checkoutOrder } from '../api/lib/printful-shop.js';
 
 test('fixed prices cover every garment and size regardless of supplier retail price', () => {
- for(const [name,category,price] of [['Unisex Organic Cotton Creator 2.0 T-Shirt EXCELLENCE / 3XL','tshirts',4500],['SoundBunker tee / S','tshirts',4500],['SoundBunker Unisex heavy blend zip hoodie / XL','hoodies',7000],['SoundBunker Old School Bucket Hat','hats',3500],['SoundBunker Trucker Cap','hats',3500],['SoundBunker Polo / Black / 5XL','polos',4500],['SoundBunker Shotta Bag / White / One size','accessories',3500]]) {
+ for(const [name,category,price] of [['Unisex Organic Cotton Creator 2.0 T-Shirt EXCELLENCE / 3XL','tshirts',3800],['SoundBunker tee / S','tshirts',3800],['SoundBunker Unisex heavy blend zip hoodie / XL','hoodies',6000],['SoundBunker Old School Bucket Hat','hats',3000],['SoundBunker Trucker Cap','hats',3000],['SoundBunker Polo / Black / 5XL','polos',3500],['SoundBunker Shotta Bag / White / One size','accessories',3000]]) {
   assert.equal(productCategory(name),category);
   assert.equal(retailPrice(name,100),price);
   for(const supplierPrice of ['0','99.00',undefined])assert.equal(publicVariant({name,synced:true,currency:'EUR',retail_price:supplierPrice}).price,price);
@@ -94,7 +94,7 @@ test('invoice-backed 5XL shirt and bag pass BUNKER10 together and separately',as
 
 
 test('Guest List retail bands are fixed across adult sizes',()=>{
- assert.equal(retailPrice('SoundBunker T-Shirt / 5XL',100),4500);
- assert.equal(retailPrice('SoundBunker Hoodie / 5XL',100),7000);
- assert.equal(retailPrice('SoundBunker Trucker Cap / One size',100),3500);
+ assert.equal(retailPrice('SoundBunker T-Shirt / 5XL',100),3800);
+ assert.equal(retailPrice('SoundBunker Hoodie / 5XL',100),5200);
+ assert.equal(retailPrice('SoundBunker Trucker Cap / One size',100),3000);
 });
