@@ -23,11 +23,11 @@ function setting(name, fallback, min, max) {
 }
 // Contribution estimate, not accounting profit. Pass supplier costs after
 // eligible VAT recovery. Rates remain configurable for the merchant tax/fee setup.
-export function marginCheck(subtotal, shipping, supplierTotal) {
+export function marginCheck(subtotal, shipping, supplierTotal, minimum = 0.10) {
   const vat = setting('SHOP_MARGIN_VAT_RATE', 0.23, 0, 1);
   const feeRate = setting('SHOP_MARGIN_PAYMENT_RATE', 0.035, 0, 1);
   const feeFixed = setting('SHOP_MARGIN_PAYMENT_FIXED_CENTS', 30, 0, 10000);
-  const minimum = 0.10; // Owner-approved minimum contribution margin, including discounted orders.
+  if (!Number.isFinite(minimum) || minimum < 0 || minimum > 1) throw new Error('Shop margin settings need attention');
   const revenue = Math.floor((subtotal + shipping) / (1 + vat));
   const fees = Math.ceil((subtotal + shipping) * feeRate + feeFixed);
   const contribution = revenue - supplierTotal - fees;
@@ -50,37 +50,24 @@ export function productLabel(name = '') {
   return base;
 }
 
-// The largest adult garment sizes sit closest to the live production-cost floor,
-// so shop-wide promo codes must not discount only those variants further.
-function promoProtected(item) {
-  const name = String(item?.name || '');
-  const kid = /\b(?:youth|kids?|children|toddler)\b/i.test(name);
-  if (kid) return false;
-  const category = productCategory(name);
-  if (category === 'tshirts') return /\b(?:4XL|5XL)\b/i.test(name);
-  if (category === 'hoodies' && !/\bzip hoodie\b/i.test(name)) return /\b5XL\b/i.test(name);
-  return false;
-}
-
-// Apply an owner-created shop code. Keep catalogue prices for later validation.
+// Apply an owner-created shop code to every shop item, including larger sizes.
+// Checkout validates live supplier costs after the discount is applied.
 export function applyShopDiscount(items, offer) {
   if (!offer) return;
   const amount = Number(offer.amount);
   if (!['fixed','percent'].includes(offer.kind) || !Number.isFinite(amount) || amount <= 0 || (offer.kind === 'percent' && amount > 100)) throw new Error('Please check your discount code.');
-  for (const item of items) item.list_price = item.price;
-  const eligible = items.filter(item => !promoProtected(item));
-  if (!eligible.length) return;
-  const subtotal = eligible.reduce((n,i)=>n+i.price*i.quantity,0);
+  const subtotal = items.reduce((n,i)=>n+i.price*i.quantity,0);
   const requested = offer.kind === 'percent' ? Math.round(subtotal*amount/100) : Math.round(amount*100);
-  const discount = Math.min(requested, subtotal-eligible.reduce((n,i)=>n+i.quantity,0));
+  const discount = Math.min(requested, subtotal-items.reduce((n,i)=>n+i.quantity,0));
   let applied = 0;
-  for (const item of eligible) {
+  for (const item of items) {
+    item.list_price = item.price;
     const unitOff = Math.min(item.price-1, Math.floor(discount*item.price/subtotal));
     item.price -= unitOff;
     applied += unitOff*item.quantity;
     item.discount_code = offer.code;
   }
-  for (const item of eligible) {
+  for (const item of items) {
     const extra = Math.min(item.price-1, Math.floor((discount-applied)/item.quantity));
     item.price -= extra; applied += extra*item.quantity;
   }
@@ -94,9 +81,9 @@ export async function loadShopDiscount(db, value) {
   return offer;
 }
 
-export function minimumShopPrice(shipping, supplierTotal) {
+export function minimumShopPrice(shipping, supplierTotal, minimum = 0.10) {
  let low=0,high=10000000;
- while(low<high){const mid=Math.floor((low+high)/2);if(marginCheck(mid,shipping,supplierTotal).allowed)high=mid;else low=mid+1;}
+ while(low<high){const mid=Math.floor((low+high)/2);if(marginCheck(mid,shipping,supplierTotal,minimum).allowed)high=mid;else low=mid+1;}
  return low;
 }
 
