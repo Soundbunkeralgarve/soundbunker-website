@@ -154,6 +154,8 @@ export async function quoteOrder(input, db) {
   }
   validateCouplesCombo(items);
   applyShopDiscount(items, await loadShopDiscount(db, input.discount_code));
+  const discounted = items.some(item => Number.isInteger(item.list_price) && item.price < item.list_price);
+  const minimumMargin = discounted ? 0.05 : 0.10;
   const pfItems = items.map(i => ({ sync_variant_id: i.id, quantity: i.quantity }));
   stage = 'delivery_data';
   const rates = await pf('/shipping/rates', { recipient, items: items.map(i => ({ variant_id: i.catalog_variant_id, quantity: i.quantity })), currency: 'EUR' });
@@ -167,7 +169,7 @@ export async function quoteOrder(input, db) {
   if (estimate.costs?.currency !== 'EUR') {const error=new Error('This basket needs a price review. Please contact bookings@soundbunker.pt.');error.shopStage='estimate_currency_'+(/^[A-Z]{3}$/.test(estimate.costs?.currency)?estimate.costs.currency:'missing');throw error;}
   const supplierTotal = supplierCost(cents(estimate.costs.total), cents(estimate.costs.vat ?? '0'));
   const review=[];
-  if (!marginCheck(subtotal, shipping, supplierTotal).allowed) review.push({scope:'basket',minimum_subtotal:minimumShopPrice(shipping,supplierTotal)});
+  if (!marginCheck(subtotal, shipping, supplierTotal, minimumMargin).allowed) review.push({scope:'basket',minimum_subtotal:minimumShopPrice(shipping,supplierTotal,minimumMargin)});
   // Do not let a profitable item subsidise a loss-making product in a mixed basket.
   if (items.length > 1) {
     for (const item of items) {
@@ -177,7 +179,7 @@ export async function quoteOrder(input, db) {
       if (costs?.currency !== 'EUR') throw new Error('This basket needs a price review. Please contact bookings@soundbunker.pt.');
       const production = supplierCost(cents(costs.total), cents(costs.vat ?? '0')) - cents(costs.shipping);
       if (production < 0) throw new Error('This basket needs a price review. Please contact bookings@soundbunker.pt.');
-      if (!marginCheck(item.price * item.quantity, 0, production).allowed) review.push({id:item.id,name:item.name,minimum_unit_price:Math.ceil(minimumShopPrice(0,production)/item.quantity)});
+      if (!marginCheck(item.price * item.quantity, 0, production, minimumMargin).allowed) review.push({id:item.id,name:item.name,minimum_unit_price:Math.ceil(minimumShopPrice(0,production,minimumMargin)/item.quantity)});
     }
   }
   if(review.length){const error=new Error('This basket needs a price review. Please contact bookings@soundbunker.pt.');error.priceReview=review;throw error;}
