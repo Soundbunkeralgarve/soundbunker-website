@@ -59,7 +59,7 @@ export async function shopProduct(id) {
     }
     images.unshift(campaign);
   }
-  const value = { collection: collectionFor(id, detail.sync_product.name), display_name: displayProductTitle(id, detail.sync_product.name) || productLabel(detail.sync_product.name), category: productCategory(detail.sync_product.name), colors: [...new Set(variants.map(v => v.color).filter(Boolean))], campaign: Boolean(campaign), presentation: campaign ? (artwork.presentation || 'model') : null, id: detail.sync_product.id, name: detail.sync_product.name, image: images[0] || '', images, views, variants,
+  const value = { collection: collectionFor(id, detail.sync_product.name), display_name: displayProductTitle(id, detail.sync_product.name) || productLabel(detail.sync_product.name), category: productCategory(detail.sync_product.name), colors: [...new Set(variants.map(v => v.color).filter(Boolean))], sizes: [...new Set(variants.map(v => v.size).filter(Boolean))], campaign: Boolean(campaign), presentation: campaign ? (artwork.presentation || 'model') : null, id: detail.sync_product.id, name: detail.sync_product.name, image: images[0] || '', images, views, variants,
     price: variants.length ? Math.min(...variants.map(v => v.price)) : null };
   if (productCache.size > 200) productCache.clear();
   productCache.set(key, { until: Date.now() + 300000, staleUntil: Date.now() + 3600000, value });
