@@ -48,26 +48,29 @@ test('shop discounts preserve list prices and allocate fixed or percentage savin
  }
  assert.throws(()=>applyShopDiscount([{price:5000,quantity:1}],{kind:'percent',amount:101}),/check your discount/);
 });
-test('only the highest-cost adult tee and regular hoodie sizes are protected from promo discounts', async()=>{
+test('promo discounts apply across all adult tee and hoodie sizes', async()=>{
  const {applyShopDiscount}=await import('../api/lib/shop-pricing.js');
  const items=[
   {name:'SoundBunker T-Shirt / Black / M',price:3500,quantity:1},
   {name:'SoundBunker T-Shirt / Black / 4XL',price:3500,quantity:1},
   {name:'SoundBunker T-Shirt / Black / 5XL',price:3500,quantity:1},
   {name:'SoundBunker Hoodie / Black / XL',price:5000,quantity:1},
-  {name:'SoundBunker Hoodie / Black / 5XL',price:5000,quantity:1},
-  {name:'SoundBunker Zip Hoodie / Black / 5XL',price:6000,quantity:1},
-  {name:'Youth classic tee RECORD / Natural / XL',price:1500,quantity:1}
+  {name:'SoundBunker Hoodie / Black / 5XL',price:5000,quantity:1}
  ];
  applyShopDiscount(items,{code:'SHOP10',kind:'percent',amount:10});
- assert.deepEqual(items.map(i=>i.list_price),[3500,3500,3500,5000,5000,6000,1500]);
- assert.deepEqual(items.map(i=>i.price),[3150,3500,3500,4500,5000,5400,1350]);
- assert.equal(items[0].discount_code,'SHOP10');
- assert.equal(items[1].discount_code,undefined);
- assert.equal(items[2].discount_code,undefined);
- assert.equal(items[3].discount_code,'SHOP10');
- assert.equal(items[4].discount_code,undefined);
- assert.equal(items[5].discount_code,'SHOP10');
+ assert.deepEqual(items.map(i=>i.list_price),[3500,3500,3500,5000,5000]);
+ assert.deepEqual(items.map(i=>i.price),[3150,3150,3150,4500,4500]);
+ assert.ok(items.every(i=>i.discount_code==='SHOP10'));
+});
+
+test('discounted large sizes can use a thinner positive margin while full price keeps ten percent',()=>{
+ const discountedTee=marginCheck(3150,0,2258,0.05);
+ assert.equal(discountedTee.allowed,true);
+ assert.ok(discountedTee.contribution>0);
+ assert.equal(marginCheck(3150,0,2258).allowed,false);
+ const discountedHoodie=marginCheck(4500,0,3116,0.05);
+ assert.equal(discountedHoodie.allowed,true);
+ assert.ok(discountedHoodie.contribution>0);
 });
 
 test('only active shop-specific codes without unsupported restrictions can be redeemed',async()=>{
