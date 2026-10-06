@@ -2,7 +2,7 @@
 
 Assign each synced Printful product ID in `api/lib/shop-collections.js`. New unassigned products are withheld from the shop, preventing accidental public exposure of adult designs. Standard, Slogans, Rave, Kids and Christmas are public. Crude City requires explicit age confirmation on every new page visit and is excluded from the default feed and homepage.
 
-Prices including VAT: adult tees €45, hoodies €70, sweatshirts €55; kids tees €25, hoodies €45, sweatshirts €35. Hats/caps are €35; polos €45; Shotta Bags €35. Checkout independently recalculates all prices and retains the 15% contribution safeguard. Kids production costs still need live basket verification for all sizes/destinations; these are retail settings, not a guarantee of contribution.
+Prices including VAT: adult tees €38, hoodies €52 (€60 zip hoodie), sweatshirts €32; kids tees €15, hoodies €35, sweatshirts €25. Hats/caps are €30; polos €35; Shotta Bags €30; Bum Bag €35; Water Bottle €28. Checkout independently recalculates all prices and retains the 15% contribution safeguard. Kids production costs still need live basket verification for all sizes/destinations; these are retail settings, not a guarantee of contribution.
 
 Campaign images in `api/lib/shop-artwork.js` are tied to exact supplier preview URLs; if artwork changes in Printful, the lifestyle image is dropped until rechecked. Product options retain exact supplier previews. Do not substitute a T-shirt lifestyle photo for a sweatshirt or hoodie.
 
