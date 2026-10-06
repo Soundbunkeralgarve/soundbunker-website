@@ -1,6 +1,6 @@
 # Shop retail pricing
 
-Adult T-shirts: €38. Hoodies: €52 (€60 zip hoodie). Sweatshirts: €32. Hats/caps: €30. Polos: €35. Shotta Bags: €30. Bum Bag: €35. Water Bottle: €28. Kids' T-shirts: €15, hoodies: €35, sweatshirts: €25. All sizes use the same VAT-inclusive customer price. Other accessories retain their existing EUR retail prices. Rules live in `api/lib/shop-pricing.js`; both the catalogue and server quote use them. Printful retail prices no longer control these categories and Shotta Bags.
+Adult T-shirts: €35. Hoodies: €50 (€60 zip hoodie). Sweatshirts: €32. Hats/caps: €30. Polos: €35. Shotta Bags: €30. Bum Bag: €35. Water Bottle: €28. Kids' T-shirts: €15, hoodies: €35, sweatshirts: €25. All sizes use the same VAT-inclusive customer price. Other accessories retain their existing EUR retail prices. Rules live in `api/lib/shop-pricing.js`; both the catalogue and server quote use them. Printful retail prices no longer control these categories and Shotta Bags.
 
 Shipping is the exact EUR STANDARD rate (or cheapest available rate) returned by Printful for the basket and destination. There is no shipping multiplier. The final total is displayed before Stripe payment. Stripe product prices are marked inclusive; this does not enable Stripe Tax or replace tax reporting.
 
@@ -24,4 +24,4 @@ All Printful product pages load automatically. A full wrapping product grid with
 
 `npm test` covers fixed pricing, malformed input, margin rejection, stale quotes, payment validation and fulfillment retries. `npm run check` checks script syntax. A paid production order is not necessary to test price and shipping quotation; never use live payment merely for automated tests.
 
-Discounted orders are checked against the current supplier estimate. If a costly size or destination cannot meet the 10% floor, checkout is blocked instead of silently raising prices. Crude City now uses its separate https://crude-city.com/ storefront; historical paid orders remain accessible.
+Adult T-shirts are €35 and regular hoodies €50 across all sizes. Shop-wide promo codes still apply to normal sizes, but 4XL/5XL adult T-shirts and 5XL regular hoodies are excluded because a further 10% reduction would fall below the audited safety floor on the highest-cost synced variants. Discounted orders are checked against the current supplier estimate. If a costly size or destination cannot meet the 10% floor, checkout is blocked instead of silently raising prices. Crude City now uses its separate https://crude-city.com/ storefront; historical paid orders remain accessible.

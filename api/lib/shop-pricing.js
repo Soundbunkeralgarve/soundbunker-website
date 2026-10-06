@@ -1,5 +1,5 @@
 // Retail prices in cents, including VAT. Never trust browser or supplier retail prices.
-export const retailPrices = Object.freeze({ tshirts: 3800, hoodies: 5200, sweatshirts: 3200, hats: 3000, polos: 3500 });
+export const retailPrices = Object.freeze({ tshirts: 3500, hoodies: 5000, sweatshirts: 3200, hats: 3000, polos: 3500 });
 export function productCategory(name = '') {
   if (/\bsweatshirt\b/i.test(name)) return 'sweatshirts';
   if (/\bpolo\b/i.test(name)) return 'polos';
@@ -50,23 +50,37 @@ export function productLabel(name = '') {
   return base;
 }
 
+// The largest adult garment sizes sit closest to the live production-cost floor,
+// so shop-wide promo codes must not discount only those variants further.
+function promoProtected(item) {
+  const name = String(item?.name || '');
+  const kid = /\b(?:youth|kids?|children|toddler)\b/i.test(name);
+  if (kid) return false;
+  const category = productCategory(name);
+  if (category === 'tshirts') return /\b(?:4XL|5XL)\b/i.test(name);
+  if (category === 'hoodies' && !/\bzip hoodie\b/i.test(name)) return /\b5XL\b/i.test(name);
+  return false;
+}
+
 // Apply an owner-created shop code. Keep catalogue prices for later validation.
 export function applyShopDiscount(items, offer) {
   if (!offer) return;
   const amount = Number(offer.amount);
   if (!['fixed','percent'].includes(offer.kind) || !Number.isFinite(amount) || amount <= 0 || (offer.kind === 'percent' && amount > 100)) throw new Error('Please check your discount code.');
-  const subtotal = items.reduce((n,i)=>n+i.price*i.quantity,0);
+  for (const item of items) item.list_price = item.price;
+  const eligible = items.filter(item => !promoProtected(item));
+  if (!eligible.length) return;
+  const subtotal = eligible.reduce((n,i)=>n+i.price*i.quantity,0);
   const requested = offer.kind === 'percent' ? Math.round(subtotal*amount/100) : Math.round(amount*100);
-  const discount = Math.min(requested, subtotal-items.reduce((n,i)=>n+i.quantity,0));
+  const discount = Math.min(requested, subtotal-eligible.reduce((n,i)=>n+i.quantity,0));
   let applied = 0;
-  for (const item of items) {
-    item.list_price = item.price;
+  for (const item of eligible) {
     const unitOff = Math.min(item.price-1, Math.floor(discount*item.price/subtotal));
     item.price -= unitOff;
     applied += unitOff*item.quantity;
     item.discount_code = offer.code;
   }
-  for (const item of items) {
+  for (const item of eligible) {
     const extra = Math.min(item.price-1, Math.floor((discount-applied)/item.quantity));
     item.price -= extra; applied += extra*item.quantity;
   }
