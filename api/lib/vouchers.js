@@ -50,7 +50,9 @@ export async function persistVoucherFromCheckout(checkout, suppliedAdmin = null)
     if (!profile.error) buyerUserId = profile.data?.id || null;
   }
   const purchasedAt = new Date(Number(checkout.created || Math.floor(Date.now() / 1000)) * 1000).toISOString();
-  const amount = Number(metadata.total || Number(checkout.amount_total || 0) / 100);
+  // A promotional purchase still entitles the recipient to the full experience.
+  // total remains the net amount paid for invoicing; legacy sales are unchanged.
+  const amount = Number(metadata.voucher_face_value || metadata.total || Number(checkout.amount_total || 0) / 100);
   const record = {
     code: metadata.voucher_code,
     buyer_user_id: buyerUserId,
