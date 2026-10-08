@@ -59,9 +59,23 @@
       "source": "/shop/",
       "destination": "/shop.html",
       "permanent": true
+    },
+    {
+      "source": "/retreats/",
+      "destination": "/retreats",
+      "permanent": true
+    },
+    {
+      "source": "/retreats.html",
+      "destination": "/retreats",
+      "permanent": true
     }
   ],
   "rewrites": [
+    {
+      "source": "/retreats",
+      "destination": "/retreats.html"
+    },
     {
       "source": "/client",
       "destination": "/client.html"
