@@ -49,7 +49,7 @@ async function loadStaff(){
  const roster=$('#staffRoster');
  const staff=result.staff||[],invites=result.invites||[];
  const records=[
-  ...staff.map(s=>'<div class="event-info" style="background:#22162d;border:1px solid #ffffff35"><strong>Staff account</strong><p>'+esc(s.user_id)+' · '+(s.revoked_at?'Access revoked':'Active scanner')+'</p>'+(s.revoked_at?'':'<button type="button" class="outline" data-staff-id="'+esc(s.user_id)+'">Revoke access</button>')+'</div>'),
+  ...staff.map(s=>{const match=invites.find(i=>i.accepted_by===s.user_id);return '<div class="event-info" style="background:#22162d;border:1px solid #ffffff35"><strong>Staff member</strong><p>'+esc(match?.invited_email||'Verified staff account')+' · '+(s.revoked_at?'Access revoked':'Active scanner')+'</p>'+(s.revoked_at?'':'<button type="button" class="outline" data-staff-id="'+esc(s.user_id)+'">Revoke access</button>')+'</div>'; }),
   ...invites.filter(i=>!i.accepted_at).map(i=>'<div class="event-info" style="background:#22162d;border:1px solid #ffffff35"><strong>Invited</strong><p>'+esc(i.invited_email)+' · '+(i.revoked_at?'Revoked':new Date(i.expires_at)<new Date()?'Expired':'Awaiting acceptance')+'</p>'+(i.revoked_at||new Date(i.expires_at)<new Date()?'':'<button type="button" class="outline" data-invite-id="'+esc(i.id)+'">Revoke invitation</button>')+'</div>')
  ];
  roster.innerHTML=records.join('')||'<div class="empty">No staff invited for this event yet.</div>';
