@@ -107,6 +107,10 @@
     {
       "source": "/event-ticket",
       "destination": "/event-ticket.html"
+    },
+    {
+      "source": "/organiser",
+      "destination": "/organiser.html"
     }
   ],
   "functions": {
