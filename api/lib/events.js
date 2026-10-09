@@ -18,7 +18,7 @@ export function validTicket(id,sig) {
 export function verifyEventPayment(order,checkout) {
   if (!order || !checkout || checkout.metadata?.purchase_type!=='event_ticket' ||
       checkout.metadata.event_order_id!==order.id || checkout.client_reference_id!==order.id ||
-      checkout.payment_status!=='paid' || checkout.currency?.toLowerCase()!=='eur' ||
+      checkout.payment_status!=='paid' || checkout.currency?.toLowerCase()!==(order.currency||'eur') ||
       checkout.amount_total!==order.total_cents ||
       (order.stripe_session_id && order.stripe_session_id!==checkout.id)) throw new Error('Event checkout does not match reserved order');
 }
@@ -39,17 +39,17 @@ export async function fulfillEventCheckout(checkout, db=eventsDatabase()) {
   if(done.data!=='paid') throw new Error('Unexpected event payment status');
   const [tickets,event,tier]=await Promise.all([
     db.from('sb_event_tickets').select('id,sequence_number').eq('order_id',id).order('sequence_number'),
-    db.from('sb_events').select('title,starts_at,venue').eq('id',order.event_id).single(),
+    db.from('sb_events').select('title,starts_at,venue,venue_timezone').eq('id',order.event_id).single(),
     db.from('sb_event_tiers').select('name').eq('id',order.tier_id).single()
   ]);
   if(tickets.error || !tickets.data || tickets.data.length!==order.quantity || event.error || tier.error)
     throw new Error('Could not retrieve issued event tickets');
   const base=(process.env.SITE_URL||'https://www.soundbunker.pt').replace(/\/$/,'');
   const links=tickets.data.map(t=>base+'/event-ticket.html?id='+encodeURIComponent(t.id)+'&sig='+signedTicket(t.id));
-  const date=new Intl.DateTimeFormat('en-GB',{dateStyle:'full',timeStyle:'short',timeZone:'Europe/Lisbon'}).format(new Date(event.data.starts_at));
+  const date=new Intl.DateTimeFormat('en-GB',{dateStyle:'full',timeStyle:'short',timeZone:event.data.venue_timezone||'Europe/Lisbon'}).format(new Date(event.data.starts_at));
   await sendTransactionalEmail({
     to:order.customer_email, key:'event-order-'+id, subject:'Your SoundBunker event tickets · '+event.data.title,
-    text:'Hi '+order.customer_name+',\n\nYour tickets are confirmed!\n\n'+event.data.title+'\n'+date+' (Portugal time)\n'+event.data.venue+'\n'+tier.data.name+' · '+order.quantity+' ticket(s)\n\nOpen each ticket on your phone to display its QR code:\n'+links.join('\n')+'\n\nShow each QR code at the door. Each ticket works for one entry only.\n\nSoundBunker Algarve'
+    text:'Hi '+order.customer_name+',\n\nYour tickets are confirmed!\n\n'+event.data.title+'\n'+date+' (venue time)\n'+event.data.venue+'\n'+tier.data.name+' · '+order.quantity+' ticket(s)\n\nOpen each ticket on your phone to display its QR code:\n'+links.join('\n')+'\n\nShow each QR code at the door. Each ticket works for one entry only.\n\nSoundBunker Algarve'
   });
   return {status:'paid',tickets:tickets.data.length};
 }
