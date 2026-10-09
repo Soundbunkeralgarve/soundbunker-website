@@ -1,13 +1,47 @@
 import { eventsDatabase } from './events.js';
+// Public BETA pricing proposals, minor currency units. Festival Pro is capped at
+// 100,000 tickets pending custom approval for larger productions.
 export const listingPlans=Object.freeze({
- eur:{starter:{amount:2900,capacity:100},standard:{amount:8900,capacity:500},festival:{amount:19900,capacity:100000}},
- gbp:{starter:{amount:2500,capacity:100},standard:{amount:7900,capacity:500},festival:{amount:17900,capacity:100000}}
+ gbp:Object.freeze({
+  starter:Object.freeze({amount:4900,capacity:100,label:'Starter'}),
+  standard:Object.freeze({amount:14900,capacity:500,label:'Standard'}),
+  event_plus:Object.freeze({amount:44900,capacity:2000,label:'Event Plus'}),
+  festival:Object.freeze({amount:99900,capacity:5000,label:'Festival'}),
+  festival_pro:Object.freeze({amount:199900,capacity:100000,label:'Festival Pro'})
+ }),
+ eur:Object.freeze({
+  starter:Object.freeze({amount:5900,capacity:100,label:'Starter'}),
+  standard:Object.freeze({amount:17900,capacity:500,label:'Standard'}),
+  event_plus:Object.freeze({amount:52900,capacity:2000,label:'Event Plus'}),
+  festival:Object.freeze({amount:119900,capacity:5000,label:'Festival'}),
+  festival_pro:Object.freeze({amount:239900,capacity:100000,label:'Festival Pro'})
+ })
 });
-export function quoteListing(currency,tier,qty){
+export const listingOrder=Object.freeze(['starter','standard','event_plus','festival','festival_pro']);
+export function quoteListing(currency,tier,sold=0){
  const plan=listingPlans[currency]?.[tier];
- if(!plan||!Number.isSafeInteger(qty)||qty<1||qty>plan.capacity)
-   throw Error('Choose an appropriate event plan for this ticket capacity');
+ if(!plan||!Number.isSafeInteger(sold)||sold<0||sold>plan.capacity)
+   throw Error('Ticket sales exceed this listing tier. Upgrade required before more tickets can be sold.');
  return {...plan,currency,tier};
+}
+export function planForSales(currency,sold){
+ if(!listingPlans[currency]||!Number.isSafeInteger(sold)||sold<0)
+   throw Error('Invalid currency or ticket count');
+ const tier=listingOrder.find(t=>sold<=listingPlans[currency][t].capacity);
+ if(!tier)throw Error('Contact ticketBunker for events above 100,000 paid tickets');
+ return quoteListing(currency,tier,sold);
+}
+export function quoteUpgrade(currency,paidTier,requiredSales){
+ const current=quoteListing(currency,paidTier);
+ const target=planForSales(currency,requiredSales);
+ // The organiser retains previously paid tier value as a credit; never bill
+ // without an explicit checkout confirmation.
+ return {
+  currentTier:paidTier,requiredTier:listingOrder.indexOf(paidTier)>=listingOrder.indexOf(target.tier)?paidTier:target.tier,
+  additionalAmount:Math.max(0,target.amount-current.amount),
+  currentAmount:current.amount,targetAmount:target.amount,currency,
+  requiredSales
+ };
 }
 export function verifyListingPayment(row,checkout){
  if(!row||!checkout||checkout.metadata?.purchase_type!=='event_listing_fee'||
