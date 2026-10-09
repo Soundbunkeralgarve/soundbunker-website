@@ -38,6 +38,8 @@ export function connectAccountReady(account) {
 }
 export default async function handler(req,res){
  if(!['GET','POST'].includes(req.method))return json(res,{error:'Method not allowed'},405);
+  // Public BETA safety: never initiate payments or Connect onboarding.
+  return json(res,{error:'SoundBunker Events is in BETA. Checkout and payments are not live.'},503);
  const ctx=await requireUser(req);if(ctx.error)return json(res,{error:ctx.error},ctx.status);
  if(process.env.EVENTS_CONNECT_ENABLED!=='true')
    return json(res,{error:'Stripe Connect onboarding is not yet enabled for organisers'},503);
