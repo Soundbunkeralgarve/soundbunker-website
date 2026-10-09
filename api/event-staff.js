@@ -79,6 +79,8 @@ export default async function handler(req,res){
    const email=safeText(body.email,254).toLowerCase();
    const phone=safeText(body.phone,20),staffName=safeText(body.staffName,100);
    if(phone&&!/^\+[1-9][0-9]{7,14}$/.test(phone))return json(res,{error:'Enter the mobile in international format, e.g. +351912345678'},400);
+   const phone=safeText(body.phone,20),staffName=safeText(body.staffName,100);
+   if(phone&&!/^\+[1-9][0-9]{7,14}$/.test(phone))return json(res,{error:'Enter the mobile in international format, e.g. +351912345678'},400);
    if(!validEmail(email))return json(res,{error:'Enter the staff member email'},400);
    const remaining=await db.from('sb_event_staff_invites').select('id',{count:'exact',head:true})
     .eq('event_id',eventId).is('revoked_at',null).is('accepted_at',null)
