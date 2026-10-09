@@ -4,15 +4,15 @@ import { eventsDatabase } from './events.js';
 export const listingPlans=Object.freeze({
  gbp:Object.freeze({
   starter:Object.freeze({amount:4900,capacity:100,label:'Starter'}),
-  standard:Object.freeze({amount:14900,capacity:500,label:'Standard'}),
-  event_plus:Object.freeze({amount:44900,capacity:2000,label:'Event Plus'}),
+  standard:Object.freeze({amount:7900,capacity:500,label:'Standard'}),
+  event_plus:Object.freeze({amount:19900,capacity:2000,label:'Event Plus'}),
   festival:Object.freeze({amount:null,capacity:5000,label:'Festival',customQuote:true}),
   festival_pro:Object.freeze({amount:null,capacity:Infinity,label:'Festival Pro',customQuote:true})
  }),
  eur:Object.freeze({
   starter:Object.freeze({amount:5900,capacity:100,label:'Starter'}),
-  standard:Object.freeze({amount:17900,capacity:500,label:'Standard'}),
-  event_plus:Object.freeze({amount:52900,capacity:2000,label:'Event Plus'}),
+  standard:Object.freeze({amount:9900,capacity:500,label:'Standard'}),
+  event_plus:Object.freeze({amount:24900,capacity:2000,label:'Event Plus'}),
   festival:Object.freeze({amount:null,capacity:5000,label:'Festival',customQuote:true}),
   festival_pro:Object.freeze({amount:null,capacity:Infinity,label:'Festival Pro',customQuote:true})
  })
