@@ -51,8 +51,7 @@ export async function createCheckoutSession({ session, booking, origin, bookingR
   return data;
 }
 
-export function verifyStripeSignature(rawBody, signatureHeader) {
-  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+export function verifyStripeSignature(rawBody, signatureHeader, secret = process.env.STRIPE_WEBHOOK_SECRET) {
   if (!secret || !signatureHeader) return false;
   const pairs = Object.fromEntries(signatureHeader.split(",").map(part => part.split("=")));
   if (!pairs.t || !pairs.v1) return false;
