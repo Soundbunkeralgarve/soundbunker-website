@@ -91,6 +91,22 @@
     {
       "source": "/redeem",
       "destination": "/redeem.html"
+    },
+    {
+      "source": "/events",
+      "destination": "/events.html"
+    },
+    {
+      "source": "/events-admin",
+      "destination": "/events-admin.html"
+    },
+    {
+      "source": "/event-scanner",
+      "destination": "/event-scanner.html"
+    },
+    {
+      "source": "/event-ticket",
+      "destination": "/event-ticket.html"
     }
   ],
   "functions": {

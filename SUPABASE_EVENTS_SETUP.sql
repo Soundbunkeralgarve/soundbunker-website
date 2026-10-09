@@ -75,7 +75,7 @@ begin
  where tier_id=p_tier and (status='paid' or (status='reserved' and reserved_until>now()) or status='needs_attention');
  if used_count+p_quantity>t.quantity_total then raise exception 'Not enough tickets remaining'; end if;
  insert into public.sb_event_orders(event_id,tier_id,customer_name,customer_email,quantity,total_cents,reserved_until)
- values(t.event_id,p_tier,p_name,p_email,p_quantity,t.price_cents*p_quantity,now()+interval '30 minutes')
+ values(t.event_id,p_tier,p_name,p_email,p_quantity,t.price_cents*p_quantity,now()+interval '35 minutes')
  returning * into created;
  return created;
 end $$;
