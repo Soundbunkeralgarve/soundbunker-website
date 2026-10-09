@@ -1,97 +1,185 @@
 (() => {
+'use strict';
 const $=q=>document.querySelector(q);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let supabase,token,account;
-function notify(s,error=false){const n=$('#notice');n.textContent=s;n.style.background=error?'#6a233b':'#2f2242';}
-async function request(body){
- const r=await fetch('/api/organiser',{method:body?'POST':'GET',headers:{authorization:'Bearer '+token,...(body?{'content-type':'application/json'}:{})},body:body?JSON.stringify(body):undefined,cache:'no-store'});
+let sb,token,account,eventList=[],step=1,slugTouched=false;
+function notify(text,bad=false){const n=$('#notice');n.textContent=text;n.style.borderColor=bad?'#edb5bd':'#e6e6ef';n.style.background=bad?'#fff0f1':'#fff';}
+function localDate(v,zone){if(!v)return 'Date TBC';try{return new Intl.DateTimeFormat('en-GB',{dateStyle:'medium',timeStyle:'short',timeZone:zone||'Europe/Lisbon'}).format(new Date(v));}catch{return 'Date TBC';}}
+async function authToken(){if(!sb)throw Error('Sign in first');const {data:{session}}=await sb.auth.getSession();if(!session?.access_token)throw Error('Your login has expired. Sign in again.');return token=session.access_token;}
+async function request(path,body){
+ const headers={authorization:'Bearer '+await authToken()};
+ if(body)headers['content-type']='application/json';
+ const r=await fetch(path,{method:body?'POST':'GET',headers,body:body?JSON.stringify(body):undefined,cache:'no-store'});
  const data=await r.json();if(!r.ok)throw Error(data.error||'Request failed');return data;
 }
-const localDate=(value,zone)=> {
- if(!value)return '—';
- return new Intl.DateTimeFormat('en-GB',{dateStyle:'medium',timeStyle:'short',timeZone:zone||'Europe/Lisbon'}).format(new Date(value));
-};
-async function refresh(){
- const data=await request();account=data.organiser;
- $('#register').hidden=!!account;$('#workspace').hidden=!account;
- if(!account){notify('Create a free organiser account to get started.');return;}
- $('#orgName').textContent=account.display_name;
- $('#orgState').textContent='Country '+account.country_code+' · Review status: '+account.status+' · Stripe: '+(account.stripe_connected?'Connected':'Not connected');
- const currency=account.country_code==='GB'?'GBP':'EUR';
- $('#priceLabel').firstChild.textContent='Ticket price ('+currency+')';
- const list=data.events||[];
- $('#tierEvent').innerHTML=list.filter(e=>e.status==='draft').map(e=>'<option value="'+esc(e.id)+'">'+esc(e.title)+'</option>').join('');
- const staffOptions=list.map(e=>'<option value="'+esc(e.id)+'">'+esc(e.title)+'</option>').join('');
- const previous=$('#manageStaffEvent').value;
- $('#inviteStaffEvent').innerHTML=staffOptions;
- $('#manageStaffEvent').innerHTML=staffOptions;
- if(list.some(e=>e.id===previous))$('#manageStaffEvent').value=previous;
- $('#myEvents').innerHTML=list.length?list.map(e=>'<article class="event-info" style="background:#241832;border:1px solid #ffffff33"><span class="pill">'+esc(e.status)+'</span><h3>'+esc(e.title)+'</h3><p>'+esc(e.event_kind)+' • '+esc(e.venue)+'</p><p>'+esc(localDate(e.starts_at,e.venue_timezone))+' • '+esc(e.currency.toUpperCase())+'</p><p>'+e.tiers.map(t=>esc(t.name)+' · '+esc(String(t.quantity_total))+' available').join(', ')+'</p><p>Ticket sales: '+(e.status==='published'?'See your event dashboard':'not open — draft')+'</p></article>').join(''):'<div class="empty">Your first event starts here. Create a draft above.</div>';
- if(list.length)await loadStaff().catch(error=>{$('#staffRoster').textContent=error.message;});
- else $('#staffRoster').textContent='Create an event draft to invite staff.';
- notify('Organiser dashboard loaded. Events remain private until verification and publishing.');
+function api(body){return request('/api/organiser',body);}
+async function media(file,purpose){
+ if(!file)return null;
+ if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw Error('Please choose JPEG, PNG or WebP');
+ if(file.size>(purpose==='logo'?2:4)*1024*1024)throw Error('Image exceeds '+(purpose==='logo'?2:4)+' MB');
+ const res=await fetch('/api/event-media',{method:'POST',headers:{authorization:'Bearer '+await authToken(),'content-type':file.type,'x-media-purpose':purpose},body:file});
+ const data=await res.json();if(!res.ok)throw Error(data.error||'Image upload failed');return data.url;
 }
-async function submit(body) {try{notify('Saving…');await request(body);await refresh();}catch(e){notify(e.message,true);}}
-$('#registerForm').addEventListener('submit',e=>{e.preventDefault();const d=new FormData(e.target);submit({action:'register',displayName:d.get('displayName'),country:d.get('country'),acceptTerms:d.get('acceptTerms')==='on'});});
-$('#eventForm').addEventListener('submit',e=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.target));submit({action:'event',...d});});
-$('#tierForm').addEventListener('submit',e=>{e.preventDefault();const d=new FormData(e.target);submit({action:'tier',eventId:d.get('eventId'),name:d.get('name'),priceCents:Math.round(Number(d.get('price'))*100),capacity:Number(d.get('capacity'))});});
-
-async function staffRequest(body, eventId){
- const url=body?'/api/event-staff':'/api/event-staff?eventId='+encodeURIComponent(eventId);
- const r=await fetch(url,{method:body?'POST':'GET',headers:{authorization:'Bearer '+token,...(body?{'content-type':'application/json'}:{})},body:body?JSON.stringify(body):undefined,cache:'no-store'});
- const d=await r.json();if(!r.ok)throw Error(d.error||'Could not manage staff');
- return d;
+function kindLabel(value){return ({club:'Club night',live_music:'Live music',festival:'Festival',comedy:'Comedy show',theatre:'Theatre',sports:'Sport',arts:'Arts',family:'Family',food:'Food',conference:'Conference',workshop:'Workshop',community:'Community',other:'Other'}[value]||'Live event');}
+function previewImage(file,target,placeholder){
+ if(!file){target.querySelector('img')?.remove();if(placeholder)placeholder.hidden=false;return;}
+ const img=document.createElement('img');img.alt='Your selected artwork preview';
+ const url=URL.createObjectURL(file);img.src=url;img.onload=()=>URL.revokeObjectURL(url);
+ target.querySelector('img')?.remove();target.prepend(img);if(placeholder)placeholder.hidden=true;
+}
+function updatePreview(){
+ $('#previewTitle').textContent=$('#eventTitle').value.trim()||'Your event title';
+ $('#previewHeadliner').textContent=$('#eventHeadliner').value.trim()||'Your headline act';
+ $('#previewPlace').textContent=[$('#eventVenue').value.trim(),$('#eventCity').value.trim()].filter(Boolean).join(' · ')||'Venue and city';
+ $('#previewKind').textContent=kindLabel($('#eventKind').value);
+}
+function stepTo(n){
+ step=n;
+ document.querySelectorAll('[data-event-step]').forEach(el=>el.hidden=Number(el.dataset.eventStep)!==step);
+ for(let x=1;x<=3;x++){const el=$('#stepLabel'+x);el.classList.toggle('is-current',x===step);el.classList.toggle('is-done',x<step);}
+ $('#eventBack').hidden=step===1;$('#eventNext').hidden=step===3;$('#eventSubmit').hidden=step!==3;
+ $('#stepHelp').textContent=step===1?'Start with the essential event information.':step===2?'Describe what guests can expect.':'Add your artwork or finish it later.';
+}
+function validateStep(){
+ const fields=[...document.querySelectorAll('[data-event-step="'+step+'"] input,[data-event-step="'+step+'"] select,[data-event-step="'+step+'"] textarea')];
+ for(const field of fields){if(field.required&&!field.value.trim()||!field.checkValidity()){field.reportValidity();field.focus();return false;}}
+ return true;
+}
+function slug(text){return String(text||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,130);}
+function pickLogo(url){$('#orgLogo').hidden=!url;$('#orgLogoFallback').hidden=!!url;if(url)$('#orgLogo').src=url;if(url&&!$('#previewLogo').src){$('#previewLogo').src=url;$('#previewLogo').hidden=false;$('#previewLogoText').hidden=true;}}
+async function refresh(){
+ const data=await api();account=data.organiser;
+ $('#register').hidden=!!account;$('#workspace').hidden=!account;$('#guest').hidden=true;
+ if(!account){notify('Set up a free organiser profile to get started.');return;}
+ $('#orgName').textContent=account.display_name;
+ $('#orgState').textContent='Based in '+(account.country_code==='PT'?'Portugal':'United Kingdom')+' · '+account.status.replace('_',' ')+' · Stripe '+(account.stripe_connected?'connected':'not connected');
+ pickLogo(account.logo_url);
+ eventList=data.events||[];
+ $('#countEvents').textContent=eventList.length;
+ $('#countDrafts').textContent=eventList.filter(e=>e.status==='draft').length;
+ const currency=account.country_code==='GB'?'GBP':'EUR';
+ $('#priceLabel').childNodes[0].textContent='Ticket price ('+currency+')';
+ $('#tierEvent').innerHTML=eventList.filter(e=>e.status==='draft').map(e=>'<option value="'+esc(e.id)+'">'+esc(e.title)+'</option>').join('')||'<option value="">Create a draft first</option>';
+ const opts=eventList.map(e=>'<option value="'+esc(e.id)+'">'+esc(e.title)+'</option>').join('');
+ const selected=$('#manageStaffEvent').value,audited=$('#auditEvent').value;
+ for(const selector of ['#inviteStaffEvent','#manageStaffEvent','#auditEvent'])$(selector).innerHTML=opts;
+ if(eventList.some(e=>e.id===selected))$('#manageStaffEvent').value=selected;
+ if(eventList.some(e=>e.id===audited))$('#auditEvent').value=audited;
+ $('#staffAccess').hidden=!eventList.length;
+ $('#myEvents').innerHTML=eventList.length?eventList.map(e=>{
+ const poster=e.image_url&&e.image_url.startsWith('https://')?'<div class="event-art"><img src="'+esc(e.image_url)+'" alt="Poster for '+esc(e.title)+'"></div>':'<div class="event-art" style="font-weight:800;color:#7439ca;font-size:24px">POSTER COMING SOON</div>';
+ return '<article class="event-card">'+poster+'<div class="event-info"><span class="tb-chip">'+esc(e.status)+' · '+esc(kindLabel(e.event_kind))+'</span><h3>'+esc(e.title)+'</h3><p>'+esc(e.headline_artist||'')+'</p><p>'+esc(e.venue_city||e.venue)+' · '+esc(localDate(e.starts_at,e.venue_timezone))+'</p><p>'+e.tiers.map(t=>esc(t.name)+' · '+esc(currency==='GBP'?'£':'€')+(t.price_cents/100).toFixed(2)+' · '+t.quantity_total+' spaces').join(' / ')+'</p><p>Ticket checkout: unavailable during beta</p>'+(e.status==='draft'?'<label class="tb-muted" style="font-size:12px">Update poster <input data-poster-update="'+esc(e.id)+'" type="file" accept="image/png,image/jpeg,image/webp" style="max-width:100%"></label>':'')+'</div></article>';
+ }).join(''):'<div class="empty">No events yet. Complete your first event using the guided form above.</div>';
+ if(eventList.length){await loadStaff().catch(e=>{$('#staffRoster').textContent=e.message;});await loadAudit().catch(e=>{$('#scanAudit').textContent=e.message;});}
+ notify('Your private organiser workspace is ready. All event checkouts remain disabled in beta.');
+}
+async function submit(body){
+ try{notify('Saving…');await api(body);await refresh();return true;}
+ catch(err){notify(err.message,true);return false;}
+}
+$('#registerForm').addEventListener('submit',e=>{
+ e.preventDefault();const form=new FormData(e.currentTarget);
+ submit({action:'register',displayName:form.get('displayName'),country:form.get('country'),acceptTerms:form.get('acceptTerms')==='on'});
+});
+$('#orgBrandingForm').addEventListener('submit',async e=>{
+ e.preventDefault();const btn=e.currentTarget.querySelector('button');btn.disabled=true;
+ try{notify('Uploading your company logo…');const logoUrl=await media(e.currentTarget.querySelector('input[type=file]').files[0],'logo');await api({action:'branding',logoUrl});await refresh();pickLogo(logoUrl);}
+ catch(error){notify(error.message,true);}finally{btn.disabled=false;}
+});
+$('#eventTitle').addEventListener('input',()=>{if(!slugTouched)$('#eventSlug').value=slug($('#eventTitle').value);updatePreview();});
+$('#eventSlug').addEventListener('input',()=>{slugTouched=true;});
+for(const key of ['#eventHeadliner','#eventCity','#eventVenue','#eventKind'])$(key).addEventListener('input',updatePreview);
+$('#posterFile').addEventListener('change',e=>previewImage(e.target.files[0],$('#previewPoster'),$('#previewPlaceholder')));
+$('#eventLogoFile').addEventListener('change',e=>{const file=e.target.files[0];if(!file)return;const img=$('#previewLogo'),url=URL.createObjectURL(file);img.src=url;img.onload=()=>URL.revokeObjectURL(url);img.hidden=false;$('#previewLogoText').hidden=true;});
+$('#eventNext').addEventListener('click',()=>{if(validateStep())stepTo(step+1);});
+$('#eventBack').addEventListener('click',()=>stepTo(step-1));
+$('#eventForm').addEventListener('submit',async e=>{
+ e.preventDefault();if(!validateStep())return;
+ const submitButton=$('#eventSubmit');submitButton.disabled=true;
+ try{
+  notify('Saving event artwork and details…');
+  const form=e.currentTarget;
+  const d=Object.fromEntries(new FormData(form));
+  delete d.posterFile;delete d.eventLogoFile;
+  const poster=form.querySelector('#posterFile').files[0],logo=form.querySelector('#eventLogoFile').files[0];
+  d.imageUrl=poster?await media(poster,'poster'):null;
+  d.eventLogoUrl=logo?await media(logo,'logo'):null;
+  const result=await api({action:'event',...d});
+  form.reset();stepTo(1);slugTouched=false;
+  $('#previewPoster').querySelector('img')?.remove();$('#previewPlaceholder').hidden=false;
+  $('#previewLogo').hidden=true;$('#previewLogoText').hidden=false;updatePreview();
+  await refresh();
+  $('#tierEvent').value=result.event.id;
+  notify('Draft created. Now add ticket types and invite your team below.');
+  $('#tierForm').scrollIntoView({behavior:'smooth',block:'center'});
+ }catch(error){notify(error.message,true);}finally{submitButton.disabled=false;}
+});
+$('#myEvents').addEventListener('change',async e=>{
+ const id=e.target.dataset.posterUpdate,file=e.target.files?.[0];if(!id||!file)return;
+ try{notify('Uploading the new event poster…');const url=await media(file,'poster');await api({action:'updateDraft',eventId:id,imageUrl:url});await refresh();}
+ catch(error){notify(error.message,true);}
+});
+$('#tierForm').addEventListener('submit',e=>{
+ e.preventDefault();const form=new FormData(e.currentTarget);
+ submit({action:'tier',eventId:form.get('eventId'),name:form.get('name'),priceCents:Math.round(Number(form.get('price'))*100),capacity:Number(form.get('capacity'))});
+});
+async function staffRequest(body,eventId){
+ return request(body?'/api/event-staff':'/api/event-staff?eventId='+encodeURIComponent(eventId),body);
 }
 async function loadStaff(){
- const eventId=$('#manageStaffEvent').value;
- if(!eventId){$('#staffRoster').textContent='No events yet';return;}
- const result=await staffRequest(undefined,eventId);
- const roster=$('#staffRoster');
- const staff=result.staff||[],invites=result.invites||[];
- const records=[
-  ...staff.map(s=>{const match=invites.find(i=>i.accepted_by===s.user_id);return '<div class="event-info" style="background:#22162d;border:1px solid #ffffff35"><strong>Staff member</strong><p>'+esc(match?.invited_email||'Verified staff account')+' · '+(s.revoked_at?'Access revoked':'Active scanner')+'</p>'+(s.revoked_at?'':'<button type="button" class="outline" data-staff-id="'+esc(s.user_id)+'">Revoke access</button>')+'</div>'; }),
-  ...invites.filter(i=>!i.accepted_at).map(i=>'<div class="event-info" style="background:#22162d;border:1px solid #ffffff35"><strong>Invited</strong><p>'+esc(i.invited_email)+' · '+(i.revoked_at?'Revoked':new Date(i.expires_at)<new Date()?'Expired':'Awaiting acceptance')+'</p>'+(i.revoked_at||new Date(i.expires_at)<new Date()?'':'<button type="button" class="outline" data-invite-id="'+esc(i.id)+'">Revoke invitation</button>')+'</div>')
- ];
- roster.innerHTML=records.join('')||'<div class="empty">No staff invited for this event yet.</div>';
+ const id=$('#manageStaffEvent').value;if(!id)return;
+ const response=await staffRequest(null,id),invites=response.invites||[],staff=response.staff||[];
+ $('#staffRoster').innerHTML=[
+ ...staff.map(s=>{const match=invites.find(i=>i.accepted_by===s.user_id);return '<div class="event-info"><span class="tb-chip">'+(s.revoked_at?'Revoked':'Scanner access')+'</span><h3>'+esc(match?.invited_name||'Door staff')+'</h3><p>'+esc(match?.invited_email||'Verified organiser staff account')+'</p>'+(s.revoked_at?'':'<button class="outline" type="button" data-staff-id="'+esc(s.user_id)+'">Revoke access</button>')+'</div>';}),
+ ...invites.filter(i=>!i.accepted_at).map(i=>'<div class="event-info"><span class="tb-chip">Invitation</span><h3>'+esc(i.invited_name||i.invited_email)+'</h3><p>'+esc(i.invited_email)+' · '+esc(i.invited_phone||'')+'</p><p>'+(i.revoked_at?'Revoked':Date.parse(i.expires_at)<Date.now()?'Expired':'Waiting for verified sign-in')+'</p>'+(i.revoked_at||Date.parse(i.expires_at)<Date.now()?'':'<button class="outline" type="button" data-invite-id="'+esc(i.id)+'">Revoke invitation</button>')+'</div>')
+ ].join('')||'<div class="empty">No scanning staff assigned yet.</div>';
 }
 $('#staffInviteForm').addEventListener('submit',async e=>{
- e.preventDefault();
- const data=new FormData(e.target);
+ e.preventDefault();const d=new FormData(e.currentTarget);
  try{
-  notify('Generating secure invitation…');
-  const invited=await staffRequest({action:'invite',eventId:data.get('eventId'),email:data.get('email')});
+  notify('Creating secure scanner invitation…');
+  const result=await staffRequest({action:'invite',eventId:d.get('eventId'),staffName:d.get('staffName'),email:d.get('email'),phone:d.get('phone')});
+  $('#staffInviteLink').value=result.invitationUrl;
+  const digits=String(d.get('phone')||'').replace(/[^0-9]/g,'');
+  const message='Hi '+d.get('staffName')+', you have been invited to scan tickets for '+($('#inviteStaffEvent').selectedOptions[0]?.text||'our event')+'. Sign in with '+d.get('email')+' and use this secure link (expires in 72 hours): '+result.invitationUrl;
+  $('#whatsappStaffInvite').href='https://wa.me/'+digits+'?text='+encodeURIComponent(message);
   $('#staffInviteResult').hidden=false;
-  $('#staffInviteLink').value=invited.invitationUrl;
-  $('#manageStaffEvent').value=data.get('eventId');
-  await loadStaff();
-  notify('Invitation ready. Copy and send it privately to the intended colleague.');
+  $('#manageStaffEvent').value=d.get('eventId');await loadStaff();
+  notify('Staff invitation created. Select Send via WhatsApp to share it yourself.');
  }catch(error){notify(error.message,true);}
 });
 $('#copyStaffInvite').addEventListener('click',async()=>{
- const input=$('#staffInviteLink');
- try{await navigator.clipboard.writeText(input.value);notify('Staff invitation link copied.');}
- catch{input.focus();input.select();notify('Copy the highlighted link and send it to your colleague.');}
+ try{await navigator.clipboard.writeText($('#staffInviteLink').value);notify('Invitation copied.');}
+ catch{$('#staffInviteLink').select();notify('Copy the selected link to send it privately.');}
 });
 $('#manageStaffEvent').addEventListener('change',()=>loadStaff().catch(e=>notify(e.message,true)));
 $('#staffRoster').addEventListener('click',async e=>{
- const staffId=e.target.closest('[data-staff-id]')?.dataset.staffId;
- const inviteId=e.target.closest('[data-invite-id]')?.dataset.inviteId;
- if(!staffId&&!inviteId)return;
- if(!confirm('Revoke this scanner access?'))return;
+ const staff=e.target.closest('[data-staff-id]')?.dataset.staffId,invite=e.target.closest('[data-invite-id]')?.dataset.inviteId;
+ if(!staff&&!invite||!confirm('Revoke this access?'))return;
  try{
-  await staffRequest(staffId?{action:'revokeStaff',eventId:$('#manageStaffEvent').value,userId:staffId}:{action:'revokeInvite',eventId:$('#manageStaffEvent').value,inviteId});
-  notify('Access revoked.');
-  await loadStaff();
+  await staffRequest(staff?{action:'revokeStaff',eventId:$('#manageStaffEvent').value,userId:staff}:{action:'revokeInvite',eventId:$('#manageStaffEvent').value,inviteId:invite});
+  await loadStaff();notify('Access revoked.');
  }catch(error){notify(error.message,true);}
 });
-
+async function loadAudit(){
+ const id=$('#auditEvent').value;if(!id)return;
+ const response=await request('/api/event-scan-audit?eventId='+encodeURIComponent(id));
+ $('#scanAudit').innerHTML=response.scans.length?'<div style="overflow:auto"><table style="width:100%;border-collapse:collapse"><thead><tr><th>Ticket</th><th>Checked by</th><th>Ticket type</th><th>Time</th></tr></thead><tbody>'+
+ response.scans.map(s=>'<tr><td>'+esc(s.ticket)+'</td><td>'+esc(s.staff)+'</td><td>'+esc(s.tier)+'</td><td>'+esc(localDate(s.at))+'</td></tr>').join('')+'</tbody></table></div>':
+ '<p>No ticket check-ins recorded for this event yet.</p>';
+}
+$('#auditEvent').addEventListener('change',()=>loadAudit().catch(e=>notify(e.message,true)));
+$('#refreshAudit').addEventListener('click',()=>loadAudit().catch(e=>notify(e.message,true)));
 async function boot(){
- try{const cfg=await fetch('/api/supabase-config').then(r=>r.json());if(!window.supabase)throw Error('Sign-in service unavailable');
- supabase=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true}});
- const {data:{session}}=await supabase.auth.getSession();
- if(!session){$('#guest').hidden=false;notify('Sign in to get started.');return;}
- token=session.access_token;await refresh();
- }catch(e){notify(e.message,true);}
+ try{
+  const cfg=await fetch('/api/supabase-config').then(r=>r.json());
+  if(!window.supabase||!cfg.url||!cfg.key)throw Error('Login service is unavailable.');
+  sb=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true}});
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session){$('#guest').hidden=false;$('#register').hidden=true;$('#workspace').hidden=true;notify('Sign in as an organiser to continue.');return;}
+  token=session.access_token;await refresh();
+  sb.auth.onAuthStateChange((event,next)=>{if(event==='TOKEN_REFRESHED')token=next?.access_token;});
+ }catch(error){notify(error.message,true);}
 }
 window.addEventListener('load',boot);
 })();
