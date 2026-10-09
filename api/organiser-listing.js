@@ -4,6 +4,8 @@ import { quoteListing } from './lib/event-listings.js';
 import { json,parseJson } from './lib/http.js';
 export default async function handler(req,res){
  if(req.method!=='POST')return json(res,{error:'Method not allowed'},405);
+  // Public BETA safety: never initiate payments or Connect onboarding.
+  return json(res,{error:'SoundBunker Events is in BETA. Checkout and payments are not live.'},503);
  const ctx=await requireUser(req);if(ctx.error)return json(res,{error:ctx.error},ctx.status);
  if(process.env.EVENTS_MARKETPLACE_PAYMENTS_ENABLED!=='true'||process.env.EVENT_LISTING_PAYMENTS_ENABLED!=='true')
    return json(res,{error:'Event listing payments are not yet enabled'},503);
