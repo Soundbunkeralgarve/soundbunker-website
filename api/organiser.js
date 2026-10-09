@@ -1,5 +1,6 @@
 import { requireUser } from './lib/supabase-auth.js';
 import { json,parseJson,safeText } from './lib/http.js';
+import { localEventInstant } from './lib/events-time.js';
 
 const uuid=value=>/^[a-f0-9]{8}-[a-f0-9-]{27,}$/i.test(String(value||''));
 const slugOk=value=>/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value);
@@ -53,15 +54,20 @@ export default async function handler(req,res){
      const title=safeText(body.title,160),slug=safeText(body.slug,160).toLowerCase(),venue=safeText(body.venue,180);
      const category=safeText(body.kind,20);
      const startsAt=String(body.startsAt||''),endsAt=String(body.endsAt||'');
-     if(title.length<3||!slugOk(slug)||!venue||!['show','festival','workshop','club','community'].includes(category)||
-       !Number.isFinite(Date.parse(startsAt))||Date.parse(startsAt)<=Date.now()||
-       (endsAt&&(!Number.isFinite(Date.parse(endsAt))||Date.parse(endsAt)<=Date.parse(startsAt))))
+     if(title.length<3||!slugOk(slug)||!venue||!['show','festival','workshop','club','community'].includes(category))
        return json(res,{error:'Check your event name, link, venue, dates and category'},400);
      const place=organiserCountries[organisation.country_code];
+     let startInstant,endInstant;
+     try {
+       startInstant=localEventInstant(startsAt,place.timezone);
+       endInstant=endsAt?localEventInstant(endsAt,place.timezone):null;
+     } catch(error){return json(res,{error:error.message},400);}
+     if(Date.parse(startInstant)<=Date.now()||(endInstant&&Date.parse(endInstant)<=Date.parse(startInstant)))
+       return json(res,{error:'Enter a future event with the end after its start'},400);
      const saved=await db.from('sb_events').insert({
        title,slug,venue,organiser:organisation.display_name,organiser_profile_id:organisation.id,
        country_code:organisation.country_code,currency:place.currency,venue_timezone:place.timezone,
-       starts_at:new Date(startsAt).toISOString(),ends_at:endsAt?new Date(endsAt).toISOString():null,
+       starts_at:startInstant,ends_at:endInstant,
        event_kind:category,description:safeText(body.description,4000),
        image_url:/^https:\/\/[^\s]+$/i.test(body.imageUrl||'')?safeText(body.imageUrl,900):null,
        status:'draft'
