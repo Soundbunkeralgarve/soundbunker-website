@@ -66,6 +66,11 @@ async function refresh(){
  if(eventList.some(e=>e.id===selected))$('#manageStaffEvent').value=selected;
  if(eventList.some(e=>e.id===audited))$('#auditEvent').value=audited;
  $('#staffAccess').hidden=!eventList.length;
+ $('#promoTeamSection').hidden=!eventList.length;
+ const promoOpts=eventList.map(e=>'<option value="'+esc(e.id)+'">'+esc(e.title)+'</option>').join('');
+ const selectedPromo=$('#promoTeamEvent').value;
+ $('#promoTeamEvent').innerHTML=promoOpts;
+ if(eventList.some(e=>e.id===selectedPromo))$('#promoTeamEvent').value=selectedPromo;
  $('#myEvents').innerHTML=eventList.length?eventList.map(e=>{
  const poster=e.image_url&&e.image_url.startsWith('https://')?'<div class="event-art"><img src="'+esc(e.image_url)+'" alt="Poster for '+esc(e.title)+'"></div>':'<div class="event-art" style="font-weight:800;color:#7439ca;font-size:24px">POSTER COMING SOON</div>';
  return '<article class="event-card">'+poster+'<div class="event-info"><span class="tb-chip">'+esc(e.status)+' · '+esc(kindLabel(e.event_kind))+'</span><h3>'+esc(e.title)+'</h3><p>'+esc(e.headline_artist||'')+'</p><p>'+esc(e.venue_city||e.venue)+' · '+esc(localDate(e.starts_at,e.venue_timezone))+'</p><p>'+e.tiers.map(t=>esc(t.name)+' · '+esc(currency==='GBP'?'£':'€')+(t.price_cents/100).toFixed(2)+' · '+t.quantity_total+' spaces').join(' / ')+'</p><p>Ticket checkout: unavailable during beta</p>'+(e.status==='draft'?'<label class="tb-muted" style="font-size:12px">Update poster <input data-poster-update="'+esc(e.id)+'" type="file" accept="image/png,image/jpeg,image/webp" style="max-width:100%"></label>':'')+'</div></article>';
@@ -170,6 +175,35 @@ async function loadAudit(){
 }
 $('#auditEvent').addEventListener('change',()=>loadAudit().catch(e=>notify(e.message,true)));
 $('#refreshAudit').addEventListener('click',()=>loadAudit().catch(e=>notify(e.message,true)));
+async function loadPromoTeam(){
+ const eventId=$('#promoTeamEvent').value;if(!eventId)return;
+ const data=await request('/api/event-promo-team?eventId='+encodeURIComponent(eventId));
+ $('#promoTeamRoster').innerHTML=data.teams.length?data.teams.map(p=>{
+  return '<article class="event-info"><span class="tb-chip">'+esc(p.status)+'</span><h3>'+esc(p.promoter_name)+'</h3><p>'+esc(p.promoter_email)+'</p><p><strong>Code: '+esc(p.code)+'</strong></p><p>'+p.verified_points+' verified points · '+p.available_points+' available · '+p.points_per_free_ticket+' required per free ticket</p><p>'+p.points_per_paid_ticket+' points per confirmed sale</p><div class="tb-cta-row"><button type="button" class="outline" data-copy-code="'+esc(p.code)+'">Copy code</button>'+(p.status==='active'?'<button class="outline" type="button" data-promo-id="'+esc(p.id)+'" data-promo-status="paused">Pause</button>':p.status==='paused'?'<button class="outline" type="button" data-promo-id="'+esc(p.id)+'" data-promo-status="active">Resume</button>':'')+(p.status!=='revoked'?'<button class="outline" type="button" data-promo-id="'+esc(p.id)+'" data-promo-status="revoked">Revoke</button>':'')+'</div></article>';
+ }).join(''):'<div class="empty">No promoters yet. Add your first ambassador above.</div>';
+}
+$('#promoTeamEvent').addEventListener('change',()=>loadPromoTeam().catch(e=>notify(e.message,true)));
+$('#promoTeamForm').addEventListener('submit',async e=>{
+ e.preventDefault();const f=new FormData(e.currentTarget);const btn=e.currentTarget.querySelector('button');btn.disabled=true;
+ try{
+  const result=await request('/api/event-promo-team',{
+   action:'invite',eventId:f.get('eventId'),name:f.get('name'),email:f.get('email'),code:f.get('code'),
+   pointsPerTicket:Number(f.get('pointsPerTicket')),pointsPerReward:Number(f.get('pointsPerReward'))
+  });
+  const link=location.origin+'/promo-team?eventId='+encodeURIComponent(f.get('eventId'))+'&code='+encodeURIComponent(result.team.code);
+  await navigator.clipboard.writeText(link).catch(()=>{});
+  notify('Ambassador invitation created. Invite '+result.team.promoter_email+' to sign in and claim code '+result.team.code+'. Claim link: '+link);
+  await loadPromoTeam();
+ }catch(error){notify(error.message,true);}finally{btn.disabled=false;}
+});
+$('#promoTeamRoster').addEventListener('click',async e=>{
+ const code=e.target.closest('[data-copy-code]')?.dataset.copyCode;
+ if(code){await navigator.clipboard.writeText(code).then(()=>notify('Code copied: '+code)).catch(()=>notify('Code: '+code));return;}
+ const btn=e.target.closest('[data-promo-id]');if(!btn)return;
+ if(!confirm('Update this promoter\'s account status?'))return;
+ try{await request('/api/event-promo-team',{action:'changeStatus',eventId:$('#promoTeamEvent').value,teamId:btn.dataset.promoId,status:btn.dataset.promoStatus});await loadPromoTeam();notify('Promoter updated.');}
+ catch(error){notify(error.message,true);}
+});
 async function boot(){
  try{
   const cfg=await fetch('/api/supabase-config').then(r=>r.json());
