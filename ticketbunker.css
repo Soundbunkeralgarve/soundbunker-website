@@ -119,3 +119,11 @@ footer{border-top:1px solid var(--tb-border);background:#fff;color:var(--tb-sub)
 .tb-role-tabs button[aria-selected=true]{background:var(--tb-lav);color:var(--tb-purple);border-color:#bda1e2}
 @media(max-width:1000px){.tb-two,.tb-hero-split{grid-template-columns:1fr}.tb-photo-categories{grid-template-columns:repeat(2,minmax(0,1fr))}.tb-hero-image{min-height:300px}.tb-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:620px){.topbar{align-items:center!important;flex-direction:column!important}.topbar nav{justify-content:center;gap:12px}.events-content{padding:34px 18px!important}.tb-main-head{display:block}.tb-photo-categories{grid-template-columns:repeat(2,minmax(0,1fr))}.tb-photo-card{height:152px;padding:14px;font-size:17px}.tb-cols{grid-template-columns:1fr}.tb-kpis{grid-template-columns:1fr}.tb-panel{padding:20px}.tb-hero-copy{padding:42px 20px}.tb-hero-image{min-height:240px}.tb-auth-shell{margin:30px 15px}.tb-steps{gap:5px}.tb-step{font-size:11px;padding:8px}}
+
+/* Approved TicketBunker lettering from supplied original. Invert to dark-on-white for corporate pages. */
+.tb-logo{position:relative;display:block!important;flex:0 0 auto;width:286px;height:39px;max-width:85vw;background-image:url('/assets/ticket-bunker-approved-logo.png');background-size:contain;background-repeat:no-repeat;background-position:left center;filter:invert(1)}
+.tb-logo>.tb-logo-mark,.tb-logo>.tb-logo-word{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;margin:-1px!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important}
+.tb-card a{color:var(--tb-purple)}
+#scanAudit table th,#scanAudit table td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--tb-border);font-size:13px}
+#scanAudit table th{color:#54476a;background:#faf7fd}
+@media(max-width:620px){.tb-logo{width:270px;height:38px}}
