@@ -2,6 +2,8 @@ import { json,parseJson,safeText,validEmail } from './lib/http.js';
 import { eventsDatabase } from './lib/events.js';
 export default async function handler(req,res){
   if(req.method!=='POST')return json(res,{error:'Method not allowed'},405);
+  // Public BETA safety: never initiate payments or Connect onboarding.
+  return json(res,{error:'SoundBunker Events is in BETA. Checkout and payments are not live.'},503);
   let order;
   try{
     if(!process.env.STRIPE_SECRET_KEY)return json(res,{error:'Ticket checkout is not configured'},503);
