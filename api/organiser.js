@@ -87,6 +87,29 @@ export default async function handler(req,res){
      if(saved.error)throw saved.error;
      return json(res,{tier:saved.data});
    }
+   if(action==='publish'){
+     if(process.env.EVENTS_MARKETPLACE_PAYMENTS_ENABLED!=='true')
+       return json(res,{error:'Third-party ticket publishing is not enabled yet'},503);
+     if(!uuid(body.eventId)||organisation.status!=='approved'||!organisation.tax_review_complete||
+         !organisation.stripe_capabilities_ready||!organisation.stripe_account_id)
+       return json(res,{error:'Complete Stripe and organiser verification first'},403);
+     const ev=await db.from('sb_events').select('id,status,starts_at,currency')
+       .eq('id',body.eventId).eq('organiser_profile_id',organisation.id).maybeSingle();
+     if(ev.error||ev.data?.status!=='draft'||Date.parse(ev.data.starts_at)<=Date.now())
+       return json(res,{error:'Select a future draft event'},409);
+     const tiers=await db.from('sb_event_tiers').select('quantity_total').eq('event_id',ev.data.id);
+     const fees=await db.from('sb_event_listing_fees').select('tier_code').eq('event_id',ev.data.id).eq('status','paid').limit(1);
+     if(tiers.error||fees.error||!tiers.data?.length||!fees.data?.length)
+       return json(res,{error:'Add tickets and complete the event listing payment first'},409);
+     const {quoteListing}=await import('./lib/event-listings.js');
+     const cap=tiers.data.reduce((sum,row)=>sum+row.quantity_total,0);
+     try{quoteListing(ev.data.currency,fees.data[0].tier_code,cap);}
+     catch{return json(res,{error:'Event has exceeded the paid listing tier capacity'},409);}
+     const saved=await db.from('sb_events').update({status:'published'})
+       .eq('id',ev.data.id).eq('status','draft').select('id,status').maybeSingle();
+     if(saved.error||!saved.data)return json(res,{error:'Event publication is not approved'},409);
+     return json(res,{event:saved.data});
+   }
    return json(res,{error:'Unknown organiser operation'},400);
  }catch(error){
    console.error('Organiser API error',error);
