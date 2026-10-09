@@ -53,7 +53,7 @@ export default async function handler(req,res){
    if(!await eventManager(db,ctx,eventId))return json(res,{error:'Not authorised to manage this event'},403);
    const [invites,staff]=await Promise.all([
     db.from('sb_event_staff_invites')
-     .select('id,invited_email,expires_at,accepted_by,accepted_at,revoked_at,created_at')
+     .select('id,invited_email,invited_name,invited_phone,expires_at,accepted_by,accepted_at,revoked_at,created_at')
      .eq('event_id',eventId).order('created_at',{ascending:false}).limit(200),
     db.from('sb_event_staff_access')
      .select('id,user_id,role,granted_at,revoked_at')
@@ -77,6 +77,8 @@ export default async function handler(req,res){
    return json(res,{error:'Only the organiser or an admin can manage this event'},403);
   if(action==='invite'){
    const email=safeText(body.email,254).toLowerCase();
+   const phone=safeText(body.phone,20),staffName=safeText(body.staffName,100);
+   if(phone&&!/^\+[1-9][0-9]{7,14}$/.test(phone))return json(res,{error:'Enter the mobile in international format, e.g. +351912345678'},400);
    if(!validEmail(email))return json(res,{error:'Enter the staff member email'},400);
    const remaining=await db.from('sb_event_staff_invites').select('id',{count:'exact',head:true})
     .eq('event_id',eventId).is('revoked_at',null).is('accepted_at',null)
@@ -85,7 +87,7 @@ export default async function handler(req,res){
    if((remaining.count||0)>=30)return json(res,{error:'Too many pending invitations; revoke some before inviting more'},409);
    const token=randomBytes(32).toString('hex');
    const result=await db.from('sb_event_staff_invites').insert({
-    event_id:eventId,invited_email:email,token_digest:digest(token),invited_by:ctx.user.id
+    event_id:eventId,invited_email:email,invited_phone:phone||null,invited_name:staffName||null,token_digest:digest(token),invited_by:ctx.user.id
    }).select('id,expires_at').single();
    if(result.error)throw result.error;
    const base=(process.env.SITE_URL||'https://www.soundbunker.pt').replace(/\/$/,'');
