@@ -4,7 +4,7 @@ export default async function handler(req,res) {
   if(req.method!=='GET') return json(res,{error:'Method not allowed'},405);
   try {
     const db=eventsDatabase();
-    const event=await db.from('sb_events').select('id,slug,title,description,organiser,venue,image_url,starts_at,ends_at')
+    const event=await db.from('sb_events').select('id,slug,title,description,organiser,venue,image_url,starts_at,ends_at,country_code,currency,venue_timezone,event_kind')
       .eq('status','published').gt('starts_at',new Date().toISOString()).order('starts_at',{ascending:true}).limit(60);
     if(event.error) throw event.error;
     const ids=event.data.map(e=>e.id);
