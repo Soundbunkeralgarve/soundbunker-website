@@ -18,7 +18,7 @@ export default async function handler(req,res){
  if(!ctx.user.email_confirmed_at)return json(res,{error:'Confirm your email before uploading artwork'},403);
  try{
   const org=await organiserForUser(ctx.admin,ctx.user.id);
-  if(!org || org.status==='suspended')return json(res,{error:'An active organiser account is required'},403);
+  if((!org && ctx.profile?.role!=='admin') || org?.status==='suspended')return json(res,{error:'An active organiser account is required'},403);
   const purpose=String(req.headers['x-media-purpose']||'');
   const type=String(req.headers['content-type']||'').split(';')[0].trim().toLowerCase();
   if(!['logo','poster'].includes(purpose)||!['image/jpeg','image/png','image/webp'].includes(type))
@@ -34,7 +34,7 @@ export default async function handler(req,res){
   }
   const bytes=Buffer.concat(parts),ext=validFormat(bytes,type);
   if(size<200||!ext)return json(res,{error:'The image is empty or its file format is invalid'},400);
-  const folder=org.id+'/'+purpose;
+  const folder=(org?.id||'soundbunker')+'/'+purpose;
   const existing=await ctx.admin.storage.from(bucket).list(folder,{limit:100});
   if(existing.error)throw existing.error;
   if((existing.data||[]).length>=60)return json(res,{error:'Artwork upload limit reached; contact support'},429);
