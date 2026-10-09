@@ -111,6 +111,18 @@
     {
       "source": "/organiser",
       "destination": "/organiser.html"
+    },
+    {
+      "source": "/ticket-login",
+      "destination": "/ticket-login.html"
+    },
+    {
+      "source": "/ticket-wallet",
+      "destination": "/ticket-wallet.html"
+    },
+    {
+      "source": "/promo-team",
+      "destination": "/promo-team.html"
     }
   ],
   "functions": {
