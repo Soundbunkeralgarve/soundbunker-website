@@ -22,6 +22,21 @@ With direct charges, organiser is merchant of record and pays processing fees. I
 - https://docs.stripe.com/connect/risk-management
 - https://stripe.com/pt-pt/connect/pricing
 
+## Payout timing requirements — added 9 October 2026
+Product intention: organisers should receive their ticket funds through their **own** connected Stripe account and bank. SoundBunker never collects event ticket sale revenue. The requested standard payout service is initiated after an event has ended, with bank receipt several business days later; optional paid fast payout targets **bank arrival the next day after the event** (subject to eligibility), not just payout initiation.
+
+**Critical feasibility restrictions**:
+1. Stripe direct charges usually release funds on the connected merchant's payout schedule relative to payment date, NOT the event date. A post-event payout requires a manual payout schedule or other Stripe-approved controlled payout mechanism.
+2. Stripe manual payouts have a maximum holding period of 90 days for Portugal. Events sold more than 90 days in advance cannot have all ticket proceeds held to the event date using ordinary Stripe manual payouts. We must not promise event+1 bank receipt until an approved compliant design handles advance ticket sales.
+3. Platform controls for accounts with a full Stripe Dashboard allow payout scheduling but may not prevent organisers from initiating manual payouts themselves. Full payout control requires approval from Stripe. The event-specific ledger must handle multiple overlapping events per organiser; Stripe balance is account-wide.
+4. Stripe Instant Payouts require eligible connected accounts and payout destinations, positive instant-available balance, and payout limits. They typically reach bank accounts within ~30 minutes but are not guaranteed. Stripe Connect publishes a 1% cost for Instant Payouts. Any SoundBunker uplift needs confirmed permissions, transparent pricing and testing. Do not charge an upgrade unless fast payout eligibility is verified.
+5. Fallback for an ineligible or unavailable fast payout is a normal standard payout and prompt refund of any upsell fee.
+6. Stripe-hosted full onboarding, organiser tax compliance, processor responsibility, refunds, cancellations and chargebacks stay part of the design. Avoid falsely labelling the ordinary account as escrow; Stripe explicitly does not provide escrow accounts.
+
+Shotgun context: its published Portugal 2024 10% fee was paid by the ticket buyer, not necessarily deducted from organiser proceeds. At 500 tickets x €20, illustrative buyer-facing Shotgun fee is €1,000, subject to current contract details and pricing. Shotgun documents default initiation 24h after event, bank receipt normally 2–3 business days later. Never claim organiser has an automatic 10% organiser commission without a current contract.
+
+Reference: https://docs.stripe.com/connect/manual-payouts ; https://docs.stripe.com/connect/platform-controls-for-stripe-dashboard-accounts ; https://docs.stripe.com/connect/instant-payouts ; https://support-pro.shotgun.live/hc/en-us/articles/31170525215122-Make-your-first-transfer
+
 ## Compliance
 Stripe KYC verification is not bypassable. Collect/display the organiser's legal name, country and required tax details; for Portuguese taxable organisers this may include NIF/NIPC and invoicing/IGAC obligations. Tax and event licensing rules require Portuguese professional review. Distinguish the organiser's ticket invoices from SoundBunker's listing-fee invoices. Terms must clarify who sells/admisses/refunds tickets.
 
