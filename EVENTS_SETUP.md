@@ -1,7 +1,10 @@
 # SoundBunker Events — pre-launch checklist
 
 ## Status
-Feature branch only. No example events or tickets published; do not merge without testing.
+Public BETA approved for the main SoundBunker website after automated checks pass. Public pages, organiser profile registration and private draft creation may run. No example events or tickets have been published. Do not accept ticket payments or listing fees until a separate reviewed production release.
+
+## Beta checkout safety
+Both the customer ticket payment route (`api/event-checkout.js`) and organiser listing payment route (`api/organiser-listing.js`) return 503 before invoking Stripe, irrespective of environment flags. Stripe Connect account onboarding (`api/organiser-connect.js`) is also blocked during beta. The storefront displays no active buying button. To activate any of these in future requires an explicit, reviewed source code change and complete end-to-end tests. Existing studio bookings, shop and voucher checkouts remain operational independently.
 
 ## Organiser marketplace: revised payment policy (9 October 2026)
 **Locked decision:** For third-party events, SoundBunker charges only an upfront event-listing fee, no per-ticket platform commission. Ticket buyers pay the organiser's own Stripe connected account (Connect direct charges), and Stripe pays out to organisers according to its schedules. SoundBunker does **not** collect, hold, transfer or manually pay third-party ticket proceeds. See [EVENTS_CONNECT_MODEL.md](EVENTS_CONNECT_MODEL.md).
