@@ -15,21 +15,22 @@ export function validTicket(id,sig) {
   const a=Buffer.from(signedTicket(id),'hex'),b=Buffer.from(sig,'hex');
   return a.length===b.length && timingSafeEqual(a,b);
 }
-export function verifyEventPayment(order,checkout) {
+export function verifyEventPayment(order,checkout,connectedAccount=null) {
   if (!order || !checkout || checkout.metadata?.purchase_type!=='event_ticket' ||
       checkout.metadata.event_order_id!==order.id || checkout.client_reference_id!==order.id ||
       checkout.payment_status!=='paid' || checkout.currency?.toLowerCase()!==(order.currency||'eur') ||
       checkout.amount_total!==order.total_cents ||
+      (order.stripe_connected_account||null)!==(connectedAccount||null) ||
       (order.stripe_session_id && order.stripe_session_id!==checkout.id)) throw new Error('Event checkout does not match reserved order');
 }
-export async function fulfillEventCheckout(checkout, db=eventsDatabase()) {
+export async function fulfillEventCheckout(checkout, db=eventsDatabase(), connectedAccount=null) {
   if (process.env.VERCEL_ENV === 'production' && checkout.livemode !== true) throw new Error('Test Stripe payment cannot issue live tickets');
   const id=checkout.metadata?.event_order_id;
   if(!/^[0-9a-f-]{36}$/i.test(String(id||''))) throw new Error('Missing event order reference');
   const found=await db.from('sb_event_orders').select('*').eq('id',id).single();
   if(found.error||!found.data) throw new Error('Event order not found');
   const order=found.data;
-  verifyEventPayment(order,checkout);
+  verifyEventPayment(order,checkout,connectedAccount);
   const done=await db.rpc('sb_confirm_event_order',{p_order:id,p_session:checkout.id});
   if(done.error) throw new Error('Event ticket fulfilment failed');
   if(done.data==='needs_attention') {
