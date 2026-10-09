@@ -72,3 +72,7 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f SUPABASE_TICKETBUNKER_FESTIVAL_QUOTES.sql
       - name: Verify festival quote requests stay unpaid
         run: psql -v ON_ERROR_STOP=1 -f test/ticketbunker-festival-quote-schema.sql
+      - name: Apply small-events total ticket limit
+        run: psql -v ON_ERROR_STOP=1 -f SUPABASE_TICKETBUNKER_SMALL_EVENTS_LIMIT.sql
+      - name: Verify event tickets cannot exceed 2k across multiple tiers
+        run: psql -v ON_ERROR_STOP=1 -f test/ticketbunker-small-events-limit.sql

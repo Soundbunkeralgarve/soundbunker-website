@@ -132,3 +132,60 @@ img{display:block;max-width:100%}
 @media(max-width:1150px){.tb-plan-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:700px){.tb-plan-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tb-plan{padding:17px 13px}}
 @media(max-width:390px){.tb-plan-grid{grid-template-columns:1fr}}
+
+/* ticketBunker brand lock: deep SoundBunker purples, black and white only.
+   White wordmark and white ticket cards preserve a clean corporate ticketing UX. */
+:root{--tb-text:#211629;--tb-muted:#625b69;--tb-purple:#933be8;--tb-purple2:#6f1ec7;--tb-ink:#11091a}
+body.ticketbunker-site{background:#160e20;color:#fff}
+.tb-beta-ribbon{background:#efe2ff;color:#311744;border-bottom:1px solid #bda0de}
+.tb-header{background:#21102f;color:#fff;border-bottom:1px solid #ffffff2b;box-shadow:0 9px 30px #12071830}
+.tb-brand img,.tb-footer .tb-brand img{filter:none}
+.tb-nav a{color:#f5eaff}
+.tb-nav a[aria-current=page],.tb-nav a:hover{color:#e7baff;border-color:#d496ff}
+.tb-head-action{background:#8d35db;color:#fff}
+.tb-hero{background:radial-gradient(ellipse at 33% 40%,#693499 0%,transparent 58%),linear-gradient(140deg,#261138,#120a1d 78%);color:#fff}
+.tb-hero h1{color:#fff}
+.tb-hero h1 span{color:#ead2ff}
+.tb-hero .tb-eyebrow{color:#ead0fc}
+.tb-hero-copy>p:not(.tb-eyebrow):not(.tb-small-note){color:#e7d9f0}
+.tb-small-note{color:#e7d3f1}
+.tb-violet-dot{background:#d39cff}
+.tb-hero-picture:before{background:linear-gradient(90deg,#281537 0%,#28153725 25%,transparent 60%),linear-gradient(0deg,#12091ea0,transparent 65%)}
+.tb-categories{background:#221130;border-color:#563568}
+.tb-category{color:#f4eaf8}
+.tb-category span{color:#dbb2ff}
+.tb-category.active,.tb-category:hover{background:#4d2870;color:#fff}
+.tb-feature-section{background:#1c0e29;color:#fff}
+.tb-feature-section .tb-showcase-explainer{color:#ead9f0}
+.tb-feature-card{background:#f8f4fb;color:#23182c;border-color:#d5bfeb}
+.tb-feature-card .tb-eyebrow{color:#7025b6}
+.tb-feature-image:after{background:linear-gradient(90deg,#f8f4fb 0%,#f8f4fb00 40%)}
+.tb-upcoming{background:#f6f0fa;color:#1c1127}
+.tb-upcoming .tb-section-head h2{color:#241630}
+.tb-upcoming .tb-section-head .tb-eyebrow{color:#7521bb}
+.tb-upcoming .tb-event-card{background:#fff;color:#1e1624;border-color:#e2d4eb}
+.tb-quick-filters button.selected{background:#63239c;border-color:#63239c}
+.tb-plans{background:radial-gradient(ellipse at 90% 0%,#5f2e82,transparent 68%),#20102e;color:#fff;border-color:#54246e}
+.tb-plans .tb-section-head h2,.tb-plans .tb-section-head>div>p:last-child{color:#fff}
+.tb-plans .tb-eyebrow{color:#d9a9fa}
+.tb-plans .tb-section-head .tb-button.outline{background:transparent;color:#fff;border-color:#d8b8ee}
+.tb-plan-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.tb-plans .tb-plan{background:#fff;color:#20152a;border-color:#e5dbeb}
+.tb-plan-highlight{border-color:#c17bf4!important}
+.tb-plans .tb-plan-terms{color:#dfcfe9}
+.tb-payment-explainer{max-width:1100px;margin:26px 0 0;padding:25px 28px;border:1px solid #8d5dad;border-radius:11px;background:#311b43;color:#fff}
+.tb-payment-explainer h3{font:700 clamp(21px,2.8vw,29px) 'Space Grotesk';margin:0 0 10px;color:#f5d9ff}
+.tb-payment-explainer p{font-size:14px;line-height:1.7;color:#f2e5fa;margin:11px 0}
+.tb-payment-explainer p:last-child{margin-bottom:0}
+.tb-benefits{background:#f8f5fa;color:#211729}
+.tb-benefit-grid article{background:#fff}
+.tb-organiser-cta{background:#241333;color:#fff}
+.tb-organiser-cta h2{color:#fff}
+.tb-organiser-cta>div>.tb-eyebrow{color:#e1b8f9}
+.tb-organiser-cta p:not(.tb-eyebrow){color:#e7d9ee}
+.tb-footer{background:#14091d;color:#e9daef;border-color:#4d2f5d}
+.tb-footer a{color:#f9f3fc}
+.tb-footer .tb-brand img{filter:none}
+.tb-demo-dialog{color:#211629}
+@media(max-width:700px){.tb-plan-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tb-payment-explainer{padding:20px 17px}}
+@media(max-width:390px){.tb-plan-grid{grid-template-columns:1fr}}

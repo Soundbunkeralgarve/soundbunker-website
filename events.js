@@ -4,9 +4,9 @@ const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<
 const conceptEvents=Object.freeze([
  {id:'demo-shoreline',title:'Shoreline Sessions',type:'Clubs',date:'2026-11-07T20:00:00Z',timezone:'Europe/Lisbon',venue:'Algarve coast · Portugal',subtitle:'House · Electronic · Club Night',image:'/dj.webp',demo:true},
  {id:'demo-bassline',title:'Bassline Social',type:'Clubs',date:'2026-11-14T21:00:00Z',timezone:'Europe/London',venue:'Bristol · UK',subtitle:'Drum & Bass · Jungle · Nightlife',image:'/assets/dj.webp',demo:true},
- {id:'demo-sunset',title:'Sunset People',type:'Festivals',date:'2026-12-05T16:00:00Z',timezone:'Europe/Lisbon',venue:'Algarve coast · Portugal',subtitle:'Festival · House · Beach',image:'/assets/retreats/artist-community.webp',demo:true},
+ {id:'demo-sunset',title:'Sunset Rooftop Sessions',type:'Clubs',date:'2026-12-05T16:00:00Z',timezone:'Europe/Lisbon',venue:'Algarve coast · Portugal',subtitle:'Rooftop · House · Sunset Sessions',image:'/assets/retreats/artist-community.webp',demo:true},
  {id:'demo-algorithm',title:'The Algorithm Live',type:'Live',date:'2026-11-28T19:30:00Z',timezone:'Europe/Lisbon',venue:'Loulé · Portugal',subtitle:'Indie · Live Band · Alternative',image:'/assets/retreats/live-showcase.webp',demo:true},
- {id:'demo-afterdark',title:'After Dark Sessions',type:'Festivals',date:'2027-01-23T18:00:00Z',timezone:'Europe/London',venue:'Manchester · UK',subtitle:'Electronic · Festival Concept',image:'/academy-dj.jpg',demo:true},
+ {id:'demo-afterdark',title:'After Dark Sessions',type:'Clubs',date:'2027-01-23T18:00:00Z',timezone:'Europe/London',venue:'Manchester · UK',subtitle:'Electronic · Live Nightlife',image:'/academy-dj.jpg',demo:true},
  {id:'demo-openmic',title:'Comedy After Hours',type:'Comedy',date:'2026-12-12T20:00:00Z',timezone:'Europe/London',venue:'London · UK',subtitle:'Stand-up · Comedy · Live',image:'/party-poster.jpg',demo:true},
  {id:'demo-creative',title:'Culture Collective',type:'Arts',date:'2027-02-06T15:00:00Z',timezone:'Europe/Lisbon',venue:'Loulé · Portugal',subtitle:'Arts · Community · Live',image:'/assets/retreats/artist-community.webp',demo:true}
 ]);
@@ -19,7 +19,7 @@ function formatEventDate(event){
 }
 function money(n,currency){try{return new Intl.NumberFormat('en-GB',{style:'currency',currency:(currency||'eur').toUpperCase()}).format(n/100)}catch{return ''}}
 function tagType(kind){
- if(kind==='festival')return 'Festivals';
+ if(kind==='festival')return 'Clubs';
  if(kind==='club')return 'Clubs';
  if(kind==='workshop'||kind==='community')return 'Arts';
  return 'Live';
@@ -55,7 +55,7 @@ document.querySelectorAll('[data-filter]').forEach(node=>node.addEventListener('
 $('#tb-event-search').addEventListener('input',e=>{term=e.target.value.trim().toLocaleLowerCase();render()});
 function showEvent(id){
  let item=listedEvents.find(e=>e.id===id);
- if(id==='sunset')item={title:'Sunset People Festival',venue:'Concept location · Algarve Coast',subtitle:'Featured Showcase demonstration',image:'/assets/retreats/live-showcase.webp',demo:true};
+ if(id==='sunset')item={title:'Midnight Sessions Live',venue:'Demo club venue · Algarve Coast',subtitle:'Featured club-night demonstration',image:'/assets/retreats/live-showcase.webp',demo:true};
  if(!item)return;
  $('#tb-demo-title').textContent=item.title;
  $('#tb-demo-image').src=item.image;

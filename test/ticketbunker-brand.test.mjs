@@ -11,7 +11,7 @@ test('TicketBunker is prominently branded with approved vector, without altering
  assert.match(events,/ticketbunker-logo\.svg/);
  assert.match(events,/href="\/organiser"/);
 });
-test('Events landing is an independent white ticketing experience',()=>{
+test('Events landing keeps a clean ticketing experience',()=>{
  assert.match(events,/ticketbunker\.css/);
  assert.match(events,/Upcoming Events/);
  assert.match(events,/tb-feature-section/);
@@ -31,4 +31,14 @@ test('premium showcase request exists but cannot collect money',()=>{
  assert.match(organiser,/No charge is taken/);
  assert.match(orgApi,/action==='featureRequest'/);
  assert.doesNotMatch(orgApi,/checkout\\.stripe\\.com/i);
+});
+
+test('launch focuses on three small-event plans and transparent Stripe fees',()=>{
+ assert.match(events,/1–100 tickets sold/);
+ assert.match(events,/101–500 tickets sold/);
+ assert.match(events,/501–2,000 tickets sold/);
+ assert.match(events,/Stripe handles all card transactions/);
+ assert.match(events,/Stripe deducts its processing fees/);
+ assert.doesNotMatch(events,/festival-quote|Festival Pro|Request a Festival Quote/);
+ assert.doesNotMatch(organiser,/id="festivalQuoteForm"/);
 });
