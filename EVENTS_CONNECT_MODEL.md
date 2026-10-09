@@ -37,6 +37,30 @@ Shotgun context: its published Portugal 2024 10% fee was paid by the ticket buye
 
 Reference: https://docs.stripe.com/connect/manual-payouts ; https://docs.stripe.com/connect/platform-controls-for-stripe-dashboard-accounts ; https://docs.stripe.com/connect/instant-payouts ; https://support-pro.shotgun.live/hc/en-us/articles/31170525215122-Make-your-first-transfer
 
+## International launch / UK festival promoters (9 October 2026)
+
+Global scope: event discovery can operate worldwide. Prioritise UK and Portugal organiser pilots; enable paid ticket sales only in countries where supported by Stripe Connect and local regulation. Organiser country, event venue country and payout country are distinct.
+
+- Direct charges remain the desired flow: each promoter is the merchant of record and receives funds into their own Stripe connected account. No proceeds enter SoundBunker's Stripe balance. Check whether Portugal-based Stripe platform can onboard and route direct charges to UK merchants with the selected Accounts v2 configuration before enabling their sales.
+- Support GBP and EUR and, later, other supported currencies. Store currency per event ticket tier and order. Do not hardcode EUR, make all money calculations exact in minor units, and handle country-specific tax/invoicing on listing charges.
+- Store event country, venue address and the venue's IANA timezone (Europe/London, Europe/Lisbon etc). Multi-day events have distinct start/end times. Tickets, emails and scanning must show the actual local venue time including DST.
+- UK festival promoters can be an individual or registered business where Stripe permits. Stripe KYC must be completed through its hosted onboarding. Do not require Portuguese NIF for all UK organisers; use appropriate country-specific identifiers and compliance.
+- Festival-scale requirements: capacity much higher than 2,000 tickets, multiple simultaneous gates, reliable atomic scan validation, staff roles, offline capability with safe synchronisation, weekend passes, day passes, camping add-ons, timed slots, age policies, wristband/re-entry control, refund and cancellation workflows, reports, multiple ticket types, peak load testing, organiser self-service.
+- UK festivals and licensed live music/alcohol events require proper venue and organiser permissions. The organiser is responsible for obtaining applicable licences; ensure appropriate organiser declaration, terms and legal review before selling tickets.
+- Promoter pitch: one fixed listing price, zero SoundBunker ticket commission, buyer pays the promoter's Stripe account directly. Stripe's own payment and payout fees remain visible.
+- Do NOT market guaranteed event+1 bank payouts until the country-specific Stripe payout controls, 90-day holding limits, accounts eligible for instant payouts, and early ticket sales are properly addressed. The ordinary direct-charge schedule releases relative to payment date unless specifically changed.
+- User's business hypothesis: UK independent festivals and other regional promoters could benefit substantially; start by recruiting a small pilot cohort and validate outcomes.
+
+Source references:
+https://stripe.com/gb/connect/pricing
+https://docs.stripe.com/connect/accounts-v2/connected-account-configuration
+https://docs.stripe.com/connect/direct-charges
+https://docs.stripe.com/connect/instant-payouts
+https://www.gov.uk/find-licences/premises-licence
+https://www.gov.uk/guidance/admission-charges-to-cultural-events-vat-notice-70147
+
+Current Events v1 is **Portugal-only, EUR-only, not an external promoter marketplace**, and does not implement offline scanning or UK event payouts. Do not present these as live features.
+
 ## Compliance
 Stripe KYC verification is not bypassable. Collect/display the organiser's legal name, country and required tax details; for Portuguese taxable organisers this may include NIF/NIPC and invoicing/IGAC obligations. Tax and event licensing rules require Portuguese professional review. Distinguish the organiser's ticket invoices from SoundBunker's listing-fee invoices. Terms must clarify who sells/admisses/refunds tickets.
 
