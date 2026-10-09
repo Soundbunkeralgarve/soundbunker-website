@@ -21,7 +21,7 @@ export default async function handler(req,res){
     const form=new URLSearchParams({
       mode:'payment',customer_email:email,client_reference_id:order.id,
       success_url:origin+'/events.html?checkout=success',cancel_url:origin+'/events.html?checkout=cancelled',
-      expires_at:String(Math.floor(Date.now()/1000)+1800),
+      expires_at:String(Math.floor(Date.now()/1000)+1805),
       'line_items[0][quantity]':String(quantity),
       'line_items[0][price_data][currency]':'eur',
       'line_items[0][price_data][unit_amount]':String(order.total_cents/quantity),

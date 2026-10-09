@@ -23,6 +23,7 @@ export function verifyEventPayment(order,checkout) {
       (order.stripe_session_id && order.stripe_session_id!==checkout.id)) throw new Error('Event checkout does not match reserved order');
 }
 export async function fulfillEventCheckout(checkout, db=eventsDatabase()) {
+  if (process.env.VERCEL_ENV === 'production' && checkout.livemode !== true) throw new Error('Test Stripe payment cannot issue live tickets');
   const id=checkout.metadata?.event_order_id;
   if(!/^[0-9a-f-]{36}$/i.test(String(id||''))) throw new Error('Missing event order reference');
   const found=await db.from('sb_event_orders').select('*').eq('id',id).single();

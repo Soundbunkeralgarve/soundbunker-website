@@ -130,3 +130,15 @@ revoke all on function public.sb_checkin_event_ticket(uuid,uuid) from public,ano
 grant execute on function public.sb_reserve_event_tickets(uuid,text,text,integer) to service_role;
 grant execute on function public.sb_confirm_event_order(uuid,text) to service_role;
 grant execute on function public.sb_checkin_event_ticket(uuid,uuid) to service_role;
+
+
+-- Aggregate capacity in SQL, avoiding paginated client-side order counts.
+create or replace function public.sb_event_inventory()
+returns table(tier_id uuid,used_count bigint) language sql stable security invoker set search_path='' as $$
+ select o.tier_id, coalesce(sum(o.quantity),0)::bigint
+ from public.sb_event_orders o
+ where o.status='paid' or o.status='needs_attention' or (o.status='reserved' and o.reserved_until>now())
+ group by o.tier_id
+$$;
+revoke all on function public.sb_event_inventory() from public,anon,authenticated;
+grant execute on function public.sb_event_inventory() to service_role;
