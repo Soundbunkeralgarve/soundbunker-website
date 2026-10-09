@@ -27,19 +27,19 @@ async function scan(code){
 }
 async function events(){
  const result=await request('/api/event-staff?mode=my');
- const list=result.events||[];
+ const list=(result.events||[]).filter(event=>event.status==='published');
  const select=$('#scanEvent');
  select.replaceChildren();
  for(const e of list){
   const option=document.createElement('option');
-  option.value=e.id;option.textContent=e.title+' · '+e.venue+(e.status==='draft'?' (draft)':'');
+  option.value=e.id;option.textContent=e.title+' · '+e.venue;
   select.appendChild(option);
  }
  const params=new URLSearchParams(location.search);
  const id=params.get('eventId');
  if(id&&list.some(e=>e.id===id))select.value=id;
  $('#scannerPanel').hidden=!list.length;
- if(!list.length)status('No events are assigned to you yet. Ask the organiser for a staff invitation.');
+ if(!list.length)status('No published events are assigned to you yet. Your organiser must finish event setup and authorise your account first.');
  else status('Access verified for '+list.length+' event(s). Allow camera access to scan.');
  if(list.length&&window.Html5Qrcode){
   try{
@@ -56,7 +56,10 @@ async function start(){
   sb=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true}});
   const {data:{session}}=await sb.auth.getSession();
   if(!session){
-   status('Please sign in at /client with the email address your invitation was sent to, then reopen this scanner link.');
+   const signIn=document.createElement('a');signIn.className='solid';signIn.textContent='Sign in for staff access';signIn.href='/ticket-login?role=organiser&next='+encodeURIComponent(location.pathname+location.search);
+   $('#authMessage').appendChild(document.createElement('div')).appendChild(signIn);
+   status('Sign in with the verified email that received your staff invitation.');
+   $('#authMessage').appendChild(signIn);
    return;
   }
   access=session.access_token;
