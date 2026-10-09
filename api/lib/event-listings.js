@@ -1,6 +1,6 @@
 import { eventsDatabase } from './events.js';
-// Public BETA pricing proposals, minor currency units. Festival Pro is capped at
-// 100,000 tickets pending custom approval for larger productions.
+// Public BETA pricing proposals, minor currency units. Festival and Festival Pro
+// require individual contracts; no automatic amount is advertised or charged.
 export const listingPlans=Object.freeze({
  gbp:Object.freeze({
   starter:Object.freeze({amount:4900,capacity:100,label:'Starter'}),
