@@ -13,7 +13,7 @@ async function canManage(db,ctx,eventId) {
 }
 async function rowsForTeam(db,eventId){
  const rows=await db.from('sb_event_promo_teams')
- .select('id,event_id,code,promoter_name,promoter_email,points_per_paid_ticket,points_per_free_ticket,status,created_at')
+ .select('id,event_id,code,promoter_name,promoter_email,points_per_paid_ticket,points_per_free_ticket,buyer_discount_percent,status,created_at')
  .eq('event_id',eventId).order('created_at',{ascending:false}).limit(150);
  if(rows.error)throw rows.error;
  const ids=rows.data.map(row=>row.id);
@@ -39,7 +39,7 @@ export default async function handler(req,res) {
   if(req.method==='GET'&&req.query?.mode==='mine'){
    const email=String(ctx.user.email||'').toLowerCase();
    const mine=await db.from('sb_event_promo_teams')
-    .select('id,event_id,code,promoter_name,promoter_email,points_per_paid_ticket,points_per_free_ticket,status')
+    .select('id,event_id,code,promoter_name,promoter_email,points_per_paid_ticket,points_per_free_ticket,buyer_discount_percent,status')
     .eq('promoter_email',email).in('status',['active','paused','invited']).limit(100);
    if(mine.error)throw mine.error;
    const ids=[...new Set(mine.data.map(x=>x.event_id))];
@@ -78,16 +78,16 @@ export default async function handler(req,res) {
   if(!await canManage(db,ctx,eventId))return json(res,{error:'Only the event organiser can change this promo team'},403);
   if(action==='invite'){
    const code=safeText(body.code,24).toUpperCase(),name=safeText(body.name,100),email=safeText(body.email,254).toLowerCase();
-   const earn=Number(body.pointsPerTicket),threshold=Number(body.pointsPerReward);
+   const earn=Number(body.pointsPerTicket),threshold=Number(body.pointsPerReward),discount=Number(body.buyerDiscountPercent||0);
    if(!/^[A-Z0-9-]{4,24}$/.test(code)||name.length<2||!validEmail(email)||
-     !Number.isInteger(earn)||earn<1||earn>100||!Number.isInteger(threshold)||threshold<1||threshold>100000)
+     !Number.isInteger(earn)||earn<1||earn>100||!Number.isInteger(threshold)||threshold<1||threshold>100000||!Number.isInteger(discount)||discount<0||discount>50)
     return json(res,{error:'Enter a name, verified email, promo code and points policy'},400);
    const existing=await db.from('sb_event_promo_teams').select('id',{count:'exact',head:true}).eq('event_id',eventId);
    if(existing.error)throw existing.error;
    if((existing.count||0)>=150)return json(res,{error:'Promo team limit reached for this event'},409);
    const created=await db.from('sb_event_promo_teams').insert({
     event_id:eventId,code,promoter_name:name,promoter_email:email,
-    points_per_paid_ticket:earn,points_per_free_ticket:threshold,created_by:ctx.user.id
+    points_per_paid_ticket:earn,points_per_free_ticket:threshold,buyer_discount_percent:discount,created_by:ctx.user.id
    }).select('id,code,promoter_name,promoter_email,status').single();
    if(created.error)return json(res,{error:'This code may already be in use for the event'},409);
    return json(res,{team:created.data,redeemable:false});
