@@ -1,5 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,follow"><title>Organiser Dashboard | SoundBunker Events</title><link rel="stylesheet" href="/events.css"><link rel="stylesheet" href="/organiser.css"><script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script defer src="/organiser.js"></script></head>
-<body><div class="beta-banner" role="status"><strong>BETA · NOT LIVE YET</strong> — Organiser sign-up and event drafts work. Publishing, checkout and payouts are not live.</div><header class="topbar"><a class="brand" href="/"><img src="/soundbunker-logo.png" alt="SoundBunker Algarve"></a><nav><a href="/events">Events</a><a href="/client">Client login</a><a href="/">SoundBunker</a></nav></header>
+<body><div class="beta-banner" role="status"><strong>BETA · NOT LIVE YET</strong> — Organiser sign-up and event drafts work. Publishing, checkout and payouts are not live.</div><header class="topbar"><a class="brand" href="/"><img src="/assets/ticketbunker/ticketbunker-logo.svg" alt="ticketBunker"></a><nav><a href="/events">Events</a><a href="/client">Client login</a><a href="/">SoundBunker</a></nav></header>
 <main class="events-content" style="max-width:1100px;margin:auto">
  <p class="eyebrow">BETA · FOR INDEPENDENT PROMOTERS</p><h1 style="font:700 clamp(45px,6vw,80px)/1 Space Grotesk;letter-spacing:-.04em">Your event.<br>Your ticket sales.</h1>
  <p style="max-width:720px;color:#c6b8ce;font-size:19px">Create an event draft from anywhere. Just one transparent publishing fee, no SoundBunker ticket commission. Ticket processing and payouts are planned through your own verified Stripe account; no payments are being taken in this beta.</p>
@@ -49,6 +49,44 @@
     </form>
   </div>
   <h2 style="margin-top:70px">Your events</h2><div id="myEvents" class="event-grid"></div>
+  <section id="listing-plans" style="margin-top:62px" aria-labelledby="listing-plans-heading">
+   <p class="eyebrow">FLAT EVENT FEES · PROPOSED BETA PRICING</p>
+   <h2 id="listing-plans-heading">Simple prices, even as you grow.</h2>
+   <p style="color:#d9cae2;line-height:1.7">Your plan is determined by tickets sold. Buyers pay no extra ticketBunker booking charge, and Stripe's own processing fees are separate. Fixed-price upgrades are charged only at the difference, after approval.</p>
+   <div class="tb-organiser-price-list" aria-label="Five ticketing fee brackets">
+    <div><strong>Starter</strong><span>1–100 sold</span><b>£49 / €59</b></div>
+    <div><strong>Standard</strong><span>101–500 sold</span><b>£149 / €179</b></div>
+    <div><strong>Event Plus</strong><span>501–2,000 sold</span><b>£449 / €529</b></div>
+    <div><strong>Festival</strong><span>2,001–5,000 sold</span><b>Custom quote</b></div>
+    <div><strong>Festival Pro</strong><span>5,001+ sold</span><b>Tailored agreement</b></div>
+   </div>
+   <p style="color:#cbb5da;font-size:12px">Prices subject to applicable taxes and final terms. No festival prices are published or automatically charged.</p>
+  </section>
+  <section id="festival-quote" aria-labelledby="festival-quote-heading" style="margin-top:44px;padding:clamp(24px,4vw,42px);background:#201a2c;border:1px solid #8c50d1;border-radius:12px">
+   <p class="eyebrow">FESTIVAL · FESTIVAL PRO</p>
+   <h2 id="festival-quote-heading" style="font:700 clamp(27px,4vw,43px)/1.1 'Space Grotesk'">Let's tailor the deal to your festival.</h2>
+   <p style="color:#dbcbeb;line-height:1.6">Planning to sell more than 2,000 tickets? Tell us about your event, and we'll come back with a personalised festival package. No card or payment required to request a quote.</p>
+   <form id="festivalQuoteForm" class="organiser-form" style="max-width:620px">
+    <label>Event draft<select name="eventId" id="festivalQuoteEvent" required></select></label>
+    <label>Expected ticket sales<input name="expectedTickets" type="number" min="2001" max="100000" value="3000" required></label>
+    <label>Anything else we should know?<textarea name="details" rows="3" maxlength="2000" placeholder="Number of days, stages, entrances, camping, required support…"></textarea></label>
+    <button class="solid" type="submit">Request a personalised festival quote ↗</button>
+    <p role="status" id="festivalQuoteStatus" style="color:#dbb9ff"></p>
+   </form>
+   <p style="font-size:12px;color:#cbb5da;margin-top:16px">For festivals above 100,000 tickets, please <a style="text-decoration:underline" href="mailto:bookings@soundbunker.pt?subject=ticketBunker%20major%20festival%20quotation">contact us directly</a>. Payments are disabled in BETA.</p>
+  </section>
+  <section id="featured-placement" aria-labelledby="featured-placement-heading" style="margin-top:64px;padding:clamp(24px,4vw,50px);background:#21172d;border:1px solid #9b5ee2;border-radius:13px">
+   <p class="eyebrow">PREMIUM PLACEMENT · PUBLIC BETA</p>
+   <h2 id="featured-placement-heading" style="font:700 clamp(28px,4vw,48px)/1.1 Space Grotesk">Put your event at the top.</h2>
+   <p style="max-width:750px;color:#e3d5ec;line-height:1.6">Request the ticketBunker Featured Showcase — a prominent event feature above regular listings. Requests can be submitted now, but payments and placements are not live during BETA.</p>
+   <form id="showcaseForm" class="organiser-form" style="max-width:550px">
+    <label>Choose an upcoming draft event<select name="eventId" id="showcaseEvent" required></select></label>
+    <p id="showcasePrice" style="font-weight:700;color:#efc5fa">Proposed upgrade: £49 for UK events / €59 for Portuguese events.</p>
+    <button class="solid" type="submit">Request Featured Showcase ↗</button>
+   </form>
+   <p role="status" id="showcaseMessage" style="margin-top:14px;color:#efc5fa"></p>
+   <p style="color:#c0aacd;font-size:12px">No charge is taken when you request a place. Price, availability, tax and booking terms require confirmation before the paid feature launches.</p>
+  </section>
   <section aria-labelledby="staffHeading" style="margin-top:65px" id="staffAccess">
    <p class="eyebrow">DOOR STAFF · BETA</p>
    <h2 id="staffHeading">Invite your scanning team.</h2>

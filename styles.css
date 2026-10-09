@@ -93,3 +93,26 @@ img{height:auto}
 @media(max-width:680px){.site-nav{max-height:calc(100svh - 70px)}}
 
 .site-nav .header-beta-pill{font-size:9px;letter-spacing:.06em;font-weight:800;background:#dda9f5;color:#271531;padding:3px 5px;margin-left:4px;border-radius:2px;vertical-align:middle}
+
+/* ticketBunker — homepage flagship advert */
+#ticketbunker-home-promo{background:#fff;color:#1a1420;display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,1fr);align-items:stretch;overflow:hidden;min-height:570px;position:relative;border-bottom:1px solid #e1dae8}
+#ticketbunker-home-promo .tb-home-promo-copy{padding:clamp(48px,6.5vw,110px) clamp(26px,5vw,85px);align-self:center;position:relative;z-index:2}
+#ticketbunker-home-promo .tb-home-eyebrow{color:#7d26ce;font-weight:800;letter-spacing:.11em;font-size:11px;text-transform:uppercase;display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:0 0 25px}
+#ticketbunker-home-promo .tb-home-eyebrow span{background:#8027ee;color:white;padding:5px 8px;border-radius:3px;font-weight:800}
+#ticketbunker-home-promo .tb-home-logo{width:min(100%,340px);height:auto;filter:brightness(0);object-fit:contain;object-position:left;margin:0 0 30px}
+#ticketbunker-home-promo h2{font:700 clamp(40px,4.2vw,67px)/1.02 'Space Grotesk',sans-serif;letter-spacing:-.055em;color:#14101a;margin:0 0 25px}
+#ticketbunker-home-promo h2 em{color:#7828c2;font-style:normal}
+#ticketbunker-home-promo .tb-home-promo-copy>p:not(.tb-home-eyebrow){color:#59535d;max-width:550px;font-size:clamp(16px,1.6vw,19px);line-height:1.6;margin:0 0 23px}
+#ticketbunker-home-promo .tb-home-selling-points{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 28px}
+#ticketbunker-home-promo .tb-home-selling-points span{border:1px solid #ddd0e6;border-radius:25px;background:#f6efff;padding:8px 13px;color:#583376;font-size:12px;font-weight:800}
+#ticketbunker-home-promo .tb-home-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:23px}
+#ticketbunker-home-promo .tb-home-actions .button{background:#8325dc;color:white;border-radius:6px;font-weight:800;font-size:14px}
+#ticketbunker-home-promo .tb-home-secondary{padding:13px 17px;border:1px solid #a39aab;border-radius:6px;font-size:14px;font-weight:800;color:#241d2b}
+#ticketbunker-home-promo .tb-home-secondary:hover{background:#f4eafd}
+#ticketbunker-home-promo small{color:#79717d;line-height:1.55;font-size:11px}
+#ticketbunker-home-promo .tb-home-promo-visual{position:relative;min-height:440px;background:#1d1325;overflow:hidden}
+#ticketbunker-home-promo .tb-home-promo-visual>img{width:100%;height:100%;object-fit:cover}
+#ticketbunker-home-promo .tb-home-promo-visual:before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,#fff 0%,#ffffff00 28%),linear-gradient(0deg,#1b092f8c,transparent 55%);z-index:1}
+#ticketbunker-home-promo .tb-home-photo-chip{position:absolute;bottom:30px;right:35px;z-index:2;background:#fffffff0;color:#291735;border-radius:5px;padding:12px 18px;font-weight:800;font-size:12px;letter-spacing:.05em}
+@media(max-width:900px){#ticketbunker-home-promo{grid-template-columns:1fr}#ticketbunker-home-promo .tb-home-promo-copy{padding:50px 28px}#ticketbunker-home-promo .tb-home-promo-visual{min-height:300px;max-height:380px}#ticketbunker-home-promo .tb-home-promo-visual:before{background:linear-gradient(0deg,#1b092f7c,transparent 60%)}}
+@media(max-width:520px){#ticketbunker-home-promo h2{font-size:clamp(37px,10vw,53px)}#ticketbunker-home-promo .tb-home-promo-copy{padding:43px 21px}#ticketbunker-home-promo .tb-home-logo{width:min(100%,270px)}#ticketbunker-home-promo .tb-home-photo-chip{right:20px;bottom:20px;font-size:10px}}

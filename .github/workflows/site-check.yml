@@ -64,3 +64,11 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f test/events-staff-schema.sql
       - name: Verify atomic event access and revocation
         run: psql -v ON_ERROR_STOP=1 -f test/events-scanner-auth.sql
+      - name: Apply ticketBunker showcase request schema
+        run: psql -v ON_ERROR_STOP=1 -f SUPABASE_TICKETBUNKER_SHOWCASE_SETUP.sql
+      - name: Verify showcase requests never auto-charge
+        run: psql -v ON_ERROR_STOP=1 -f test/ticketbunker-showcase.sql
+      - name: Apply bespoke Festival and Festival Pro pricing schema
+        run: psql -v ON_ERROR_STOP=1 -f SUPABASE_TICKETBUNKER_FESTIVAL_QUOTES.sql
+      - name: Verify festival quote requests stay unpaid
+        run: psql -v ON_ERROR_STOP=1 -f test/ticketbunker-festival-quote-schema.sql

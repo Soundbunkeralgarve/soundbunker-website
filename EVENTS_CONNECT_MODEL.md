@@ -3,7 +3,7 @@
 ## Business model
 SoundBunker is the event-listing and ticketing software provider, **not the intermediary holding third-party ticket proceeds**. Third-party organisers pay a **one-time, VAT-accounted listing fee** to SoundBunker. SoundBunker takes **0% application fee** on each ticket. Payment processing fees are collected by Stripe directly from the organiser.
 
-Proposed tier prices from product discussion (subject to tax and commercial review): Starter €19/event (up to 100 tickets), Standard €39/event (up to 500), Large €79/event (up to 2,000). Avoid activation of unreviewed tiers and VAT settings.
+**Latest commercial direction (9 October 2026, proposed BETA pricing; not yet enabled):** five ticket-sales brackets. Starter 1–100 sold: £49 / €59. Standard 101–500: £149 / €179. Event Plus 501–2,000: £449 / €529. Festival 2,001–5,000: bespoke quote only, NO public fixed price. Festival Pro 5,001+: bespoke quote only, NO public fixed price. UK and PT prices are set independently; applicable tax and connected-account Stripe processing fees are additional. Upgrades between fixed tiers charge only the approved difference; upgrades to Festival or Festival Pro cannot auto-charge or invent a price. Paid ticket availability must be gated at each sale against the authorised tier threshold when marketplace checkout is launched. Do not enable payments before verifying concurrent-sale and quota enforcement.
 
 ## Payment architecture
 1. Organiser creates a SoundBunker profile with event/brand information. Free draft permitted.
