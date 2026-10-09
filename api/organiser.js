@@ -33,11 +33,15 @@ export default async function handler(req,res){
        ?await db.from('sb_event_showcase_requests').select('event_id,status,currency,proposed_amount_cents,requested_at').in('event_id',ids)
        :{data:[],error:null};
      if(showcases.error)throw showcases.error;
+     const festivalQuotes=ids.length
+       ?await db.from('sb_event_festival_quotes').select('event_id,tier_code,expected_tickets,status,currency,quoted_amount_cents').in('event_id',ids)
+       :{data:[],error:null};
+     if(festivalQuotes.error)throw festivalQuotes.error;
      return json(res,{organiser:{
        id:organisation.id,display_name:organisation.display_name,country_code:organisation.country_code,
        status:organisation.status,stripe_connected:!!organisation.stripe_account_id,
        stripe_capabilities_ready:organisation.stripe_capabilities_ready,tax_review_complete:organisation.tax_review_complete
-     },events:ev.data.map(e=>({...e,tiers:tiers.data.filter(t=>t.event_id===e.id),fees:fees.data.filter(f=>f.event_id===e.id),showcase:showcases.data.find(f=>f.event_id===e.id)||null}))});
+     },events:ev.data.map(e=>({...e,tiers:tiers.data.filter(t=>t.event_id===e.id),fees:fees.data.filter(f=>f.event_id===e.id),showcase:showcases.data.find(f=>f.event_id===e.id)||null,festivalQuote:festivalQuotes.data.find(f=>f.event_id===e.id)||null}))});
    }
    if(req.method!=='POST')return json(res,{error:'Method not allowed'},405);
    const body=await parseJson(req);
@@ -90,6 +94,28 @@ export default async function handler(req,res){
        .select('id,name,price_cents,quantity_total').single();
      if(saved.error)throw saved.error;
      return json(res,{tier:saved.data});
+   }
+   if(action==='festivalQuote'){
+     if(!uuid(body.eventId))return json(res,{error:'Choose an event to request a festival quote'},400);
+     const expectedTickets=Number(body.expectedTickets);
+     if(!Number.isSafeInteger(expectedTickets)||expectedTickets<=2000||expectedTickets>100000)
+       return json(res,{error:'Custom festival quotes are for 2,001 or more tickets (up to 100,000 online). Contact us directly for larger events.'},400);
+     const event=await db.from('sb_events').select('id,status,currency,starts_at')
+       .eq('id',body.eventId).eq('organiser_profile_id',organisation.id).maybeSingle();
+     if(event.error||!event.data||event.data.status!=='draft'||Date.parse(event.data.starts_at)<=Date.now())
+       return json(res,{error:'Choose a future draft event that belongs to your account'},403);
+     const tier=expectedTickets<=5000?'festival':'festival_pro';
+     const details=safeText(body.details,2000);
+     const created=await db.from('sb_event_festival_quotes').insert({
+       event_id:event.data.id,organiser_profile_id:organisation.id,
+       tier_code:tier,expected_tickets:expectedTickets,currency:event.data.currency,
+       event_details:details,status:'requested'
+     }).select('id,status,tier_code,expected_tickets').single();
+     if(created.error){
+       if(created.error.code==='23505')return json(res,{error:'A bespoke quote request already exists for this event. Contact us to update it.'},409);
+       throw created.error;
+     }
+     return json(res,{festivalQuote:created.data,payment_required_now:false});
    }
    if(action==='featureRequest'){
      if(!uuid(body.eventId))return json(res,{error:'Choose your event first'},400);
