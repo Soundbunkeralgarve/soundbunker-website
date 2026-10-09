@@ -26,7 +26,7 @@ async function refresh(){
 }
 async function submit(body) {try{notify('Saving…');await request(body);await refresh();}catch(e){notify(e.message,true);}}
 $('#registerForm').addEventListener('submit',e=>{e.preventDefault();const d=new FormData(e.target);submit({action:'register',displayName:d.get('displayName'),country:d.get('country'),acceptTerms:d.get('acceptTerms')==='on'});});
-$('#eventForm').addEventListener('submit',e=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.target));const dt=x=>x?new Date(x).toISOString():null;submit({action:'event',...d,startsAt:dt(d.startsAt),endsAt:dt(d.endsAt)});});
+$('#eventForm').addEventListener('submit',e=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.target));submit({action:'event',...d});});
 $('#tierForm').addEventListener('submit',e=>{e.preventDefault();const d=new FormData(e.target);submit({action:'tier',eventId:d.get('eventId'),name:d.get('name'),priceCents:Math.round(Number(d.get('price'))*100),capacity:Number(d.get('capacity'))});});
 async function boot(){
  try{const cfg=await fetch('/api/supabase-config').then(r=>r.json());if(!window.supabase)throw Error('Sign-in service unavailable');
