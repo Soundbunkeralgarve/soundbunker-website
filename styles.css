@@ -116,3 +116,18 @@ img{height:auto}
 #ticketbunker-home-promo .tb-home-photo-chip{position:absolute;bottom:30px;right:35px;z-index:2;background:#fffffff0;color:#291735;border-radius:5px;padding:12px 18px;font-weight:800;font-size:12px;letter-spacing:.05em}
 @media(max-width:900px){#ticketbunker-home-promo{grid-template-columns:1fr}#ticketbunker-home-promo .tb-home-promo-copy{padding:50px 28px}#ticketbunker-home-promo .tb-home-promo-visual{min-height:300px;max-height:380px}#ticketbunker-home-promo .tb-home-promo-visual:before{background:linear-gradient(0deg,#1b092f7c,transparent 60%)}}
 @media(max-width:520px){#ticketbunker-home-promo h2{font-size:clamp(37px,10vw,53px)}#ticketbunker-home-promo .tb-home-promo-copy{padding:43px 21px}#ticketbunker-home-promo .tb-home-logo{width:min(100%,270px)}#ticketbunker-home-promo .tb-home-photo-chip{right:20px;bottom:20px;font-size:10px}}
+
+/* SoundBunker-identical palette for the ticketBunker home advert. Never blue. */
+#ticketbunker-home-promo{background:radial-gradient(ellipse at 38% 35%,#663098,#281239 68%,#140b1d);color:#fff;border-color:#5e326e}
+#ticketbunker-home-promo .tb-home-logo{filter:none}
+#ticketbunker-home-promo .tb-home-eyebrow{color:#e9c4ff}
+#ticketbunker-home-promo .tb-home-eyebrow span{background:#8e35d7;color:#fff}
+#ticketbunker-home-promo h2{color:#fff}
+#ticketbunker-home-promo h2 em{color:#e2b6ff}
+#ticketbunker-home-promo .tb-home-promo-copy>p:not(.tb-home-eyebrow){color:#ead9f2}
+#ticketbunker-home-promo .tb-home-selling-points span{color:#f7ecff;background:#492765;border-color:#9c6fbd}
+#ticketbunker-home-promo .tb-home-actions .button{background:#9144de;color:#fff}
+#ticketbunker-home-promo .tb-home-secondary{background:transparent;border-color:#c5a0df;color:#fff}
+#ticketbunker-home-promo .tb-home-secondary:hover{background:#4c2a63}
+#ticketbunker-home-promo small{color:#e5ccea}
+#ticketbunker-home-promo .tb-home-promo-visual:before{background:linear-gradient(90deg,#291538 0%,#2915381a 33%,transparent 60%),linear-gradient(0deg,#1b092fb5,transparent 55%)}
