@@ -15,3 +15,43 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm test
+
+      - name: Check Events JavaScript syntax
+        run: |
+          for f in events.js event-ticket.js event-scanner.js events-admin.js organiser.js api/organiser.js api/events.js api/event-admin.js api/event-ticket.js api/event-checkout.js api/event-scan.js api/lib/events.js; do
+            node --check "$f"
+          done
+
+  schema:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare auth stub and database roles
+        run: |
+          psql -v ON_ERROR_STOP=1 -c "create schema auth; create table auth.users(id uuid primary key); create role anon; create role authenticated; create role service_role;"
+      - name: Apply Events migration to isolated Postgres
+        run: psql -v ON_ERROR_STOP=1 -f SUPABASE_EVENTS_SETUP.sql
+      - name: Exercise reservations and one-time entry
+        run: psql -v ON_ERROR_STOP=1 -f test/events-schema.sql
+      - name: Apply Organiser schema migration
+        run: psql -v ON_ERROR_STOP=1 -f SUPABASE_EVENTS_ORGANISERS_SETUP.sql
+      - name: Verify third-party publication safeguards
+        run: psql -v ON_ERROR_STOP=1 -f test/events-organisers-schema.sql

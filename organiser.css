@@ -1,0 +1,6 @@
+.organiser-form{display:grid;gap:17px}
+.organiser-form label{display:grid;gap:8px;font-weight:600;font-size:14px}
+.organiser-form input:not([type="checkbox"]),.organiser-form select,.organiser-form textarea{width:100%;background:#100b16;border:1px solid #ffffff60;color:#fff;border-radius:4px;padding:12px;font:inherit}
+.organiser-form .check{display:flex;flex-direction:row;align-items:flex-start;gap:10px;line-height:1.6}
+.organiser-form .check input{margin-top:5px}
+.organiser-form .solid{justify-self:start}

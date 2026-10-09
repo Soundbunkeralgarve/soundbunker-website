@@ -1,4 +1,6 @@
 import { fulfillShopCheckout } from './lib/printful-shop.js';
+import { fulfillEventCheckout } from './lib/events.js';
+import { fulfilListingCheckout } from './lib/event-listings.js';
 import { verifyStripeSignature } from "./lib/stripe.js";
 import { createCalendarEvent } from "./lib/google-calendar.js";
 import { sendToInvoiceXpressAutomation } from "./lib/invoicexpress.js";
@@ -19,6 +21,14 @@ export default async function handler(request, response) {
   if (!checkout || checkout.payment_status !== "paid") return json(response, { received: true });
   try {
     const metadata = checkout.metadata || {};
+    if (metadata.purchase_type === 'event_listing_fee') {
+      const result = await fulfilListingCheckout(checkout);
+      return json(response, {received:true,event_listing:result.status});
+    }
+    if (metadata.purchase_type === 'event_ticket') {
+      const result = await fulfillEventCheckout(checkout);
+      return json(response, { received: true, event_ticket: result.status });
+    }
     if (metadata.purchase_type === "merchandise") {
       await fulfillShopCheckout(checkout);
       return json(response, { received: true, merchandise: true });

@@ -1,0 +1,54 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,follow"><title>Organiser Dashboard | SoundBunker Events</title><link rel="stylesheet" href="/events.css"><link rel="stylesheet" href="/organiser.css"><script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script defer src="/organiser.js"></script></head>
+<body><div class="beta-banner" role="status"><strong>BETA · NOT LIVE YET</strong> — Organiser sign-up and event drafts work. Publishing, checkout and payouts are not live.</div><header class="topbar"><a class="brand" href="/"><img src="/soundbunker-logo.png" alt="SoundBunker Algarve"></a><nav><a href="/events">Events</a><a href="/client">Client login</a><a href="/">SoundBunker</a></nav></header>
+<main class="events-content" style="max-width:1100px;margin:auto">
+ <p class="eyebrow">BETA · FOR INDEPENDENT PROMOTERS</p><h1 style="font:700 clamp(45px,6vw,80px)/1 Space Grotesk;letter-spacing:-.04em">Your event.<br>Your ticket sales.</h1>
+ <p style="max-width:720px;color:#c6b8ce;font-size:19px">Create an event draft from anywhere. Just one transparent publishing fee, no SoundBunker ticket commission. Ticket processing and payouts are planned through your own verified Stripe account; no payments are being taken in this beta.</p>
+ <div id="notice" class="message" role="status">Checking your organiser account…</div>
+ <div id="guest" hidden><p>Sign in or create a free SoundBunker account to manage your events.</p><a class="solid" href="/client">Sign in / Register →</a></div>
+ <section id="register" hidden class="event-info" style="max-width:560px;background:#241832;border:1px solid #ffffff33;padding:30px">
+  <h2>Create organiser profile</h2>
+  <form id="registerForm" class="organiser-form">
+    <label>Promoter / business name<input name="displayName" minlength="2" maxlength="160" required placeholder="Your event brand"></label>
+    <label>Based in<select name="country" required><option value="PT">Portugal · EUR</option><option value="GB">United Kingdom · GBP</option></select></label>
+    <label class="check"><input type="checkbox" name="acceptTerms" required> I agree to the <a href="/terms" style="text-decoration:underline">terms</a> and understand that event sales will require identity and tax verification.</label>
+    <button class="solid">Create free organiser profile</button>
+  </form>
+ </section>
+ <section id="workspace" hidden>
+  <div class="event-grid" style="margin:38px 0">
+   <div class="event-info" style="background:#241832;border:1px solid #ffffff33">
+    <h2 id="orgName">Organiser</h2><p id="orgState"></p>
+    <p style="color:#c6b8ce">Connect onboarding and fee-paid publication are coming in the next secure release. Draft creation is available now.</p>
+   </div>
+   <div class="event-info" style="background:#241832;border:1px solid #ffffff33">
+    <h2>Transparent event fees</h2>
+    <p>Only a flat publishing fee. No SoundBunker booking fees added at checkout.</p><p>Stripe card-processing fees apply to organisers.</p><p><strong>UK and Portugal launch pilot</strong></p>
+   </div>
+  </div>
+  <div class="event-grid">
+    <form id="eventForm" class="event-info organiser-form" style="background:#241832;border:1px solid #ffffff33">
+      <h2>Create event draft</h2>
+      <label>Event name<input name="title" required minlength="3" maxlength="160"></label>
+      <label>Public URL name<input name="slug" required pattern="[a-z0-9]+(-[a-z0-9]+)*" placeholder="my-summer-festival"></label>
+      <label>Event type<select name="kind"><option value="festival">Festival</option><option value="show">Live show</option><option value="club">Club night</option><option value="workshop">Workshop</option><option value="community">Community event</option></select></label>
+      <label>Venue and city<input name="venue" required placeholder="Bristol, UK"></label>
+      <label>Starts (venue local time)<input name="startsAt" type="datetime-local" required></label>
+      <label>Ends (venue local time)<input name="endsAt" type="datetime-local"></label>
+      <label>Image URL (optional)<input name="imageUrl" type="url" placeholder="https://…"></label>
+      <label>Description<textarea name="description" rows="4"></textarea></label>
+      <button class="solid">Save draft event</button>
+    </form>
+    <form id="tierForm" class="event-info organiser-form" style="background:#241832;border:1px solid #ffffff33">
+      <h2>Add tickets</h2>
+      <label>Draft event<select name="eventId" id="tierEvent" required></select></label>
+      <label>Ticket type<input name="name" required value="General Admission"></label>
+      <label id="priceLabel">Ticket price<input name="price" type="number" min="1" step=".01" required placeholder="20.00"></label>
+      <label>Tickets available<input name="capacity" type="number" min="1" max="100000" required></label>
+      <button class="solid">Add ticket type</button>
+      <p style="color:#c6b8ce">Weekend, day and VIP ticket types can be created as separate categories. Advanced passes and multi-gate tools require further testing.</p>
+    </form>
+  </div>
+  <h2 style="margin-top:70px">Your events</h2><div id="myEvents" class="event-grid"></div>
+ </section>
+</main><footer><a href="/events">Explore events</a><span>SoundBunker Events</span></footer>
+</body></html>
