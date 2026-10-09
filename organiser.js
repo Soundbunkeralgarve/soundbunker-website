@@ -188,7 +188,7 @@ $('#promoTeamForm').addEventListener('submit',async e=>{
  try{
   const result=await request('/api/event-promo-team',{
    action:'invite',eventId:f.get('eventId'),name:f.get('name'),email:f.get('email'),code:f.get('code'),
-   pointsPerTicket:Number(f.get('pointsPerTicket')),pointsPerReward:Number(f.get('pointsPerReward'))
+   pointsPerTicket:Number(f.get('pointsPerTicket')),pointsPerReward:Number(f.get('pointsPerReward')),buyerDiscountPercent:Number(f.get('buyerDiscountPercent'))
   });
   const link=location.origin+'/promo-team?eventId='+encodeURIComponent(f.get('eventId'))+'&code='+encodeURIComponent(result.team.code);
   await navigator.clipboard.writeText(link).catch(()=>{});
