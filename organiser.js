@@ -22,7 +22,7 @@ async function refresh(){
  const list=data.events||[];
  $('#tierEvent').innerHTML=list.filter(e=>e.status==='draft').map(e=>'<option value="'+esc(e.id)+'">'+esc(e.title)+'</option>').join('');
  $('#showcaseEvent').innerHTML=list.filter(e=>e.status==='draft').map(e=>'<option value="'+esc(e.id)+'">'+esc(e.title)+(e.showcase?' (requested)':'')+'</option>').join('');
- $('#festivalQuoteEvent').innerHTML=list.filter(e=>e.status==='draft').map(e=>'<option value="'+esc(e.id)+'">'+esc(e.title)+(e.festivalQuote?' (quote requested)':'')+'</option>').join('');
+
  const selected=list.find(e=>e.id===$('#showcaseEvent').value);
  updateShowcasePrice(selected);
 
@@ -109,25 +109,6 @@ $('#staffRoster').addEventListener('click',async e=>{
   notify('Access revoked.');
   await loadStaff();
  }catch(error){notify(error.message,true);}
-});
-
-$('#festivalQuoteForm').addEventListener('submit',async event=>{
- event.preventDefault();
- const details=new FormData(event.target);
- const notice=$('#festivalQuoteStatus');
- const expectedTickets=Number(details.get('expectedTickets'));
- if(!Number.isSafeInteger(expectedTickets)||expectedTickets<2001||expectedTickets>100000){
-  notice.textContent='Enter expected sales between 2,001 and 100,000 tickets.';
-  return;
- }
- const eventId=details.get('eventId');
- if(!eventId){notice.textContent='Create an event draft before requesting a quote.';return;}
- try{
-  notice.textContent='Submitting your festival requirements…';
-  await request({action:'festivalQuote',eventId,expectedTickets,details:details.get('details')||''});
-  notice.textContent='Your bespoke festival request has been received. No money has been charged.';
-  await refresh();
- }catch(error){notice.textContent=error.message;}
 });
 
 async function boot(){
