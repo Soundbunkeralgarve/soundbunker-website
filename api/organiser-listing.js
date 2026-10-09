@@ -21,6 +21,10 @@ export default async function handler(req,res){
    const capacity=tiers.data.reduce((a,b)=>a+b.quantity_total,0);
    let plan;try{plan=quoteListing(event.data.currency,input.plan,capacity)}
    catch(e){return json(res,{error:e.message},400);}
+   // Festival / Festival Pro cannot use an automatic published price.
+   // A bespoke agreement and separate authorised fee flow must be implemented.
+   if(!Number.isSafeInteger(plan.amount)||plan.amount<=0)
+     return json(res,{error:'Festival and Festival Pro require a personal quote before any payment can be collected'},409);
    const existing=await ctx.admin.from('sb_event_listing_fees').select('id,status,created_at')
      .eq('event_id',event.data.id).in('status',['pending','paid']).order('created_at',{ascending:false}).limit(1);
    if(existing.error)throw existing.error;
