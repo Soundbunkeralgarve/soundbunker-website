@@ -21,6 +21,10 @@ async function refresh(){
  $('#priceLabel').firstChild.textContent='Ticket price ('+currency+')';
  const list=data.events||[];
  $('#tierEvent').innerHTML=list.filter(e=>e.status==='draft').map(e=>'<option value="'+esc(e.id)+'">'+esc(e.title)+'</option>').join('');
+ $('#showcaseEvent').innerHTML=list.filter(e=>e.status==='draft').map(e=>'<option value="'+esc(e.id)+'">'+esc(e.title)+(e.showcase?' (requested)':'')+'</option>').join('');
+ const selected=list.find(e=>e.id===$('#showcaseEvent').value);
+ updateShowcasePrice(selected);
+
  const staffOptions=list.map(e=>'<option value="'+esc(e.id)+'">'+esc(e.title)+'</option>').join('');
  const previous=$('#manageStaffEvent').value;
  $('#inviteStaffEvent').innerHTML=staffOptions;
@@ -31,6 +35,27 @@ async function refresh(){
  else $('#staffRoster').textContent='Create an event draft to invite staff.';
  notify('Organiser dashboard loaded. Events remain private until verification and publishing.');
 }
+function updateShowcasePrice(event){
+ const element=$('#showcasePrice');
+ if(!event){element.textContent='Create a draft event first to request a Showcase slot.';return;}
+ const fee=event.currency==='gbp'?'£49':'€59';
+ element.textContent=event.showcase?'Request status: '+event.showcase.status.toUpperCase()+'. No payment required in BETA.':'Proposed Featured Showcase add-on: '+fee+' for this event. No payment during BETA.';
+}
+$('#showcaseEvent').addEventListener('change',()=>{
+ const selected=$('#showcaseEvent').value;
+ request().then(data=>updateShowcasePrice(data.events.find(e=>e.id===selected))).catch(e=>notify(e.message,true));
+});
+$('#showcaseForm').addEventListener('submit',async e=>{
+ e.preventDefault();
+ const eventId=$('#showcaseEvent').value;
+ if(!eventId){$('#showcaseMessage').textContent='Create an event draft first.';return;}
+ try{
+  $('#showcaseMessage').textContent='Submitting your request…';
+  await request({action:'featureRequest',eventId});
+  $('#showcaseMessage').textContent='Featured Showcase requested. No payment has been taken.';
+  await refresh();
+ }catch(error){$('#showcaseMessage').textContent=error.message;}
+});
 async function submit(body) {try{notify('Saving…');await request(body);await refresh();}catch(e){notify(e.message,true);}}
 $('#registerForm').addEventListener('submit',e=>{e.preventDefault();const d=new FormData(e.target);submit({action:'register',displayName:d.get('displayName'),country:d.get('country'),acceptTerms:d.get('acceptTerms')==='on'});});
 $('#eventForm').addEventListener('submit',e=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.target));submit({action:'event',...d});});
