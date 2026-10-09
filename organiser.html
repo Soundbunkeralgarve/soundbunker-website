@@ -49,6 +49,25 @@
     </form>
   </div>
   <h2 style="margin-top:70px">Your events</h2><div id="myEvents" class="event-grid"></div>
+  <section aria-labelledby="staffHeading" style="margin-top:65px" id="staffAccess">
+   <p class="eyebrow">DOOR STAFF · BETA</p>
+   <h2 id="staffHeading">Invite your scanning team.</h2>
+   <p>Send secure, event-specific scanner links to colleagues. Each invite expires after 72 hours, requires a verified login using the invited email address, and can be revoked.</p>
+   <form id="staffInviteForm" class="organiser-form" style="max-width:600px;background:#21162b;border:1px solid #ffffff35;padding:25px">
+    <label>Event<select id="inviteStaffEvent" name="eventId" required></select></label>
+    <label>Colleague's email<input name="email" type="email" autocomplete="email" required maxlength="254" placeholder="crew@example.com"></label>
+    <button class="solid" type="submit">Generate secure scanner link</button>
+   </form>
+   <div id="staffInviteResult" hidden class="message" style="margin-top:18px">
+    <strong>Private invitation link</strong>
+    <p>Copy and send this link only to the colleague whose email you entered. They must sign in using that address.</p>
+    <input id="staffInviteLink" type="text" readonly aria-label="Secure staff invitation link" style="width:100%;padding:12px;color:white;background:#17101c;border:1px solid #ffffff55">
+    <button type="button" id="copyStaffInvite" class="solid" style="margin-top:12px">Copy invitation link</button>
+   </div>
+   <div style="margin-top:25px"><label for="manageStaffEvent">Manage staff for event</label>
+    <select id="manageStaffEvent" style="display:block;margin:10px 0;padding:12px;background:#21162b;color:white;border:1px solid #ffffff55"></select></div>
+   <div id="staffRoster" class="event-grid" aria-live="polite"></div>
+  </section>
  </section>
 </main><footer><a href="/events">Explore events</a><span>SoundBunker Events</span></footer>
 </body></html>

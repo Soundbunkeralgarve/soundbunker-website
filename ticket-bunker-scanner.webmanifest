@@ -1,0 +1,15 @@
+{
+  "name": "Ticket Bunker Door Scanner",
+  "short_name": "TB Scanner",
+  "start_url": "/event-scanner",
+  "display": "standalone",
+  "background_color": "#100b16",
+  "theme_color": "#100b16",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ]
+}

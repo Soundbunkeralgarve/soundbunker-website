@@ -18,7 +18,7 @@ jobs:
 
       - name: Check Events JavaScript syntax
         run: |
-          for f in events.js event-ticket.js event-scanner.js events-admin.js organiser.js api/organiser.js api/events.js api/event-admin.js api/event-ticket.js api/event-checkout.js api/event-scan.js api/lib/events.js; do
+          for f in events.js event-ticket.js event-scanner.js events-admin.js organiser.js api/event-staff.js api/organiser.js api/events.js api/event-admin.js api/event-ticket.js api/event-checkout.js api/event-scan.js api/lib/events.js; do
             node --check "$f"
           done
 
@@ -55,3 +55,12 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f SUPABASE_EVENTS_ORGANISERS_SETUP.sql
       - name: Verify third-party publication safeguards
         run: psql -v ON_ERROR_STOP=1 -f test/events-organisers-schema.sql
+
+      - name: Create test-only profiles stub
+        run: psql -v ON_ERROR_STOP=1 -c "create table public.profiles(id uuid primary key,role text);"
+      - name: Apply scoped staff invitation schema
+        run: psql -v ON_ERROR_STOP=1 -f SUPABASE_EVENTS_STAFF_INVITES.sql
+      - name: Verify staff invite scope, expiry, reuse and revocation
+        run: psql -v ON_ERROR_STOP=1 -f test/events-staff-schema.sql
+      - name: Verify atomic event access and revocation
+        run: psql -v ON_ERROR_STOP=1 -f test/events-scanner-auth.sql
