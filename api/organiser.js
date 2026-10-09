@@ -88,35 +88,19 @@ export default async function handler(req,res){
      const ev=await db.from('sb_events').select('id,status').eq('id',body.eventId).eq('organiser_profile_id',organisation.id).maybeSingle();
      if(ev.error||ev.data?.status!=='draft')return json(res,{error:'Only draft events can add ticket types'},409);
      const name=safeText(body.name,100),price=Number(body.priceCents),capacity=Number(body.capacity);
-     if(!name||!Number.isInteger(price)||price<100||price>10000000||!Number.isInteger(capacity)||capacity<1||capacity>100000)
+     if(!name||!Number.isInteger(price)||price<100||price>10000000||!Number.isInteger(capacity)||capacity<1||capacity>2000)
        return json(res,{error:'Enter a valid price and capacity'},400);
+     // BETA hard limit: organisers cannot configure an event above 2,000 tickets.
+     const tiers=await db.from('sb_event_tiers').select('quantity_total').eq('event_id',ev.data.id);
+     if(tiers.error)throw tiers.error;
+     const used=tiers.data.reduce((sum,row)=>sum+Number(row.quantity_total||0),0);
+     if(used+capacity>2000)return json(res,{error:'Our small-events BETA supports up to 2,000 tickets in total across all ticket types'},409);
      const saved=await db.from('sb_event_tiers').insert({event_id:ev.data.id,name,price_cents:price,quantity_total:capacity})
        .select('id,name,price_cents,quantity_total').single();
      if(saved.error)throw saved.error;
      return json(res,{tier:saved.data});
    }
-   if(action==='festivalQuote'){
-     if(!uuid(body.eventId))return json(res,{error:'Choose an event to request a festival quote'},400);
-     const expectedTickets=Number(body.expectedTickets);
-     if(!Number.isSafeInteger(expectedTickets)||expectedTickets<=2000||expectedTickets>100000)
-       return json(res,{error:'Custom festival quotes are for 2,001 or more tickets (up to 100,000 online). Contact us directly for larger events.'},400);
-     const event=await db.from('sb_events').select('id,status,currency,starts_at')
-       .eq('id',body.eventId).eq('organiser_profile_id',organisation.id).maybeSingle();
-     if(event.error||!event.data||event.data.status!=='draft'||Date.parse(event.data.starts_at)<=Date.now())
-       return json(res,{error:'Choose a future draft event that belongs to your account'},403);
-     const tier=expectedTickets<=5000?'festival':'festival_pro';
-     const details=safeText(body.details,2000);
-     const created=await db.from('sb_event_festival_quotes').insert({
-       event_id:event.data.id,organiser_profile_id:organisation.id,
-       tier_code:tier,expected_tickets:expectedTickets,currency:event.data.currency,
-       event_details:details,status:'requested'
-     }).select('id,status,tier_code,expected_tickets').single();
-     if(created.error){
-       if(created.error.code==='23505')return json(res,{error:'A bespoke quote request already exists for this event. Contact us to update it.'},409);
-       throw created.error;
-     }
-     return json(res,{festivalQuote:created.data,payment_required_now:false});
-   }
+   if(action==='festivalQuote')return json(res,{error:'We are focusing this BETA on events up to 2,000 tickets. Festival enquiries will open in a later phase.'},503);
    if(action==='featureRequest'){
      if(!uuid(body.eventId))return json(res,{error:'Choose your event first'},400);
      const event=await db.from('sb_events').select('id,status,currency,organiser_profile_id,starts_at')
