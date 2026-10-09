@@ -3,6 +3,11 @@
 ## Status
 Feature branch only. No example events or tickets published; do not merge without testing.
 
+## Organiser marketplace: revised payment policy (9 October 2026)
+**Locked decision:** For third-party events, SoundBunker charges only an upfront event-listing fee, no per-ticket platform commission. Ticket buyers pay the organiser's own Stripe connected account (Connect direct charges), and Stripe pays out to organisers according to its schedules. SoundBunker does **not** collect, hold, transfer or manually pay third-party ticket proceeds. See [EVENTS_CONNECT_MODEL.md](EVENTS_CONNECT_MODEL.md).
+
+**The current events v1 checkout still charges the SoundBunker platform account, so it is NOT approved for third-party organisers.** Do not enable externally organised events or claim that direct payouts are implemented until organiser onboarding, merchant routing, Stripe Connect event webhooks and separated listing-fee checkout are complete and tested. The existing route may be used for SoundBunker-owned events after normal testing only.
+
 ## Database
 Review and apply SUPABASE_EVENTS_SETUP.sql to the **SoundBunker Algarve** Supabase project, not Crude City. All four new tables have RLS enabled; customer orders and QR tickets have no anon/authenticated grants. Reserved inventory is atomically checked with row locks. Ticket admission atomically records the first valid scan.
 
