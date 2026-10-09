@@ -49,6 +49,18 @@
     </form>
   </div>
   <h2 style="margin-top:70px">Your events</h2><div id="myEvents" class="event-grid"></div>
+  <section id="featured-placement" aria-labelledby="featured-placement-heading" style="margin-top:64px;padding:clamp(24px,4vw,50px);background:#21172d;border:1px solid #9b5ee2;border-radius:13px">
+   <p class="eyebrow">PREMIUM PLACEMENT · PUBLIC BETA</p>
+   <h2 id="featured-placement-heading" style="font:700 clamp(28px,4vw,48px)/1.1 Space Grotesk">Put your event at the top.</h2>
+   <p style="max-width:750px;color:#e3d5ec;line-height:1.6">Request the ticketBunker Featured Showcase — a prominent event feature above regular listings. Requests can be submitted now, but payments and placements are not live during BETA.</p>
+   <form id="showcaseForm" class="organiser-form" style="max-width:550px">
+    <label>Choose an upcoming draft event<select name="eventId" id="showcaseEvent" required></select></label>
+    <p id="showcasePrice" style="font-weight:700;color:#efc5fa">Proposed upgrade: £49 for UK events / €59 for Portuguese events.</p>
+    <button class="solid" type="submit">Request Featured Showcase ↗</button>
+   </form>
+   <p role="status" id="showcaseMessage" style="margin-top:14px;color:#efc5fa"></p>
+   <p style="color:#c0aacd;font-size:12px">No charge is taken when you request a place. Price, availability, tax and booking terms require confirmation before the paid feature launches.</p>
+  </section>
   <section aria-labelledby="staffHeading" style="margin-top:65px" id="staffAccess">
    <p class="eyebrow">DOOR STAFF · BETA</p>
    <h2 id="staffHeading">Invite your scanning team.</h2>
