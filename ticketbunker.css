@@ -115,3 +115,20 @@ img{display:block;max-width:100%}
 @media(max-width:600px){.tb-header{padding:14px 16px}.tb-brand{width:177px}.tb-head-action{font-size:11px;padding:10px 12px}.tb-nav{font-size:11px;gap:16px;justify-content:flex-start}.tb-nav a{white-space:nowrap}.tb-hero-copy{padding:42px 21px}.tb-hero h1{font-size:clamp(38px,9.4vw,54px)}.tb-hero-picture{height:260px}.tb-hero-photo-caption{right:22px;bottom:20px}.tb-hero-photo-caption strong{font-size:24px}.tb-categories{padding:10px 16px}.tb-feature-section,.tb-upcoming,.tb-benefits{padding:55px 18px}.tb-feature-copy{padding:25px 20px}.tb-section-head{display:block}.tb-search-wrap{width:100%;margin-top:20px}.tb-card-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.tb-card-media{height:137px}.tb-card-content{padding:12px 10px}.tb-card-content h3{font-size:16px}.tb-card-content p{font-size:11px}.tb-card-date{bottom:7px;left:7px;padding:5px 8px}.tb-card-date strong{font-size:18px}.tb-benefit-grid{grid-template-columns:1fr}.tb-organiser-cta{grid-template-columns:1fr}.tb-organiser-cta>img{height:230px;min-height:230px}.tb-footer{justify-content:flex-start}.tb-demo-dialog>img{height:175px}}
 @media(max-width:360px){.tb-card-grid{grid-template-columns:1fr}.tb-card-media{height:220px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important}}
+
+/* Transparent ticket-volume pricing; festival quotes deliberately carry no amount */
+.tb-plans{background:#f6f5f8;padding:clamp(60px,7vw,105px) clamp(20px,5vw,90px);border-block:1px solid #e6e2ea}
+.tb-plan-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:13px}
+.tb-plan{background:#fff;border:1px solid #e4dfe9;border-radius:11px;padding:23px 17px;min-width:0;display:flex;flex-direction:column;gap:10px}
+.tb-plan-highlight{border:2px solid #8940db;box-shadow:0 12px 32px #a85ee218}
+.tb-plan-name{font-size:19px;font-weight:800;color:#251c2e;margin:0}
+.tb-plan-volume{font-size:12px;font-weight:700;color:#6f6577;margin:0}
+.tb-plan-price{font:700 clamp(27px,2.8vw,42px)/1.15 'Space Grotesk';letter-spacing:-.045em;color:#721fd3;margin:10px 0 0;white-space:nowrap}
+.tb-plan-price span{display:block;font-size:18px;font-weight:700;color:#473c51;margin-top:3px}
+.tb-plan-price.tb-plan-custom{white-space:normal;font-size:clamp(23px,2.3vw,33px)}
+.tb-plan>p:not(.tb-plan-name):not(.tb-plan-volume):not(.tb-plan-price){font-size:13px;line-height:1.5;color:#625a69;margin:0}
+.tb-plan>a{margin-top:auto;color:#6c1fc2;font-size:13px;font-weight:800;text-decoration:underline}
+.tb-plan-terms{font-size:12px;line-height:1.7;color:#706875;max-width:1140px;margin:23px 0 0}
+@media(max-width:1150px){.tb-plan-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:700px){.tb-plan-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tb-plan{padding:17px 13px}}
+@media(max-width:390px){.tb-plan-grid{grid-template-columns:1fr}}
