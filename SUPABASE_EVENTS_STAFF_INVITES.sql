@@ -53,3 +53,35 @@ BEGIN
 END $$;
 REVOKE ALL ON FUNCTION public.sb_claim_staff_invite(text,uuid,text) FROM public,anon,authenticated;
 GRANT EXECUTE ON FUNCTION public.sb_claim_staff_invite(text,uuid,text) TO service_role;
+
+
+-- Revalidate event-scoped staff privileges in the same database transaction that consumes the QR.
+-- This prevents a revoked operator from admitting a ticket using a previously loaded scanner.
+CREATE OR REPLACE FUNCTION public.sb_checkin_event_ticket(p_ticket uuid,p_actor uuid)
+RETURNS jsonb LANGUAGE plpgsql SECURITY INVOKER SET search_path='' AS $$
+DECLARE t record;
+BEGIN
+ IF p_actor IS NULL THEN RAISE EXCEPTION 'Scanner identity required'; END IF;
+ SELECT tk.id,tk.event_id,tk.checked_in_at,e.title,e.starts_at,e.status,tt.name AS tier_name
+ INTO t FROM public.sb_event_tickets tk
+ JOIN public.sb_events e ON e.id=tk.event_id
+ JOIN public.sb_event_tiers tt ON tt.id=tk.tier_id
+ WHERE tk.id=p_ticket FOR UPDATE OF tk;
+ IF NOT FOUND THEN RETURN jsonb_build_object('status','invalid'); END IF;
+ IF NOT EXISTS (SELECT 1 FROM public.profiles p WHERE p.id=p_actor AND p.role='admin') AND
+    NOT EXISTS (SELECT 1 FROM public.sb_event_staff_access staff
+      WHERE staff.event_id=t.event_id AND staff.user_id=p_actor AND staff.revoked_at IS NULL) AND
+    NOT EXISTS (SELECT 1 FROM public.sb_events e
+      JOIN public.sb_event_organisers org ON org.id=e.organiser_profile_id
+      WHERE e.id=t.event_id AND org.owner_user_id=p_actor)
+ THEN RAISE EXCEPTION 'Staff access denied for this event'; END IF;
+ IF t.checked_in_at IS NOT NULL
+ THEN RETURN jsonb_build_object('status','used','checked_in_at',t.checked_in_at,'event',t.title); END IF;
+ IF t.status<>'published' OR now()<t.starts_at-interval '18 hours' OR now()>t.starts_at+interval '36 hours'
+ THEN RETURN jsonb_build_object('status','not_open','event',t.title); END IF;
+ UPDATE public.sb_event_tickets SET checked_in_at=now(),checked_in_by=p_actor
+ WHERE id=p_ticket AND checked_in_at IS NULL;
+ RETURN jsonb_build_object('status','valid','event',t.title,'tier',t.tier_name);
+END $$;
+REVOKE ALL ON FUNCTION public.sb_checkin_event_ticket(uuid,uuid) FROM public,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.sb_checkin_event_ticket(uuid,uuid) TO service_role;
