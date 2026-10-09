@@ -1,23 +1,19 @@
 import { eventsDatabase } from './events.js';
-// Public BETA pricing proposals, minor currency units. Festival and Festival Pro
-// require individual contracts; no automatic amount is advertised or charged.
+// Public BETA pricing proposals, minor currency units. The launch supports three affordable fixed-price brackets,
+// each covering up to 2,000 event tickets. Larger festivals come later.
 export const listingPlans=Object.freeze({
  gbp:Object.freeze({
   starter:Object.freeze({amount:4900,capacity:100,label:'Starter'}),
-  standard:Object.freeze({amount:7900,capacity:500,label:'Standard'}),
-  event_plus:Object.freeze({amount:19900,capacity:2000,label:'Event Plus'}),
-  festival:Object.freeze({amount:null,capacity:5000,label:'Festival',customQuote:true}),
-  festival_pro:Object.freeze({amount:null,capacity:Infinity,label:'Festival Pro',customQuote:true})
+  standard:Object.freeze({amount:5900,capacity:500,label:'Standard'}),
+  event_plus:Object.freeze({amount:14900,capacity:2000,label:'Event Plus'}),
  }),
  eur:Object.freeze({
   starter:Object.freeze({amount:5900,capacity:100,label:'Starter'}),
-  standard:Object.freeze({amount:9900,capacity:500,label:'Standard'}),
-  event_plus:Object.freeze({amount:24900,capacity:2000,label:'Event Plus'}),
-  festival:Object.freeze({amount:null,capacity:5000,label:'Festival',customQuote:true}),
-  festival_pro:Object.freeze({amount:null,capacity:Infinity,label:'Festival Pro',customQuote:true})
+  standard:Object.freeze({amount:7900,capacity:500,label:'Standard'}),
+  event_plus:Object.freeze({amount:17900,capacity:2000,label:'Event Plus'}),
  })
 });
-export const listingOrder=Object.freeze(['starter','standard','event_plus','festival','festival_pro']);
+export const listingOrder=Object.freeze(['starter','standard','event_plus']);
 export function quoteListing(currency,tier,sold=0){
  const plan=listingPlans[currency]?.[tier];
  if(!plan||!Number.isSafeInteger(sold)||sold<0||sold>plan.capacity)
@@ -27,6 +23,7 @@ export function quoteListing(currency,tier,sold=0){
 export function planForSales(currency,sold){
  if(!listingPlans[currency]||!Number.isSafeInteger(sold)||sold<0)
    throw Error('Invalid currency or ticket count');
+ if(sold>2000)throw Error('ticketBunker BETA supports events selling up to 2,000 tickets. Larger events are not open for registration yet.');
  const tier=listingOrder.find(t=>sold<=listingPlans[currency][t].capacity);
  return quoteListing(currency,tier,sold);
 }
@@ -35,7 +32,7 @@ export function quoteUpgrade(currency,paidTier,requiredSales){
  const target=planForSales(currency,requiredSales);
  const requiredTier=listingOrder.indexOf(paidTier)>=listingOrder.indexOf(target.tier)?paidTier:target.tier;
  const finalPlan=listingPlans[currency][requiredTier];
- // Never generate an automatic checkout charge for a bespoke Festival contract.
+ // Difference-only upgrade quotes do NOT charge a card automatically.
  const customQuote=finalPlan.customQuote===true;
  return {
   currentTier:paidTier,requiredTier,currency,requiredSales,
