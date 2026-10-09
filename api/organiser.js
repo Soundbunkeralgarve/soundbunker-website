@@ -1,9 +1,11 @@
 import { requireUser } from './lib/supabase-auth.js';
 import { json,parseJson,safeText } from './lib/http.js';
 import { localEventInstant } from './lib/events-time.js';
+import { ownedEventMedia } from './lib/event-media.js';
 
 const uuid=value=>/^[a-f0-9]{8}-[a-f0-9-]{27,}$/i.test(String(value||''));
 const slugOk=value=>/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value);
+const eventKinds=['show','live_music','club','festival','comedy','theatre','conference','arts','sports','family','food','workshop','community','other'];
 export const organiserCountries=Object.freeze({
  PT:{currency:'eur',timezone:'Europe/Lisbon'},
  GB:{currency:'gbp',timezone:'Europe/London'}
@@ -21,7 +23,7 @@ export default async function handler(req,res){
    const organisation=await organiserForUser(db,ctx.user.id);
    if(req.method==='GET') {
      if(!organisation)return json(res,{organiser:null,events:[]});
-     const ev=await db.from('sb_events').select('id,slug,title,description,venue,starts_at,ends_at,status,country_code,currency,venue_timezone,event_kind,image_url')
+     const ev=await db.from('sb_events').select('id,slug,title,description,venue,starts_at,ends_at,status,country_code,currency,venue_timezone,event_kind,image_url,headline_artist,venue_city,admission_info,event_logo_url')
        .eq('organiser_profile_id',organisation.id).order('starts_at',{ascending:false}).limit(200);
      if(ev.error)throw ev.error;
      const ids=ev.data.map(v=>v.id);
@@ -30,7 +32,7 @@ export default async function handler(req,res){
      const fees=ids.length?await db.from('sb_event_listing_fees').select('event_id,status,tier_code,amount_cents,currency').in('event_id',ids):{data:[],error:null};
      if(fees.error)throw fees.error;
      return json(res,{organiser:{
-       id:organisation.id,display_name:organisation.display_name,country_code:organisation.country_code,
+       id:organisation.id,display_name:organisation.display_name,country_code:organisation.country_code,logo_url:organisation.logo_url,
        status:organisation.status,stripe_connected:!!organisation.stripe_account_id,
        stripe_capabilities_ready:organisation.stripe_capabilities_ready,tax_review_complete:organisation.tax_review_complete
      },events:ev.data.map(e=>({...e,tiers:tiers.data.filter(t=>t.event_id===e.id),fees:fees.data.filter(f=>f.event_id===e.id)}))});
@@ -50,12 +52,22 @@ export default async function handler(req,res){
    }
    if(!organisation)return json(res,{error:'Create your organiser account first'},403);
    if(organisation.status==='suspended')return json(res,{error:'Organiser account suspended'},403);
+   if(action==='branding'){
+     const logo=ownedEventMedia(db,organisation.id,'logo',body.logoUrl);
+     if(!logo)return json(res,{error:'Upload a valid logo from your organiser account first'},400);
+     const result=await db.from('sb_event_organisers').update({logo_url:logo}).eq('id',organisation.id).eq('owner_user_id',ctx.user.id).select('logo_url').single();
+     if(result.error)throw result.error;
+     return json(res,{logoUrl:result.data.logo_url});
+   }
    if(action==='event'){
      const title=safeText(body.title,160),slug=safeText(body.slug,160).toLowerCase(),venue=safeText(body.venue,180);
      const category=safeText(body.kind,20);
      const startsAt=String(body.startsAt||''),endsAt=String(body.endsAt||'');
-     if(title.length<3||!slugOk(slug)||!venue||!['show','festival','workshop','club','community'].includes(category))
+     if(title.length<3||!slugOk(slug)||!venue||!eventKinds.includes(category))
        return json(res,{error:'Check your event name, link, venue, dates and category'},400);
+     const poster=ownedEventMedia(db,organisation.id,'poster',body.imageUrl);
+     const eventLogo=ownedEventMedia(db,organisation.id,'logo',body.eventLogoUrl);
+     if(poster===false||eventLogo===false)return json(res,{error:'Upload your poster and logo with TicketBunker first'},400);
      const place=organiserCountries[organisation.country_code];
      let startInstant,endInstant;
      try {
@@ -69,10 +81,30 @@ export default async function handler(req,res){
        country_code:organisation.country_code,currency:place.currency,venue_timezone:place.timezone,
        starts_at:startInstant,ends_at:endInstant,
        event_kind:category,description:safeText(body.description,4000),
-       image_url:/^https:\/\/[^\s]+$/i.test(body.imageUrl||'')?safeText(body.imageUrl,900):null,
+       headline_artist:safeText(body.headliner,180),venue_city:safeText(body.city,130),
+       admission_info:safeText(body.admissionInfo,600),
+       image_url:poster||null,event_logo_url:eventLogo||organisation.logo_url||null,
        status:'draft'
      }).select('id,slug,title,status').single();
      if(saved.error)return json(res,{error:'Could not create event: check if your event link is taken'},409);
+     return json(res,{event:saved.data});
+   }
+   if(action==='updateDraft'){
+     if(!uuid(body.eventId))return json(res,{error:'Select a valid draft event'},400);
+     const changes={};
+     if(Object.hasOwn(body,'imageUrl')){
+       const image=ownedEventMedia(db,organisation.id,'poster',body.imageUrl);
+       if(image===false)return json(res,{error:'Invalid event poster'},400);
+       changes.image_url=image;
+     }
+     if(Object.hasOwn(body,'eventLogoUrl')){
+       const logo=ownedEventMedia(db,organisation.id,'logo',body.eventLogoUrl);
+       if(logo===false)return json(res,{error:'Invalid event logo'},400);
+       changes.event_logo_url=logo;
+     }
+     if(!Object.keys(changes).length)return json(res,{error:'Nothing to update'},400);
+     const saved=await db.from('sb_events').update(changes).eq('id',body.eventId).eq('organiser_profile_id',organisation.id).eq('status','draft').select('id').maybeSingle();
+     if(saved.error||!saved.data)return json(res,{error:'Only your draft events can be updated'},409);
      return json(res,{event:saved.data});
    }
    if(action==='tier'){
