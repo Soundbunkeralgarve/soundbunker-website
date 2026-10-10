@@ -7,9 +7,9 @@
 </head>
 <body class="tb-organiser-app">
 <div class="beta-banner" role="status"><strong>BETA · NOT LIVE YET</strong> — Create your event drafts and invite staff. Checkout, ticket sales and payouts are not live.</div>
-<header class="topbar tb-workspace-header"><a class="brand" href="/events"><img src="/assets/ticketbunker/ticketbunker-logo.svg" alt="ticketBunker" width="1273" height="125"></a><nav aria-label="Workspace navigation"><a href="/events">Discover events</a><a href="/client?next=%2Fclient%23my-tickets">Buyer / My Tickets</a><a href="/client">My account</a><a href="/">SoundBunker Studio</a></nav></header>
-<main class="tb-workspace-shell">
- <div class="tb-workspace-intro"><div><p class="eyebrow">TICKETBUNKER / ORGANISER WORKSPACE</p><h1>Launch your next event.</h1><p>A simpler organiser journey: event details, poster and bio, ticket types, then review and publishing. Save a draft at any time.</p></div><div class="tb-intro-side"><span>PUBLIC BETA</span><strong>Up to 2,000 tickets</strong><small>UK &amp; Portugal pilot</small></div></div>
+<header class="topbar tb-workspace-header"><a class="brand" href="/events"><img src="/assets/ticketbunker/ticketbunker-logo.svg" alt="ticketBunker" width="1273" height="125"></a><nav aria-label="Workspace navigation"><a href="/" class="tb-return-link">← Return to SoundBunker</a><a href="/events">Discover events</a><a href="/client?next=%2Fclient%23my-tickets">Buyer / My Tickets</a><a href="/client">My account</a><a href="/">SoundBunker Studio</a></nav></header>
+<main class="tb-workspace-shell"><div class="tb-return-mobile"><a href="/">← Return to SoundBunker</a></div>
+ <div class="tb-workspace-intro"><div><p class="eyebrow">TICKETBUNKER / ORGANISER WORKSPACE</p><h1>Launch your next event.</h1><p>Event details, poster, ticket types, then Review &amp; Pay. Three simple steps, with your progress saved.</p></div><div class="tb-intro-side"><span>PUBLIC BETA</span><strong>Up to 2,000 tickets</strong><small>UK &amp; Portugal pilot</small></div></div>
  <div id="notice" role="status" class="message tb-workspace-notice">Checking your organiser account…</div>
  <section id="operationStatus" class="tb-operation-status" role="status" aria-live="polite" aria-atomic="true" hidden>
   <div class="tb-operation-heading"><span id="operationSpinner" class="tb-operation-spinner" aria-hidden="true"></span>
@@ -32,7 +32,7 @@
  </section>
  <section id="workspace" hidden>
   <div class="tb-wizard-heading"><h2>Create your event in three easy steps</h2><p>Review your event, check the listing fee and pay to publish when payments are enabled. Drafts stay private.</p></div>
-  <nav id="wizardSteps" class="tb-wizard-steps" aria-label="Event setup progress"><button type="button" data-wizard="details" class="active" aria-current="step"><b>01</b><span>Event &amp; artwork</span></button><button type="button" data-wizard="tickets"><b>02</b><span>Ticket options</span></button><button type="button" data-wizard="review"><b>03</b><span>Review &amp; pay</span></button></nav>
+  <nav id="wizardSteps" class="tb-wizard-steps" aria-label="Event setup progress"><button type="button" data-wizard="details" class="active" aria-current="step"><b>01</b><span>Event &amp; artwork</span></button><button type="button" data-wizard="tickets"><b>02</b><span>Ticket options</span></button><button type="button" data-wizard="review"><b>03</b><span>Review &amp; Pay</span></button></nav>
   <div class="tb-account-strip"><div><span class="tb-strip-caption">YOUR ORGANISER ACCOUNT</span><strong id="orgName">Organiser</strong><p id="orgState"></p></div><div><span class="tb-strip-caption">EVENT SALES</span><strong>BETA · Not active</strong><p>Stripe onboarding, publishing and payments come after testing.</p></div><div><span class="tb-strip-caption">YOUR BUSINESS MODEL</span><strong>0% ticketBunker commission</strong><p>Stripe handles card-processing fees separately.</p></div></div>
   <nav class="tb-workspace-jumps" aria-label="Organiser shortcuts"><a href="#staffAccess">Door team &amp; scanner invites</a><a href="#featured-placement">Event promotion</a><a href="#listing-plans">Pricing</a></nav>
   <div id="setup" class="tb-setup-grid">
@@ -105,7 +105,7 @@
   </div>
  </section>
 </main>
-<footer class="tb-workspace-footer"><a href="/events">← Discover events</a><span>ticketBunker · SoundBunker Algarve · BETA</span><a href="/terms">Terms</a></footer>
+<footer class="tb-workspace-footer"><a href="/events">← Discover events</a><a href="/">Return to SoundBunker ↗</a><span>ticketBunker · SoundBunker Algarve · BETA</span><a href="/terms">Terms</a></footer>
 <nav class="tb-mobile-nav" aria-label="Organiser mobile navigation">
  <a href="/events"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><span>Explore</span></a>
  <a href="#wizardSteps" data-open-wizard="details" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 5v14M5 12h14"/><circle cx="12" cy="12" r="10"/></svg><span>Create</span></a>
