@@ -20,7 +20,7 @@ async function scan(code){
  busy=true;
  try{
   const d=await request('/api/event-scan',{code,eventId:$('#scanEvent').value});
-  const message=d.status==='valid'?'✓ VALID ENTRY — ':d.status==='used'?'⚠ ALREADY USED — ':'✕ '+(d.message||d.status).toUpperCase()+' — ';
+  const message=d.status==='valid'?(d.test?'✓ REAL TEST ENTRY — ':'✓ VALID ENTRY — '):d.status==='used'?'⚠ ALREADY USED — ':'✕ '+(d.message||d.status).toUpperCase()+' — ';
   show(message+(d.event||'')+(d.tier?' • '+d.tier:''),d.status);
  }catch(err){show(err.message,'error');}
  finally{setTimeout(()=>{busy=false;},1700);}

@@ -47,4 +47,22 @@ $('#list').onclick=e=>{const id=e.target.closest('[data-publish]')?.dataset.publ
 async function start(){
  try{const cfg=await fetch('/api/supabase-config').then(r=>r.json());sb=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true}});const {data:{session}}=await sb.auth.getSession();if(!session)throw Error('Sign in with your admin account at /client first.');token=session.access_token;await refresh();$('#panel').hidden=false;$('#status').textContent='Admin access verified.';}catch(e){$('#status').textContent=e.message;}
 }
+$('#createFreeTest').addEventListener('click',async()=>{
+ const b=$('#createFreeTest');b.disabled=true;$('#freeTestStatus').textContent='Creating a private real test event…';
+ try{
+  const r=await fetch('/api/event-free-test',{method:'POST',
+   headers:{authorization:'Bearer '+token,'content-type':'application/json'},
+   body:JSON.stringify({action:'create'})});
+  const d=await r.json();if(!r.ok)throw Error(d.error||'Could not create test');
+  $('#freeTestStatus').textContent='Real €0 test event created. Link expires after 48 hours. No Stripe payment is required.';
+  $('#realFreeTestUrl').value=d.url;$('#openFreeTest').href=d.url;
+  $('#openFreeScanner').href='/event-scanner?eventId='+encodeURIComponent(d.eventId);
+  $('#freeTestLinks').hidden=false;
+  await refresh();
+ }catch(err){$('#freeTestStatus').textContent=err.message;}finally{b.disabled=false;}
+});
+$('#copyFreeTest').addEventListener('click',async()=>{
+ try{await navigator.clipboard.writeText($('#realFreeTestUrl').value);$('#freeTestStatus').textContent='Private booking link copied.';}
+ catch{$('#realFreeTestUrl').focus();$('#realFreeTestUrl').select();}
+});
 window.addEventListener('load',start);

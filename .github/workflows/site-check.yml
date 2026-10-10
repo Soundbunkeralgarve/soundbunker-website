@@ -18,7 +18,7 @@ jobs:
 
       - name: Check Events JavaScript syntax
         run: |
-          for f in events.js event-ticket.js event-scanner.js events-admin.js organiser.js ticketbunker-dry-run.js ticketbunker-dry-run-model.mjs api/event-staff.js api/organiser.js api/events.js api/event-admin.js api/event-ticket.js api/event-checkout.js api/event-scan.js api/lib/events.js; do
+          for f in events.js event-ticket.js event-scanner.js events-admin.js organiser.js event-free-test.js ticketbunker-dry-run.js ticketbunker-dry-run-model.mjs api/event-staff.js api/organiser.js api/events.js api/event-admin.js api/event-ticket.js api/event-checkout.js api/event-scan.js api/event-free-test.js api/lib/events.js; do
             node --check "$f"
           done
 
@@ -81,3 +81,7 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f SUPABASE_TICKETBUNKER_CHARITY_LISTINGS.sql
       - name: Verify charity registration cannot waive fees before approval
         run: psql -v ON_ERROR_STOP=1 -f test/ticketbunker-charity-schema.sql
+      - name: Apply isolated genuine free-ticket test guard
+        run: psql -v ON_ERROR_STOP=1 -f SUPABASE_TICKETBUNKER_REAL_FREE_TEST.sql
+      - name: Verify genuine zero-price QR admissions and strict paid-event separation
+        run: psql -v ON_ERROR_STOP=1 -f test/ticketbunker-real-free-schema.sql

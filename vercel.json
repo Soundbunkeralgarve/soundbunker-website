@@ -113,6 +113,10 @@
       "destination": "/organiser.html"
     },
     {
+      "source": "/event-test",
+      "destination": "/event-free-test.html"
+    },
+    {
       "source": "/ticketbunker-dry-run",
       "destination": "/ticketbunker-dry-run.html"
     }

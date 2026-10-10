@@ -5,7 +5,7 @@ export default async function handler(req,res) {
   try {
     const db=eventsDatabase();
     const event=await db.from('sb_events').select('id,slug,title,description,organiser,venue,image_url,starts_at,ends_at,country_code,currency,venue_timezone,event_kind')
-      .eq('status','published').gt('starts_at',new Date().toISOString()).order('starts_at',{ascending:true}).limit(60);
+      .eq('status','published').eq('internal_free_test',false).gt('starts_at',new Date().toISOString()).order('starts_at',{ascending:true}).limit(60);
     if(event.error) throw event.error;
     const ids=event.data.map(e=>e.id);
     const tiers=ids.length?await db.from('sb_event_tiers').select('id,event_id,name,price_cents,quantity_total').in('event_id',ids):{data:[],error:null};
