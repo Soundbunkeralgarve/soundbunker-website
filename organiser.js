@@ -2,6 +2,79 @@
 const $=q=>document.querySelector(q);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let supabase,token,account,currentDraftId=null,latestEvents=[];
+let activeOperation=false,activeButton=null,originalButtonText='';
+function startOperation(title,detail,button){
+ if(activeOperation)return false;
+ activeOperation=true;
+ activeButton=button||null;
+ if(activeButton){originalButtonText=activeButton.textContent;activeButton.disabled=true;activeButton.textContent='Working…';}
+ $('#operationStatus').hidden=false;
+ $('#operationStatus').dataset.state='working';
+ $('#operationSpinner').hidden=false;
+ updateOperation(title,detail);
+ return true;
+}
+function updateOperation(title,detail,percent=null){
+ if(!activeOperation)return;
+ $('#operationTitle').textContent=title;
+ $('#operationDetail').textContent=detail;
+ const track=$('#operationTrack'),bar=$('#operationBar'),percentLabel=$('#operationPercent');
+ if(Number.isFinite(percent)){
+  const amount=Math.max(0,Math.min(100,Math.round(percent)));
+  track.classList.remove('indeterminate');
+  track.setAttribute('aria-valuenow',String(amount));
+  track.setAttribute('aria-valuetext',amount+'% uploaded');
+  bar.style.width=amount+'%';
+  percentLabel.textContent=amount+'%';
+  percentLabel.hidden=false;
+ }else{
+  track.classList.add('indeterminate');
+  track.removeAttribute('aria-valuenow');
+  track.setAttribute('aria-valuetext','Working — time remaining is not available');
+  bar.style.width='';
+  percentLabel.hidden=true;
+ }
+}
+function finishOperation(message,error=false){
+ if(!activeOperation)return;
+ activeOperation=false;
+ $('#operationStatus').dataset.state=error?'error':'success';
+ $('#operationTitle').textContent=error?'Action not completed':'Done';
+ $('#operationDetail').textContent=message;
+ $('#operationSpinner').hidden=true;
+ $('#operationTrack').classList.remove('indeterminate');
+ $('#operationTrack').removeAttribute('aria-valuenow');
+ $('#operationTrack').setAttribute('aria-valuetext',error?'Failed':'Completed');
+ $('#operationBar').style.width=error?'0%':'100%';
+ $('#operationPercent').hidden=true;
+ if(activeButton){activeButton.disabled=false;activeButton.textContent=originalButtonText;}
+ activeButton=null;
+ originalButtonText='';
+}
+async function uploadWithProgress(eventId,kind,dataUrl){
+ return await new Promise((resolve,reject)=>{
+  const xhr=new XMLHttpRequest();
+  xhr.open('POST','/api/event-media',true);
+  xhr.setRequestHeader('authorization','Bearer '+token);
+  xhr.setRequestHeader('content-type','application/json');
+  xhr.timeout=90000;
+  xhr.upload.onprogress=event=>{
+   if(event.lengthComputable&&event.total>0)updateOperation('Uploading '+kind,
+    'Sending '+kind+' to TicketBunker…',event.loaded/event.total*100);
+  };
+  xhr.upload.onload=()=>updateOperation('Saving '+kind,'Upload transmitted. Confirming the image on the server…');
+  xhr.onerror=()=>reject(Error('Network connection interrupted while uploading '+kind));
+  xhr.ontimeout=()=>reject(Error('The '+kind+' upload timed out. Your saved event draft is safe.'));
+  xhr.onabort=()=>reject(Error('The '+kind+' upload was cancelled.'));
+  xhr.onload=()=>{
+   let data={};try{data=JSON.parse(xhr.responseText||'{}');}catch{}
+   if(xhr.status>=200&&xhr.status<300)return resolve(data);
+   reject(Error(data.error||'Could not save '+kind+' artwork'));
+  };
+  xhr.send(JSON.stringify({eventId,kind,dataUrl}));
+ });
+}
+
 function eventFor(id){return latestEvents.find(event=>event.id===id);}
 function goToTicketSetup(id){
  const ev=eventFor(id);
@@ -25,10 +98,19 @@ function renderReviewReadiness(){
  if(!hasTickets)issues.push('Add at least one ticket type');
  message.innerHTML='<div class="tb-readiness-row"><strong>Event & artwork</strong><span>'+ (hasPoster&&hasBio?'✓ Complete':'Needs attention')+'</span></div>'+ 
   '<div class="tb-readiness-row"><strong>Ticket types</strong><span>'+(hasTickets?'✓ '+ev.tiers.length+' saved':'Required — none saved')+'</span></div>'+
-  (issues.length?'<p class="tb-readiness-warning">Before publication: '+issues.map(esc).join('; ')+'.</p>':'<p class="tb-readiness-success">Ready to submit for review. Ticket sales stay disabled during BETA.</p>');
+  (issues.length?'<p class="tb-readiness-warning">Before payment: '+issues.map(esc).join('; ')+'.</p>':'<p class="tb-readiness-success">Event is ready for the payment step. Secure checkout is not live during BETA.</p>');
  add.hidden=hasTickets;
- publish.disabled=issues.length>0||Boolean(ev.publish_requested_at);
- publish.textContent=ev.publish_requested_at?'Already submitted for review':'Submit for publication review →';
+ const capacity=(ev.tiers||[]).reduce((sum,t)=>sum+Number(t.quantity_total||0),0);
+ const prices=ev.currency==='gbp'?[49,99,199]:[59,119,239];
+ const names=['Starter','Standard','Event Plus'];
+ const tier=capacity<=100?0:capacity<=500?1:2;
+ const verifiedCharity=ev.charity?.status==='verified';
+ const sign=ev.currency==='gbp'?'£':'€';
+ $('#listingPlan').textContent=verifiedCharity?'Verified charity listing':names[tier]+' listing';
+ $('#listingTotal').textContent=capacity>2000?'Check capacity':verifiedCharity?sign+'0':sign+prices[tier];
+ $('#listingBreakdown').textContent=(capacity||0)+' total tickets · '+(verifiedCharity?'Verified charity exemption':'one flat fee, plus applicable tax')+'. No per-ticket ticketBunker commission.';
+ publish.disabled=issues.length>0||capacity>2000;
+ publish.textContent='Continue to secure payment →';
 }
 
 function setWizard(stage){
@@ -152,10 +234,10 @@ function resizedImage(file,width){
 }
 async function uploadMedia(file,eventId,kind){
  if(!file)return;
+ updateOperation('Preparing '+kind,'Resizing the '+kind+' image on this device…');
  const dataUrl=await resizedImage(file,kind==='logo'?600:1550);
- const r=await fetch('/api/event-media',{method:'POST',headers:{authorization:'Bearer '+token,'content-type':'application/json'},body:JSON.stringify({eventId,kind,dataUrl})});
- const data=await r.json();if(!r.ok)throw Error(data.error||'Artwork upload failed');
- return data;
+ updateOperation('Uploading '+kind,'Connecting to secure image storage…');
+ return uploadWithProgress(eventId,kind,dataUrl);
 }
 $('#eventForm').addEventListener('submit',async e=>{
  e.preventDefault();const form=e.currentTarget;
