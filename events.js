@@ -13,8 +13,8 @@ const conceptEvents=Object.freeze([
 ]);
 let listedEvents=[...conceptEvents],activeCategory='All',activeLocation='All',term='',currency='gbp';
 const quotePlans={
- gbp:[{name:'Starter',max:100,price:49},{name:'Standard',max:500,price:59},{name:'Event Plus',max:2000,price:149}],
- eur:[{name:'Starter',max:100,price:59},{name:'Standard',max:500,price:79},{name:'Event Plus',max:2000,price:179}]
+ gbp:[{name:'Starter',max:100,price:49},{name:'Standard',max:500,price:99},{name:'Event Plus',max:2000,price:199}],
+ eur:[{name:'Starter',max:100,price:59},{name:'Standard',max:500,price:119},{name:'Event Plus',max:2000,price:239}]
 };
 function formatEventDate(event){
  const parts=new Intl.DateTimeFormat('en-GB',{timeZone:event.timezone,month:'short',day:'2-digit'}).formatToParts(new Date(event.date));
