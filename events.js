@@ -24,7 +24,8 @@ function formatEventDate(event){
 function money(n,c){try{return new Intl.NumberFormat('en-GB',{style:'currency',currency:(c||'eur').toUpperCase(),maximumFractionDigits:0}).format(n/100)}catch{return ''}}
 function tagType(kind){
  if(kind==='festival'||kind==='club')return 'Clubs';
- if(kind==='workshop'||kind==='community')return 'Arts';
+ if(kind==='comedy')return 'Comedy';
+ if(kind==='workshop'||kind==='community'||kind==='sports'||kind==='other')return 'Arts';
  return 'Live';
 }
 function render(){
