@@ -13,7 +13,11 @@ export default async function handler(req,res) {
     return json(res,{ticket:{
       id,used:!!found.data.checked_in_at,
       title:found.data.sb_events?.title,date:found.data.sb_events?.starts_at,
-      venue:found.data.sb_events?.venue,timezone:found.data.sb_events?.venue_timezone,tier:found.data.sb_event_tiers?.name
+      venue:found.data.sb_events?.venue,timezone:found.data.sb_events?.venue_timezone,tier:found.data.sb_event_tiers?.name,
+      test:found.data.sb_events?.internal_free_test===true,
+      priceCents:found.data.sb_event_tiers?.price_cents,
+      poster:found.data.sb_events?.image_url,
+      eventLogo:found.data.sb_events?.event_logo_url
     }});
   }catch(err){console.error('Ticket lookup failed',err);return json(res,{error:'Unable to load ticket'},503);}
 }
