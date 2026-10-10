@@ -17,10 +17,10 @@ BEGIN
  THEN RAISE EXCEPTION 'Expected two genuine test tickets'; END IF;
  IF (SELECT total_cents FROM public.sb_event_orders WHERE id=issued_order)<>0
  THEN RAISE EXCEPTION 'Test ticket must have zero total and no Stripe charge'; END IF;
- SELECT public.sb_checkin_event_ticket((SELECT id FROM public.sb_event_tickets WHERE order_id=order_id ORDER BY sequence_number LIMIT 1),actor)
+ SELECT public.sb_checkin_event_ticket((SELECT id FROM public.sb_event_tickets WHERE order_id=issued_order ORDER BY sequence_number LIMIT 1),actor)
  INTO scan;
  IF scan->>'status'<>'valid' THEN RAISE EXCEPTION 'First QR admission failed %',scan; END IF;
- SELECT public.sb_checkin_event_ticket((SELECT id FROM public.sb_event_tickets WHERE order_id=order_id ORDER BY sequence_number LIMIT 1),actor)
+ SELECT public.sb_checkin_event_ticket((SELECT id FROM public.sb_event_tickets WHERE order_id=issued_order ORDER BY sequence_number LIMIT 1),actor)
  INTO scan;
  IF scan->>'status'<>'used' THEN RAISE EXCEPTION 'Second QR scan not rejected %',scan; END IF;
  BEGIN
