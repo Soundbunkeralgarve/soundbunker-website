@@ -7,7 +7,7 @@
 </head>
 <body class="tb-organiser-app">
 <div class="beta-banner" role="status"><strong>BETA · NOT LIVE YET</strong> — Create your event drafts and invite staff. Checkout, ticket sales and payouts are not live.</div>
-<header class="topbar tb-workspace-header"><a class="brand" href="/events"><img src="/assets/ticketbunker/ticketbunker-logo.svg" alt="ticketBunker" width="1273" height="125"></a><nav aria-label="Workspace navigation"><a href="/events">Discover events</a><a href="/client">My account</a><a href="/">SoundBunker Studio</a></nav></header>
+<header class="topbar tb-workspace-header"><a class="brand" href="/events"><img src="/assets/ticketbunker/ticketbunker-logo.svg" alt="ticketBunker" width="1273" height="125"></a><nav aria-label="Workspace navigation"><a href="/events">Discover events</a><a href="/ticketbunker-dry-run">Dry-run simulator</a><a href="/client">My account</a><a href="/">SoundBunker Studio</a></nav></header>
 <main class="tb-workspace-shell">
  <div class="tb-workspace-intro"><div><p class="eyebrow">TICKETBUNKER / ORGANISER WORKSPACE</p><h1>Event management,<br>made simple.</h1><p>Everything you need to prepare an event, create tickets and bring your crew together.</p></div><div class="tb-intro-side"><span>PUBLIC BETA</span><strong>Up to 2,000 tickets</strong><small>UK &amp; Portugal pilot</small></div></div>
  <div id="notice" role="status" class="message tb-workspace-notice">Checking your organiser account…</div>
@@ -67,8 +67,8 @@
    <div class="tb-panel-head"><div><span class="tb-step-number">SIMPLE PRICING</span><h2 id="listing-plans-heading">One event. One flat fee.</h2><p>Three plans for independent events. Prices shown in your organiser's local currency.</p></div><a href="/events#plans">View full pricing ↗</a></div>
    <div class="tb-organiser-price-list" aria-label="Three ticketBunker listing fee brackets">
     <div><span>Starter</span><strong>1–100 sold</strong><b data-price-gbp="£49" data-price-eur="€59">€59</b></div>
-    <div><span>Standard</span><strong>101–500 sold</strong><b data-price-gbp="£99" data-price-eur="€119">€79</b></div>
-    <div><span>Event Plus</span><strong>501–2,000 sold</strong><b data-price-gbp="£199" data-price-eur="€239">€179</b></div>
+    <div><span>Standard</span><strong>101–500 sold</strong><b data-price-gbp="£99" data-price-eur="€119">€119</b></div>
+    <div><span>Event Plus</span><strong>501–2,000 sold</strong><b data-price-gbp="£199" data-price-eur="€239">€239</b></div>
    </div>
    <div class="tb-charity-price-strip"><div><strong>Registered charity event?</strong><span>Free ticketBunker event listing when your charity number is verified.</span></div><span>£0 / €0 listing fee</span></div>
    <p class="tb-pricing-note"><strong>Stripe handles all card transactions</strong> and charges processing fees to the organiser's Stripe account. The balance is paid out following Stripe's normal payout schedule. ticketBunker charges the flat listing fee separately. Buyers pay no added ticketBunker booking fee. VAT/tax and Stripe fees are separate; approval is required for upgrades and only the difference is due.</p>
@@ -78,7 +78,7 @@
    <section id="staffAccess" class="tb-panel" aria-labelledby="staffHeading">
     <div class="tb-panel-head"><div><span class="tb-step-number">STAFF ACCESS</span><h2 id="staffHeading">Your door crew</h2><p>Secure, event-specific mobile scanner links.</p></div></div>
     <form id="staffInviteForm" class="organiser-form tb-form-grid"><label class="tb-span-full">Choose event<select id="inviteStaffEvent" name="eventId" required></select></label><label class="tb-span-full">Staff email<input type="email" name="email" autocomplete="email" maxlength="254" required placeholder="colleague@example.com"></label><div class="tb-form-actions tb-span-full"><button class="solid" type="submit">Generate scanner invitation →</button></div></form>
-    <div id="staffInviteResult" class="tb-invite-result" hidden><strong>Invitation created</strong><p>Share privately. Access requires a verified account using the invited email.</p><input id="staffInviteLink" type="text" readonly aria-label="Scanner invitation link"><button id="copyStaffInvite" type="button" class="solid">Copy secure link</button></div>
+    <div id="staffInviteResult" class="tb-invite-result" hidden><strong>Invitation created</strong><p>Share privately. Access requires a verified account using the invited email.</p><input id="staffInviteLink" type="text" readonly aria-label="Scanner invitation link"><button id="copyStaffInvite" type="button" class="solid">Copy secure link</button><a id="shareStaffWhatsApp" href="https://wa.me/" class="solid" target="_blank" rel="noopener noreferrer">Share privately on WhatsApp ↗</a></div>
     <label class="tb-roster-label" for="manageStaffEvent">Manage staff for event<select id="manageStaffEvent"></select></label><div id="staffRoster" class="tb-staff-roster"></div>
     <p class="tb-field-help">Invitations expire after 72 hours and access can be revoked. Phone-number invitations are not yet active.</p>
    </section>

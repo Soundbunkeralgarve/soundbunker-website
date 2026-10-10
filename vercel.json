@@ -111,6 +111,10 @@
     {
       "source": "/organiser",
       "destination": "/organiser.html"
+    },
+    {
+      "source": "/ticketbunker-dry-run",
+      "destination": "/ticketbunker-dry-run.html"
     }
   ],
   "functions": {

@@ -102,6 +102,7 @@ $('#staffInviteForm').addEventListener('submit',async e=>{
   const invited=await staffRequest({action:'invite',eventId:data.get('eventId'),email:data.get('email')});
   $('#staffInviteResult').hidden=false;
   $('#staffInviteLink').value=invited.invitationUrl;
+  $('#shareStaffWhatsApp').href='https://wa.me/?text='+encodeURIComponent('Your ticketBunker door scanner invitation:\n'+invited.invitationUrl+'\n\nThis invite is for your verified email only. Sign in before accepting.');
   $('#manageStaffEvent').value=data.get('eventId');
   await loadStaff();
   notify('Invitation ready. Copy and send it privately to the intended colleague.');
