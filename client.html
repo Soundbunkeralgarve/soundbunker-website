@@ -55,6 +55,22 @@
     </section>
 
     <section id="portalPanel" hidden>
+
+
+      <section class="client-dashboard-hero">
+        <div class="client-dashboard-copy">
+          <p class="eyebrow">Your SoundBunker</p>
+          <h1>Welcome back, <span id="clientName">Client</span>.</h1>
+          <p>Your sessions, files and creative community in one easy place.</p>
+        </div>
+      </section>
+
+      <div class="client-account-bar">
+        <div><span>Signed in as</span><strong id="clientEmail"></strong></div>
+        <div class="client-account-actions"><span id="roleBadge" class="role-badge">Client</span><button id="signOut" class="ghost-button">Sign out</button></div>
+      </div>
+
+      <section class="client-account-categories" aria-label="Your SoundBunker account areas"><a href="#manage-sessions"><span>01 / STUDIO</span><strong>Studio bookings</strong><small>Sessions and audio projects</small></a><a href="#my-files"><span>02 / PHOTOGRAPHY</span><strong>My Photography</strong><small>Galleries and downloads</small></a><a href="#my-vouchers"><span>03 / GIFT VOUCHERS</span><strong>Gift Vouchers</strong><small>Experiences and gift codes</small></a><a href="#my-tickets"><span>04 / EVENT TICKETS</span><strong>My Tickets</strong><small>QR tickets, downloads and sharing</small></a></section>
       <section class="client-session-upload" id="session-upload">
         <div class="client-session-upload-copy">
           <p class="eyebrow">Before your session</p>
@@ -73,25 +89,7 @@
         </div>
       </section>
 
-      <section class="client-dashboard-hero">
-        <div class="client-dashboard-copy">
-          <p class="eyebrow">Your SoundBunker</p>
-          <h1>Welcome back, <span id="clientName">Client</span>.</h1>
-          <p>Your sessions, files and creative community in one easy place.</p>
-        </div>
-      </section>
 
-      <div class="client-account-bar">
-        <div><span>Signed in as</span><strong id="clientEmail"></strong></div>
-        <div class="client-account-actions"><span id="roleBadge" class="role-badge">Client</span><button id="signOut" class="ghost-button">Sign out</button></div>
-      </div>
-
-      <section class="client-account-categories" aria-label="Your SoundBunker account areas"><a href="#manage-sessions"><span>01 / STUDIO</span><strong>Studio bookings</strong><small>Sessions and audio projects</small></a><a href="#my-files"><span>02 / PHOTOGRAPHY</span><strong>My Photography</strong><small>Galleries and downloads</small></a><a href="#my-vouchers"><span>03 / GIFT VOUCHERS</span><strong>Gift Vouchers</strong><small>Experiences and gift codes</small></a><a href="#my-tickets"><span>04 / EVENT TICKETS</span><strong>My Tickets</strong><small>QR tickets, downloads and sharing</small></a></section>
-      <section class="client-quick-actions" aria-label="Main client actions">
-        <a href="#manage-sessions" class="client-quick-card"><span>01 / BOOKINGS</span><strong>Manage Sessions</strong><small>See your sessions and propose a new date.</small><b>Manage sessions ↗</b></a>
-        <a href="#my-files" class="client-quick-card"><span>02 / YOUR WORK</span><strong>My Files</strong><small>Your music and photographs, each in its own private folder.</small><b>Open my files ↗</b></a>
-        <a href="/community" class="client-quick-card"><span>03 / COMMUNITY</span><strong>SoundBunker Social</strong><small>Chat, meet creatives and share what you are making.</small><b>Enter Social ↗</b></a>
-      </section>
 
       <section class="client-hub-panel" id="manage-sessions">
         <div><p class="eyebrow">Manage Sessions</p><h2>Your studio time.</h2><p>View your bookings and propose a different day. The studio reviews your request and confirms the new date.</p><p class="client-policy">Submit a move more than 24 hours before your original session to carry your deposit over at no fee. Within 24 hours, a new booking and deposit are required.</p><div id="myBookings" class="client-booking-list"><p>Loading your sessions…</p></div><p id="bookingStatus" role="status"></p></div>
