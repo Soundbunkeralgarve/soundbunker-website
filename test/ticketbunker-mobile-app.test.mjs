@@ -21,7 +21,8 @@ test('All ticketBunker pages have phone bottom tab navigation',()=>{
   assert.match(page,/class="tb-mobile-nav"/,name+' mobile navigation missing');
   assert.match(page,/ticketbunker-app\.css/,name+' app styling missing');
   assert.match(page,/href="\/events"/,name+' explore link missing');
-  assert.match(page,/href="\/organiser"/,name+' organiser link missing');
+  if(name==='organiser')assert.match(page,/data-open-wizard="details"/,'organiser wizard navigation missing');
+  else assert.match(page,/href="\\/organiser"/,name+' organiser link missing');
  }
  assert.match(organiser,/data-open-wizard="details"/);
  assert.match(read('organiser.js'),/setWizard\('details'\)/);
