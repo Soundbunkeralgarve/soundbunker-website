@@ -1,0 +1,23 @@
+.client-account-categories{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0 30px}
+.client-account-categories>a{border-radius:12px;display:flex;flex-direction:column;gap:10px;min-height:175px;padding:23px;background:#20142b;border:1px solid #59436c;color:#fff;text-decoration:none;transition:.2s}
+.client-account-categories>a:hover,.client-account-categories>a:focus-visible{background:#382049;transform:translateY(-2px);border-color:#d5a6ef}
+.client-account-categories>a span{font-size:10px;letter-spacing:.15em;font-weight:800;color:#dbaafa}
+.client-account-categories>a strong{font:700 clamp(18px,2vw,25px)/1.15 'Space Grotesk',sans-serif}
+.client-account-categories>a small{color:#d8c9e3;font-size:12px;margin-top:auto}
+.client-my-tickets{scroll-margin-top:28px;margin:20px 0 32px;padding:clamp(23px,4vw,40px);background:#17101c;border:1px solid #644878;border-radius:13px;color:#fff}
+.client-tickets-heading{display:flex;align-items:center;justify-content:space-between;gap:22px;margin-bottom:16px}
+.client-tickets-heading h2{color:#fff;font:700 clamp(27px,3vw,40px)/1.1 'Space Grotesk',sans-serif;margin:8px 0}
+.client-tickets-heading p:not(.eyebrow){color:#d7c9de;max-width:690px}
+.client-my-tickets .client-ticket-warning{background:#362542;border:1px solid #765a87;border-radius:8px;padding:14px 16px;font-size:12px;color:#eadcf1;margin:18px 0}
+.client-ticket-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.client-ticket-card{display:grid;grid-template-columns:108px minmax(0,1fr);gap:17px;border-radius:11px;border:1px solid #6d567d;background:#291b34;padding:16px}
+.client-ticket-card img{width:108px;height:130px;border-radius:8px;object-fit:cover}
+.client-ticket-card h3{margin:4px 0 6px;font-size:19px;color:#fff}
+.client-ticket-card p{margin:2px 0;color:#d2c5db;font-size:13px}
+.client-ticket-card .client-ticket-status{font-size:10px;letter-spacing:.1em;font-weight:800;text-transform:uppercase;color:#e6bcfd}
+.client-ticket-links{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+.client-ticket-links a,.client-ticket-links button{display:inline-flex;align-items:center;background:#fff;border:1px solid #fff;color:#352042;text-decoration:none;border-radius:7px;padding:8px 10px;font-size:12px;font-weight:800;cursor:pointer}
+.client-ticket-links .client-ticket-secondary{background:transparent;color:#f4e7ff;border-color:#907aa1}
+#ticketMessage{font-size:12px;color:#f3dfff}
+@media(max-width:1000px){.client-account-categories{grid-template-columns:repeat(2,1fr)}.client-ticket-grid{grid-template-columns:1fr}}
+@media(max-width:560px){.client-account-categories{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.client-account-categories>a{padding:14px;min-height:142px}.client-ticket-card{grid-template-columns:1fr}.client-ticket-card img{height:120px;width:100%;object-position:center 25%}.client-tickets-heading{align-items:stretch;flex-direction:column}}

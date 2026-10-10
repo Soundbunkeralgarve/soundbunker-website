@@ -1,6 +1,7 @@
 import { randomBytes,createHash } from 'node:crypto';
 import { requireUser } from './lib/supabase-auth.js';
 import { json,parseJson,safeText,validEmail } from './lib/http.js';
+import {sendTransactionalEmail} from './lib/notify.js';
 
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const TOKEN=/^[a-f0-9]{64}$/;
@@ -89,8 +90,13 @@ export default async function handler(req,res){
    }).select('id,expires_at').single();
    if(result.error)throw result.error;
    const base=(process.env.SITE_URL||'https://www.soundbunker.pt').replace(/\/$/,'');
-   return json(res,{inviteId:result.data.id,expiresAt:result.data.expires_at,
-    invitationUrl:base+'/event-scanner?invite='+token});
+   const invitationUrl=base+'/event-scanner?invite='+token;
+   let emailSent=false;
+   try{await sendTransactionalEmail({to:email,key:'ticketbunker-scanner-'+result.data.id,
+     subject:'Your secure ticketBunker door-scanner invitation',
+     text:'You have been invited to scan tickets for a ticketBunker event.\n\nOpen this private invitation:\n'+invitationUrl+'\n\nSign in with your existing SoundBunker account using this email address. If you do not have an account yet, create one with this email before accepting. The link expires in 72 hours.\n\nDo not forward this invitation to anybody else.\n\nSoundBunker Algarve'});emailSent=true;}
+   catch(error){console.error('Unable to email scanner invitation',error);}
+   return json(res,{inviteId:result.data.id,expiresAt:result.data.expires_at,invitationUrl,emailSent});
   }
   if(action==='revokeInvite'){
    if(!UUID.test(String(body.inviteId||'')))return json(res,{error:'Invalid invitation'},400);

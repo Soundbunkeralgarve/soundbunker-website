@@ -21,7 +21,7 @@ export default async function handler(req,res){
    const organisation=await organiserForUser(db,ctx.user.id);
    if(req.method==='GET') {
      if(!organisation)return json(res,{organiser:null,events:[]});
-     const ev=await db.from('sb_events').select('id,slug,title,description,venue,starts_at,ends_at,status,country_code,currency,venue_timezone,event_kind,image_url')
+     const ev=await db.from('sb_events').select('id,slug,title,description,venue,starts_at,ends_at,status,country_code,currency,venue_timezone,event_kind,image_url,event_logo_url,headline_artist,venue_city,publish_requested_at')
        .eq('organiser_profile_id',organisation.id).order('starts_at',{ascending:false}).limit(200);
      if(ev.error)throw ev.error;
      const ids=ev.data.map(v=>v.id);
@@ -64,14 +64,14 @@ export default async function handler(req,res){
    if(organisation.status==='suspended')return json(res,{error:'Organiser account suspended'},403);
    if(action==='event'){
      const title=safeText(body.title,160),slug=safeText(body.slug,160).toLowerCase(),venue=safeText(body.venue,180);
-     const category=safeText(body.kind,20);
+     const category=safeText(body.kind,20),description=safeText(body.description,4000);
      const charityEvent=body.charityEvent===true||body.charityEvent==='on';
      const charityNumber=safeText(body.charityNumber,40).trim();
      // A number is evidence for *manual* charity verification, not an automatic waiver.
      if(charityEvent&&!/^[A-Za-z0-9][A-Za-z0-9 .\/-]{2,39}$/.test(charityNumber))
        return json(res,{error:'Enter the registered charity number (3–40 characters)'},400);
      const startsAt=String(body.startsAt||''),endsAt=String(body.endsAt||'');
-     if(title.length<3||!slugOk(slug)||!venue||!['show','festival','workshop','club','community'].includes(category))
+     if(title.length<3||!slugOk(slug)||!venue||!['show','festival','workshop','club','community','comedy','sports','other'].includes(category)||description.length<20)
        return json(res,{error:'Check your event name, link, venue, dates and category'},400);
      const place=organiserCountries[organisation.country_code];
      let startInstant,endInstant;
@@ -85,7 +85,7 @@ export default async function handler(req,res){
        title,slug,venue,organiser:organisation.display_name,organiser_profile_id:organisation.id,
        country_code:organisation.country_code,currency:place.currency,venue_timezone:place.timezone,
        starts_at:startInstant,ends_at:endInstant,
-       event_kind:category,description:safeText(body.description,4000),
+       event_kind:category,description,headline_artist:safeText(body.headlineArtist,120),venue_city:safeText(body.venueCity,120),
        image_url:/^https:\/\/[^\s]+$/i.test(body.imageUrl||'')?safeText(body.imageUrl,900):null,
        status:'draft'
      }).select('id,slug,title,status').single();
@@ -105,6 +105,21 @@ export default async function handler(req,res){
        return json(res,{event:saved.data,charity:claim.data});
      }
      return json(res,{event:saved.data});
+   }
+   if(action==='requestPublish'){
+     if(!uuid(body.eventId))return json(res,{error:'Choose your event first'},400);
+     const ev=await db.from('sb_events').select('id,status,starts_at,title,description,image_url,internal_free_test')
+       .eq('id',body.eventId).eq('organiser_profile_id',organisation.id).maybeSingle();
+     if(ev.error||!ev.data||ev.data.status!=='draft'||ev.data.internal_free_test||Date.parse(ev.data.starts_at)<=Date.now())
+       return json(res,{error:'Choose a future draft event you own'},409);
+     if(!ev.data.description||ev.data.description.trim().length<20||!ev.data.image_url)
+       return json(res,{error:'Add your event description and poster before requesting publication'},400);
+     const tiers=await db.from('sb_event_tiers').select('id').eq('event_id',ev.data.id).limit(1);
+     if(tiers.error||!tiers.data?.length)return json(res,{error:'Add at least one ticket type first'},409);
+     const saved=await db.from('sb_events').update({publish_requested_at:new Date().toISOString()})
+       .eq('id',ev.data.id).eq('status','draft').select('id,publish_requested_at').maybeSingle();
+     if(saved.error||!saved.data)throw Error('Could not request event review');
+     return json(res,{event:saved.data,message:'Your event is saved and submitted for review. No payments or live ticket sales are enabled yet.'});
    }
    if(action==='tier'){
      if(!uuid(body.eventId))return json(res,{error:'Select a valid event'},400);
