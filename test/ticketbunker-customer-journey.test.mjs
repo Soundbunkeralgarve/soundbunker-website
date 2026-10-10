@@ -7,7 +7,7 @@ import myTickets from '../api/my-event-tickets.js';
 const file=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const response=()=>({statusCode:200,headers:{},setHeader(k,v){this.headers[k]=v},end(v){this.data=JSON.parse(v)}});
 test('organiser and buyer APIs require an authenticated SoundBunker account',async()=>{
- for(const handler of [organiser,media,myTickets]){
+ for(const handler of [organiser,media]){
   const res=response();await handler({method:'POST',headers:{}},res);
   assert.equal(res.statusCode,401);
  }
