@@ -8,14 +8,15 @@
 </style>
 <script type="module" src="/event-free-test.js"></script>
 <link rel="stylesheet" href="/ticketbunker-app.css">
+<link rel="stylesheet" href="/ticketbunker-launch.css">
 </head><body class="tb-free-test-app">
 <div class="ribbon">REAL QR TEST · €0 / £0 · NO STRIPE PAYMENT · NOT A REAL EVENT</div>
 <header><a href="/events"><img src="/assets/ticketbunker/ticketbunker-logo.svg" alt="ticketBunker"></a></header>
-<main class="container">
+<div class="tb-return-mobile"><a href="/">← Return to SoundBunker</a></div><main class="container">
 <section class="hero"><div class="copy"><div class="eyebrow">TicketBunker · Private production-system test</div>
 <h1 id="eventTitle">Loading the test event…</h1>
 <p id="eventInfo">Checking this private invitation.</p>
-<p><strong>FREE test ticket · no payment</strong></p></div><img class="poster" src="/academy-performance.jpg" alt="SoundBunker events test imagery"></section>
+<p><strong>FREE test ticket · no payment</strong></p></div><img class="poster" src="/assets/ticketbunker/posters/test.svg" alt="SoundBunker events test imagery"></section>
 <section class="card"><h2>Reserve your real test tickets</h2>
 <p class="important"><strong>This is not a live show.</strong> The tickets and QR codes are genuine records in the SoundBunker ticketing system, but only for testing. They carry no admission or cash value. Your email receives the real test QR links.</p>
 <form id="claimForm" class="hide"><div class="grid"><label>Full name<input name="name" required minlength="2" maxlength="100" autocomplete="name" placeholder="Your name"></label>
@@ -23,7 +24,7 @@
 <label class="full">Number of FREE test tickets<select name="quantity"><option value="1">1 free test ticket</option><option value="2">2 free test tickets</option></select></label>
 </div><p class="small">Maximum two tickets per email, 20 tickets across the event. The €0 transaction does not contact Stripe.</p>
 <button type="submit" id="book">Confirm FREE test booking →</button></form>
-<div id="result" class="result" role="status">Verifying the test invitation…</div>
+<div id="result" class="result" role="status">Verifying the test invitation…</div><progress id="claimProgress" class="tb-claim-progress" aria-label="Creating real test tickets" hidden></progress>
 <div id="links" aria-live="polite"></div>
 </section>
 <section class="card"><h2>What happens next?</h2>

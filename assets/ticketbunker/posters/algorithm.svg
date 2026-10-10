@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="720" viewBox="0 0 1100 720" role="img" aria-labelledby="title desc">
+<title id="title">ALGORITHM LIVE · TicketBunker demonstration poster</title><desc id="desc">Original graphic ticketing event artwork. Fictional demonstration, not a real event.</desc>
+<defs><linearGradient id="shade" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#141e2b"/><stop offset="1" stop-color="#0c0b11"/></linearGradient><clipPath id="clip"><rect width="1100" height="720"/></clipPath></defs>
+<rect width="1100" height="720" fill="url(#shade)"/>
+<g clip-path="url(#clip)"><path d="M530 695 A310 310 0 0 1 1150 695" fill="none" stroke="#e69c60" stroke-width="170"/><path d="M580 695 A235 235 0 0 1 1050 695" fill="none" stroke="#edebd8" stroke-width="2" opacity=".75"/></g>
+<rect x="41" y="40" width="1018" height="640" rx="0" fill="none" stroke="#edebd8" stroke-opacity=".4" stroke-width="1.5"/>
+<g fill="#edebd8" font-family="Arial,Helvetica,sans-serif">
+<text x="80" y="99" font-size="23" font-weight="700" letter-spacing="5">TICKETBUNKER<tspan fill="#e69c60"> ✳</tspan></text>
+<text x="80" y="149" font-size="14" letter-spacing="5" opacity=".8">EVENTS / PEOPLE / ENERGY</text>
+<text x="73" y="390" font-size="91" font-weight="900" letter-spacing="-7">ALGORITHM</text>
+<text x="73" y="503" font-size="126" font-weight="900" letter-spacing="-7">LIVE</text>
+<path d="M80 567H1020" stroke="#edebd8" stroke-opacity=".55" stroke-dasharray="7 11" stroke-width="2"/>
+<text x="80" y="617" font-size="21" font-weight="700" letter-spacing="3">ALT LIVE SOUND</text>
+<text x="80" y="657" font-size="14" letter-spacing="4" opacity=".8">CONCEPT EVENT · NOT BOOKABLE</text>
+<text x="975" y="656" font-size="20" font-weight="800" text-anchor="end">001 / TB</text>
+</g></svg>

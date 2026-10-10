@@ -2,6 +2,79 @@
 const $=q=>document.querySelector(q);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let supabase,token,account,currentDraftId=null,latestEvents=[];
+let activeOperation=false,activeButton=null,originalButtonText='';
+function startOperation(title,detail,button){
+ if(activeOperation)return false;
+ activeOperation=true;
+ activeButton=button||null;
+ if(activeButton){originalButtonText=activeButton.textContent;activeButton.disabled=true;activeButton.textContent='Working…';}
+ $('#operationStatus').hidden=false;
+ $('#operationStatus').dataset.state='working';
+ $('#operationSpinner').hidden=false;
+ updateOperation(title,detail);
+ return true;
+}
+function updateOperation(title,detail,percent=null){
+ if(!activeOperation)return;
+ $('#operationTitle').textContent=title;
+ $('#operationDetail').textContent=detail;
+ const track=$('#operationTrack'),bar=$('#operationBar'),percentLabel=$('#operationPercent');
+ if(Number.isFinite(percent)){
+  const amount=Math.max(0,Math.min(100,Math.round(percent)));
+  track.classList.remove('indeterminate');
+  track.setAttribute('aria-valuenow',String(amount));
+  track.setAttribute('aria-valuetext',amount+'% uploaded');
+  bar.style.width=amount+'%';
+  percentLabel.textContent=amount+'%';
+  percentLabel.hidden=false;
+ }else{
+  track.classList.add('indeterminate');
+  track.removeAttribute('aria-valuenow');
+  track.setAttribute('aria-valuetext','Working — time remaining is not available');
+  bar.style.width='';
+  percentLabel.hidden=true;
+ }
+}
+function finishOperation(message,error=false){
+ if(!activeOperation)return;
+ activeOperation=false;
+ $('#operationStatus').dataset.state=error?'error':'success';
+ $('#operationTitle').textContent=error?'Action not completed':'Done';
+ $('#operationDetail').textContent=message;
+ $('#operationSpinner').hidden=true;
+ $('#operationTrack').classList.remove('indeterminate');
+ $('#operationTrack').removeAttribute('aria-valuenow');
+ $('#operationTrack').setAttribute('aria-valuetext',error?'Failed':'Completed');
+ $('#operationBar').style.width=error?'0%':'100%';
+ $('#operationPercent').hidden=true;
+ if(activeButton){activeButton.disabled=false;activeButton.textContent=originalButtonText;}
+ activeButton=null;
+ originalButtonText='';
+}
+async function uploadWithProgress(eventId,kind,dataUrl){
+ return await new Promise((resolve,reject)=>{
+  const xhr=new XMLHttpRequest();
+  xhr.open('POST','/api/event-media',true);
+  xhr.setRequestHeader('authorization','Bearer '+token);
+  xhr.setRequestHeader('content-type','application/json');
+  xhr.timeout=90000;
+  xhr.upload.onprogress=event=>{
+   if(event.lengthComputable&&event.total>0)updateOperation('Uploading '+kind,
+    'Sending '+kind+' to TicketBunker…',event.loaded/event.total*100);
+  };
+  xhr.upload.onload=()=>updateOperation('Saving '+kind,'Upload transmitted. Confirming the image on the server…');
+  xhr.onerror=()=>reject(Error('Network connection interrupted while uploading '+kind));
+  xhr.ontimeout=()=>reject(Error('The '+kind+' upload timed out. Your saved event draft is safe.'));
+  xhr.onabort=()=>reject(Error('The '+kind+' upload was cancelled.'));
+  xhr.onload=()=>{
+   let data={};try{data=JSON.parse(xhr.responseText||'{}');}catch{}
+   if(xhr.status>=200&&xhr.status<300)return resolve(data);
+   reject(Error(data.error||'Could not save '+kind+' artwork'));
+  };
+  xhr.send(JSON.stringify({eventId,kind,dataUrl}));
+ });
+}
+
 function eventFor(id){return latestEvents.find(event=>event.id===id);}
 function goToTicketSetup(id){
  const ev=eventFor(id);
@@ -25,10 +98,19 @@ function renderReviewReadiness(){
  if(!hasTickets)issues.push('Add at least one ticket type');
  message.innerHTML='<div class="tb-readiness-row"><strong>Event & artwork</strong><span>'+ (hasPoster&&hasBio?'✓ Complete':'Needs attention')+'</span></div>'+ 
   '<div class="tb-readiness-row"><strong>Ticket types</strong><span>'+(hasTickets?'✓ '+ev.tiers.length+' saved':'Required — none saved')+'</span></div>'+
-  (issues.length?'<p class="tb-readiness-warning">Before publication: '+issues.map(esc).join('; ')+'.</p>':'<p class="tb-readiness-success">Ready to submit for review. Ticket sales stay disabled during BETA.</p>');
+  (issues.length?'<p class="tb-readiness-warning">Before payment: '+issues.map(esc).join('; ')+'.</p>':'<p class="tb-readiness-success">Event is ready for the payment step. Secure checkout is not live during BETA.</p>');
  add.hidden=hasTickets;
- publish.disabled=issues.length>0||Boolean(ev.publish_requested_at);
- publish.textContent=ev.publish_requested_at?'Already submitted for review':'Submit for publication review →';
+ const capacity=(ev.tiers||[]).reduce((sum,t)=>sum+Number(t.quantity_total||0),0);
+ const prices=ev.currency==='gbp'?[49,99,199]:[59,119,239];
+ const names=['Starter','Standard','Event Plus'];
+ const tier=capacity<=100?0:capacity<=500?1:2;
+ const verifiedCharity=ev.charity?.status==='verified';
+ const sign=ev.currency==='gbp'?'£':'€';
+ $('#listingPlan').textContent=verifiedCharity?'Verified charity listing':names[tier]+' listing';
+ $('#listingTotal').textContent=capacity>2000?'Check capacity':verifiedCharity?sign+'0':sign+prices[tier];
+ $('#listingBreakdown').textContent=(capacity||0)+' total tickets · '+(verifiedCharity?'Verified charity exemption':'one flat fee, plus applicable tax')+'. No per-ticket ticketBunker commission.';
+ publish.disabled=issues.length>0||capacity>2000;
+ publish.textContent='Continue to secure payment →';
 }
 
 function setWizard(stage){
@@ -119,8 +201,17 @@ $('#showcaseForm').addEventListener('submit',async e=>{
   await refresh();
  }catch(error){$('#showcaseMessage').textContent=error.message;}
 });
-async function submit(body) {try{notify('Saving…');await request(body);await refresh();}catch(e){notify(e.message,true);}}
-$('#registerForm').addEventListener('submit',e=>{e.preventDefault();const d=new FormData(e.target);submit({action:'register',displayName:d.get('displayName'),country:d.get('country'),acceptTerms:d.get('acceptTerms')==='on'});});
+async function submit(body,button){
+ if(!startOperation('Saving account','Contacting TicketBunker…',button))return;
+ try{
+  await request(body);
+  updateOperation('Updating account','Refreshing your details…');
+  await refresh();
+  finishOperation('Saved successfully.');
+  notify('Saved successfully.');
+ }catch(e){finishOperation(e.message,true);notify(e.message,true);}
+}
+$('#registerForm').addEventListener('submit',e=>{e.preventDefault();const d=new FormData(e.target);submit({action:'register',displayName:d.get('displayName'),country:d.get('country'),acceptTerms:d.get('acceptTerms')==='on'},e.target.querySelector('[type=submit]'));});
 const charityToggle=$('#charityEventToggle');
 charityToggle.addEventListener('change',()=>{
  const isCharity=charityToggle.checked;
@@ -152,38 +243,38 @@ function resizedImage(file,width){
 }
 async function uploadMedia(file,eventId,kind){
  if(!file)return;
+ updateOperation('Preparing '+kind,'Resizing the '+kind+' image on this device…');
  const dataUrl=await resizedImage(file,kind==='logo'?600:1550);
- const r=await fetch('/api/event-media',{method:'POST',headers:{authorization:'Bearer '+token,'content-type':'application/json'},body:JSON.stringify({eventId,kind,dataUrl})});
- const data=await r.json();if(!r.ok)throw Error(data.error||'Artwork upload failed');
- return data;
+ updateOperation('Uploading '+kind,'Connecting to secure image storage…');
+ return uploadWithProgress(eventId,kind,dataUrl);
 }
 $('#eventForm').addEventListener('submit',async e=>{
  e.preventDefault();const form=e.currentTarget;
  const data=Object.fromEntries(new FormData(form));
- const submitButton=form.querySelector('[type=submit]');
- submitButton.disabled=true;
+ const button=form.querySelector('[type=submit]');
+ if(!startOperation('Saving event','Sending event details securely…',button))return;
  try{
-  notify('Saving your event draft…');
   const created=await request({action:'event',...data});
   currentDraftId=created.event.id;
-  // Saving event details succeeds independently of media. A failed image
-  // upload must never force the organiser to create another event.
   let uploadError=null;
   try{
-   notify('Event saved. Uploading your artwork…');
    await uploadMedia($('#eventPoster').files?.[0],currentDraftId,'poster');
    await uploadMedia($('#eventLogo').files?.[0],currentDraftId,'logo');
-  }catch(error){uploadError=error;}
+  }catch(err){uploadError=err;}
+  updateOperation('Finishing event setup','Checking the saved draft and preparing ticket options…');
   await refresh();
   setWizard('tickets');
   if(uploadError){
-   notify('Your event draft was saved, but artwork upload failed: '+uploadError.message+
-    ' Use "Update event artwork" below to retry. Do not create the event again.',true);
-  }else notify('Event draft saved. Next, choose your ticket types.');
- }catch(error){
-  // The request failed before a draft was created. Keep every form entry.
-  notify('Event not saved: '+error.message+' Your event details are still in the form.',true);
- }finally{submitButton.disabled=false;}
+   finishOperation('Event saved, but artwork needs attention: '+uploadError.message,true);
+   notify('Your event draft was saved. Fix artwork using "Update event artwork" — do not create the event again.',true);
+  }else{
+   finishOperation('Event and artwork saved. Continue by adding tickets.');
+   notify('Event saved. Add ticket types to continue.');
+  }
+ }catch(err){
+  finishOperation('Event could not be saved. Your form has not been cleared: '+err.message,true);
+  notify('Event not saved: '+err.message+'. Your details are still here.',true);
+ }
 });
 $('#tierForm').addEventListener('submit',async e=>{
  e.preventDefault();const form=e.currentTarget,d=new FormData(form);
@@ -193,18 +284,27 @@ $('#tierForm').addEventListener('submit',async e=>{
  if(!Number.isFinite(price)||price<1||!Number.isInteger(capacity)||capacity<1){
   $('#ticketSetupStatus').textContent='Enter a price of at least 1 and a positive whole-number quantity.';return;
  }
- const button=form.querySelector('[type="submit"]');button.disabled=true;
+ if(!startOperation('Saving ticket type','Adding '+d.get('name')+' to your event…',form.querySelector('[type=submit]')))return;
  try{
-  $('#ticketSetupStatus').textContent='Saving your ticket type…';
+  $('#ticketSetupStatus').textContent='Saving '+d.get('name')+'…';
   await request({action:'tier',eventId,name:d.get('name'),priceCents:Math.round(price*100),capacity});
-  currentDraftId=eventId;await refresh();
+  currentDraftId=eventId;
+  updateOperation('Confirming ticket type','Refreshing your event and checking the ticket inventory…');
+  await refresh();
   $('#reviewEvent').value=eventId;
   renderReviewReadiness();
-  $('#publishMessage').textContent='Ticket type saved. Review the checklist and submit your event for approval.';
   setWizard('review');
-  notify('Ticket type saved. You can now submit your event for publication review.');
- }catch(error){$('#ticketSetupStatus').textContent='Ticket type not saved: '+error.message;notify(error.message,true);}
- finally{button.disabled=false;}
+  const currency=account?.country_code==='GB'?'£':'€';
+  const confirmation=d.get('name')+' saved — '+capacity+' tickets at '+currency+price.toFixed(2)+' each.';
+  $('#publishMessage').textContent=confirmation+' Check the total listing fee below.';
+  finishOperation(confirmation);
+  notify(confirmation);
+ }catch(err){
+  const failure='Ticket type was not saved: '+err.message+'. Check the details and try again.';
+  $('#ticketSetupStatus').textContent=failure;
+  finishOperation(failure,true);
+  notify(failure,true);
+ }
 });
 $('#tierEvent').addEventListener('change',()=>{
  const ev=eventFor($('#tierEvent').value);
@@ -218,20 +318,45 @@ $('#myEvents').addEventListener('click',e=>{
 });
 $('#requestPublish').addEventListener('click',async()=>{
  const eventId=$('#reviewEvent').value;
- if(!eventId)return $('#publishMessage').textContent='Create your event and tickets first.';
+ if(!eventId)return $('#publishMessage').textContent='Choose an event first.';
  const ev=eventFor(eventId);
- if(ev&&!ev.tiers.length){$('#publishMessage').textContent='Add a ticket type first. Opening ticket setup…';goToTicketSetup(eventId);return;}
- try{const result=await request({action:'requestPublish',eventId});$('#publishMessage').textContent=result.message;await refresh();renderReviewReadiness();}
- catch(err){$('#publishMessage').textContent=err.message;}
+ if(!ev?.tiers?.length){goToTicketSetup(eventId);return;}
+ const capacity=ev.tiers.reduce((n,t)=>n+Number(t.quantity_total||0),0);
+ const plan=capacity<=100?'starter':capacity<=500?'standard':'event_plus';
+ if(!startOperation('Preparing secure payment','Checking listing eligibility and secure checkout availability…',$('#requestPublish')))return;
+ try{
+  const r=await fetch('/api/organiser-listing',{method:'POST',
+   headers:{authorization:'Bearer '+token,'content-type':'application/json'},
+   body:JSON.stringify({eventId,plan}),cache:'no-store'});
+  const data=await r.json();
+  if(!r.ok)throw Error(data.error||'Payment is not available.');
+  if(!/^https:\/\/checkout\.stripe\.com\//.test(String(data.url||'')))throw Error('Secure checkout URL not provided');
+  updateOperation('Opening secure payment','Redirecting to Stripe checkout…');
+  location.assign(data.url);
+ }catch(err){
+  const message='Paid listing checkout is not active in BETA. No payment was taken. Your event draft is saved; return here when checkout opens.';
+  $('#publishMessage').textContent=message;
+  finishOperation(message,true);
+  notify(message,true);
+ }
 });
 $('#artworkRetry').addEventListener('submit',async e=>{
- e.preventDefault();const eventId=$('#tierEvent').value;
- if(!eventId)return notify('Choose an existing draft event first.',true);
- try{notify('Uploading replacement artwork…');
-  await uploadMedia($('#updatePoster').files?.[0],eventId,'poster');
-  await uploadMedia($('#updateLogo').files?.[0],eventId,'logo');
-  await refresh();notify('Event artwork updated.');}
- catch(err){notify(err.message,true);}
+ e.preventDefault();const form=e.currentTarget,eventId=$('#tierEvent').value;
+ if(!eventId)return notify('Choose an existing draft first.',true);
+ const poster=$('#updatePoster').files?.[0],logo=$('#updateLogo').files?.[0];
+ if(!poster&&!logo)return notify('Choose a poster or logo to upload.',true);
+ if(!startOperation('Updating event artwork','Preparing your replacement images…',form.querySelector('[type=submit]')))return;
+ try{
+  await uploadMedia(poster,eventId,'poster');
+  await uploadMedia(logo,eventId,'logo');
+  updateOperation('Verifying updated artwork','Checking the event record…');
+  await refresh();
+  finishOperation('Artwork updated and saved.');
+  notify('Event artwork updated.');
+ }catch(err){
+  finishOperation('Artwork upload failed: '+err.message+'. Your event draft is unchanged.',true);
+  notify('Artwork upload failed. Your draft is safe: '+err.message,true);
+ }
 });
 
 async function staffRequest(body, eventId){

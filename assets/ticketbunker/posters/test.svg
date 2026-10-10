@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="720" viewBox="0 0 1100 720" role="img" aria-labelledby="title desc">
+<title id="title">QR TICKET TEST MODE · TicketBunker demonstration poster</title><desc id="desc">Original graphic ticketing event artwork. Fictional demonstration, not a real event.</desc>
+<defs><linearGradient id="shade" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#20172b"/><stop offset="1" stop-color="#0c0b11"/></linearGradient><clipPath id="clip"><rect width="1100" height="720"/></clipPath></defs>
+<rect width="1100" height="720" fill="url(#shade)"/>
+<g clip-path="url(#clip)"><g stroke="#cfb9e4" stroke-width="35" opacity=".7"><path d="M640 -70V790M775 -70V790M910 -70V790M1045 -70V790"/><path d="M555 180H1200M555 320H1200M555 460H1200M555 600H1200"/></g></g>
+<rect x="41" y="40" width="1018" height="640" rx="0" fill="none" stroke="#f8f6f3" stroke-opacity=".4" stroke-width="1.5"/>
+<g fill="#f8f6f3" font-family="Arial,Helvetica,sans-serif">
+<text x="80" y="99" font-size="23" font-weight="700" letter-spacing="5">TICKETBUNKER<tspan fill="#cfb9e4"> ✳</tspan></text>
+<text x="80" y="149" font-size="14" letter-spacing="5" opacity=".8">EVENTS / PEOPLE / ENERGY</text>
+<text x="73" y="390" font-size="91" font-weight="900" letter-spacing="-7">QR TICKET</text>
+<text x="73" y="503" font-size="92" font-weight="900" letter-spacing="-7">TEST MODE</text>
+<path d="M80 567H1020" stroke="#f8f6f3" stroke-opacity=".55" stroke-dasharray="7 11" stroke-width="2"/>
+<text x="80" y="617" font-size="21" font-weight="700" letter-spacing="3">ZERO-COST CHECK-IN</text>
+<text x="80" y="657" font-size="14" letter-spacing="4" opacity=".8">CONCEPT EVENT · NOT BOOKABLE</text>
+<text x="975" y="656" font-size="20" font-weight="800" text-anchor="end">001 / TB</text>
+</g></svg>

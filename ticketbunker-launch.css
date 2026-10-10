@@ -1,0 +1,88 @@
+/* TicketBunker 2026-10-10 launch polish. Distinct product identity, no SoundBunker studio photography. */
+.tb-return-mobile{display:none}
+.tb-return-link{white-space:nowrap}
+.ticketbunker-site .tb-header .tb-nav .tb-return-link{font-weight:800;color:#f8f6f1;border:1px solid #ffffff39;border-radius:999px;padding:9px 13px;white-space:nowrap}
+.ticketbunker-site .tb-header .tb-nav .tb-return-link:hover{background:#ffffff15}
+.tb-test-pilot{display:flex;gap:26px;align-items:center;justify-content:space-between;margin:0 0 18px;
+  padding:23px 26px;background:#261c30;color:#fbf7ff;border:1px solid #6d547c;border-radius:18px;box-shadow:0 10px 25px #140b1c13}
+.tb-test-pilot>div{flex:1}
+.tb-test-pilot .tb-pilot-tag{font-size:10px;letter-spacing:.13em;font-weight:900;color:#daccdf;display:block;margin:0 0 8px}
+.tb-test-pilot strong{display:block;font-size:22px;letter-spacing:-.035em;font-family:'Space Grotesk',sans-serif}
+.tb-test-pilot p{margin:7px 0 0;max-width:750px;color:#e2d7e7;line-height:1.55;font-size:13px}
+.tb-test-pilot a{flex:0 0 auto;padding:13px 17px;background:#f8f6f1;color:#24182d;border-radius:999px;font-size:12px;text-decoration:none;font-weight:900;text-align:center;white-space:nowrap}
+.tb-test-pilot a:hover{background:#ebe7e0}
+.ticketbunker-site .tb-feature-image img,.ticketbunker-site .tb-card-media img{object-fit:cover;background:#211727}
+.ticketbunker-site .tb-feature-card{border-radius:19px;overflow:hidden;box-shadow:0 10px 28px #231a2b16}
+.ticketbunker-site .tb-organiser-cta>img{object-fit:cover;background:#1e1628}
+.ticketbunker-site .tb-card-demo{background:#f8f5ed;color:#2f213b;letter-spacing:.08em;border-radius:999px}
+.ticketbunker-site .tb-card-content h3{letter-spacing:-.03em}
+.ticketbunker-site .tb-plan-highlight{background:linear-gradient(140deg,#27202d,#34243d);border:1px solid #6f577a}
+.ticketbunker-site .tb-plan-grid{gap:15px}
+.ticketbunker-site .tb-plan{border-radius:18px;overflow:hidden}
+.ticketbunker-site .tb-categories .tb-category{border-radius:999px}
+
+/* Truthful task state: measured bytes during image transfer and animated indefinite work otherwise. */
+.tb-organiser-app #operationStatus[hidden]{display:none!important}
+.tb-operation-status{display:grid;gap:12px;position:sticky;top:73px;z-index:45;padding:15px 16px;
+ background:#fdfbff;border:1px solid #a78ab9;border-radius:14px;margin:10px 0 19px;box-shadow:0 12px 25px #26132917}
+.tb-operation-heading{display:flex;align-items:center;gap:13px;min-width:0}
+.tb-operation-copy{min-width:0;flex:1}
+.tb-operation-copy strong{color:#22182d;display:block;font:800 14px/1.3 'Space Grotesk',sans-serif}
+.tb-operation-copy p{color:#726679;font-size:12px;line-height:1.5;margin:4px 0 0;overflow-wrap:anywhere}
+.tb-operation-spinner{flex:0 0 auto;width:25px;height:25px;border:3px solid #d9c9e1;border-top-color:#533468;border-radius:50%;animation:tb-rotate .85s linear infinite}
+.tb-operation-percent{font-size:13px;font-weight:900;color:#37243f;font-variant-numeric:tabular-nums}
+.tb-operation-track{height:8px;background:#e9e3ed;border-radius:999px;overflow:hidden;position:relative}
+.tb-operation-bar{height:100%;width:0;border-radius:inherit;background:#60436e;transition:width .18s linear}
+.tb-operation-track.indeterminate .tb-operation-bar{width:35%;animation:tb-progress 1.65s ease-in-out infinite}
+.tb-operation-status[data-state=success]{border-color:#bcd5c6;background:#f7fbf8}
+.tb-operation-status[data-state=success] .tb-operation-bar{background:#387452}
+.tb-operation-status[data-state=error]{border-color:#e8b6af;background:#fff8f6}
+.tb-operation-status[data-state=error] .tb-operation-bar{background:#aa584f}
+.tb-operation-status [hidden]{display:none!important}
+@keyframes tb-rotate{to{transform:rotate(360deg)}}
+@keyframes tb-progress{0%{transform:translateX(-120%)}50%{transform:translateX(115%)}100%{transform:translateX(320%)}}
+.tb-listing-summary{display:grid;grid-template-columns:1fr auto;gap:5px 16px;align-items:center;
+ border-radius:14px;background:#20182a;color:#fff;padding:20px 22px;min-width:0}
+.tb-listing-summary>strong{font-size:16px;line-height:1.3}
+.tb-listing-summary>span{font-family:'Space Grotesk',sans-serif;font-size:32px;font-weight:900;letter-spacing:-.04em}
+.tb-listing-summary small{grid-column:1/-1;color:#ddd3e2;font-size:11px}
+.tb-publication-review #publishMessage{font-size:12px;color:#705778;line-height:1.5}
+.tb-organiser-app .tb-panel,.tb-organiser-app .tb-owned-event{border-radius:17px}
+.tb-organiser-app #ticketSetupStatus{border-radius:12px}
+.tb-organiser-app #requestPublish{border-radius:12px;min-height:50px}
+.tb-organiser-app #requestPublish:disabled{opacity:.48;cursor:not-allowed}
+.tb-organiser-app .tb-wizard-steps button.active{box-shadow:0 2px 12px #2613290d}
+.tb-organiser-app .tb-wizard-steps button:not(.active){background:#fff}
+.tb-organiser-app .tb-workspace-intro h1{letter-spacing:-.06em}
+.tb-organiser-app .tb-advanced{margin-top:18px;border:1px solid #e3daea;background:#fff;border-radius:17px;overflow:hidden}
+.tb-organiser-app .tb-advanced>summary{padding:18px 22px;cursor:pointer;list-style:none;font-weight:800;color:#34243f}
+.tb-organiser-app .tb-advanced>summary::after{content:'+';float:right;font-size:22px;line-height:.7}
+.tb-organiser-app .tb-advanced[open]>summary::after{content:'−'}
+.tb-organiser-app .tb-advanced>summary::-webkit-details-marker{display:none}
+.tb-organiser-app .tb-advanced .tb-panel{box-shadow:none;border-radius:0;margin:0;border-width:1px 0 0}
+@media(max-width:1050px){.ticketbunker-site .tb-header .tb-nav .tb-return-link{font-size:10px;padding:8px 9px}}
+@media(max-width:760px){
+ .tb-return-mobile{display:block;padding:9px 17px;background:#f8f6f3;color:#4c3a54;border-bottom:1px solid #e8e0e9;font-size:11px;line-height:1.2}
+ .tb-return-mobile a{font-weight:800;text-decoration:none;color:#493456}
+ .tb-return-mobile a:focus-visible{outline:2px solid #6b4b7d;outline-offset:3px}
+ .ticketbunker-site .tb-return-mobile{background:#f6f3f0}
+ .tb-organiser-app .tb-return-mobile{margin:0 -12px 14px;padding:9px 14px;border-radius:9px}
+ .tb-scanner-app .tb-return-mobile{background:#1c1425;color:#fff;border-color:#ffffff2b}
+ .tb-scanner-app .tb-return-mobile a{color:#fff}
+ .tb-ticket-app .tb-return-mobile{background:#1d1527;border-color:#ffffff29}
+ .tb-ticket-app .tb-return-mobile a{color:#fff}
+ .tb-free-test-app .tb-return-mobile{margin:0;color:#3d2c4b}
+ .tb-test-pilot{margin:0 0 15px;padding:18px 16px;flex-direction:column;align-items:stretch;gap:13px;border-radius:16px}
+ .tb-test-pilot strong{font-size:20px}
+ .tb-test-pilot a{width:100%;min-height:45px;display:grid;place-items:center}
+ .tb-operation-status{top:139px;margin:7px 0 13px;padding:13px}
+ .tb-operation-copy strong{font-size:13px}
+ .tb-operation-copy p{font-size:11px}
+ .tb-listing-summary{padding:16px 15px}
+ .tb-listing-summary>strong{font-size:14px}
+ .tb-listing-summary>span{font-size:28px}
+}
+@media(prefers-reduced-motion:reduce){.tb-operation-spinner,.tb-operation-track.indeterminate .tb-operation-bar{animation-duration:4s}}
+
+.tb-free-test-app .tb-claim-progress{display:block;width:100%;height:8px;margin:10px 0;accent-color:#5b3d71}
+.tb-free-test-app .tb-claim-progress[hidden]{display:none!important}
