@@ -12,9 +12,11 @@ test('Events storefront has branded commercial controls and demo-only checkout',
  assert.match(events,/DEMO EVENT/);
  assert.doesNotMatch(siteJs,/\/api\/event-checkout|checkout\.stripe\.com/);
 });
-test('Distinct local event photography and prominent verified image hero',()=>{
- assert.match(events,/academy-performance\.jpg/);
- assert.match(events,/fetchpriority="high"/);
+test('Distinct local event photography and separate app-style ticket hero',()=>{
+ assert.match(events,/tb-hero-standalone/);
+ assert.match(events,/tb-stub/);
+ assert.match(events,/GOOD NIGHTS/);
+ assert.doesNotMatch(events,/class="tb-hero-image"/);
  const images=[...siteJs.matchAll(/image:'(\/[^']+)'/g)].map(x=>x[1]);
  assert.ok(new Set(images).size>=5,'At least five distinct bundled event images');
  assert.ok(images.every(x=>!x.startsWith('https:')),'Demo images load from project assets');

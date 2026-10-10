@@ -1,5 +1,5 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer"><meta name="theme-color" content="#100b16"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Bunker Scanner"><link rel="manifest" href="/ticket-bunker-scanner.webmanifest"><title>Door Scanner | Ticket Bunker BETA</title><link rel="stylesheet" href="/events.css"><script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script defer src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script><script defer src="/event-scanner.js"></script></head>
-<body><div class="beta-banner" role="status"><strong>TICKET BUNKER · BETA</strong> — QR staff invitations are in testing. Ticket checkout is not live.</div>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer"><meta name="theme-color" content="#100b16"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Bunker Scanner"><link rel="manifest" href="/ticket-bunker-scanner.webmanifest"><title>Door Scanner | Ticket Bunker BETA</title><link rel="stylesheet" href="/events.css"><link rel="stylesheet" href="/ticketbunker-app.css"><script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script defer src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script><script defer src="/event-scanner.js"></script></head>
+<body class="tb-scanner-app"><div class="beta-banner" role="status"><strong>TICKET BUNKER · BETA</strong> — QR staff invitations are in testing. Ticket checkout is not live.</div>
 <header class="topbar"><a class="brand" href="/"><img src="/assets/ticketbunker/ticketbunker-logo.svg" alt="ticketBunker"></a><nav><a href="/events">Events</a><a href="/organiser">Organiser dashboard</a></nav></header>
 <main class="events-content" style="max-width:820px;margin:auto"><span class="eyebrow">DOOR STAFF / SECURE MOBILE CHECK-IN</span><h1>Ticket scanner.</h1>
 <p id="authMessage" role="status">Checking your event-scanner access…</p>
@@ -11,4 +11,10 @@
 <div id="result" class="message" role="status" style="min-height:85px;text-align:center;font-size:22px;font-weight:bold">Choose an event and allow camera access.</div>
 <form id="manual" style="margin-top:25px"><label for="code">Manual ticket URL</label><input id="code" style="width:100%;padding:14px;background:#201528;color:#fff;border:1px solid #fff4" placeholder="Paste ticket URL"><button type="submit" class="solid" style="margin-top:12px">Check ticket</button></form>
 </div><p class="muted" style="margin-top:26px">On iPhone, use Share → Add to Home Screen to save the scanner like an app. Camera scanning needs internet; offline scanning is not yet supported.</p>
-</main></body></html>
+</main>
+<nav class="tb-mobile-nav" aria-label="Door scanner mobile navigation">
+ <a href="/events"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><span>Explore</span></a>
+ <a href="/organiser"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/><circle cx="12" cy="12" r="10"/></svg><span>Create</span></a>
+ <a href="/event-scanner" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8V5h4M19 8V5h-4M5 16v3h4M19 16v3h-4M8 12h8"/></svg><span>Scan</span></a>
+ <a href="/client?next=%2Fclient%23my-tickets"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h18v4a2 2 0 0 0 0 4v4H3v-4a2 2 0 0 0 0-4zM14 7v12" stroke-dasharray="2 2"/></svg><span>My Tickets</span></a>
+</nav></body></html>

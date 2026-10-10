@@ -16,6 +16,7 @@ function setWizard(stage){
  $('#wizardSteps').scrollIntoView({behavior:'smooth',block:'start'});
 }
 document.querySelectorAll('#wizardSteps [data-wizard]').forEach(b=>b.addEventListener('click',()=>setWizard(b.dataset.wizard)));
+document.querySelector('[data-open-wizard]')?.addEventListener('click',()=>setWizard('details'));
 $('#toReview').addEventListener('click',()=>setWizard('review'));
 function notify(s,error=false){const n=$('#notice');n.textContent=s;n.style.background=error?'#ffedf0':'#efe6f6';n.style.color=error?'#94203c':'#492a62';n.style.borderColor=error?'#ecc2cb':'#d6bde9';}
 async function request(body){

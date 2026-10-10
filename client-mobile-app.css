@@ -1,0 +1,100 @@
+/* SoundBunker account mobile shell: keep the studio identity while making tickets and services feel app-native */
+.sb-mobile-nav{display:none}
+@media(max-width:760px){
+ html{scroll-padding-top:70px}
+ body.client-page{padding-bottom:calc(95px + env(safe-area-inset-bottom,0px))}
+ .sb-mobile-nav{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));position:fixed;z-index:110;
+  left:0;right:0;bottom:0;padding:9px max(8px,env(safe-area-inset-left,8px)) calc(9px + env(safe-area-inset-bottom,0px));
+  gap:3px;background:#fbf9fb;color:#291c35;box-shadow:0 -5px 27px #05030b38;border-top:1px solid #e2d5e7
+ }
+ .sb-mobile-nav a{
+  min-height:51px;display:flex;align-items:center;justify-content:center;gap:5px;flex-direction:column;
+  text-decoration:none!important;font-size:10px;font-weight:800;line-height:1.2;color:#74647c;
+  border-radius:12px;white-space:nowrap
+ }
+ .sb-mobile-nav a[href="#my-tickets"]{color:#382342}
+ .sb-mobile-nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+ .client-page .client-shell{width:100%;max-width:none;padding:0 0 15px}
+ .client-page:has(#authPanel:not([hidden])) .sb-mobile-nav{display:none}
+ .client-page .client-nav{
+  position:sticky;top:0;z-index:60;height:67px;min-height:67px;
+  display:flex;justify-content:space-between;align-items:center;padding:10px 16px;
+  background:#15101a;border-bottom:1px solid #ffffff1f
+ }
+ .client-page .client-logo img{width:clamp(168px,51vw,220px)}
+ .client-page .client-nav nav{display:none}
+ .client-page #portalPanel{padding:0 12px}
+ .client-page .client-dashboard-hero{margin:10px 0 14px;border-radius:16px;min-height:0;overflow:hidden}
+ .client-page .client-dashboard-copy{padding:26px 19px}
+ .client-page .client-dashboard-copy h1{font-size:clamp(29px,8.4vw,43px);line-height:1.07}
+ .client-page .client-dashboard-copy>p:not(.eyebrow){font-size:13px;line-height:1.5}
+ .client-page .client-account-bar{margin:9px 0 14px;padding:13px 16px;border-radius:14px;min-width:0;gap:10px;flex-wrap:wrap}
+ .client-page .client-account-bar strong{font-size:12px;overflow-wrap:anywhere}
+ .client-page .client-account-categories{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:10px 0 18px}
+ .client-page .client-account-categories>a{
+  min-height:143px;display:flex;gap:9px;padding:17px 14px;border-radius:16px;
+  border:1px solid #725981;background:linear-gradient(150deg,#2b1b39,#17101e);
+  box-shadow:0 4px 15px #100a181c
+ }
+ .client-page .client-account-categories>a span{font-size:9px;letter-spacing:.08em}
+ .client-page .client-account-categories>a strong{font-size:clamp(16px,4.5vw,23px);line-height:1.13;letter-spacing:-.025em}
+ .client-page .client-account-categories>a small{font-size:11px;line-height:1.4}
+ .client-page .client-my-tickets{
+  margin:17px 0 23px;padding:20px 15px;background:#1c1327;border:1px solid #6d5580;border-radius:17px;
+  scroll-margin-top:79px
+ }
+ .client-page .client-tickets-heading{gap:11px;display:flex;flex-direction:column;align-items:stretch}
+ .client-page .client-tickets-heading h2{font-size:28px}
+ .client-page .client-tickets-heading p:not(.eyebrow){font-size:13px}
+ .client-page .client-tickets-heading .client-action-solid{align-self:stretch;text-align:center;min-height:48px;display:grid;place-items:center;border-radius:11px}
+ .client-page .client-ticket-grid{grid-template-columns:1fr;gap:13px}
+ .client-page .client-ticket-card{
+  display:flex;flex-direction:column;gap:11px;padding:13px;border-radius:13px;min-width:0;overflow:hidden
+ }
+ .client-page .client-ticket-card>img{width:100%;height:175px;object-fit:cover;object-position:center}
+ .client-page .client-ticket-card h3{font-size:20px}
+ .client-page .client-ticket-card p{font-size:12px}
+ .client-page .client-ticket-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:11px}
+ .client-page .client-ticket-links a,.client-page .client-ticket-links button{justify-content:center;min-height:44px;text-align:center;border-radius:10px;padding:10px 6px;font-size:12px}
+ .client-page .client-ticket-links a:first-child{grid-column:1/-1;background:#fff;color:#23192e;font-size:14px}
+ .client-page .client-ticket-warning{font-size:12px}
+ .client-page .client-hub-panel,.client-page .client-files-panel{
+  display:block;margin:12px 0 16px;padding:21px 17px;border-radius:15px;scroll-margin-top:79px;
+ }
+ .client-page .client-hub-panel h2{font-size:clamp(25px,7.2vw,35px)}
+ .client-page .client-booking-card{border-radius:13px;padding:14px}
+ .client-page .client-panel-actions{display:grid;grid-template-columns:1fr}
+ .client-page .client-panel-actions a{width:100%;min-height:45px;display:grid;place-items:center;text-align:center;border-radius:11px}
+ .client-page .client-folder-grid{grid-template-columns:1fr;gap:11px}
+ .client-page .client-folder-card{min-height:0;padding:19px;border-radius:13px}
+ .client-page .client-folder-card h3{font-size:24px}
+ .client-page .client-session-upload{
+  display:block;margin:14px 0;padding:20px 16px;border-radius:15px;border-color:#6f547b
+ }
+ .client-page .client-session-upload-copy h2{font-size:30px;line-height:1.05}
+ .client-page .client-session-upload-copy>p:not(.eyebrow){font-size:13px}
+ .client-page .client-session-upload-box{padding:10px;border-radius:13px}
+ .client-page .client-session-dropzone{min-height:145px;padding:20px}
+ .client-page .client-session-dropzone strong{font-size:17px}
+ .client-page .client-metrics{margin:14px 0;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+ .client-page .client-metrics article{padding:12px;min-width:0}
+ .client-page .client-metrics article strong{font-size:26px}
+ .client-page .client-metrics article p{font-size:10px}
+ .client-page .client-bento{margin:13px 0 27px;grid-template-columns:1fr;grid-template-rows:none;gap:12px}
+ .client-page .client-bento-card{min-height:195px;border-radius:13px;padding:18px}
+ .client-page .client-vouchers-section{margin:13px 0 28px;padding:19px 14px;border-radius:15px;scroll-margin-top:79px}
+ .client-page .client-voucher-head{display:flex;flex-direction:column;align-items:flex-start;gap:12px}
+ .client-page .client-auth{display:flex;flex-direction:column;min-height:0;padding:0 0 25px;margin:0}
+ .client-page .client-auth-form-wrap{order:0;padding:18px 14px;min-width:0}
+ .client-page .client-auth-visual{min-height:0}
+ .client-page .client-auth-copy{padding:24px 19px}
+ .client-page .client-auth-copy h1{font-size:clamp(29px,8vw,41px);line-height:1.05}
+ .client-page .client-auth-copy p:not(.eyebrow){font-size:13px}
+ .client-page .client-auth-images{display:none}
+ .client-page .client-login-card{border-radius:15px;padding:22px 17px}
+ .client-page .client-login-card input{font-size:16px!important;min-height:50px;border-radius:11px}
+ .client-page .client-login-card button{min-height:45px}
+ .client-page .client-community-feature{margin-bottom:30px}
+}
+@media(max-width:380px){.client-page .client-account-categories>a{padding:13px 10px;min-height:138px}.client-page .client-account-categories>a strong{font-size:16px}}
