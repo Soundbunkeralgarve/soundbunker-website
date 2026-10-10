@@ -12,9 +12,11 @@ function time(s){if(!s)return '—';const d=new Date(s);return Number.isNaN(d.ge
 function money(cents,currency){return new Intl.NumberFormat('en-GB',{style:'currency',currency:currency||'EUR'}).format(Number(cents||0)/100);}
 function createTicketCard(t,active){
  const selected=t.id===active;
+ const clientLogo=/^data:image\/(png|jpeg|webp);base64,/.test(run.logoData||'')?'<img class="promoter-logo" src="'+esc(run.logoData)+'" alt="Promoter logo">':'';
+ const poster=/^data:image\/(png|jpeg|webp);base64,/.test(run.posterData||'')?'<img class="ticket-art" src="'+esc(run.posterData)+'" alt="Event artwork">':'';
  return '<article class="ticket'+(t.usedAt?' is-used':'')+'" data-ticket="'+esc(t.id)+'">'+
-  '<div class="ticket-top"><div><small>POWERED BY TICKETBUNKER · TEST PASS</small><br><strong>'+esc(run.title)+'</strong><br><small>'+esc(run.promoter)+'</small></div><span>DEMO ONLY</span></div>'+
-  '<div class="ticket-body"><div><span class="small muted">'+esc(t.tier)+' · '+money(t.priceCents,run.currency)+'</span><h3>'+esc(run.venue)+'</h3><div class="ticket-meta">'+esc(time(run.date))+'</div><div class="ticket-meta">'+(t.usedAt?'<span class="ticket-used">CHECKED IN · DEMO</span>':'UNUSED · DEMO ENTRY')+'</div></div>'+
+  '<div class="ticket-top"><div><img class="tb-mini-logo" src="/assets/ticketbunker/ticketbunker-logo.svg" alt="ticketBunker"><br><small>SIMULATION TICKET · NOT VALID FOR ENTRY</small><br><strong>'+esc(run.title)+'</strong><br><small>'+esc(run.promoter)+'</small></div>'+clientLogo+'<span>DEMO ONLY</span></div>'+
+  '<div class="ticket-body"><div>'+poster+'<span class="small muted">'+esc(t.tier)+' · '+money(t.priceCents,run.currency)+'</span><h3>'+esc(run.venue)+'</h3><div class="ticket-meta">'+esc(time(run.date))+'</div><div class="ticket-meta">'+(t.usedAt?'<span class="ticket-used">CHECKED IN · DEMO</span>':'UNUSED · DEMO ENTRY')+'</div></div>'+
    '<div class="ticket-qr" id="qr-'+esc(t.id)+'" aria-label="Visual preview of demo QR code"><span class="small muted">DEMO QR</span></div></div>'+
   '<div class="ticket-code">'+esc(makeCode(run.id,t.id))+'</div>'+
   '<div class="ticket-controls"><button type="button" data-action="select" data-id="'+esc(t.id)+'">'+(selected?'Selected for scanner':'Select for scan')+'</button><button type="button" data-action="copy" data-id="'+esc(t.id)+'">Copy code</button></div></article>';
@@ -54,13 +56,32 @@ function fillForm(){
 const future=new Date(Date.now()+30*86400000);const offset=future.getTimezoneOffset()*60000;
 $('demoDate').value=new Date(future.getTime()-offset).toISOString().slice(0,16);
 fillForm();
-$('demoEventForm').addEventListener('submit',e=>{
+async function onDeviceImage(file,maxWidth){
+ if(!file)return null;
+ if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>3000000)
+  throw Error('Upload a PNG, JPEG or WebP under 3 MB.');
+ const objectUrl=URL.createObjectURL(file);
+ try{
+  const picture=new Image();
+  await new Promise((resolve,reject)=>{picture.onload=resolve;picture.onerror=()=>reject(Error('Image cannot be opened'));picture.src=objectUrl;});
+  const ratio=Math.min(1,maxWidth/Math.max(picture.width,picture.height));
+  const canvas=document.createElement('canvas');
+  canvas.width=Math.max(1,Math.round(picture.width*ratio));canvas.height=Math.max(1,Math.round(picture.height*ratio));
+  canvas.getContext('2d').drawImage(picture,0,0,canvas.width,canvas.height);
+  const data=canvas.toDataURL(file.type==='image/png'?'image/png':'image/jpeg',.72);
+  if(data.length>1800000)throw Error('Image is too large after resizing. Choose a smaller file.');
+  return data;
+ }finally{URL.revokeObjectURL(objectUrl);}
+}
+$('demoEventForm').addEventListener('submit',async e=>{
  e.preventDefault();
  try{
   const data=Object.fromEntries(new FormData(e.currentTarget));
   // Starting a new sample event deliberately clears old simulation tickets.
   if(run?.tickets?.length&&!confirm('Create a new demo event and clear the current mock tickets?'))return;
-  run=newRun(data);selectedTicketId=null;save();render();
+  const logoData=await onDeviceImage(e.currentTarget.elements.logo.files?.[0],350);
+  const posterData=await onDeviceImage(e.currentTarget.elements.poster.files?.[0],1000);
+  run={...newRun(data),logoData,posterData};selectedTicketId=null;save();render();
   $('scanResult').className='scan-result';$('scanResult').textContent='Sample event created. Issue some demo tickets.';
   notice('Demo event saved. Continue to Step 02 to issue mock tickets.');
  }catch(err){notice(err.message);}
