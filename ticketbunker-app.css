@@ -207,3 +207,53 @@ body.ticketbunker-site{background:var(--tb-app-cream)}
  .tb-organiser-app .tb-wizard-steps button{font-size:9px}
 }
 @media(prefers-reduced-motion:reduce){.tb-stub,.ticketbunker-site .tb-event-card{transition:none!important}}
+
+/* Separate customer ticket pass, used by real €0 and eventual paid tickets. */
+body.tb-ticket-app{background:linear-gradient(#24192e,#150f1d);min-height:100dvh;color:#251e2b}
+body.tb-ticket-app .topbar{background:#20172a;border-color:#ffffff25}
+.tb-ticket-shell{width:min(510px,calc(100% - 32px));margin:0 auto;padding:28px 0 68px}
+.tb-ticket-intro{color:#fff;margin-bottom:21px}
+.tb-ticket-intro .eyebrow{font-size:10px;letter-spacing:.16em;color:#d3c5da}
+.tb-ticket-intro h1{font:800 clamp(28px,5vw,38px)/1.06 'Space Grotesk',sans-serif;letter-spacing:-.04em;margin:12px 0 7px}
+.tb-ticket-intro p{color:#d9cddd;font-size:13px;margin:0}
+.tb-ticket-pass{background:#faf9f6;border-radius:19px;overflow:hidden;box-shadow:0 24px 60px #1009156b;position:relative}
+.tb-ticket-pass-top{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:18px 22px;background:#efeae9;color:#302238;font-size:10px;font-weight:900;letter-spacing:.09em}
+.tb-ticket-pass-top strong{font-size:11px}
+.tb-ticket-artwork{display:flex;flex-direction:column;align-items:center}
+.tb-ticket-artwork>img:not(.event-brand-mark){display:block;width:100%;max-height:170px;object-fit:cover}
+.tb-ticket-artwork .event-brand-mark{max-height:70px;max-width:170px;object-fit:contain;margin:16px 0 0}
+.tb-ticket-details{padding:22px 22px 15px;text-align:center}
+.tb-ticket-details h2{font:800 25px/1.1 'Space Grotesk',sans-serif;margin:0 0 10px;color:#231a2c}
+.tb-ticket-details p{font-size:13px;color:#615568;line-height:1.6;margin:0}
+.tb-ticket-qr-wrap{position:relative;padding:25px 15px 23px;text-align:center;border-top:2px dashed #d7ccd8;border-bottom:2px dashed #d7ccd8}
+.tb-ticket-qr-wrap:before,.tb-ticket-qr-wrap:after{content:"";position:absolute;width:25px;height:25px;border-radius:50%;background:#20172a;top:-13px}
+.tb-ticket-qr-wrap:before{left:-13px}.tb-ticket-qr-wrap:after{right:-13px}
+.tb-ticket-qr-wrap #qr{width:max-content;max-width:100%;margin:0 auto;padding:13px;background:#fff;border:1px solid #eee7e9;border-radius:11px}
+.tb-ticket-qr-wrap #qr img,.tb-ticket-qr-wrap #qr canvas{display:block;max-width:100%;height:auto}
+.tb-ticket-qr-wrap p{margin:12px 0 0;font-size:10px;font-weight:900;letter-spacing:.14em;color:#4a3b51}
+.tb-ticket-note{padding:18px 22px 20px;text-align:center;color:#655970;font-size:12px;line-height:1.5}
+.tb-ticket-actions{margin-top:18px;padding:20px;background:#f8f6f9;border-radius:17px}
+.tb-ticket-actions h2{margin:0 0 5px;font:800 19px 'Space Grotesk',sans-serif;color:#291e30}
+.tb-ticket-actions p{color:#706578;font-size:12px;line-height:1.5}
+.tb-ticket-actions-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:18px}
+.tb-ticket-actions-grid button,.tb-ticket-actions-grid a{background:#261b32;color:#fff;border:1px solid #261b32;border-radius:11px;min-height:48px;display:flex;align-items:center;justify-content:center;padding:12px 9px;text-align:center;font-size:12px;font-weight:800;text-decoration:none;cursor:pointer}
+.tb-ticket-actions-grid a{background:#fff;color:#281d30;border-color:#cbbfd3}
+.tb-ticket-actions .tb-ticket-privacy{margin:13px 0 0}
+.tb-ticket-back{text-align:center;padding:24px;color:#f7f0fa;font-size:13px;font-weight:700}
+@media(max-width:760px){
+ body.tb-ticket-app{padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))}
+ body.tb-ticket-app .topbar{padding:10px 16px;height:68px}
+ body.tb-ticket-app .topbar .brand img{width:165px;height:45px;object-fit:contain}
+ body.tb-ticket-app .topbar nav{display:none}
+ .tb-ticket-shell{width:calc(100% - 28px);padding:21px 0 40px}
+ .tb-ticket-pass{border-radius:18px}
+ .tb-ticket-actions{border-radius:15px;padding:18px}
+ .tb-ticket-actions-grid button,.tb-ticket-actions-grid a{font-size:12px}
+}
+@media print{
+ body.tb-ticket-app{background:#fff!important;padding:0!important}
+ body.tb-ticket-app .topbar,.tb-ticket-intro,.tb-ticket-actions,.tb-ticket-back,.tb-mobile-nav{display:none!important}
+ .tb-ticket-shell{width:100%;max-width:440px;margin:0 auto;padding:0}
+ .tb-ticket-pass{box-shadow:none;border:1px solid #ccc}
+ .tb-ticket-qr-wrap:before,.tb-ticket-qr-wrap:after{background:#fff}
+}
