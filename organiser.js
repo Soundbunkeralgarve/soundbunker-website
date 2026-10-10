@@ -36,7 +36,8 @@ async function refresh(){
   const types=e.tiers.length?e.tiers.map(t=>esc(t.name)+' · '+esc(String(t.quantity_total))).join(' · '):'No ticket types yet';
   return '<article class="tb-owned-event"><div><strong>'+esc(e.title)+'</strong><p>'+esc(e.venue)+' · '+esc(e.event_kind)+'</p></div>'+
    '<div><p>'+esc(localDate(e.starts_at,e.venue_timezone))+'</p><p>'+types+'</p></div>'+
-   '<div><span class="tb-owned-status">'+esc(e.status==='draft'?'DRAFT · NOT PUBLISHED':e.status.toUpperCase())+'</span></div></article>';
+   '<div><span class="tb-owned-status">'+esc(e.status==='draft'?'DRAFT · NOT PUBLISHED':e.status.toUpperCase())+'</span>'+
+   (e.charity?'<small class="tb-owned-charity">'+(e.charity.status==='verified'?'Charity verified · Free listing':e.charity.status==='rejected'?'Charity claim not approved':'Charity number received · Review pending')+'</small>':'')+'</div></article>';
  }).join(''):'<div class="tb-no-events"><strong>Nothing here yet</strong><p>Create an event above to see your drafts in this workspace.</p></div>';
  if(list.length)await loadStaff().catch(error=>{$('#staffRoster').textContent=error.message;});
  else $('#staffRoster').textContent='Create an event draft to invite staff.';
@@ -65,6 +66,13 @@ $('#showcaseForm').addEventListener('submit',async e=>{
 });
 async function submit(body) {try{notify('Saving…');await request(body);await refresh();}catch(e){notify(e.message,true);}}
 $('#registerForm').addEventListener('submit',e=>{e.preventDefault();const d=new FormData(e.target);submit({action:'register',displayName:d.get('displayName'),country:d.get('country'),acceptTerms:d.get('acceptTerms')==='on'});});
+const charityToggle=$('#charityEventToggle');
+charityToggle.addEventListener('change',()=>{
+ const isCharity=charityToggle.checked;
+ $('#charityNumberPanel').hidden=!isCharity;
+ $('#charityNumber').required=isCharity;
+ if(!isCharity)$('#charityNumber').value='';
+});
 $('#eventForm').addEventListener('submit',e=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.target));submit({action:'event',...d});});
 $('#tierForm').addEventListener('submit',e=>{e.preventDefault();const d=new FormData(e.target);submit({action:'tier',eventId:d.get('eventId'),name:d.get('name'),priceCents:Math.round(Number(d.get('price'))*100),capacity:Number(d.get('capacity'))});});
 
