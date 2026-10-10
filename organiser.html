@@ -4,6 +4,7 @@
 <title>Organiser Workspace · ticketBunker BETA</title>
 <link rel="stylesheet" href="/events.css"><link rel="stylesheet" href="/organiser.css"><link rel="stylesheet" href="/ticketbunker-app.css">
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script defer src="/organiser.js"></script>
+<link rel="stylesheet" href="/ticketbunker-launch.css">
 </head>
 <body class="tb-organiser-app">
 <div class="beta-banner" role="status"><strong>BETA · NOT LIVE YET</strong> — Create your event drafts and invite staff. Checkout, ticket sales and payouts are not live.</div>
@@ -77,17 +78,19 @@
    </section>
   </div>
   <section id="my-events-section" class="tb-panel tb-events-panel" hidden><div class="tb-panel-head tb-panel-head-row"><div><span class="tb-step-number">STEP 03</span><h2>Your events</h2><p>Drafts appear here after you create them.</p></div><a href="#setup">+ New event</a></div><div id="myEvents" class="tb-owned-events"></div><div class="tb-publication-review"><h3>Review &amp; pay</h3><p>Check your event, dates, tickets and one flat listing fee. When paid checkout launches, complete secure payment here to publish. No separate manual publication request.</p><label>Choose your completed event<select id="reviewEvent"></select></label><div id="reviewReadiness" class="tb-readiness" aria-live="polite">Checking which steps are complete…</div><button type="button" class="solid" id="reviewAddTickets" hidden>Add a ticket type →</button><div id="listingSummary" class="tb-listing-summary" role="group" aria-label="Event listing fee"><strong id="listingPlan">Choose an event</strong><span id="listingTotal">—</span><small id="listingBreakdown">Listing fee calculated from total ticket capacity.</small></div><button class="solid" type="button" id="requestPublish">Continue to secure payment →</button><p id="publishMessage" role="status">Checkout is not live during BETA. You can save and review your draft without paying.</p></div></section>
-  <section id="listing-plans" class="tb-panel tb-pricing-panel" aria-labelledby="listing-plans-heading">
+  <details class="tb-advanced" id="more-pricing"><summary>View listing prices &amp; test mode</summary><section id="listing-plans" class="tb-panel tb-pricing-panel" aria-labelledby="listing-plans-heading">
    <div class="tb-panel-head"><div><span class="tb-step-number">SIMPLE PRICING</span><h2 id="listing-plans-heading">One event. One flat fee.</h2><p>Three plans for independent events. Prices shown in your organiser's local currency.</p></div><a href="/events#plans">View full pricing ↗</a></div>
    <div class="tb-organiser-price-list" aria-label="Three ticketBunker listing fee brackets">
     <div><span>Starter</span><strong>1–100 sold</strong><b data-price-gbp="£49" data-price-eur="€59">€59</b></div>
     <div><span>Standard</span><strong>101–500 sold</strong><b data-price-gbp="£99" data-price-eur="€119">€119</b></div>
     <div><span>Event Plus</span><strong>501–2,000 sold</strong><b data-price-gbp="£199" data-price-eur="€239">€239</b></div>
    </div>
+   <div class="tb-test-pilot"><div><span class="tb-pilot-tag">INTERNAL TEST / €0 · £0</span><strong>Private QR test bracket</strong><p>Keep the real ticket and scanner test available for tomorrow. Restricted to authorised internal testing; no public event or Stripe charge.</p></div><a href="/events-admin">Open test tools →</a></div>
    <div class="tb-charity-price-strip"><div><strong>Registered charity event?</strong><span>Free ticketBunker event listing when your charity number is verified.</span></div><span>£0 / €0 listing fee</span></div>
    <p class="tb-pricing-note"><strong>Stripe handles all card transactions</strong> and charges processing fees to the organiser's Stripe account. The balance is paid out following Stripe's normal payout schedule. ticketBunker charges the flat listing fee separately. Buyers pay no added ticketBunker booking fee. VAT/tax and Stripe fees are separate; approval is required for upgrades and only the difference is due.</p>
    <p class="tb-field-help">BETA prices are proposals; listing payments and live ticket checkout remain disabled.</p>
   </section>
+  </details>
   <div class="tb-bottom-grid">
    <section id="staffAccess" class="tb-panel" aria-labelledby="staffHeading">
     <div class="tb-panel-head"><div><span class="tb-step-number">STAFF ACCESS</span><h2 id="staffHeading">Invite your scanner crew</h2><p>Send an event-specific link by email, or share it by WhatsApp/SMS. Staff sign in with their verified SoundBunker email, then each scan is logged.</p></div></div>
@@ -96,12 +99,12 @@
     <label class="tb-roster-label" for="manageStaffEvent">Manage staff for event<select id="manageStaffEvent"></select></label><div id="staffRoster" class="tb-staff-roster"></div>
     <p class="tb-field-help">Invitations expire after 72 hours and access can be revoked. Phone-number invitations are not yet active.</p>
    </section>
-   <section id="featured-placement" class="tb-panel" aria-labelledby="featured-placement-heading">
+   <details class="tb-advanced"><summary>Optional Featured Showcase promotion</summary><section id="featured-placement" class="tb-panel" aria-labelledby="featured-placement-heading">
     <div class="tb-panel-head"><div><span class="tb-step-number">OPTIONAL PROMOTION</span><h2 id="featured-placement-heading">Featured Showcase</h2><p>Apply to put your event in the top featured position.</p></div></div>
     <div class="tb-showcase-preview"><span>PREMIUM PLACEMENT</span><strong>Give your event the spotlight.</strong><p>Request the headline spot on ticketBunker’s discovery page.</p></div>
     <form id="showcaseForm" class="organiser-form tb-form-grid"><label class="tb-span-full">Choose a draft event<select id="showcaseEvent" name="eventId" required></select></label><p id="showcasePrice" class="tb-field-note tb-span-full">Proposed upgrade: £49 for UK events / €59 for Portuguese events.</p><div class="tb-form-actions tb-span-full"><button class="solid" type="submit">Request Featured Showcase →</button></div></form><p id="showcaseMessage" role="status" class="tb-action-response"></p>
     <p class="tb-field-help">No charge is taken when you request a place. Price, availability, tax and booking terms require confirmation before paid placements launch.</p>
-   </section>
+   </section></details>
   </div>
  </section>
 </main>
