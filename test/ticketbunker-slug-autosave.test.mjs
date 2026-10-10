@@ -10,7 +10,7 @@ test('original titles remain unchanged and links are generated without manual UR
  assert.equal(eventSlug('⚡️🎉'),'event');
  assert.equal(eventSlugCandidate('My Party',0),'my-party');
  assert.equal(eventSlugCandidate('My Party',1,'abc123'),'my-party-abc123');
- assert.throws(()=>eventSlugCandidate('My Party',1,'abc'),'Invalid event URL suffix');
+ assert.throws(()=>eventSlugCandidate('My Party',1,'abc'),/Invalid event URL suffix/);
  const page=file('organiser.html'),api=file('api/organiser.js');
  assert.doesNotMatch(page,/name="slug"/);
  assert.match(page,/Your event link is created automatically/);
