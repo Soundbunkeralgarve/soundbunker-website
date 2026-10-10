@@ -36,6 +36,16 @@
       <label>Finish · venue local time<input name="endsAt" type="datetime-local"></label>
       <label class="tb-span-full">Event image HTTPS URL (optional)<input name="imageUrl" type="url" placeholder="https://..."><span class="tb-field-help">Branded poster upload will follow in a future release.</span></label>
       <label class="tb-span-full">Description<textarea name="description" rows="3" maxlength="4000" placeholder="What should people expect?"></textarea></label>
+      <label class="tb-span-full tb-charity-choice">
+        <input type="checkbox" id="charityEventToggle" name="charityEvent" value="on">
+        <span><strong>Registered charity event</strong><small>Free ticketBunker listing after charity registration verification.</small></span>
+      </label>
+      <div id="charityNumberPanel" class="tb-span-full tb-charity-details" hidden>
+       <label for="charityNumber">Charity registration number
+        <input type="text" id="charityNumber" name="charityNumber" autocomplete="off" minlength="3" maxlength="40" placeholder="Registered charity number">
+       </label>
+       <p class="tb-field-help">That's all we need to request a free listing. We'll check the number against the appropriate charity register before waiving the listing fee. Stripe's normal card-processing charges still apply to ticket transactions.</p>
+      </div>
       <div class="tb-form-actions tb-span-full"><button class="solid" type="submit">Save event draft →</button></div>
     </form>
    </section>
@@ -60,6 +70,7 @@
     <div><span>Standard</span><strong>101–500 sold</strong><b data-price-gbp="£99" data-price-eur="€119">€79</b></div>
     <div><span>Event Plus</span><strong>501–2,000 sold</strong><b data-price-gbp="£199" data-price-eur="€239">€179</b></div>
    </div>
+   <div class="tb-charity-price-strip"><div><strong>Registered charity event?</strong><span>Free ticketBunker event listing when your charity number is verified.</span></div><span>£0 / €0 listing fee</span></div>
    <p class="tb-pricing-note"><strong>Stripe handles all card transactions</strong> and charges processing fees to the organiser's Stripe account. The balance is paid out following Stripe's normal payout schedule. ticketBunker charges the flat listing fee separately. Buyers pay no added ticketBunker booking fee. VAT/tax and Stripe fees are separate; approval is required for upgrades and only the difference is due.</p>
    <p class="tb-field-help">BETA prices are proposals; listing payments and live ticket checkout remain disabled.</p>
   </section>
