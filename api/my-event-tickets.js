@@ -10,7 +10,7 @@ export default async function handler(req,res){
   const email=String(ctx.user.email||'').trim().toLowerCase();
   const orders=await ctx.admin.from('sb_event_orders')
    .select('id,event_id,tier_id,quantity,status,customer_email,created_at')
-   .ilike('customer_email',email).eq('status','paid').order('created_at',{ascending:false}).limit(100);
+   .eq('customer_email',email).eq('status','paid').order('created_at',{ascending:false}).limit(100);
   if(orders.error)throw orders.error;
   if(!orders.data?.length)return json(res,{tickets:[]});
   const ids=orders.data.map(o=>o.id);
