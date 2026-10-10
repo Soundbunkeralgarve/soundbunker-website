@@ -76,7 +76,8 @@ async function onDeviceImage(file,maxWidth){
 $('demoEventForm').addEventListener('submit',async e=>{
  e.preventDefault();
  try{
-  const data=Object.fromEntries(new FormData(e.currentTarget));
+  const form=e.currentTarget;
+  const data=Object.fromEntries(new FormData(form));
   // Starting a new sample event deliberately clears old simulation tickets.
   if(run?.tickets?.length&&!confirm('Create a new demo event and clear the current mock tickets?'))return;
   const logoData=await onDeviceImage(e.currentTarget.elements.logo.files?.[0],350);
