@@ -1,0 +1,47 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {newRun,issue,makeCode,checkIn,quotePlan} from '../ticketbunker-dry-run-model.mjs';
+import {readFileSync} from 'node:fs';
+const fixture={title:'Dry Run Club Night',promoter:'Demo Promoter',venue:'Sample Hall, Loulé',date:'2026-12-18T20:00',country:'PT'};
+const ids=['11111111-1111-4111-8111-111111111111','22222222-2222-4222-8222-222222222222','33333333-3333-4333-8333-333333333333'];
+const runId='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+test('isolated demo issues branded tickets and records first scan only',()=>{
+ const base=newRun(fixture,runId);
+ let cursor=0;
+ const run=issue(base,{quantity:2,capacity:200,price:12.5,tier:'General Admission'},()=>ids[cursor++]);
+ assert.equal(run.tickets.length,2);
+ assert.equal(run.tickets[0].priceCents,1250);
+ const code=makeCode(runId,ids[0]);
+ const result=checkIn(run,code,'Door A',()=> '2026-12-18T20:20:00Z');
+ assert.equal(result.status,'valid');
+ assert.equal(result.run.scans.length,1);
+ assert.equal(result.run.tickets[0].usedBy,'Door A');
+ const repeated=checkIn(result.run,code,'Door B');
+ assert.equal(repeated.status,'used');
+ assert.equal(repeated.run.scans.length,1);
+ assert.equal(checkIn(run,'TBDRY:v1:bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb:'+ids[0]).status,'wrong_event');
+ assert.equal(checkIn(run,makeCode(runId,ids[2])).status,'invalid');
+ assert.equal(checkIn(run,'https://soundbunker.pt/event-ticket?id=123').status,'invalid');
+ assert.equal(base.tickets.length,0);
+});
+test('capacity, quantity, pricing guards',()=>{
+ const run=newRun(fixture,runId);
+ assert.throws(()=>issue(run,{quantity:9,capacity:200,price:1,tier:'GA'}),/between 1 and 8/);
+ assert.throws(()=>issue(run,{quantity:2,capacity:1,price:1,tier:'GA'}),/exceeded/);
+ assert.throws(()=>issue(run,{quantity:1,capacity:2001,price:1,tier:'GA'}),/1–2,000/);
+ assert.throws(()=>issue(run,{quantity:1,capacity:2,price:-1,tier:'GA'}),/two-decimal/);
+ assert.deepEqual([100,101,500,501,2000].map(n=>quotePlan(n,'PT').price),[59,119,119,239,239]);
+ assert.deepEqual([100,101,501].map(n=>quotePlan(n,'GB').price),[49,99,199]);
+});
+test('demo never calls payment, live scanner or real ticket APIs',()=>{
+ const file=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
+ const html=file('ticketbunker-dry-run.html'),js=file('ticketbunker-dry-run.js'),model=file('ticketbunker-dry-run-model.mjs');
+ assert.match(html,/SIMULATION ONLY/);
+ assert.match(html,/NO PAYMENTS/);
+ assert.match(html,/id="demoEventForm"/);
+ assert.match(html,/id="scanForm"/);
+ assert.match(html,/id="ticketList"/);
+ assert.match(html,/id="selfCheck"/);
+ assert.doesNotMatch(js+model,/\/api\/event-checkout|\/api\/event-scan|\/api\/organiser|Stripe\s*\(/);
+ assert.doesNotMatch(file('event-scanner.js'),/TBDRY:v1:/);
+});
