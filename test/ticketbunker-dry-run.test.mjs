@@ -46,6 +46,8 @@ test('demo never calls payment, live scanner or real ticket APIs',()=>{
  assert.match(html,/name="poster"/);
  assert.match(js,/ticketbunker-logo\.svg/);
  assert.match(js,/onDeviceImage/);
+ assert.match(file('organiser.html'),/id="shareStaffWhatsApp"/);
+ assert.match(file('organiser.js'),/https:\/\/wa\.me\/\?text=/);
  assert.doesNotMatch(js+model,/\/api\/event-checkout|\/api\/event-scan|\/api\/organiser|Stripe\s*\(/);
  assert.doesNotMatch(file('event-scanner.js'),/TBDRY:v1:/);
 });
