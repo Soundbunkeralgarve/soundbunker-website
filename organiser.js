@@ -201,8 +201,17 @@ $('#showcaseForm').addEventListener('submit',async e=>{
   await refresh();
  }catch(error){$('#showcaseMessage').textContent=error.message;}
 });
-async function submit(body) {try{notify('Saving…');await request(body);await refresh();}catch(e){notify(e.message,true);}}
-$('#registerForm').addEventListener('submit',e=>{e.preventDefault();const d=new FormData(e.target);submit({action:'register',displayName:d.get('displayName'),country:d.get('country'),acceptTerms:d.get('acceptTerms')==='on'});});
+async function submit(body,button){
+ if(!startOperation('Saving account','Contacting TicketBunker…',button))return;
+ try{
+  await request(body);
+  updateOperation('Updating account','Refreshing your details…');
+  await refresh();
+  finishOperation('Saved successfully.');
+  notify('Saved successfully.');
+ }catch(e){finishOperation(e.message,true);notify(e.message,true);}
+}
+$('#registerForm').addEventListener('submit',e=>{e.preventDefault();const d=new FormData(e.target);submit({action:'register',displayName:d.get('displayName'),country:d.get('country'),acceptTerms:d.get('acceptTerms')==='on'},e.target.querySelector('[type=submit]'));});
 const charityToggle=$('#charityEventToggle');
 charityToggle.addEventListener('change',()=>{
  const isCharity=charityToggle.checked;
@@ -242,30 +251,30 @@ async function uploadMedia(file,eventId,kind){
 $('#eventForm').addEventListener('submit',async e=>{
  e.preventDefault();const form=e.currentTarget;
  const data=Object.fromEntries(new FormData(form));
- const submitButton=form.querySelector('[type=submit]');
- submitButton.disabled=true;
+ const button=form.querySelector('[type=submit]');
+ if(!startOperation('Saving event','Sending event details securely…',button))return;
  try{
-  notify('Saving your event draft…');
   const created=await request({action:'event',...data});
   currentDraftId=created.event.id;
-  // Saving event details succeeds independently of media. A failed image
-  // upload must never force the organiser to create another event.
   let uploadError=null;
   try{
-   notify('Event saved. Uploading your artwork…');
    await uploadMedia($('#eventPoster').files?.[0],currentDraftId,'poster');
    await uploadMedia($('#eventLogo').files?.[0],currentDraftId,'logo');
-  }catch(error){uploadError=error;}
+  }catch(err){uploadError=err;}
+  updateOperation('Finishing event setup','Checking the saved draft and preparing ticket options…');
   await refresh();
   setWizard('tickets');
   if(uploadError){
-   notify('Your event draft was saved, but artwork upload failed: '+uploadError.message+
-    ' Use "Update event artwork" below to retry. Do not create the event again.',true);
-  }else notify('Event draft saved. Next, choose your ticket types.');
- }catch(error){
-  // The request failed before a draft was created. Keep every form entry.
-  notify('Event not saved: '+error.message+' Your event details are still in the form.',true);
- }finally{submitButton.disabled=false;}
+   finishOperation('Event saved, but artwork needs attention: '+uploadError.message,true);
+   notify('Your event draft was saved. Fix artwork using "Update event artwork" — do not create the event again.',true);
+  }else{
+   finishOperation('Event and artwork saved. Continue by adding tickets.');
+   notify('Event saved. Add ticket types to continue.');
+  }
+ }catch(err){
+  finishOperation('Event could not be saved. Your form has not been cleared: '+err.message,true);
+  notify('Event not saved: '+err.message+'. Your details are still here.',true);
+ }
 });
 $('#tierForm').addEventListener('submit',async e=>{
  e.preventDefault();const form=e.currentTarget,d=new FormData(form);
@@ -275,18 +284,27 @@ $('#tierForm').addEventListener('submit',async e=>{
  if(!Number.isFinite(price)||price<1||!Number.isInteger(capacity)||capacity<1){
   $('#ticketSetupStatus').textContent='Enter a price of at least 1 and a positive whole-number quantity.';return;
  }
- const button=form.querySelector('[type="submit"]');button.disabled=true;
+ if(!startOperation('Saving ticket type','Adding '+d.get('name')+' to your event…',form.querySelector('[type=submit]')))return;
  try{
-  $('#ticketSetupStatus').textContent='Saving your ticket type…';
+  $('#ticketSetupStatus').textContent='Saving '+d.get('name')+'…';
   await request({action:'tier',eventId,name:d.get('name'),priceCents:Math.round(price*100),capacity});
-  currentDraftId=eventId;await refresh();
+  currentDraftId=eventId;
+  updateOperation('Confirming ticket type','Refreshing your event and checking the ticket inventory…');
+  await refresh();
   $('#reviewEvent').value=eventId;
   renderReviewReadiness();
-  $('#publishMessage').textContent='Ticket type saved. Review the checklist and submit your event for approval.';
   setWizard('review');
-  notify('Ticket type saved. You can now submit your event for publication review.');
- }catch(error){$('#ticketSetupStatus').textContent='Ticket type not saved: '+error.message;notify(error.message,true);}
- finally{button.disabled=false;}
+  const currency=account?.country_code==='GB'?'£':'€';
+  const confirmation=d.get('name')+' saved — '+capacity+' tickets at '+currency+price.toFixed(2)+' each.';
+  $('#publishMessage').textContent=confirmation+' Check the total listing fee below.';
+  finishOperation(confirmation);
+  notify(confirmation);
+ }catch(err){
+  const failure='Ticket type was not saved: '+err.message+'. Check the details and try again.';
+  $('#ticketSetupStatus').textContent=failure;
+  finishOperation(failure,true);
+  notify(failure,true);
+ }
 });
 $('#tierEvent').addEventListener('change',()=>{
  const ev=eventFor($('#tierEvent').value);
@@ -300,20 +318,45 @@ $('#myEvents').addEventListener('click',e=>{
 });
 $('#requestPublish').addEventListener('click',async()=>{
  const eventId=$('#reviewEvent').value;
- if(!eventId)return $('#publishMessage').textContent='Create your event and tickets first.';
+ if(!eventId)return $('#publishMessage').textContent='Choose an event first.';
  const ev=eventFor(eventId);
- if(ev&&!ev.tiers.length){$('#publishMessage').textContent='Add a ticket type first. Opening ticket setup…';goToTicketSetup(eventId);return;}
- try{const result=await request({action:'requestPublish',eventId});$('#publishMessage').textContent=result.message;await refresh();renderReviewReadiness();}
- catch(err){$('#publishMessage').textContent=err.message;}
+ if(!ev?.tiers?.length){goToTicketSetup(eventId);return;}
+ const capacity=ev.tiers.reduce((n,t)=>n+Number(t.quantity_total||0),0);
+ const plan=capacity<=100?'starter':capacity<=500?'standard':'event_plus';
+ if(!startOperation('Preparing secure payment','Checking listing eligibility and secure checkout availability…',$('#requestPublish')))return;
+ try{
+  const r=await fetch('/api/organiser-listing',{method:'POST',
+   headers:{authorization:'Bearer '+token,'content-type':'application/json'},
+   body:JSON.stringify({eventId,plan}),cache:'no-store'});
+  const data=await r.json();
+  if(!r.ok)throw Error(data.error||'Payment is not available.');
+  if(!/^https:\/\/checkout\.stripe\.com\//.test(String(data.url||'')))throw Error('Secure checkout URL not provided');
+  updateOperation('Opening secure payment','Redirecting to Stripe checkout…');
+  location.assign(data.url);
+ }catch(err){
+  const message='Paid listing checkout is not active in BETA. No payment was taken. Your event draft is saved; return here when checkout opens.';
+  $('#publishMessage').textContent=message;
+  finishOperation(message,true);
+  notify(message,true);
+ }
 });
 $('#artworkRetry').addEventListener('submit',async e=>{
- e.preventDefault();const eventId=$('#tierEvent').value;
- if(!eventId)return notify('Choose an existing draft event first.',true);
- try{notify('Uploading replacement artwork…');
-  await uploadMedia($('#updatePoster').files?.[0],eventId,'poster');
-  await uploadMedia($('#updateLogo').files?.[0],eventId,'logo');
-  await refresh();notify('Event artwork updated.');}
- catch(err){notify(err.message,true);}
+ e.preventDefault();const form=e.currentTarget,eventId=$('#tierEvent').value;
+ if(!eventId)return notify('Choose an existing draft first.',true);
+ const poster=$('#updatePoster').files?.[0],logo=$('#updateLogo').files?.[0];
+ if(!poster&&!logo)return notify('Choose a poster or logo to upload.',true);
+ if(!startOperation('Updating event artwork','Preparing your replacement images…',form.querySelector('[type=submit]')))return;
+ try{
+  await uploadMedia(poster,eventId,'poster');
+  await uploadMedia(logo,eventId,'logo');
+  updateOperation('Verifying updated artwork','Checking the event record…');
+  await refresh();
+  finishOperation('Artwork updated and saved.');
+  notify('Event artwork updated.');
+ }catch(err){
+  finishOperation('Artwork upload failed: '+err.message+'. Your event draft is unchanged.',true);
+  notify('Artwork upload failed. Your draft is safe: '+err.message,true);
+ }
 });
 
 async function staffRequest(body, eventId){
