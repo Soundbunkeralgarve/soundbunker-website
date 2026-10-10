@@ -42,6 +42,10 @@ test('demo never calls payment, live scanner or real ticket APIs',()=>{
  assert.match(html,/id="scanForm"/);
  assert.match(html,/id="ticketList"/);
  assert.match(html,/id="selfCheck"/);
+ assert.match(html,/name="logo"/);
+ assert.match(html,/name="poster"/);
+ assert.match(js,/ticketbunker-logo\.svg/);
+ assert.match(js,/onDeviceImage/);
  assert.doesNotMatch(js+model,/\/api\/event-checkout|\/api\/event-scan|\/api\/organiser|Stripe\s*\(/);
  assert.doesNotMatch(file('event-scanner.js'),/TBDRY:v1:/);
 });
