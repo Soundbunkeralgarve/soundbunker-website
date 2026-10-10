@@ -2,7 +2,7 @@
 const $=q=>document.querySelector(q);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let supabase,token,account;
-function notify(s,error=false){const n=$('#notice');n.textContent=s;n.style.background=error?'#6a233b':'#2f2242';}
+function notify(s,error=false){const n=$('#notice');n.textContent=s;n.style.background=error?'#ffedf0':'#efe6f6';n.style.color=error?'#94203c':'#492a62';n.style.borderColor=error?'#ecc2cb':'#d6bde9';}
 async function request(body){
  const r=await fetch('/api/organiser',{method:body?'POST':'GET',headers:{authorization:'Bearer '+token,...(body?{'content-type':'application/json'}:{})},body:body?JSON.stringify(body):undefined,cache:'no-store'});
  const data=await r.json();if(!r.ok)throw Error(data.error||'Request failed');return data;
@@ -19,6 +19,7 @@ async function refresh(){
  $('#orgState').textContent='Country '+account.country_code+' · Review status: '+account.status+' · Stripe: '+(account.stripe_connected?'Connected':'Not connected');
  const currency=account.country_code==='GB'?'GBP':'EUR';
  $('#priceLabel').firstChild.textContent='Ticket price ('+currency+')';
+ document.querySelectorAll('[data-price-gbp]').forEach(e=>{e.textContent=currency==='GBP'?e.dataset.priceGbp:e.dataset.priceEur;});
  const list=data.events||[];
  $('#tierEvent').innerHTML=list.filter(e=>e.status==='draft').map(e=>'<option value="'+esc(e.id)+'">'+esc(e.title)+'</option>').join('');
  $('#showcaseEvent').innerHTML=list.filter(e=>e.status==='draft').map(e=>'<option value="'+esc(e.id)+'">'+esc(e.title)+(e.showcase?' (requested)':'')+'</option>').join('');
@@ -31,7 +32,12 @@ async function refresh(){
  $('#inviteStaffEvent').innerHTML=staffOptions;
  $('#manageStaffEvent').innerHTML=staffOptions;
  if(list.some(e=>e.id===previous))$('#manageStaffEvent').value=previous;
- $('#myEvents').innerHTML=list.length?list.map(e=>'<article class="event-info" style="background:#241832;border:1px solid #ffffff33"><span class="pill">'+esc(e.status)+'</span><h3>'+esc(e.title)+'</h3><p>'+esc(e.event_kind)+' • '+esc(e.venue)+'</p><p>'+esc(localDate(e.starts_at,e.venue_timezone))+' • '+esc(e.currency.toUpperCase())+'</p><p>'+e.tiers.map(t=>esc(t.name)+' · '+esc(String(t.quantity_total))+' available').join(', ')+'</p><p>Ticket sales: '+(e.status==='published'?'See your event dashboard':'not open — draft')+'</p></article>').join(''):'<div class="empty">Your first event starts here. Create a draft above.</div>';
+ $('#myEvents').innerHTML=list.length?list.map(e=>{
+  const types=e.tiers.length?e.tiers.map(t=>esc(t.name)+' · '+esc(String(t.quantity_total))).join(' · '):'No ticket types yet';
+  return '<article class="tb-owned-event"><div><strong>'+esc(e.title)+'</strong><p>'+esc(e.venue)+' · '+esc(e.event_kind)+'</p></div>'+
+   '<div><p>'+esc(localDate(e.starts_at,e.venue_timezone))+'</p><p>'+types+'</p></div>'+
+   '<div><span class="tb-owned-status">'+esc(e.status==='draft'?'DRAFT · NOT PUBLISHED':e.status.toUpperCase())+'</span></div></article>';
+ }).join(''):'<div class="tb-no-events"><strong>Nothing here yet</strong><p>Create an event above to see your drafts in this workspace.</p></div>';
  if(list.length)await loadStaff().catch(error=>{$('#staffRoster').textContent=error.message;});
  else $('#staffRoster').textContent='Create an event draft to invite staff.';
  notify('Organiser dashboard loaded. Events remain private until verification and publishing.');
@@ -75,10 +81,10 @@ async function loadStaff(){
  const roster=$('#staffRoster');
  const staff=result.staff||[],invites=result.invites||[];
  const records=[
-  ...staff.map(s=>{const match=invites.find(i=>i.accepted_by===s.user_id);return '<div class="event-info" style="background:#22162d;border:1px solid #ffffff35"><strong>Staff member</strong><p>'+esc(match?.invited_email||'Verified staff account')+' · '+(s.revoked_at?'Access revoked':'Active scanner')+'</p>'+(s.revoked_at?'':'<button type="button" class="outline" data-staff-id="'+esc(s.user_id)+'">Revoke access</button>')+'</div>'; }),
-  ...invites.filter(i=>!i.accepted_at).map(i=>'<div class="event-info" style="background:#22162d;border:1px solid #ffffff35"><strong>Invited</strong><p>'+esc(i.invited_email)+' · '+(i.revoked_at?'Revoked':new Date(i.expires_at)<new Date()?'Expired':'Awaiting acceptance')+'</p>'+(i.revoked_at||new Date(i.expires_at)<new Date()?'':'<button type="button" class="outline" data-invite-id="'+esc(i.id)+'">Revoke invitation</button>')+'</div>')
+  ...staff.map(s=>{const match=invites.find(i=>i.accepted_by===s.user_id);return '<div class="tb-staff-entry"><strong>Staff member</strong><p>'+esc(match?.invited_email||'Verified staff account')+' · '+(s.revoked_at?'Access revoked':'Active scanner')+'</p>'+(s.revoked_at?'':'<button type="button" class="outline" data-staff-id="'+esc(s.user_id)+'">Revoke access</button>')+'</div>'; }),
+  ...invites.filter(i=>!i.accepted_at).map(i=>'<div class="tb-staff-entry"><strong>Invited</strong><p>'+esc(i.invited_email)+' · '+(i.revoked_at?'Revoked':new Date(i.expires_at)<new Date()?'Expired':'Awaiting acceptance')+'</p>'+(i.revoked_at||new Date(i.expires_at)<new Date()?'':'<button type="button" class="outline" data-invite-id="'+esc(i.id)+'">Revoke invitation</button>')+'</div>')
  ];
- roster.innerHTML=records.join('')||'<div class="empty">No staff invited for this event yet.</div>';
+ roster.innerHTML=records.join('')||'<div class="tb-no-events">No staff invited for this event yet.</div>';
 }
 $('#staffInviteForm').addEventListener('submit',async e=>{
  e.preventDefault();

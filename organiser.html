@@ -1,97 +1,84 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,follow"><title>Organiser Dashboard | SoundBunker Events</title><link rel="stylesheet" href="/events.css"><link rel="stylesheet" href="/organiser.css"><script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script defer src="/organiser.js"></script></head>
-<body><div class="beta-banner" role="status"><strong>BETA · NOT LIVE YET</strong> — Organiser sign-up and event drafts work. Publishing, checkout and payouts are not live.</div><header class="topbar"><a class="brand" href="/"><img src="/assets/ticketbunker/ticketbunker-logo.svg" alt="ticketBunker"></a><nav><a href="/events">Events</a><a href="/client">Client login</a><a href="/">SoundBunker</a></nav></header>
-<main class="events-content" style="max-width:1100px;margin:auto">
- <p class="eyebrow">BETA · FOR INDEPENDENT PROMOTERS</p><h1 style="font:700 clamp(45px,6vw,80px)/1 Space Grotesk;letter-spacing:-.04em">Your event.<br>Your ticket sales.</h1>
- <p style="max-width:720px;color:#c6b8ce;font-size:19px">Create an event draft from anywhere. Just one transparent publishing fee, no SoundBunker ticket commission. Ticket processing and payouts are planned through your own verified Stripe account; no payments are being taken in this beta.</p>
- <div id="notice" class="message" role="status">Checking your organiser account…</div>
- <div id="guest" hidden><p>Sign in or create a free SoundBunker account to manage your events.</p><a class="solid" href="/client">Sign in / Register →</a></div>
- <section id="register" hidden class="event-info" style="max-width:560px;background:#241832;border:1px solid #ffffff33;padding:30px">
-  <h2>Create organiser profile</h2>
-  <form id="registerForm" class="organiser-form">
-    <label>Promoter / business name<input name="displayName" minlength="2" maxlength="160" required placeholder="Your event brand"></label>
-    <label>Based in<select name="country" required><option value="PT">Portugal · EUR</option><option value="GB">United Kingdom · GBP</option></select></label>
-    <label class="check"><input type="checkbox" name="acceptTerms" required> I agree to the <a href="/terms" style="text-decoration:underline">terms</a> and understand that event sales will require identity and tax verification.</label>
-    <button class="solid">Create free organiser profile</button>
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,follow"><meta name="theme-color" content="#20112c">
+<title>Organiser Workspace · ticketBunker BETA</title>
+<link rel="stylesheet" href="/events.css"><link rel="stylesheet" href="/organiser.css">
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script defer src="/organiser.js"></script>
+</head>
+<body class="tb-organiser-app">
+<div class="beta-banner" role="status"><strong>BETA · NOT LIVE YET</strong> — Create your event drafts and invite staff. Checkout, ticket sales and payouts are not live.</div>
+<header class="topbar tb-workspace-header"><a class="brand" href="/events"><img src="/assets/ticketbunker/ticketbunker-logo.svg" alt="ticketBunker" width="1273" height="125"></a><nav aria-label="Workspace navigation"><a href="/events">Discover events</a><a href="/client">My account</a><a href="/">SoundBunker Studio</a></nav></header>
+<main class="tb-workspace-shell">
+ <div class="tb-workspace-intro"><div><p class="eyebrow">TICKETBUNKER / ORGANISER WORKSPACE</p><h1>Event management,<br>made simple.</h1><p>Everything you need to prepare an event, create tickets and bring your crew together.</p></div><div class="tb-intro-side"><span>PUBLIC BETA</span><strong>Up to 2,000 tickets</strong><small>UK &amp; Portugal pilot</small></div></div>
+ <div id="notice" role="status" class="message tb-workspace-notice">Checking your organiser account…</div>
+ <section id="guest" class="tb-panel tb-guest-panel" hidden><h2>Sign in to start your event.</h2><p>Use your SoundBunker account to create a free organiser profile and prepare an event draft.</p><a href="/client" class="solid">Sign in / Create account ↗</a></section>
+ <section id="register" class="tb-panel tb-register-panel" hidden>
+  <div class="tb-panel-head"><div><p class="tb-step-number">ACCOUNT SETUP</p><h2>Create your organiser profile</h2><p>One account to manage your events and team.</p></div></div>
+  <form id="registerForm" class="organiser-form tb-form-grid">
+   <label>Promoter / business name<input name="displayName" minlength="2" maxlength="160" required placeholder="Your promoter or event brand"></label>
+   <label>Based in<select name="country" required><option value="PT">Portugal · EUR</option><option value="GB">United Kingdom · GBP</option></select></label>
+   <label class="check tb-span-full"><input type="checkbox" name="acceptTerms" required><span>I agree to the <a href="/terms">terms</a> and understand that identity and tax verification will be required before ticket sales go live.</span></label>
+   <div class="tb-form-actions tb-span-full"><button class="solid" type="submit">Create free organiser profile →</button></div>
   </form>
  </section>
  <section id="workspace" hidden>
-  <div class="event-grid" style="margin:38px 0">
-   <div class="event-info" style="background:#241832;border:1px solid #ffffff33">
-    <h2 id="orgName">Organiser</h2><p id="orgState"></p>
-    <p style="color:#c6b8ce">Connect onboarding and fee-paid publication are coming in the next secure release. Draft creation is available now.</p>
-   </div>
-   <div class="event-info" style="background:#241832;border:1px solid #ffffff33">
-    <h2>Transparent event fees</h2>
-    <p>Only a flat publishing fee. No SoundBunker booking fees added at checkout.</p><p>Stripe card-processing fees apply to organisers.</p><p><strong>UK and Portugal launch pilot · Up to 2,000 tickets</strong></p>
-   </div>
-  </div>
-  <div class="event-grid">
-    <form id="eventForm" class="event-info organiser-form" style="background:#241832;border:1px solid #ffffff33">
-      <h2>Create event draft</h2>
-      <label>Event name<input name="title" required minlength="3" maxlength="160"></label>
-      <label>Public URL name<input name="slug" required pattern="[a-z0-9]+(-[a-z0-9]+)*" placeholder="my-summer-festival"></label>
-      <label>Event type<select name="kind"><option value="festival">Festival</option><option value="show">Live show</option><option value="club">Club night</option><option value="workshop">Workshop</option><option value="community">Community event</option></select></label>
-      <label>Venue and city<input name="venue" required placeholder="Bristol, UK"></label>
-      <label>Starts (venue local time)<input name="startsAt" type="datetime-local" required></label>
-      <label>Ends (venue local time)<input name="endsAt" type="datetime-local"></label>
-      <label>Image URL (optional)<input name="imageUrl" type="url" placeholder="https://…"></label>
-      <label>Description<textarea name="description" rows="4"></textarea></label>
-      <button class="solid">Save draft event</button>
+  <div class="tb-account-strip"><div><span class="tb-strip-caption">YOUR ORGANISER ACCOUNT</span><strong id="orgName">Organiser</strong><p id="orgState"></p></div><div><span class="tb-strip-caption">EVENT SALES</span><strong>BETA · Not active</strong><p>Stripe onboarding, publishing and payments come after testing.</p></div><div><span class="tb-strip-caption">YOUR BUSINESS MODEL</span><strong>0% ticketBunker commission</strong><p>Stripe handles card-processing fees separately.</p></div></div>
+  <nav class="tb-workspace-jumps" aria-label="Jump to organiser tasks"><a href="#setup">01 · Create event</a><a href="#ticket-types">02 · Add tickets</a><a href="#my-events-section">03 · Your drafts</a><a href="#staffAccess">Staff</a><a href="#featured-placement">Showcase</a></nav>
+  <div id="setup" class="tb-setup-grid">
+   <section class="tb-panel" aria-labelledby="create-event-heading">
+    <div class="tb-panel-head"><div><span class="tb-step-number">STEP 01</span><h2 id="create-event-heading">Create an event</h2><p>Keep it simple. You can edit your event before it goes on sale.</p></div></div>
+    <form id="eventForm" class="organiser-form tb-form-grid">
+      <label class="tb-span-full">Event name<input name="title" required minlength="3" maxlength="160" placeholder="Friday Night Sessions"></label>
+      <label class="tb-span-full">Public event URL<input name="slug" required pattern="[a-z0-9]+(-[a-z0-9]+)*" placeholder="friday-night-sessions"><span class="tb-field-help">Lowercase letters, numbers and hyphens.</span></label>
+      <label>Event type<select name="kind" required><option value="club">Club night</option><option value="show">Live music</option><option value="workshop">Workshop</option><option value="community">Community / cultural</option></select></label>
+      <label>Venue &amp; city<input name="venue" required placeholder="The Venue, Bristol"></label>
+      <label>Start · venue local time<input name="startsAt" type="datetime-local" required></label>
+      <label>Finish · venue local time<input name="endsAt" type="datetime-local"></label>
+      <label class="tb-span-full">Event image HTTPS URL (optional)<input name="imageUrl" type="url" placeholder="https://..."><span class="tb-field-help">Branded poster upload will follow in a future release.</span></label>
+      <label class="tb-span-full">Description<textarea name="description" rows="3" maxlength="4000" placeholder="What should people expect?"></textarea></label>
+      <div class="tb-form-actions tb-span-full"><button class="solid" type="submit">Save event draft →</button></div>
     </form>
-    <form id="tierForm" class="event-info organiser-form" style="background:#241832;border:1px solid #ffffff33">
-      <h2>Add tickets</h2>
-      <label>Draft event<select name="eventId" id="tierEvent" required></select></label>
-      <label>Ticket type<input name="name" required value="General Admission"></label>
+   </section>
+   <section id="ticket-types" class="tb-panel" aria-labelledby="ticket-types-heading">
+    <div class="tb-panel-head"><div><span class="tb-step-number">STEP 02</span><h2 id="ticket-types-heading">Set up your tickets</h2><p>Ticket types, prices and availability for your event.</p></div></div>
+    <form id="tierForm" class="organiser-form tb-form-grid">
+      <label class="tb-span-full">Select draft event<select name="eventId" id="tierEvent" required></select></label>
+      <label class="tb-span-full">Ticket name<input name="name" value="General Admission" required maxlength="100"></label>
       <label id="priceLabel">Ticket price<input name="price" type="number" min="1" step=".01" required placeholder="20.00"></label>
-      <label>Tickets available<input name="capacity" type="number" min="1" max="100000" required></label>
-      <button class="solid">Add ticket type</button>
-      <p style="color:#c6b8ce">Weekend, day and VIP ticket types can be created as separate categories. Advanced passes and multi-gate tools require further testing.</p>
+      <label>Number of tickets<input name="capacity" type="number" min="1" max="2000" required placeholder="250"></label>
+      <p class="tb-field-note tb-span-full">Add separate types for standard or VIP admission. Total event capacity is limited to 2,000 during BETA.</p>
+      <div class="tb-form-actions tb-span-full"><button class="solid" type="submit">Add ticket type →</button></div>
     </form>
+    <div class="tb-setup-help"><strong>Payments &amp; payouts</strong><p>Stripe processes ticket payments and charges its card-processing fee directly to the organiser's account, like a card-machine fee. ticketBunker does not collect or distribute ticket revenue, add a buyer booking fee, or take a per-ticket commission. Checkout is not available in BETA.</p></div>
+   </section>
   </div>
-  <h2 style="margin-top:70px">Your events</h2><div id="myEvents" class="event-grid"></div>
-  <section id="listing-plans" aria-labelledby="listing-plans-heading" style="margin-top:62px">
-   <p class="eyebrow">SMALL EVENTS FIRST · NO TICKET COMMISSION</p>
-   <h2 id="listing-plans-heading">Low flat fees for independent events.</h2>
-   <p style="color:#e2d3ed;line-height:1.75">Launch focus: up to <strong>2,000 tickets per event</strong>. <strong>Stripe processes each card transaction and charges its processing fee directly to your Stripe account.</strong> It is like the card-processing charge a business pays for taking a card payment. Your ticket-sale proceeds go to your own Stripe account — they never pass through ticketBunker.</p>
+  <section id="my-events-section" class="tb-panel tb-events-panel"><div class="tb-panel-head tb-panel-head-row"><div><span class="tb-step-number">STEP 03</span><h2>Your events</h2><p>Drafts appear here after you create them.</p></div><a href="#setup">+ New event</a></div><div id="myEvents" class="tb-owned-events"></div></section>
+  <section id="listing-plans" class="tb-panel tb-pricing-panel" aria-labelledby="listing-plans-heading">
+   <div class="tb-panel-head"><div><span class="tb-step-number">SIMPLE PRICING</span><h2 id="listing-plans-heading">One event. One flat fee.</h2><p>Three plans for independent events. Prices shown in your organiser's local currency.</p></div><a href="/events#plans">View full pricing ↗</a></div>
    <div class="tb-organiser-price-list" aria-label="Three ticketBunker listing fee brackets">
-     <div><strong>Starter</strong><span>1–100 sold</span><b>£49 / €59</b></div>
-     <div><strong>Standard</strong><span>101–500 sold</span><b>£59 / €79</b></div>
-     <div><strong>Event Plus</strong><span>501–2,000 sold</span><b>£149 / €179</b></div>
+    <div><span>Starter</span><strong>1–100 sold</strong><b data-price-gbp="£49" data-price-eur="€59">€59</b></div>
+    <div><span>Standard</span><strong>101–500 sold</strong><b data-price-gbp="£59" data-price-eur="€79">€79</b></div>
+    <div><span>Event Plus</span><strong>501–2,000 sold</strong><b data-price-gbp="£149" data-price-eur="€179">€179</b></div>
    </div>
-   <p style="color:#d9c4e8;font-size:13px;line-height:1.7">ticketBunker adds no buyer booking fee and takes 0% commission from ticket sales. Standard Stripe bank payouts follow your Stripe schedule; optional faster payouts may have extra fees. Stripe processing fees and any applicable tax are separate from these BETA listing prices. An upgrade requires your approval and charges only the difference.</p>
-   <p style="color:#c9b7d7;font-size:12px">BETA · Listing payments and live ticket checkout are not enabled. Larger festivals will be supported in a later phase.</p>
+   <p class="tb-pricing-note"><strong>Stripe handles all card transactions</strong> and charges processing fees to the organiser's Stripe account. The balance is paid out following Stripe's normal payout schedule. ticketBunker charges the flat listing fee separately. Buyers pay no added ticketBunker booking fee. VAT/tax and Stripe fees are separate; approval is required for upgrades and only the difference is due.</p>
+   <p class="tb-field-help">BETA prices are proposals; listing payments and live ticket checkout remain disabled.</p>
   </section>
-  <section id="featured-placement" aria-labelledby="featured-placement-heading" style="margin-top:64px;padding:clamp(24px,4vw,50px);background:#21172d;border:1px solid #9b5ee2;border-radius:13px">
-   <p class="eyebrow">PREMIUM PLACEMENT · PUBLIC BETA</p>
-   <h2 id="featured-placement-heading" style="font:700 clamp(28px,4vw,48px)/1.1 Space Grotesk">Put your event at the top.</h2>
-   <p style="max-width:750px;color:#e3d5ec;line-height:1.6">Request the ticketBunker Featured Showcase — a prominent event feature above regular listings. Requests can be submitted now, but payments and placements are not live during BETA.</p>
-   <form id="showcaseForm" class="organiser-form" style="max-width:550px">
-    <label>Choose an upcoming draft event<select name="eventId" id="showcaseEvent" required></select></label>
-    <p id="showcasePrice" style="font-weight:700;color:#efc5fa">Proposed upgrade: £49 for UK events / €59 for Portuguese events.</p>
-    <button class="solid" type="submit">Request Featured Showcase ↗</button>
-   </form>
-   <p role="status" id="showcaseMessage" style="margin-top:14px;color:#efc5fa"></p>
-   <p style="color:#c0aacd;font-size:12px">No charge is taken when you request a place. Price, availability, tax and booking terms require confirmation before the paid feature launches.</p>
-  </section>
-  <section aria-labelledby="staffHeading" style="margin-top:65px" id="staffAccess">
-   <p class="eyebrow">DOOR STAFF · BETA</p>
-   <h2 id="staffHeading">Invite your scanning team.</h2>
-   <p>Send secure, event-specific scanner links to colleagues. Each invite expires after 72 hours, requires a verified login using the invited email address, and can be revoked.</p>
-   <form id="staffInviteForm" class="organiser-form" style="max-width:600px;background:#21162b;border:1px solid #ffffff35;padding:25px">
-    <label>Event<select id="inviteStaffEvent" name="eventId" required></select></label>
-    <label>Colleague's email<input name="email" type="email" autocomplete="email" required maxlength="254" placeholder="crew@example.com"></label>
-    <button class="solid" type="submit">Generate secure scanner link</button>
-   </form>
-   <div id="staffInviteResult" hidden class="message" style="margin-top:18px">
-    <strong>Private invitation link</strong>
-    <p>Copy and send this link only to the colleague whose email you entered. They must sign in using that address.</p>
-    <input id="staffInviteLink" type="text" readonly aria-label="Secure staff invitation link" style="width:100%;padding:12px;color:white;background:#17101c;border:1px solid #ffffff55">
-    <button type="button" id="copyStaffInvite" class="solid" style="margin-top:12px">Copy invitation link</button>
-   </div>
-   <div style="margin-top:25px"><label for="manageStaffEvent">Manage staff for event</label>
-    <select id="manageStaffEvent" style="display:block;margin:10px 0;padding:12px;background:#21162b;color:white;border:1px solid #ffffff55"></select></div>
-   <div id="staffRoster" class="event-grid" aria-live="polite"></div>
-  </section>
+  <div class="tb-bottom-grid">
+   <section id="staffAccess" class="tb-panel" aria-labelledby="staffHeading">
+    <div class="tb-panel-head"><div><span class="tb-step-number">STAFF ACCESS</span><h2 id="staffHeading">Your door crew</h2><p>Secure, event-specific mobile scanner links.</p></div></div>
+    <form id="staffInviteForm" class="organiser-form tb-form-grid"><label class="tb-span-full">Choose event<select id="inviteStaffEvent" name="eventId" required></select></label><label class="tb-span-full">Staff email<input type="email" name="email" autocomplete="email" maxlength="254" required placeholder="colleague@example.com"></label><div class="tb-form-actions tb-span-full"><button class="solid" type="submit">Generate scanner invitation →</button></div></form>
+    <div id="staffInviteResult" class="tb-invite-result" hidden><strong>Invitation created</strong><p>Share privately. Access requires a verified account using the invited email.</p><input id="staffInviteLink" type="text" readonly aria-label="Scanner invitation link"><button id="copyStaffInvite" type="button" class="solid">Copy secure link</button></div>
+    <label class="tb-roster-label" for="manageStaffEvent">Manage staff for event<select id="manageStaffEvent"></select></label><div id="staffRoster" class="tb-staff-roster"></div>
+    <p class="tb-field-help">Invitations expire after 72 hours and access can be revoked. Phone-number invitations are not yet active.</p>
+   </section>
+   <section id="featured-placement" class="tb-panel" aria-labelledby="featured-placement-heading">
+    <div class="tb-panel-head"><div><span class="tb-step-number">OPTIONAL PROMOTION</span><h2 id="featured-placement-heading">Featured Showcase</h2><p>Apply to put your event in the top featured position.</p></div></div>
+    <div class="tb-showcase-preview"><span>PREMIUM PLACEMENT</span><strong>Give your event the spotlight.</strong><p>Request the headline spot on ticketBunker’s discovery page.</p></div>
+    <form id="showcaseForm" class="organiser-form tb-form-grid"><label class="tb-span-full">Choose a draft event<select id="showcaseEvent" name="eventId" required></select></label><p id="showcasePrice" class="tb-field-note tb-span-full">Proposed upgrade: £49 for UK events / €59 for Portuguese events.</p><div class="tb-form-actions tb-span-full"><button class="solid" type="submit">Request Featured Showcase →</button></div></form><p id="showcaseMessage" role="status" class="tb-action-response"></p>
+    <p class="tb-field-help">No charge is taken when you request a place. Price, availability, tax and booking terms require confirmation before paid placements launch.</p>
+   </section>
+  </div>
  </section>
-</main><footer><a href="/events">Explore events</a><span>SoundBunker Events</span></footer>
+</main>
+<footer class="tb-workspace-footer"><a href="/events">← Discover events</a><span>ticketBunker · SoundBunker Algarve · BETA</span><a href="/terms">Terms</a></footer>
 </body></html>
