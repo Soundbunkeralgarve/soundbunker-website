@@ -16,6 +16,7 @@
  .sb-mobile-nav a[href="#my-tickets"]{color:#382342}
  .sb-mobile-nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
  .client-page .client-shell{width:100%;max-width:none;padding:0 0 15px}
+ .client-page:has(#authPanel:not([hidden])) .sb-mobile-nav{display:none}
  .client-page .client-nav{
   position:sticky;top:0;z-index:60;height:67px;min-height:67px;
   display:flex;justify-content:space-between;align-items:center;padding:10px 16px;
