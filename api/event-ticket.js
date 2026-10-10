@@ -7,7 +7,7 @@ export default async function handler(req,res) {
     if(!validTicket(id,sig))return json(res,{error:'Invalid ticket'},403);
     const db=eventsDatabase();
     const found=await db.from('sb_event_tickets')
-       .select('id,checked_in_at,sb_events(title,starts_at,venue,venue_timezone),sb_event_tiers(name)')
+       .select('id,checked_in_at,sb_events(title,starts_at,venue,venue_timezone,internal_free_test,image_url,event_logo_url),sb_event_tiers(name,price_cents)')
        .eq('id',id).single();
     if(found.error||!found.data)return json(res,{error:'Ticket not found'},404);
     return json(res,{ticket:{
