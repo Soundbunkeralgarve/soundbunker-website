@@ -436,6 +436,14 @@ async function signOut() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  const accountPurpose=new URLSearchParams(location.search).get('next');
+  if(accountPurpose==='/organiser'){
+   const title=$('#authPanel .client-auth-copy h1');if(title)title.textContent='Your event business starts here.';
+   const welcome=$('#authPanel .client-login-card h2');if(welcome)welcome.textContent='Sign in or create an organiser account.';
+  }else if(accountPurpose==='/client#my-tickets'){
+   const title=$('#authPanel .client-auth-copy h1');if(title)title.textContent='All your tickets. One SoundBunker account.';
+   const welcome=$('#authPanel .client-login-card h2');if(welcome)welcome.textContent='Sign in to view your event tickets.';
+  }
   $('#loginForm').addEventListener('submit', authenticate);
   $('#loginTab').addEventListener('click', () => setMode('login'));
   $('#signupTab').addEventListener('click', () => setMode('signup'));
