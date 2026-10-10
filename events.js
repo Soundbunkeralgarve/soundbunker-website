@@ -3,18 +3,18 @@ const $=selector=>document.querySelector(selector);
 const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // Unsplash licensed photography; event names, venues and times below are illustrative demos.
 const conceptEvents=Object.freeze([
- {id:'demo-shoreline',title:'Shoreline Sessions',type:'Clubs',date:'2026-11-07T20:00:00Z',timezone:'Europe/Lisbon',venue:'Algarve coast · Portugal',subtitle:'House · Electronic · Club Night',image:'https://images.unsplash.com/photo-1768405031181-33bb016e2fbb?auto=format&fit=crop&w=950&q=80',demo:true},
- {id:'demo-bassline',title:'Bassline Social',type:'Clubs',date:'2026-11-14T21:00:00Z',timezone:'Europe/London',venue:'Bristol · UK',subtitle:'Drum & Bass · Jungle · Nightlife',image:'https://images.unsplash.com/photo-1768054485751-bab2eda850b8?auto=format&fit=crop&w=950&q=80',demo:true},
- {id:'demo-algorithm',title:'The Algorithm Live',type:'Live',date:'2026-11-28T19:30:00Z',timezone:'Europe/Lisbon',venue:'Loulé · Portugal',subtitle:'Indie · Live Band · Alternative',image:'https://images.unsplash.com/photo-1760092189903-dce3e898dacf?auto=format&fit=crop&w=950&q=80',demo:true},
- {id:'demo-sunset',title:'Sunset Rooftop Sessions',type:'Clubs',date:'2026-12-05T16:00:00Z',timezone:'Europe/Lisbon',venue:'Algarve coast · Portugal',subtitle:'Rooftop · House · Sunset Sessions',image:'https://images.unsplash.com/photo-1773346563165-f63acbfd06a0?auto=format&fit=crop&w=950&q=80',demo:true},
- {id:'demo-openmic',title:'Comedy After Hours',type:'Comedy',date:'2026-12-12T20:00:00Z',timezone:'Europe/London',venue:'London · UK',subtitle:'Stand-up · Comedy · Live',image:'https://images.unsplash.com/photo-1655575078254-254ddd15448f?auto=format&fit=crop&w=950&q=80',demo:true},
+ {id:'demo-shoreline',title:'Shoreline Sessions',type:'Clubs',date:'2026-11-07T20:00:00Z',timezone:'Europe/Lisbon',venue:'Algarve coast · Portugal',subtitle:'House · Electronic · Club Night',image:'/academy-dj.jpg',demo:true},
+ {id:'demo-bassline',title:'Bassline Social',type:'Clubs',date:'2026-11-14T21:00:00Z',timezone:'Europe/London',venue:'Bristol · UK',subtitle:'Drum & Bass · Jungle · Nightlife',image:'/dj.webp',demo:true},
+ {id:'demo-algorithm',title:'The Algorithm Live',type:'Live',date:'2026-11-28T19:30:00Z',timezone:'Europe/Lisbon',venue:'Loulé · Portugal',subtitle:'Indie · Live Band · Alternative',image:'/academy-performance.jpg',demo:true},
+ {id:'demo-sunset',title:'Sunset Rooftop Sessions',type:'Clubs',date:'2026-12-05T16:00:00Z',timezone:'Europe/Lisbon',venue:'Algarve coast · Portugal',subtitle:'Rooftop · House · Sunset Sessions',image:'/assets/retreats/artist-community.webp',demo:true},
+ {id:'demo-openmic',title:'Comedy After Hours',type:'Comedy',date:'2026-12-12T20:00:00Z',timezone:'Europe/London',venue:'London · UK',subtitle:'Stand-up · Comedy · Live',image:'/party-poster.jpg',demo:true},
  {id:'demo-afterdark',title:'After Dark Sessions',type:'Clubs',date:'2027-01-23T18:00:00Z',timezone:'Europe/London',venue:'Manchester · UK',subtitle:'Electronic · Live Nightlife',image:'/academy-dj.jpg',demo:true},
  {id:'demo-creative',title:'Culture Collective',type:'Arts',date:'2027-02-06T15:00:00Z',timezone:'Europe/Lisbon',venue:'Loulé · Portugal',subtitle:'Arts · Community · Live',image:'/assets/retreats/artist-community.webp',demo:true}
 ]);
 let listedEvents=[...conceptEvents],activeCategory='All',activeLocation='All',term='',currency='gbp';
 const quotePlans={
- gbp:[{name:'Starter',max:100,price:49},{name:'Standard',max:500,price:59},{name:'Event Plus',max:2000,price:149}],
- eur:[{name:'Starter',max:100,price:59},{name:'Standard',max:500,price:79},{name:'Event Plus',max:2000,price:179}]
+ gbp:[{name:'Starter',max:100,price:49},{name:'Standard',max:500,price:99},{name:'Event Plus',max:2000,price:199}],
+ eur:[{name:'Starter',max:100,price:59},{name:'Standard',max:500,price:119},{name:'Event Plus',max:2000,price:239}]
 };
 function formatEventDate(event){
  const parts=new Intl.DateTimeFormat('en-GB',{timeZone:event.timezone,month:'short',day:'2-digit'}).formatToParts(new Date(event.date));
@@ -67,7 +67,7 @@ $('#tb-event-search').addEventListener('input',e=>{term=e.target.value.trim().to
 $('#tb-location-filter').addEventListener('change',e=>{activeLocation=e.target.value;render()});
 function showEvent(id){
  let item=listedEvents.find(e=>e.id===id);
- if(id==='sunset')item={title:'Midnight Sessions Live',venue:'Demo club venue · Algarve Coast',type:'Clubs',subtitle:'Featured Showcase demonstration',image:'https://images.unsplash.com/photo-1768405031181-33bb016e2fbb?auto=format&fit=crop&w=950&q=80',demo:true};
+ if(id==='sunset')item={title:'Midnight Sessions Live',venue:'Demo club venue · Algarve Coast',type:'Clubs',subtitle:'Featured Showcase demonstration',image:'/academy-dj.jpg',demo:true};
  if(!item)return;
  $('#tb-demo-title').textContent=item.title;
  $('#tb-demo-image').src=item.image;

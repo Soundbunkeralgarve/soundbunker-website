@@ -42,3 +42,38 @@ test('launch focuses on three small-event plans and transparent Stripe fees',()=
  assert.doesNotMatch(events,/festival-quote|Festival Pro|Request a Festival Quote/);
  assert.doesNotMatch(organiser,/id="festivalQuoteForm"/);
 });
+
+test('registered charities provide just the charity number and receive no auto-waiver',()=>{
+ const api=get('api/organiser.js');
+ const schema=get('SUPABASE_TICKETBUNKER_CHARITY_LISTINGS.sql');
+ assert.match(organiser,/id="charityEventToggle"/);
+ assert.match(organiser,/name="charityNumber"/);
+ assert.match(organiser,/Free ticketBunker listing after charity registration verification/);
+ assert.match(events,/Registered charities list events for free/);
+ assert.match(api,/status:'pending_review'/);
+ assert.match(schema,/status='verified'/);
+ assert.match(schema,/Paid listing or verified charity listing exemption required/);
+ assert.doesNotMatch(api,/status:'verified'/);
+});
+test('premium commercial prices match three fixed BETA rates',()=>{
+ assert.match(events,/data-price-gbp="£99" data-price-eur="€119"/);
+ assert.match(events,/data-price-gbp="£199" data-price-eur="€239"/);
+ assert.match(organiser,/data-price-gbp="£99" data-price-eur="€119"/);
+});
+
+test('charity registration approvals require an admin and provide an auditable review queue',async()=>{
+ const adminApi=get('api/event-admin.js');
+ const adminPage=get('events-admin.html');
+ const adminClient=get('events-admin.js');
+ assert.match(adminApi,/requireAdmin\(req\)/);
+ assert.match(adminApi,/action==='charityReview'/);
+ assert.match(adminApi,/eq\('status','pending_review'\)/);
+ assert.match(adminApi,/reviewed_by:ctx\.user\.id/);
+ assert.match(adminPage,/id="charityQueue"/);
+ assert.match(adminClient,/data-charity-verify/);
+ assert.match(adminClient,/data-charity-reject/);
+ const api=(await import('../api/event-admin.js')).default;
+ const response={statusCode:200,headers:{},setHeader(k,v){this.headers[k]=v},end(payload){this.data=JSON.parse(payload)}};
+ await api({method:'GET',headers:{}},response);
+ assert.equal(response.statusCode,401);
+});

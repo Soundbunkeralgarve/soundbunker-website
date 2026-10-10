@@ -4,13 +4,13 @@ import { eventsDatabase } from './events.js';
 export const listingPlans=Object.freeze({
  gbp:Object.freeze({
   starter:Object.freeze({amount:4900,capacity:100,label:'Starter'}),
-  standard:Object.freeze({amount:5900,capacity:500,label:'Standard'}),
-  event_plus:Object.freeze({amount:14900,capacity:2000,label:'Event Plus'}),
+  standard:Object.freeze({amount:9900,capacity:500,label:'Standard'}),
+  event_plus:Object.freeze({amount:19900,capacity:2000,label:'Event Plus'}),
  }),
  eur:Object.freeze({
   starter:Object.freeze({amount:5900,capacity:100,label:'Starter'}),
-  standard:Object.freeze({amount:7900,capacity:500,label:'Standard'}),
-  event_plus:Object.freeze({amount:17900,capacity:2000,label:'Event Plus'}),
+  standard:Object.freeze({amount:11900,capacity:500,label:'Standard'}),
+  event_plus:Object.freeze({amount:23900,capacity:2000,label:'Event Plus'}),
  })
 });
 export const listingOrder=Object.freeze(['starter','standard','event_plus']);

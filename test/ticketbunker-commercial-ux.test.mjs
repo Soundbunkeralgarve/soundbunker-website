@@ -12,22 +12,21 @@ test('Events storefront has branded commercial controls and demo-only checkout',
  assert.match(events,/DEMO EVENT/);
  assert.doesNotMatch(siteJs,/\/api\/event-checkout|checkout\.stripe\.com/);
 });
-test('Distinct event photography and prominent real photo hero',()=>{
- assert.match(events,/images\.unsplash\.com\/photo-/);
+test('Distinct local event photography and prominent verified image hero',()=>{
+ assert.match(events,/academy-performance\.jpg/);
  assert.match(events,/fetchpriority="high"/);
- const ids=[...siteJs.matchAll(/images\.unsplash\.com\/(photo-\d+-[a-z0-9]+)/g)].map(x=>x[1]);
- assert.ok(new Set(ids).size>=5,'At least five unique photographic images');
+ const images=[...siteJs.matchAll(/image:'(\/[^']+)'/g)].map(x=>x[1]);
+ assert.ok(new Set(images).size>=5,'At least five distinct bundled event images');
+ assert.ok(images.every(x=>!x.startsWith('https:')),'Demo images load from project assets');
 });
 test('Country switch and estimate show all three approved flat fees',()=>{
- const prices=[['£49','€59'],['£59','€79'],['£149','€179']];
- for(const [uk,pt] of prices){
-  assert.ok(events.includes('data-price-gbp="'+uk+'" data-price-eur="'+pt+'"'),uk+'/'+pt);
- }
+ const prices=[['£49','€59'],['£99','€119'],['£199','€239']];
+ for(const [uk,pt] of prices)assert.ok(events.includes('data-price-gbp="'+uk+'" data-price-eur="'+pt+'"'),uk+'/'+pt);
  assert.match(siteJs,/data-currency/);
  assert.match(siteJs,/tb-location-filter/);
  assert.match(siteJs,/tb-ticket-estimate/);
- assert.match(siteJs,/max:2000,price:149/);
- assert.match(siteJs,/max:2000,price:179/);
+ assert.match(siteJs,/max:2000,price:199/);
+ assert.match(siteJs,/max:2000,price:239/);
  assert.match(events,/Stripe handles all card transactions/);
  assert.match(events,/Stripe deducts its processing fees/);
 });
