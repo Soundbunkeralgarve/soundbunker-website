@@ -61,8 +61,10 @@ async function authenticate(event) {
   const fullName = $('#fullName').value.trim();
   $('#authSubmit').disabled = true;
   message(mode === 'signup' ? 'Creating your account...' : 'Signing in...');
+  const next = new URLSearchParams(location.search).get('next');
+  const permittedNext = ['/redeem','/organiser','/client#my-tickets'].includes(next) ? next : '';
   const result = mode === 'signup'
-    ? await supabaseClient.auth.signUp({ email, password, options: { emailRedirectTo: `${location.origin}/client${new URLSearchParams(location.search).get('next') === '/redeem' ? '?next=%2Fredeem' : ''}`, data: { full_name: fullName, name: fullName } } })
+    ? await supabaseClient.auth.signUp({ email, password, options: { emailRedirectTo: location.origin+'/client'+(permittedNext?'?next='+encodeURIComponent(permittedNext):''), data: { full_name: fullName, name: fullName } } })
     : await supabaseClient.auth.signInWithPassword({ email, password });
   $('#authSubmit').disabled = false;
   if (result.error) return message(result.error.message, true);
@@ -82,10 +84,14 @@ async function enterPortal(session) {
   show('#portalPanel', true);
   const profile = await refreshProfile(session, true);
   if (!profile) return;
-  if (new URLSearchParams(location.search).get('next') === '/redeem') { location.replace('/redeem'); return; }
-  if (profile.role === 'admin' && !['#inbox','#notifications'].includes(location.hash)) { location.replace('/admin'); return; }
-  await Promise.all([loadProjects(session), loadGalleries(session), loadVouchers(session), loadBookings(), loadNotifications(), loadInbox()]);
+  const next = new URLSearchParams(location.search).get('next');
+  if (next === '/redeem') { location.replace('/redeem'); return; }
+  if (next === '/organiser') { location.replace('/organiser'); return; }
+  if (next === '/client#my-tickets') history.replaceState(null,'','/client#my-tickets');
+  if (profile.role === 'admin' && !['#inbox','#notifications','#my-tickets'].includes(location.hash)) { location.replace('/admin'); return; }
+  await Promise.all([loadProjects(session), loadGalleries(session), loadVouchers(session), loadBookings(), loadNotifications(), loadInbox(), loadMyEventTickets()]);
   if(location.hash==='#my-files') document.querySelector('#my-files')?.scrollIntoView({block:'start'});
+  if(location.hash==='#my-tickets') document.querySelector('#my-tickets')?.scrollIntoView({block:'start'});
   if(location.hash==='#session-upload') document.querySelector('#session-upload')?.scrollIntoView({block:'start'});
 }
 
@@ -400,6 +406,30 @@ async function openThread(peer) {
   } catch (err) { $('#inboxStatus').textContent = err.message; }
 }
 
+async function loadMyEventTickets(){
+ const root=$('#myEventTickets');if(!root)return;
+ try{
+  const result=await portalApi('/api/my-event-tickets');
+  const tickets=result.tickets||[];
+  root.innerHTML=tickets.length?tickets.map(t=>{
+   const when=t.startsAt?new Intl.DateTimeFormat('en-GB',{dateStyle:'medium',timeStyle:'short',timeZone:t.timezone||'Europe/Lisbon'}).format(new Date(t.startsAt)):'Date to be confirmed';
+   const shareText='Your ticket for '+t.title+' — '+when+' — '+t.url+' (one entry only)';
+   const whatsapp='https://wa.me/?text='+encodeURIComponent(shareText);
+   const email='mailto:?subject='+encodeURIComponent('Your ticket for '+t.title)+'&body='+encodeURIComponent(shareText);
+   return '<article class="client-ticket-card">'+
+    (t.poster?'<img src="'+escapeHtml(t.poster)+'" loading="lazy" alt="Event poster">':'<img src="/academy-performance.jpg" loading="lazy" alt="Event atmosphere">')+
+    '<div><span class="client-ticket-status">'+(t.used?'Already checked in':t.test?'Real test ticket':'Ready for entry')+'</span>'+
+    '<h3>'+escapeHtml(t.title)+'</h3><p>'+escapeHtml(when)+'</p><p>'+escapeHtml(t.venue)+'</p><p>'+escapeHtml(t.ticketName)+'</p>'+
+    '<div class="client-ticket-links"><a href="'+escapeHtml(t.url)+'" target="_blank" rel="noopener noreferrer">Open QR</a>'+
+    '<a class="client-ticket-secondary" href="'+escapeHtml(t.url)+'&print=1" target="_blank" rel="noopener noreferrer">Save / print</a>'+
+    '<a class="client-ticket-secondary" href="'+escapeHtml(whatsapp)+'" target="_blank" rel="noopener noreferrer">WhatsApp</a>'+
+    '<a class="client-ticket-secondary" href="'+escapeHtml(email)+'">Email</a>'+
+    '<button class="client-ticket-secondary" type="button" data-copy-ticket="'+escapeHtml(t.id)+'">Copy link</button>'+
+    '</div></div></article>';
+  }).join(''):'<p>No event tickets are attached to this email yet. Any confirmed tickets bought using the same email will appear here. <a href="/events">Explore events →</a></p>';
+  window.soundBunkerTicketLinks=new Map(tickets.map(t=>[t.id,t.url]));
+ }catch(err){root.textContent=err.message;}
+}
 async function signOut() {
   await supabaseClient.auth.signOut();
   location.reload();
@@ -411,6 +441,13 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#signupTab').addEventListener('click', () => setMode('signup'));
   $('#forgotPassword').addEventListener('click', forgot);
   $('#signOut').addEventListener('click', signOut);
+  $('#myEventTickets')?.addEventListener('click',async event=>{
+   const id=event.target.closest('[data-copy-ticket]')?.dataset.copyTicket;
+   if(!id)return;
+   const url=window.soundBunkerTicketLinks?.get(id);if(!url)return;
+   try{await navigator.clipboard.writeText(url);$('#ticketMessage').textContent='Ticket link copied. Share it only with the intended attendee.';}
+   catch{$('#ticketMessage').textContent='Copy unavailable on this browser. Use WhatsApp or Email to share this ticket.';}
+  });
   $('#refreshDropbox').addEventListener('click', checkDropbox);
   $('#musicUpload').addEventListener('change', event => uploadFiles(event.target, 'music'));
   $('#photosUpload').addEventListener('change', event => uploadFiles(event.target, 'photos'));
@@ -465,7 +502,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!document.hidden && $('#portalPanel') && !$('#portalPanel').hidden && $('#clientDropboxLink').hidden) checkDropbox();
     if (!document.hidden && !$('#portalPanel').hidden) {
       supabaseClient.auth.getSession().then(({data:{session}})=>{if(session){loadProjects(session);loadGalleries(session);}});
-      loadNotifications(); loadInbox(); loadBookings();
+      loadNotifications(); loadInbox(); loadBookings(); loadMyEventTickets();
     }
   });
   setInterval(() => {
