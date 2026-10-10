@@ -1,7 +1,7 @@
 -- Postgres integration test for genuine zero-cost, signed-QR-ready test inventory.
 BEGIN;
 DO $$
-DECLARE ev uuid; tier uuid; order_id uuid; actor uuid; scan jsonb; normal uuid;
+DECLARE ev uuid; tier uuid; issued_order uuid; scan jsonb; normal uuid;
 BEGIN
  INSERT INTO public.sb_events(slug,title,starts_at,status,internal_free_test,test_code_hash,test_expires_at)
  VALUES('internal-qa-'||substr(gen_random_uuid()::text,1,8),'Internal QR Test',now()+interval '1 hour',
@@ -9,10 +9,10 @@ BEGIN
  INSERT INTO public.sb_event_tiers(event_id,name,price_cents,quantity_total)
  VALUES(ev,'Free test',0,20) RETURNING id INTO tier;
  UPDATE public.sb_events SET status='published' WHERE id=ev;
- SELECT public.sb_issue_internal_free_test(ev,'Test Person','qa@example.test',2) INTO order_id;
- IF (SELECT count(*) FROM public.sb_event_tickets WHERE order_id=order_id)<>2
+ SELECT public.sb_issue_internal_free_test(ev,'Test Person','qa@example.test',2) INTO issued_order;
+ IF (SELECT count(*) FROM public.sb_event_tickets WHERE order_id=issued_order)<>2
  THEN RAISE EXCEPTION 'Expected two genuine test tickets'; END IF;
- IF (SELECT total_cents FROM public.sb_event_orders WHERE id=order_id)<>0
+ IF (SELECT total_cents FROM public.sb_event_orders WHERE id=issued_order)<>0
  THEN RAISE EXCEPTION 'Test ticket must have zero total and no Stripe charge'; END IF;
  SELECT public.sb_checkin_event_ticket((SELECT id FROM public.sb_event_tickets WHERE order_id=order_id ORDER BY sequence_number LIMIT 1),null)
  INTO scan;
