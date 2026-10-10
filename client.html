@@ -12,8 +12,9 @@
   <link rel="stylesheet" href="client-gifts.css">
   <link rel="stylesheet" href="client-portal.css">
   <link rel="stylesheet" href="client-dashboard.css">
+  <link rel="stylesheet" href="client-tickets.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="client.js?v=20260925-audio" defer></script>
+  <script src="client.js?v=20261010-tickets" defer></script>
 <link rel="stylesheet" href="calendar-picker.css">
 <script defer src="calendar-picker.js"></script>
   <link rel="stylesheet" href="client-music.css?v=1">
@@ -23,7 +24,7 @@
   <main class="client-shell">
     <header class="client-nav">
       <a href="/" class="client-logo" aria-label="SoundBunker Algarve home"><img src="soundbunker-logo.png" alt="SoundBunker Algarve"></a>
-      <nav><a href="shop.html">Merch Shop</a><a href="gift-vouchers.html">Gift Experiences</a><a href="/redeem">Redeem voucher</a><a href="/community">SoundBunker Social</a><a href="#inbox">Inbox <span id="inboxBadge"></span></a><a href="#notifications">Updates <span id="noticeBadge"></span></a></nav>
+      <nav><a href="#my-tickets">My Tickets</a><a href="shop.html">Merch Shop</a><a href="gift-vouchers.html">Gift Experiences</a><a href="/redeem">Redeem voucher</a><a href="/community">SoundBunker Social</a><a href="#inbox">Inbox <span id="inboxBadge"></span></a><a href="#notifications">Updates <span id="noticeBadge"></span></a></nav>
     </header>
 
     <section id="authPanel" class="client-auth" hidden>
@@ -31,7 +32,7 @@
         <div class="client-auth-copy">
           <p class="eyebrow">SoundBunker Client Area</p>
           <h1>Your studio life, all in one place.</h1>
-          <p>Securely access projects, final masters, photo galleries, gift vouchers, rewards and the private SoundBunker community.</p>
+          <p>One SoundBunker account for studio bookings, photography, gift vouchers and event tickets — all in one place.</p>
         </div>
         <div class="client-auth-images"><img src="group-session.webp" alt="SoundBunker artists working together"><img src="creative-portrait.webp" alt="Creative portrait made at SoundBunker" loading="lazy" decoding="async"></div>
       </div>
@@ -48,7 +49,7 @@
             <button id="forgotPassword" class="text-button" type="button">Forgot password?</button>
             <p id="authMessage" class="muted" role="status"></p>
           </form>
-          <div class="client-login-trust"><span>Private account</span><span>Secure access</span><span>One place for every project</span></div>
+          <div class="client-login-trust"><span>One SoundBunker login</span><span>Your QR event tickets</span><span>Studio &amp; gifts</span></div>
         </article>
       </div>
     </section>
@@ -85,6 +86,7 @@
         <div class="client-account-actions"><span id="roleBadge" class="role-badge">Client</span><button id="signOut" class="ghost-button">Sign out</button></div>
       </div>
 
+      <section class="client-account-categories" aria-label="Your SoundBunker account areas"><a href="#manage-sessions"><span>01 / STUDIO</span><strong>Studio bookings</strong><small>Sessions and audio projects</small></a><a href="#my-files"><span>02 / PHOTOGRAPHY</span><strong>My Photography</strong><small>Galleries and downloads</small></a><a href="#my-vouchers"><span>03 / GIFT VOUCHERS</span><strong>Gift Vouchers</strong><small>Experiences and gift codes</small></a><a href="#my-tickets"><span>04 / EVENT TICKETS</span><strong>My Tickets</strong><small>QR tickets, downloads and sharing</small></a></section>
       <section class="client-quick-actions" aria-label="Main client actions">
         <a href="#manage-sessions" class="client-quick-card"><span>01 / BOOKINGS</span><strong>Manage Sessions</strong><small>See your sessions and propose a new date.</small><b>Manage sessions ↗</b></a>
         <a href="#my-files" class="client-quick-card"><span>02 / YOUR WORK</span><strong>My Files</strong><small>Your music and photographs, each in its own private folder.</small><b>Open my files ↗</b></a>
@@ -125,6 +127,7 @@
         <a class="client-bento-card client-book" href="index.html#booking"><span>BOOK A SESSION</span><div><h3>Ready for the next one?</h3><p>Choose recording, production, mixing, voice-over, photography or an experience.</p><b>Explore bookings →</b></div></a>
       </section>
 
+      <section class="client-my-tickets" id="my-tickets"><div class="client-tickets-heading"><div><p class="eyebrow">EVENTS &amp; TICKETS</p><h2>My Tickets</h2><p>All event tickets purchased with your SoundBunker email appear here. Open each QR ticket, save it or share it with someone attending.</p></div><a href="/events" class="client-action-solid">Browse events ↗</a></div><p class="client-ticket-warning">Each QR code can only be scanned once. Anyone you share the ticket link with can present it at the door — send each ticket to one person only.</p><div id="myEventTickets" class="client-ticket-grid"><p>Loading your event tickets…</p></div><p id="ticketMessage" role="status"></p></section>
       <section class="client-vouchers-section" id="my-vouchers">
         <div class="client-voucher-head">
           <div><p class="eyebrow">My Gift Vouchers</p><h2>Your experiences, ready when you are.</h2><p>Paid vouchers are automatically matched to the purchaser or recipient email on this account.</p></div>
