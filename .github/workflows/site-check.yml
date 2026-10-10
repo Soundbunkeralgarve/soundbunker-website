@@ -76,3 +76,8 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f SUPABASE_TICKETBUNKER_SMALL_EVENTS_LIMIT.sql
       - name: Verify event tickets cannot exceed 2k across multiple tiers
         run: psql -v ON_ERROR_STOP=1 -f test/ticketbunker-small-events-limit.sql
+
+      - name: Apply registered charity listing exemption schema
+        run: psql -v ON_ERROR_STOP=1 -f SUPABASE_TICKETBUNKER_CHARITY_LISTINGS.sql
+      - name: Verify charity registration cannot waive fees before approval
+        run: psql -v ON_ERROR_STOP=1 -f test/ticketbunker-charity-schema.sql

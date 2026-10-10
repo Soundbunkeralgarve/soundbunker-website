@@ -12,18 +12,18 @@ test('small-events BETA is three tiers from 1 to 2,000 tickets',()=>{
  }
 });
 test('no-brainer fixed listing fees, separate GBP and EUR prices',()=>{
- assert.deepEqual(listingOrder.map(k=>listingPlans.gbp[k].amount),[4900,5900,14900]);
- assert.deepEqual(listingOrder.map(k=>listingPlans.eur[k].amount),[5900,7900,17900]);
+ assert.deepEqual(listingOrder.map(k=>listingPlans.gbp[k].amount),[4900,9900,19900]);
+ assert.deepEqual(listingOrder.map(k=>listingPlans.eur[k].amount),[5900,11900,23900]);
  assert.equal(listingPlans.gbp.festival,undefined);
  assert.equal(listingPlans.eur.festival_pro,undefined);
 });
 test('difference-only upgrades require separate authorisation',()=>{
  const gb=quoteUpgrade('gbp','starter',101);
- assert.equal(gb.additionalAmount,1000);
+ assert.equal(gb.additionalAmount,5000);
  assert.equal(gb.requiredTier,'standard');
- assert.equal(gb.targetAmount,5900);
+ assert.equal(gb.targetAmount,9900);
  const gb2=quoteUpgrade('gbp','standard',501);
- assert.equal(gb2.additionalAmount,9000);
+ assert.equal(gb2.additionalAmount,10000);
  assert.equal(gb2.requiredTier,'event_plus');
  const pt=quoteUpgrade('eur','starter',100);
  assert.equal(pt.additionalAmount,0);

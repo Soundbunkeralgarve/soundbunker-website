@@ -37,11 +37,15 @@ export default async function handler(req,res){
        ?await db.from('sb_event_festival_quotes').select('event_id,tier_code,expected_tickets,status,currency,quoted_amount_cents').in('event_id',ids)
        :{data:[],error:null};
      if(festivalQuotes.error)throw festivalQuotes.error;
+     const charities=ids.length
+       ?await db.from('sb_event_charity_claims').select('event_id,registration_number,status,country_code,created_at').in('event_id',ids)
+       :{data:[],error:null};
+     if(charities.error)throw charities.error;
      return json(res,{organiser:{
        id:organisation.id,display_name:organisation.display_name,country_code:organisation.country_code,
        status:organisation.status,stripe_connected:!!organisation.stripe_account_id,
        stripe_capabilities_ready:organisation.stripe_capabilities_ready,tax_review_complete:organisation.tax_review_complete
-     },events:ev.data.map(e=>({...e,tiers:tiers.data.filter(t=>t.event_id===e.id),fees:fees.data.filter(f=>f.event_id===e.id),showcase:showcases.data.find(f=>f.event_id===e.id)||null,festivalQuote:festivalQuotes.data.find(f=>f.event_id===e.id)||null}))});
+     },events:ev.data.map(e=>({...e,tiers:tiers.data.filter(t=>t.event_id===e.id),fees:fees.data.filter(f=>f.event_id===e.id),showcase:showcases.data.find(f=>f.event_id===e.id)||null,festivalQuote:festivalQuotes.data.find(f=>f.event_id===e.id)||null,charity:charities.data.find(f=>f.event_id===e.id)||null}))});
    }
    if(req.method!=='POST')return json(res,{error:'Method not allowed'},405);
    const body=await parseJson(req);
@@ -61,6 +65,11 @@ export default async function handler(req,res){
    if(action==='event'){
      const title=safeText(body.title,160),slug=safeText(body.slug,160).toLowerCase(),venue=safeText(body.venue,180);
      const category=safeText(body.kind,20);
+     const charityEvent=body.charityEvent===true||body.charityEvent==='on';
+     const charityNumber=safeText(body.charityNumber,40).trim();
+     // A number is evidence for *manual* charity verification, not an automatic waiver.
+     if(charityEvent&&!/^[A-Za-z0-9][A-Za-z0-9 .\/-]{2,39}$/.test(charityNumber))
+       return json(res,{error:'Enter the registered charity number (3–40 characters)'},400);
      const startsAt=String(body.startsAt||''),endsAt=String(body.endsAt||'');
      if(title.length<3||!slugOk(slug)||!venue||!['show','festival','workshop','club','community'].includes(category))
        return json(res,{error:'Check your event name, link, venue, dates and category'},400);
@@ -81,6 +90,20 @@ export default async function handler(req,res){
        status:'draft'
      }).select('id,slug,title,status').single();
      if(saved.error)return json(res,{error:'Could not create event: check if your event link is taken'},409);
+     if(charityEvent){
+       const claim=await db.from('sb_event_charity_claims').insert({
+         event_id:saved.data.id,organiser_profile_id:organisation.id,
+         country_code:organisation.country_code,registration_number:charityNumber,
+         status:'pending_review'
+       }).select('id,status').single();
+       if(claim.error){
+         console.error('Charity claim creation failed',claim.error);
+         const revert=await db.from('sb_events').delete().eq('id',saved.data.id).eq('organiser_profile_id',organisation.id);
+         if(revert.error)console.error('Charity draft rollback failed',revert.error);
+         return json(res,{error:'Charity registration could not be saved. Please try creating the event again.'},503);
+       }
+       return json(res,{event:saved.data,charity:claim.data});
+     }
      return json(res,{event:saved.data});
    }
    if(action==='tier'){
@@ -130,11 +153,15 @@ export default async function handler(req,res){
        return json(res,{error:'Select a future draft event'},409);
      const tiers=await db.from('sb_event_tiers').select('quantity_total').eq('event_id',ev.data.id);
      const fees=await db.from('sb_event_listing_fees').select('tier_code').eq('event_id',ev.data.id).eq('status','paid').limit(1);
-     if(tiers.error||fees.error||!tiers.data?.length||!fees.data?.length)
-       return json(res,{error:'Add tickets and complete the event listing payment first'},409);
+     const exemption=await db.from('sb_event_charity_claims').select('id').eq('event_id',ev.data.id)
+       .eq('organiser_profile_id',organisation.id).eq('status','verified').limit(1);
+     if(tiers.error||fees.error||exemption.error||!tiers.data?.length||
+        (!fees.data?.length&&!exemption.data?.length))
+       return json(res,{error:'Add tickets and complete either the listing payment or verified charity exemption first'},409);
      const {quoteListing}=await import('./lib/event-listings.js');
      const cap=tiers.data.reduce((sum,row)=>sum+row.quantity_total,0);
-     try{quoteListing(ev.data.currency,fees.data[0].tier_code,cap);}
+     if(exemption.data?.length){if(cap>2000)return json(res,{error:'The beta limit is 2,000 tickets per event'},409);}
+     else try{quoteListing(ev.data.currency,fees.data[0].tier_code,cap);}
      catch{return json(res,{error:'Event has exceeded the paid listing tier capacity'},409);}
      const saved=await db.from('sb_events').update({status:'published'})
        .eq('id',ev.data.id).eq('status','draft').select('id,status').maybeSingle();
