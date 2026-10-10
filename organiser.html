@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,follow"><meta name="theme-color" content="#20112c">
 <title>Organiser Workspace · ticketBunker BETA</title>
-<link rel="stylesheet" href="/events.css"><link rel="stylesheet" href="/organiser.css">
+<link rel="stylesheet" href="/events.css"><link rel="stylesheet" href="/organiser.css"><link rel="stylesheet" href="/ticketbunker-app.css">
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script defer src="/organiser.js"></script>
 </head>
 <body class="tb-organiser-app">
@@ -97,4 +97,10 @@
  </section>
 </main>
 <footer class="tb-workspace-footer"><a href="/events">← Discover events</a><span>ticketBunker · SoundBunker Algarve · BETA</span><a href="/terms">Terms</a></footer>
+<nav class="tb-mobile-nav" aria-label="Organiser mobile navigation">
+ <a href="/events"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><span>Explore</span></a>
+ <a href="#setup" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 5v14M5 12h14"/><circle cx="12" cy="12" r="10"/></svg><span>Create</span></a>
+ <a href="#staffAccess"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8V5h4M19 8V5h-4M5 16v3h4M19 16v3h-4M8 12h8"/></svg><span>Scanner crew</span></a>
+ <a href="/client?next=%2Fclient%23my-tickets"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h18v4a2 2 0 0 0 0 4v4H3v-4a2 2 0 0 0 0-4zM14 7v12" stroke-dasharray="2 2"/></svg><span>My Tickets</span></a>
+</nav>
 </body></html>
