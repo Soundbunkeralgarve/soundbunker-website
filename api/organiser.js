@@ -1,9 +1,10 @@
 import { requireUser } from './lib/supabase-auth.js';
 import { json,parseJson,safeText } from './lib/http.js';
 import { localEventInstant } from './lib/events-time.js';
+import { eventSlugCandidate } from './lib/event-slug.js';
+import { randomBytes } from 'node:crypto';
 
 const uuid=value=>/^[a-f0-9]{8}-[a-f0-9-]{27,}$/i.test(String(value||''));
-const slugOk=value=>/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value);
 export const organiserCountries=Object.freeze({
  PT:{currency:'eur',timezone:'Europe/Lisbon'},
  GB:{currency:'gbp',timezone:'Europe/London'}
@@ -63,7 +64,7 @@ export default async function handler(req,res){
    if(!organisation)return json(res,{error:'Create your organiser account first'},403);
    if(organisation.status==='suspended')return json(res,{error:'Organiser account suspended'},403);
    if(action==='event'){
-     const title=safeText(body.title,160),slug=safeText(body.slug,160).toLowerCase(),venue=safeText(body.venue,180);
+     const title=safeText(body.title,160),venue=safeText(body.venue,180);
      const category=safeText(body.kind,20),description=safeText(body.description,4000);
      const charityEvent=body.charityEvent===true||body.charityEvent==='on';
      const charityNumber=safeText(body.charityNumber,40).trim();
@@ -71,7 +72,7 @@ export default async function handler(req,res){
      if(charityEvent&&!/^[A-Za-z0-9][A-Za-z0-9 .\/-]{2,39}$/.test(charityNumber))
        return json(res,{error:'Enter the registered charity number (3–40 characters)'},400);
      const startsAt=String(body.startsAt||''),endsAt=String(body.endsAt||'');
-     if(title.length<3||!slugOk(slug)||!venue||!['show','festival','workshop','club','community','comedy','sports','other'].includes(category)||description.length<20)
+     if(title.length<3||!venue||!['show','festival','workshop','club','community','comedy','sports','other'].includes(category)||description.length<20)
        return json(res,{error:'Check your event name, link, venue, dates and category'},400);
      const place=organiserCountries[organisation.country_code];
      let startInstant,endInstant;
@@ -81,15 +82,28 @@ export default async function handler(req,res){
      } catch(error){return json(res,{error:error.message},400);}
      if(Date.parse(startInstant)<=Date.now()||(endInstant&&Date.parse(endInstant)<=Date.parse(startInstant)))
        return json(res,{error:'Enter a future event with the end after its start'},400);
-     const saved=await db.from('sb_events').insert({
-       title,slug,venue,organiser:organisation.display_name,organiser_profile_id:organisation.id,
+     const details={
+       title,venue,organiser:organisation.display_name,organiser_profile_id:organisation.id,
        country_code:organisation.country_code,currency:place.currency,venue_timezone:place.timezone,
        starts_at:startInstant,ends_at:endInstant,
        event_kind:category,description,headline_artist:safeText(body.headlineArtist,120),venue_city:safeText(body.venueCity,120),
        image_url:/^https:\/\/[^\s]+$/i.test(body.imageUrl||'')?safeText(body.imageUrl,900):null,
        status:'draft'
-     }).select('id,slug,title,status').single();
-     if(saved.error)return json(res,{error:'Could not create event: check if your event link is taken'},409);
+     };
+     // Event titles are untouched. A duplicate title may have a distinct URL.
+     // Only retry when PostgreSQL confirms a URL uniqueness conflict.
+     let saved;
+     for(let attempt=0;attempt<4;attempt++){
+       const slug=eventSlugCandidate(title,attempt,attempt?randomBytes(3).toString('hex'):'');
+       saved=await db.from('sb_events').insert({...details,slug}).select('id,slug,title,status').single();
+       if(!saved.error)break;
+       if(saved.error.code==='23505'&&/slug|sb_events_slug_key/i.test(saved.error.message||'')&&attempt<3)continue;
+       console.error('Organiser event save error',{code:saved.error.code,details:saved.error.details,message:saved.error.message});
+       return json(res,{error:saved.error.code==='23505'
+        ?'This event URL is unavailable. Please try saving again.'
+        :'We could not save this event yet. Your details are still in the form; please retry.'},503);
+     }
+     if(saved?.error||!saved?.data)return json(res,{error:'Could not allocate an event URL. Please try again.'},503);
      if(charityEvent){
        const claim=await db.from('sb_event_charity_claims').insert({
          event_id:saved.data.id,organiser_profile_id:organisation.id,
