@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#251230"><title>FREE QR test tickets · ticketBunker</title>
+<style>
+:root{--purple:#54266d;--dark:#271332;--white:#fff;--bg:#f7f5f8;--line:#e2dbe6}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#2b2031;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{color:var(--purple)}header{background:#fff;border-bottom:1px solid var(--line);padding:19px 6vw}header img{display:block;width:min(270px,70vw)}.ribbon{background:#38194a;color:white;text-align:center;padding:11px 16px;font-weight:700;font-size:12px;letter-spacing:.03em}.container{max-width:900px;margin:35px auto;padding:0 16px}.hero{display:grid;grid-template-columns:1fr 260px;gap:0;background:var(--dark);border-radius:16px;color:white;overflow:hidden}.hero .copy{padding:35px}.eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#dcc1e9;font-weight:800}h1{font-size:clamp(26px,4vw,40px);line-height:1.1;margin:12px 0}h2{margin:0 0 9px;font-size:21px}.hero p{color:#e2d4e9}.poster{width:100%;height:100%;object-fit:cover}.card{padding:27px 30px;background:#fff;border:1px solid var(--line);border-radius:14px;margin-top:18px;box-shadow:0 4px 18px #2713320d}.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.grid .full{grid-column:1/-1}label{display:block;font-size:12px;font-weight:750}input,select{display:block;width:100%;margin-top:6px;padding:12px;border:1px solid #cec0d7;border-radius:9px;font:inherit;background:#fff;color:#2b2031}input:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid #b991cf;outline-offset:2px}button{background:var(--purple);border:0;color:white;font:inherit;font-weight:800;padding:14px 20px;border-radius:9px;cursor:pointer}button:disabled{opacity:.48;cursor:wait}.small{color:#6c6072;font-size:13px}.important{padding:14px;border:1px solid #edcaa5;background:#fff7e9;border-radius:9px;font-size:13px}.result{border-radius:9px;background:#f1ebf5;padding:15px;color:#432753;margin-top:17px}.ticketlink{display:block;background:#fff;border:1px solid #d9c7e4;border-radius:9px;padding:15px;margin:10px 0;text-decoration:none;font-weight:750}.ticketlink:hover{background:#f6ecfb}.hide{display:none!important}@media(max-width:660px){.hero{grid-template-columns:1fr}.hero .copy{padding:25px}.poster{max-height:180px}.card{padding:20px}.grid{grid-template-columns:1fr}.grid .full{grid-column:1}}
+</style>
+<script type="module" src="/event-free-test.js"></script>
+</head><body>
+<div class="ribbon">REAL QR TEST · €0 / £0 · NO STRIPE PAYMENT · NOT A REAL EVENT</div>
+<header><a href="/events"><img src="/assets/ticketbunker/ticketbunker-logo.svg" alt="ticketBunker"></a></header>
+<main class="container">
+<section class="hero"><div class="copy"><div class="eyebrow">TicketBunker · Private production-system test</div>
+<h1 id="eventTitle">Loading the test event…</h1>
+<p id="eventInfo">Checking this private invitation.</p>
+<p><strong>FREE test ticket · no payment</strong></p></div><img class="poster" src="/academy-performance.jpg" alt="SoundBunker events test imagery"></section>
+<section class="card"><h2>Reserve your real test tickets</h2>
+<p class="important"><strong>This is not a live show.</strong> The tickets and QR codes are genuine records in the SoundBunker ticketing system, but only for testing. They carry no admission or cash value. Your email receives the real test QR links.</p>
+<form id="claimForm" class="hide"><div class="grid"><label>Full name<input name="name" required minlength="2" maxlength="100" autocomplete="name" placeholder="Your name"></label>
+<label>Email to receive test QR tickets<input name="email" type="email" required autocomplete="email" maxlength="254" placeholder="you@example.com"></label>
+<label class="full">Number of FREE test tickets<select name="quantity"><option value="1">1 free test ticket</option><option value="2">2 free test tickets</option></select></label>
+</div><p class="small">Maximum two tickets per email, 20 tickets across the event. The €0 transaction does not contact Stripe.</p>
+<button type="submit" id="book">Confirm FREE test booking →</button></form>
+<div id="result" class="result" role="status">Verifying the test invitation…</div>
+<div id="links" aria-live="polite"></div>
+</section>
+<section class="card"><h2>What happens next?</h2>
+<p>After you reserve, open your real QR ticket on a phone. A SoundBunker admin or invited door staff member opens <a href="/event-scanner">the real door scanner</a>, selects the test event and scans the QR. The first scan should be accepted as a TEST ENTRY; the second should show ALREADY USED.</p>
+<p class="small">Test tickets expire with this private event. Normal event sales and Stripe checkout are still disabled during BETA.</p></section>
+</main></body></html>
