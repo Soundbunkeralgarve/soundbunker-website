@@ -18,7 +18,7 @@ jobs:
 
       - name: Check Events JavaScript syntax
         run: |
-          for f in events.js event-ticket.js event-scanner.js events-admin.js organiser.js api/event-staff.js api/organiser.js api/events.js api/event-admin.js api/event-ticket.js api/event-checkout.js api/event-scan.js api/lib/events.js; do
+          for f in events.js event-ticket.js event-scanner.js events-admin.js organiser.js ticketbunker-dry-run.js ticketbunker-dry-run-model.mjs api/event-staff.js api/organiser.js api/events.js api/event-admin.js api/event-ticket.js api/event-checkout.js api/event-scan.js api/lib/events.js; do
             node --check "$f"
           done
 
