@@ -1,7 +1,36 @@
 (() => {
 const $=q=>document.querySelector(q);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let supabase,token,account,currentDraftId=null;
+let supabase,token,account,currentDraftId=null,latestEvents=[];
+function eventFor(id){return latestEvents.find(event=>event.id===id);}
+function goToTicketSetup(id){
+ const ev=eventFor(id);
+ if(!ev||ev.status!=='draft')return notify('Only draft events can have tickets added.',true);
+ currentDraftId=id;
+ $('#tierEvent').value=id;
+ setWizard('tickets');
+ $('#ticketSetupStatus').textContent='Add the ticket name, price and quantity for '+ev.title+'. Save this before publication review.';
+ $('#tierForm').querySelector('[name="name"]')?.focus();
+}
+function renderReviewReadiness(){
+ const ev=eventFor($('#reviewEvent').value);
+ const message=$('#reviewReadiness'),add=$('#reviewAddTickets'),publish=$('#requestPublish');
+ if(!ev){message.textContent='Choose an event draft first.';add.hidden=true;publish.disabled=true;return;}
+ const hasTickets=Array.isArray(ev.tiers)&&ev.tiers.length>0;
+ const hasPoster=Boolean(ev.image_url);
+ const hasBio=Boolean(ev.description?.trim()?.length>=20);
+ const issues=[];
+ if(!hasPoster)issues.push('Upload an event poster');
+ if(!hasBio)issues.push('Complete the event description');
+ if(!hasTickets)issues.push('Add at least one ticket type');
+ message.innerHTML='<div class="tb-readiness-row"><strong>Event & artwork</strong><span>'+ (hasPoster&&hasBio?'✓ Complete':'Needs attention')+'</span></div>'+ 
+  '<div class="tb-readiness-row"><strong>Ticket types</strong><span>'+(hasTickets?'✓ '+ev.tiers.length+' saved':'Required — none saved')+'</span></div>'+
+  (issues.length?'<p class="tb-readiness-warning">Before publication: '+issues.map(esc).join('; ')+'.</p>':'<p class="tb-readiness-success">Ready to submit for review. Ticket sales stay disabled during BETA.</p>');
+ add.hidden=hasTickets;
+ publish.disabled=issues.length>0||Boolean(ev.publish_requested_at);
+ publish.textContent=ev.publish_requested_at?'Already submitted for review':'Submit for publication review →';
+}
+
 function setWizard(stage){
  const sections={details:['#eventBasics'],tickets:['#ticket-types'],review:['#my-events-section']};
  document.querySelectorAll('#wizardSteps [data-wizard]').forEach(button=>{
@@ -37,11 +66,18 @@ async function refresh(){
  $('#priceLabel').firstChild.textContent='Ticket price ('+currency+')';
  document.querySelectorAll('[data-price-gbp]').forEach(e=>{e.textContent=currency==='GBP'?e.dataset.priceGbp:e.dataset.priceEur;});
  const list=data.events||[];
+ latestEvents=list;
  if(currentDraftId&&!list.some(e=>e.id===currentDraftId))currentDraftId=null;
- $('#tierEvent').innerHTML=list.filter(e=>e.status==='draft').map(e=>'<option value="'+esc(e.id)+'">'+esc(e.title)+'</option>').join('');
+ const previousTicket=$('#tierEvent').value,previousReview=$('#reviewEvent').value;
+ $('#tierEvent').innerHTML=list.filter(e=>e.status==='draft').map(e=>'<option value="'+esc(e.id)+'">'+esc(e.title)+(e.tiers.length?' · '+e.tiers.length+' ticket type(s)':' · NO TICKETS YET')+'</option>').join('');
  $('#showcaseEvent').innerHTML=list.filter(e=>e.status==='draft').map(e=>'<option value="'+esc(e.id)+'">'+esc(e.title)+(e.showcase?' (requested)':'')+'</option>').join('');
  $('#reviewEvent').innerHTML=list.filter(e=>e.status==='draft'&&!e.internal_free_test).map(e=>'<option value="'+esc(e.id)+'">'+esc(e.title)+(e.publish_requested_at?' · Review requested':'')+'</option>').join('');
  if(currentDraftId){$('#tierEvent').value=currentDraftId;$('#reviewEvent').value=currentDraftId;}
+ else{
+  if(list.some(e=>e.id===previousTicket))$('#tierEvent').value=previousTicket;
+  if(list.some(e=>e.id===previousReview))$('#reviewEvent').value=previousReview;
+ }
+ renderReviewReadiness();
 
  const selected=list.find(e=>e.id===$('#showcaseEvent').value);
  updateShowcasePrice(selected);
@@ -52,11 +88,11 @@ async function refresh(){
  $('#manageStaffEvent').innerHTML=staffOptions;
  if(list.some(e=>e.id===previous))$('#manageStaffEvent').value=previous;
  $('#myEvents').innerHTML=list.length?list.map(e=>{
-  const types=e.tiers.length?e.tiers.map(t=>esc(t.name)+' · '+esc(String(t.quantity_total))).join(' · '):'No ticket types yet';
+  const types=e.tiers.length?e.tiers.map(t=>esc(t.name)+' · '+esc(String(t.quantity_total))+' tickets').join(' · '):'⚠ Ticket types not added yet';
   return '<article class="tb-owned-event"><div>'+(e.image_url?'<img src="'+esc(e.image_url)+'" alt="Event cover" style="width:95px;aspect-ratio:4/3;object-fit:cover;border-radius:7px;margin-bottom:9px">':'')+'<strong>'+esc(e.title)+'</strong><p>'+esc(e.venue)+' · '+esc(e.event_kind)+'</p></div>'+
    '<div><p>'+esc(localDate(e.starts_at,e.venue_timezone))+'</p><p>'+types+'</p></div>'+
    '<div><span class="tb-owned-status">'+esc(e.status==='draft'?'DRAFT · NOT PUBLISHED':e.status.toUpperCase())+'</span>'+
-   (e.publish_requested_at?'<small class="tb-owned-charity">PUBLICATION REVIEW REQUESTED</small>':'')+(e.charity?'<small class="tb-owned-charity">'+(e.charity.status==='verified'?'Charity verified · Free listing':e.charity.status==='rejected'?'Charity claim not approved':'Charity number received · Review pending')+'</small>':'')+'</div></article>';
+   (e.status==='draft'&&!e.tiers.length?'<button type="button" class="outline tb-add-tickets" data-add-tickets="'+esc(e.id)+'">+ Add tickets to this event →</button>':'')+(e.publish_requested_at?'<small class="tb-owned-charity">PUBLICATION REVIEW REQUESTED</small>':'')+(e.charity?'<small class="tb-owned-charity">'+(e.charity.status==='verified'?'Charity verified · Free listing':e.charity.status==='rejected'?'Charity claim not approved':'Charity number received · Review pending')+'</small>':'')+'</div></article>';
  }).join(''):'<div class="tb-no-events"><strong>Nothing here yet</strong><p>Create an event above to see your drafts in this workspace.</p></div>';
  if(list.length)await loadStaff().catch(error=>{$('#staffRoster').textContent=error.message;});
  else $('#staffRoster').textContent='Create an event draft to invite staff.';
@@ -149,11 +185,43 @@ $('#eventForm').addEventListener('submit',async e=>{
   notify('Event not saved: '+error.message+' Your event details are still in the form.',true);
  }finally{submitButton.disabled=false;}
 });
-$('#tierForm').addEventListener('submit',async e=>{e.preventDefault();const d=new FormData(e.target);await submit({action:'tier',eventId:d.get('eventId'),name:d.get('name'),priceCents:Math.round(Number(d.get('price'))*100),capacity:Number(d.get('capacity'))});});
+$('#tierForm').addEventListener('submit',async e=>{
+ e.preventDefault();const form=e.currentTarget,d=new FormData(form);
+ const eventId=d.get('eventId');
+ if(!eventId){$('#ticketSetupStatus').textContent='First save or select an event draft.';return;}
+ const price=Number(d.get('price')),capacity=Number(d.get('capacity'));
+ if(!Number.isFinite(price)||price<1||!Number.isInteger(capacity)||capacity<1){
+  $('#ticketSetupStatus').textContent='Enter a price of at least 1 and a positive whole-number quantity.';return;
+ }
+ const button=form.querySelector('[type="submit"]');button.disabled=true;
+ try{
+  $('#ticketSetupStatus').textContent='Saving your ticket type…';
+  await request({action:'tier',eventId,name:d.get('name'),priceCents:Math.round(price*100),capacity});
+  currentDraftId=eventId;await refresh();
+  $('#reviewEvent').value=eventId;
+  renderReviewReadiness();
+  $('#publishMessage').textContent='Ticket type saved. Review the checklist and submit your event for approval.';
+  setWizard('review');
+  notify('Ticket type saved. You can now submit your event for publication review.');
+ }catch(error){$('#ticketSetupStatus').textContent='Ticket type not saved: '+error.message;notify(error.message,true);}
+ finally{button.disabled=false;}
+});
+$('#tierEvent').addEventListener('change',()=>{
+ const ev=eventFor($('#tierEvent').value);
+ $('#ticketSetupStatus').textContent=ev?'Selected '+ev.title+'. '+(ev.tiers.length?ev.tiers.length+' ticket types already saved. You can add another.':'No ticket types saved yet. Add your first ticket type below.'):'Choose an event draft.';
+});
+$('#reviewEvent').addEventListener('change',renderReviewReadiness);
+$('#reviewAddTickets').addEventListener('click',()=>goToTicketSetup($('#reviewEvent').value));
+$('#myEvents').addEventListener('click',e=>{
+ const id=e.target.closest('[data-add-tickets]')?.dataset.addTickets;
+ if(id)goToTicketSetup(id);
+});
 $('#requestPublish').addEventListener('click',async()=>{
  const eventId=$('#reviewEvent').value;
  if(!eventId)return $('#publishMessage').textContent='Create your event and tickets first.';
- try{const result=await request({action:'requestPublish',eventId});$('#publishMessage').textContent=result.message;await refresh();}
+ const ev=eventFor(eventId);
+ if(ev&&!ev.tiers.length){$('#publishMessage').textContent='Add a ticket type first. Opening ticket setup…';goToTicketSetup(eventId);return;}
+ try{const result=await request({action:'requestPublish',eventId});$('#publishMessage').textContent=result.message;await refresh();renderReviewReadiness();}
  catch(err){$('#publishMessage').textContent=err.message;}
 });
 $('#artworkRetry').addEventListener('submit',async e=>{
