@@ -81,7 +81,7 @@ $('demoEventForm').addEventListener('submit',async e=>{
   // Starting a new sample event deliberately clears old simulation tickets.
   if(run?.tickets?.length&&!confirm('Create a new demo event and clear the current mock tickets?'))return;
   const logoData=await onDeviceImage(form.elements.logo.files?.[0],350);
-  const posterData=await onDeviceImage(e.currentTarget.elements.poster.files?.[0],1000);
+  const posterData=await onDeviceImage(form.elements.poster.files?.[0],1000);
   run={...newRun(data),logoData,posterData};selectedTicketId=null;save();render();
   $('scanResult').className='scan-result';$('scanResult').textContent='Sample event created. Issue some demo tickets.';
   notice('Demo event saved. Continue to Step 02 to issue mock tickets.');
