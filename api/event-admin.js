@@ -13,10 +13,31 @@ export default async function handler(req,res){
         db.from('sb_event_tickets').select('event_id,checked_in_at').limit(10000)
       ]);
       if([events,tiers,orders,tickets].some(x=>x.error))throw Error('Events database is not ready');
-      return json(res,{events:events.data,tiers:tiers.data,orders:orders.data,tickets:tickets.data});
+      const [charities,organisers]=await Promise.all([
+        db.from('sb_event_charity_claims').select('id,event_id,organiser_profile_id,country_code,registration_number,status,created_at,reviewed_at,reviewer_notes').order('created_at',{ascending:false}).limit(200),
+        db.from('sb_event_organisers').select('id,display_name,country_code').limit(300)
+      ]);
+      if(charities.error||organisers.error)throw Error('Charity review service is not configured');
+      return json(res,{events:events.data,tiers:tiers.data,orders:orders.data,tickets:tickets.data,
+        charities:charities.data,organisers:organisers.data});
     }
     if(req.method!=='POST')return json(res,{error:'Method not allowed'},405);
     const input=await parseJson(req),action=safeText(input.action,24);
+    if(action==='charityReview'){
+      // This endpoint is protected by requireAdmin, never exposed to event organisers.
+      if(!idOk(input.claimId)||!['verified','rejected'].includes(input.decision))
+        return json(res,{error:'Choose a charity application and approve or reject it'},400);
+      const status=input.decision;
+      const reviewedAt=new Date().toISOString();
+      const saved=await db.from('sb_event_charity_claims').update({
+        status,reviewed_at:reviewedAt,reviewed_by:ctx.user.id,
+        reviewer_notes:safeText(input.notes,500)
+      }).eq('id',input.claimId).eq('status','pending_review')
+       .select('id,status').maybeSingle();
+      if(saved.error)throw saved.error;
+      if(!saved.data)return json(res,{error:'This application has already been reviewed or cannot be found'},409);
+      return json(res,{charityReview:saved.data});
+    }
     if(action==='create'){
       const title=safeText(input.title,160),slug=safeText(input.slug,160).toLowerCase(),
         startsAt=String(input.startsAt||''),venue=safeText(input.venue,180)||'The Hub Culture, Loulé';
