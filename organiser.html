@@ -31,7 +31,7 @@
     <div class="tb-panel-head"><div><span class="tb-step-number">STEP 01</span><h2 id="create-event-heading">Create an event</h2><p>Keep it simple. You can edit your event before it goes on sale.</p></div></div>
     <form id="eventForm" class="organiser-form tb-form-grid">
       <label class="tb-span-full">Event name<input name="title" required minlength="3" maxlength="160" placeholder="Friday Night Sessions"></label>
-      <label class="tb-span-full">Public event URL<input name="slug" required pattern="[a-z0-9]+(-[a-z0-9]+)*" placeholder="friday-night-sessions"><span class="tb-field-help">Lowercase letters, numbers and hyphens.</span></label>
+      <p class="tb-field-help tb-span-full" id="eventLinkHint" role="status">Your event link is created automatically from its name. You can keep the original event name exactly as written.</p>
       <label>Event type<select name="kind" required><option value="club">Club night</option><option value="show">Live music / concert</option><option value="comedy">Comedy show</option><option value="festival">Festival / open air</option><option value="workshop">Workshop / class</option><option value="community">Community / cultural</option><option value="sports">Sporting event</option><option value="other">Other event</option></select></label>
       <label>Venue &amp; city<input name="venue" required placeholder="The Venue, Bristol"></label>
       <label>Start · venue local time<input name="startsAt" type="datetime-local" required></label>

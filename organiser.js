@@ -124,20 +124,30 @@ async function uploadMedia(file,eventId,kind){
 $('#eventForm').addEventListener('submit',async e=>{
  e.preventDefault();const form=e.currentTarget;
  const data=Object.fromEntries(new FormData(form));
- delete data.imageUrl;
  const submitButton=form.querySelector('[type=submit]');
  submitButton.disabled=true;
  try{
-  notify('Saving the event, poster and logo…');
+  notify('Saving your event draft…');
   const created=await request({action:'event',...data});
   currentDraftId=created.event.id;
-  const images=[
-   uploadMedia($('#eventPoster').files?.[0],currentDraftId,'poster'),
-   uploadMedia($('#eventLogo').files?.[0],currentDraftId,'logo')
-  ];await Promise.all(images);
-  await refresh();notify('Event draft and artwork saved. Now add ticket options.');setWizard('tickets');
- }catch(err){await refresh().catch(()=>{});notify(err.message+' Your event draft may have saved; choose it under Tickets to update artwork.',true);}
- finally{submitButton.disabled=false;}
+  // Saving event details succeeds independently of media. A failed image
+  // upload must never force the organiser to create another event.
+  let uploadError=null;
+  try{
+   notify('Event saved. Uploading your artwork…');
+   await uploadMedia($('#eventPoster').files?.[0],currentDraftId,'poster');
+   await uploadMedia($('#eventLogo').files?.[0],currentDraftId,'logo');
+  }catch(error){uploadError=error;}
+  await refresh();
+  setWizard('tickets');
+  if(uploadError){
+   notify('Your event draft was saved, but artwork upload failed: '+uploadError.message+
+    ' Use "Update event artwork" below to retry. Do not create the event again.',true);
+  }else notify('Event draft saved. Next, choose your ticket types.');
+ }catch(error){
+  // The request failed before a draft was created. Keep every form entry.
+  notify('Event not saved: '+error.message+' Your event details are still in the form.',true);
+ }finally{submitButton.disabled=false;}
 });
 $('#tierForm').addEventListener('submit',async e=>{e.preventDefault();const d=new FormData(e.target);await submit({action:'tier',eventId:d.get('eventId'),name:d.get('name'),priceCents:Math.round(Number(d.get('price'))*100),capacity:Number(d.get('capacity'))});});
 $('#requestPublish').addEventListener('click',async()=>{
