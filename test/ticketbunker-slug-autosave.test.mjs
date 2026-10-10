@@ -21,9 +21,10 @@ test('original titles remain unchanged and links are generated without manual UR
 });
 test('failed image upload cannot erase saved event or force duplicate entry',()=>{
  const js=file('organiser.js');
- assert.match(js,/Event saved\. Uploading your artwork/);
+ assert.match(js,/Event and artwork saved/);
+ assert.match(js,/await uploadMedia\(/);
  assert.match(js,/let uploadError=null/);
- assert.match(js,/Use "Update event artwork" below to retry/);
+ assert.match(js,/Fix artwork using "Update event artwork"/);
  assert.match(js,/Event not saved:/);
  assert.doesNotMatch(js,/Your event draft may have saved/);
 });
