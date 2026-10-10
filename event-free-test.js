@@ -16,7 +16,8 @@ async function init(){
 $('claimForm').addEventListener('submit',async e=>{
  e.preventDefault();const form=e.currentTarget,button=$('book');
  const d=Object.fromEntries(new FormData(form));
- button.disabled=true;$('result').textContent='Issuing real test tickets in the SoundBunker database…';$('links').replaceChildren();
+ button.disabled=true;button.textContent='Booking tickets…';$('claimProgress').hidden=false;
+ $('result').textContent='Issuing real test tickets in the SoundBunker database…';$('links').replaceChildren();
  try{
   const r=await fetch('/api/event-free-test',{method:'POST',headers:{'content-type':'application/json'},
    body:JSON.stringify({action:'claim',code,name:d.name,email:d.email,quantity:Number(d.quantity)})});
@@ -26,7 +27,7 @@ $('claimForm').addEventListener('submit',async e=>{
    const link=document.createElement('a');link.href=ticket.url;link.className='ticketlink';link.rel='noreferrer';
    link.textContent='Open REAL test QR ticket '+ticket.number+' →';link.target='_blank';$('links').appendChild(link);
   }
-  form.classList.add('hide');
- }catch(err){$('result').textContent=err.message;button.disabled=false;}
+  form.classList.add('hide');$('claimProgress').hidden=true;
+ }catch(err){$('result').textContent=err.message;button.disabled=false;button.textContent='Confirm FREE test booking →';$('claimProgress').hidden=true;}
 });
 init();
