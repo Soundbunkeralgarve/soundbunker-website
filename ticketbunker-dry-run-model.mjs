@@ -19,7 +19,7 @@ export function issue(run,values,idFactory=()=>crypto.randomUUID(),now=()=>new D
  if(!Number.isInteger(quantity)||quantity<1||quantity>8)throw Error('Issue between 1 and 8 demo tickets at a time.');
  if(!Number.isInteger(capacity)||capacity<1||capacity>2000)throw Error('Capacity must be 1–2,000.');
  if(capacity<run.tickets.length||run.tickets.length+quantity>capacity)throw Error('Demo capacity exceeded.');
- if(!Number.isFinite(price)||price<0||price>100000||Math.round(price*100)!==price*100)
+ if(!Number.isFinite(price)||price<0||price>100000||Math.abs(Math.round(price*100)-price*100)>0.000001)
   throw Error('Enter a valid two-decimal ticket price.');
  if(!tier||tier.length>100)throw Error('Enter a ticket type.');
  const existing=new Set(run.tickets.map(t=>t.id));
