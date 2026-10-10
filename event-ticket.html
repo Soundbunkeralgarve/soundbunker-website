@@ -1,3 +1,43 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#100b16"><title>Your ticket | SoundBunker</title><link rel="stylesheet" href="/events.css"></head><body>
-<header class="topbar"><a class="brand" href="/"><img src="/assets/ticketbunker/ticketbunker-logo.svg" alt="ticketBunker"></a><nav><a href="/events">All Events</a></nav></header><main class="events-content"><div style="max-width:500px;margin:0 auto;text-align:center;border:1px solid #ffffff33;padding:30px;background:#201528"><p class="eyebrow">TICKETBUNKER / QR TICKET</p><div id="ticketArtwork"></div><h1 id="name">Loading your ticket…</h1><p id="details" style="line-height:1.6;color:#d9c8e2"></p><div id="qr" style="padding:25px;background:#fff;border-radius:8px;width:max-content;max-width:100%;margin:30px auto"></div><p id="notice" role="status">Show this QR code to staff at the entrance. Each ticket is valid for one entry.</p><div class="ticket-download-actions"><button id="saveTicket" type="button">Download QR PNG</button><button id="printTicket" type="button">Print / Save PDF</button><a id="shareTicketWhatsApp" href="#" target="_blank" rel="noopener noreferrer">Share by WhatsApp</a><a id="shareTicketEmail" href="#">Share by email</a></div><p style="color:#c6b8ce;font-size:13px">Keep this link private. Anyone holding it can use this ticket once.</p></div></main>
-<style>.ticket-download-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:16px 0}.ticket-download-actions button,.ticket-download-actions a{border:1px solid #ddc0ed;border-radius:8px;background:#fff;color:#3c2251;padding:11px 12px;text-decoration:none;font-weight:800;cursor:pointer;font:700 12px sans-serif}#ticketArtwork img{max-width:100%;border-radius:8px;max-height:190px;object-fit:cover}#ticketArtwork .event-brand-mark{width:95px;max-height:65px;object-fit:contain;background:#fff;padding:5px;margin:8px}@media print{header,.ticket-download-actions{display:none!important}body{background:#fff;color:#17111f!important}main{padding:0!important}#qr{page-break-inside:avoid}}</style><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script><script defer src="/event-ticket.js"></script></body></html>
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer"><meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#21182b"><title>Your QR ticket | ticketBunker</title>
+<link rel="stylesheet" href="/events.css"><link rel="stylesheet" href="/ticketbunker-app.css">
+</head>
+<body class="tb-ticket-app">
+<header class="topbar"><a class="brand" href="/events" aria-label="ticketBunker events"><img src="/assets/ticketbunker/ticketbunker-logo.svg" alt="ticketBunker"></a><nav><a href="/events">Explore events</a><a href="/client?next=%2Fclient%23my-tickets">My Tickets</a></nav></header>
+<main class="tb-ticket-shell">
+ <div class="tb-ticket-intro"><span class="eyebrow">TICKETBUNKER / YOUR ADMISSION</span><h1>You're going places.</h1><p>Keep this QR handy. One code, one entry.</p></div>
+ <article class="tb-ticket-pass">
+  <div class="tb-ticket-pass-top"><span>OFFICIAL TICKET</span><strong>TICKETBUNKER ✳</strong></div>
+  <div id="ticketArtwork" class="tb-ticket-artwork"></div>
+  <div class="tb-ticket-details">
+   <h2 id="name">Loading your ticket…</h2>
+   <p id="details">Checking your secure ticket link.</p>
+  </div>
+  <div class="tb-ticket-qr-wrap"><div id="qr" aria-label="Ticket QR code"></div><p>SHOW THIS CODE AT ENTRY</p></div>
+  <div class="tb-ticket-note" id="notice" role="status">Each ticket is valid for one entry. Keep your ticket link private.</div>
+ </article>
+ <section class="tb-ticket-actions" aria-label="Ticket actions">
+  <h2>Keep or share this ticket</h2>
+  <p>Have tickets for friends? Share a separate QR link with each person.</p>
+  <div class="tb-ticket-actions-grid">
+   <button id="saveTicket" type="button">Download QR</button>
+   <button id="printTicket" type="button">Save PDF / Print</button>
+   <a id="shareTicketWhatsApp" href="#" target="_blank" rel="noopener noreferrer">WhatsApp ticket</a>
+   <a id="shareTicketEmail" href="#">Email ticket</a>
+  </div>
+  <p class="tb-ticket-privacy">A shared ticket link works for entry. Do not send the same QR to more than one attendee.</p>
+ </section>
+ <div class="tb-ticket-back"><a href="/client?next=%2Fclient%23my-tickets">← Back to My Tickets</a></div>
+</main>
+<nav class="tb-mobile-nav" aria-label="TicketBunker mobile navigation">
+ <a href="/events"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><span>Explore</span></a>
+ <a href="/organiser"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/><circle cx="12" cy="12" r="10"/></svg><span>Create</span></a>
+ <a href="/event-scanner"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8V5h4M19 8V5h-4M5 16v3h4M19 16v3h-4M8 12h8"/></svg><span>Scan</span></a>
+ <a href="/client?next=%2Fclient%23my-tickets" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h18v4a2 2 0 0 0 0 4v4H3v-4a2 2 0 0 0 0-4zM14 7v12" stroke-dasharray="2 2"/></svg><span>My Tickets</span></a>
+</nav>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<script defer src="/event-ticket.js"></script>
+</body></html>
