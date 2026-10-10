@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="720" viewBox="0 0 1100 720" role="img" aria-labelledby="title desc">
+<title id="title">MIDNIGHT SESSIONS · TicketBunker demonstration poster</title><desc id="desc">Original graphic ticketing event artwork. Fictional demonstration, not a real event.</desc>
+<defs><linearGradient id="shade" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#19132b"/><stop offset="1" stop-color="#0c0b11"/></linearGradient><clipPath id="clip"><rect width="1100" height="720"/></clipPath></defs>
+<rect width="1100" height="720" fill="url(#shade)"/>
+<g clip-path="url(#clip)"><circle cx="815" cy="355" r="290" fill="none" stroke="#dca8c9" stroke-width="95" opacity=".84"/><circle cx="815" cy="355" r="175" fill="none" stroke="#f9f5ed" stroke-width="6" opacity=".32"/></g>
+<rect x="41" y="40" width="1018" height="640" rx="0" fill="none" stroke="#f9f5ed" stroke-opacity=".4" stroke-width="1.5"/>
+<g fill="#f9f5ed" font-family="Arial,Helvetica,sans-serif">
+<text x="80" y="99" font-size="23" font-weight="700" letter-spacing="5">TICKETBUNKER<tspan fill="#dca8c9"> ✳</tspan></text>
+<text x="80" y="149" font-size="14" letter-spacing="5" opacity=".8">EVENTS / PEOPLE / ENERGY</text>
+<text x="73" y="390" font-size="126" font-weight="900" letter-spacing="-7">MIDNIGHT</text>
+<text x="73" y="503" font-size="126" font-weight="900" letter-spacing="-7">SESSIONS</text>
+<path d="M80 567H1020" stroke="#f9f5ed" stroke-opacity=".55" stroke-dasharray="7 11" stroke-width="2"/>
+<text x="80" y="617" font-size="21" font-weight="700" letter-spacing="3">FEATURED SHOWCASE</text>
+<text x="80" y="657" font-size="14" letter-spacing="4" opacity=".8">CONCEPT EVENT · NOT BOOKABLE</text>
+<text x="975" y="656" font-size="20" font-weight="800" text-anchor="end">001 / TB</text>
+</g></svg>
