@@ -103,3 +103,18 @@ body.tb-organiser-app{background:#f7f5f9;color:#21182a;font:14px 'DM Sans',Arial
 .tb-charity-price-strip strong,.tb-charity-price-strip span{display:block}.tb-charity-price-strip div strong{font-size:12px;color:#56227e}.tb-charity-price-strip div span{font-size:11px;color:#6a5c73;margin-top:3px}.tb-charity-price-strip>span{font-size:13px;font-weight:800;color:#6b289f;white-space:nowrap}
 .tb-owned-charity{display:block;color:#6d2d9e;font-size:10px;margin-top:7px;max-width:230px}
 @media(max-width:550px){.tb-charity-price-strip{align-items:flex-start;flex-direction:column}}
+
+/* Guided readiness: show missing setup actions where organisers actually need them. */
+.tb-readiness{border:1px solid #d8ccdf;background:#fff;border-radius:12px;padding:15px;display:grid;gap:10px;font-size:13px;color:#2f2537}
+.tb-readiness-row{display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid #eee8f1;padding-bottom:10px}
+.tb-readiness-row:last-of-type{border-bottom:0;padding-bottom:0}
+.tb-readiness-row strong{font-weight:800}
+.tb-readiness-row span{color:#684775;font-size:12px;font-weight:700;text-align:right}
+.tb-readiness-warning{color:#804223;background:#fff7e9;border:1px solid #edd7b8;padding:11px 13px;border-radius:9px;font-size:12px;line-height:1.5;margin:0}
+.tb-readiness-success{color:#175a45;background:#e9f6ee;border:1px solid #b7dfcb;padding:11px 13px;border-radius:9px;margin:0}
+.tb-organiser-app .tb-publication-review #requestPublish:disabled{opacity:.45;cursor:not-allowed}
+.tb-organiser-app #reviewAddTickets{width:100%;background:#24172c;color:#fff;border-color:#24172c}
+.tb-organiser-app #reviewAddTickets[hidden]{display:none!important}
+.tb-add-tickets{min-height:41px;border:1px solid #6e4a80;border-radius:9px;padding:10px 14px;cursor:pointer;color:#4d2566;background:#f7f1fb;font-size:12px;font-weight:800}
+.tb-organiser-app #ticketSetupStatus{display:block;padding:12px 15px;background:#f4eef8;border:1px solid #d8cae2;border-radius:9px;font-size:12px;line-height:1.5;margin:2px 0}
+@media(max-width:760px){.tb-readiness{padding:13px}.tb-readiness-row{align-items:start}.tb-readiness-row span{max-width:45%}.tb-add-tickets{width:100%}}
