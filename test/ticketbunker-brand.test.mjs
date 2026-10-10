@@ -60,3 +60,20 @@ test('premium commercial prices match three fixed BETA rates',()=>{
  assert.match(events,/data-price-gbp="£199" data-price-eur="€239"/);
  assert.match(organiser,/data-price-gbp="£99" data-price-eur="€119"/);
 });
+
+test('charity registration approvals require an admin and provide an auditable review queue',async()=>{
+ const adminApi=get('api/event-admin.js');
+ const adminPage=get('events-admin.html');
+ const adminClient=get('events-admin.js');
+ assert.match(adminApi,/requireAdmin\(req\)/);
+ assert.match(adminApi,/action==='charityReview'/);
+ assert.match(adminApi,/eq\('status','pending_review'\)/);
+ assert.match(adminApi,/reviewed_by:ctx\.user\.id/);
+ assert.match(adminPage,/id="charityQueue"/);
+ assert.match(adminClient,/data-charity-verify/);
+ assert.match(adminClient,/data-charity-reject/);
+ const api=(await import('../api/event-admin.js')).default;
+ const response={statusCode:200,headers:{},setHeader(k,v){this.headers[k]=v},end(payload){this.data=JSON.parse(payload)}};
+ await api({method:'GET',headers:{}},response);
+ assert.equal(response.statusCode,401);
+});
