@@ -1,15 +1,15 @@
 'use strict';
 const $=selector=>document.querySelector(selector);
 const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-// Unsplash licensed photography; event names, venues and times below are illustrative demos.
+// Original TicketBunker editorial SVG posters; all concept events are clearly marked as unbookable demos.
 const conceptEvents=Object.freeze([
- {id:'demo-shoreline',title:'Shoreline Sessions',type:'Clubs',date:'2026-11-07T20:00:00Z',timezone:'Europe/Lisbon',venue:'Algarve coast · Portugal',subtitle:'House · Electronic · Club Night',image:'/academy-dj.jpg',demo:true},
- {id:'demo-bassline',title:'Bassline Social',type:'Clubs',date:'2026-11-14T21:00:00Z',timezone:'Europe/London',venue:'Bristol · UK',subtitle:'Drum & Bass · Jungle · Nightlife',image:'/dj.webp',demo:true},
- {id:'demo-algorithm',title:'The Algorithm Live',type:'Live',date:'2026-11-28T19:30:00Z',timezone:'Europe/Lisbon',venue:'Loulé · Portugal',subtitle:'Indie · Live Band · Alternative',image:'/academy-performance.jpg',demo:true},
- {id:'demo-sunset',title:'Sunset Rooftop Sessions',type:'Clubs',date:'2026-12-05T16:00:00Z',timezone:'Europe/Lisbon',venue:'Algarve coast · Portugal',subtitle:'Rooftop · House · Sunset Sessions',image:'/assets/retreats/artist-community.webp',demo:true},
- {id:'demo-openmic',title:'Comedy After Hours',type:'Comedy',date:'2026-12-12T20:00:00Z',timezone:'Europe/London',venue:'London · UK',subtitle:'Stand-up · Comedy · Live',image:'/party-poster.jpg',demo:true},
- {id:'demo-afterdark',title:'After Dark Sessions',type:'Clubs',date:'2027-01-23T18:00:00Z',timezone:'Europe/London',venue:'Manchester · UK',subtitle:'Electronic · Live Nightlife',image:'/academy-dj.jpg',demo:true},
- {id:'demo-creative',title:'Culture Collective',type:'Arts',date:'2027-02-06T15:00:00Z',timezone:'Europe/Lisbon',venue:'Loulé · Portugal',subtitle:'Arts · Community · Live',image:'/assets/retreats/artist-community.webp',demo:true}
+ {id:'demo-shoreline',title:'Shoreline Sessions',type:'Clubs',date:'2026-11-07T20:00:00Z',timezone:'Europe/Lisbon',venue:'Algarve coast · Portugal',subtitle:'House · Electronic · Club Night',image:'/assets/ticketbunker/posters/shoreline.svg',demo:true},
+ {id:'demo-bassline',title:'Bassline Social',type:'Clubs',date:'2026-11-14T21:00:00Z',timezone:'Europe/London',venue:'Bristol · UK',subtitle:'Drum & Bass · Jungle · Nightlife',image:'/assets/ticketbunker/posters/bassline.svg',demo:true},
+ {id:'demo-algorithm',title:'The Algorithm Live',type:'Live',date:'2026-11-28T19:30:00Z',timezone:'Europe/Lisbon',venue:'Loulé · Portugal',subtitle:'Indie · Live Band · Alternative',image:'/assets/ticketbunker/posters/algorithm.svg',demo:true},
+ {id:'demo-sunset',title:'Sunset Rooftop Sessions',type:'Clubs',date:'2026-12-05T16:00:00Z',timezone:'Europe/Lisbon',venue:'Algarve coast · Portugal',subtitle:'Rooftop · House · Sunset Sessions',image:'/assets/ticketbunker/posters/sunset.svg',demo:true},
+ {id:'demo-openmic',title:'Comedy After Hours',type:'Comedy',date:'2026-12-12T20:00:00Z',timezone:'Europe/London',venue:'London · UK',subtitle:'Stand-up · Comedy · Live',image:'/assets/ticketbunker/posters/comedy.svg',demo:true},
+ {id:'demo-afterdark',title:'After Dark Sessions',type:'Clubs',date:'2027-01-23T18:00:00Z',timezone:'Europe/London',venue:'Manchester · UK',subtitle:'Electronic · Live Nightlife',image:'/assets/ticketbunker/posters/shoreline.svg',demo:true},
+ {id:'demo-creative',title:'Culture Collective',type:'Arts',date:'2027-02-06T15:00:00Z',timezone:'Europe/Lisbon',venue:'Loulé · Portugal',subtitle:'Arts · Community · Live',image:'/assets/ticketbunker/posters/culture.svg',demo:true}
 ]);
 let listedEvents=[...conceptEvents],activeCategory='All',activeLocation='All',term='',currency='gbp';
 const quotePlans={
@@ -45,7 +45,7 @@ function render(){
  root.innerHTML=shown.map(e=>{
   const day=formatEventDate(e),status=e.demo?'DEMO EVENT':'BETA PREVIEW';
   return '<article class="tb-event-card">'+
-   '<div class="tb-card-media"><img src="'+escapeHTML(e.image)+'" alt="'+escapeHTML(e.type)+' atmosphere for '+escapeHTML(e.title)+'" loading="lazy" decoding="async" width="700" height="465">'+
+   '<div class="tb-card-media"><img src="'+escapeHTML(e.image)+'" alt="TicketBunker editorial poster for '+escapeHTML(e.title)+'" loading="lazy" decoding="async" width="700" height="465">'+
    '<span class="tb-card-demo">'+status+'</span></div>'+
    '<div class="tb-card-content"><div class="tb-card-topline"><span class="tb-card-category">'+escapeHTML(e.type)+'</span><span class="tb-card-day">'+escapeHTML(day.day)+' '+escapeHTML(day.month)+'</span></div>'+
    '<h3>'+escapeHTML(e.title)+'</h3><p class="tb-card-place">⌖ '+escapeHTML(e.venue)+'</p>'+
@@ -68,11 +68,11 @@ $('#tb-event-search').addEventListener('input',e=>{term=e.target.value.trim().to
 $('#tb-location-filter').addEventListener('change',e=>{activeLocation=e.target.value;render()});
 function showEvent(id){
  let item=listedEvents.find(e=>e.id===id);
- if(id==='sunset')item={title:'Midnight Sessions Live',venue:'Demo club venue · Algarve Coast',type:'Clubs',subtitle:'Featured Showcase demonstration',image:'/academy-dj.jpg',demo:true};
+ if(id==='sunset')item={title:'Midnight Sessions Live',venue:'Demo club venue · Algarve Coast',type:'Clubs',subtitle:'Featured Showcase demonstration',image:'/assets/ticketbunker/posters/featured.svg',demo:true};
  if(!item)return;
  $('#tb-demo-title').textContent=item.title;
  $('#tb-demo-image').src=item.image;
- $('#tb-demo-image').alt='Illustrative '+item.type+' event photography';
+ $('#tb-demo-image').alt='Original TicketBunker '+item.type+' concept event poster';
  $('#tb-demo-detail').textContent=item.venue+' · '+item.subtitle;
  $('#tb-demo-dialog').showModal();
 }
@@ -82,7 +82,7 @@ $('#tb-demo-close').addEventListener('click',()=>$('#tb-demo-dialog').close());
 $('#tb-demo-back').addEventListener('click',()=>$('#tb-demo-dialog').close());
 $('#tb-demo-dialog').addEventListener('click',e=>{if(e.target===$('#tb-demo-dialog'))$('#tb-demo-dialog').close()});
 $('#eventCards').addEventListener('error',e=>{
- const target=e.target;if(target.tagName==='IMG'&&!target.dataset.fallback){target.dataset.fallback='1';target.src='/assets/retreats/live-showcase.webp'}
+ const target=e.target;if(target.tagName==='IMG'&&!target.dataset.fallback){target.dataset.fallback='1';target.src='/assets/ticketbunker/posters/featured.svg'}
 },true);
 function setCurrency(value){
  if(!quotePlans[value])return;
@@ -120,7 +120,7 @@ async function loadReal(){
    const lowest=prices.length?Math.min(...prices):0;
    return {id:e.id,title:e.title,type:tagType(e.event_kind),date:e.starts_at,timezone:e.venue_timezone||'Europe/Lisbon',
     venue:e.venue||'',subtitle:lowest?'Tickets planned from '+money(lowest,e.currency)+' · Checkout disabled':'Preview · Checkout disabled',
-    image:e.image_url&&/^https:\/\//.test(e.image_url)?e.image_url:'/assets/retreats/live-showcase.webp',demo:false};
+    image:e.image_url&&/^https:\/\//.test(e.image_url)?e.image_url:'/assets/ticketbunker/posters/featured.svg',demo:false};
   });
   listedEvents=real.concat(conceptEvents);
   render();
