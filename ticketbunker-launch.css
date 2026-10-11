@@ -183,3 +183,9 @@
 .tb-art-preview.tb-art-logo img{object-fit:contain;aspect-ratio:3/1;padding:15px;background:#fff}
 .tb-art-preview p{font-size:12px;color:#4f3c59;margin:0;line-height:1.4;font-weight:700}
 @media(max-width:760px){.tb-art-preview img{width:100%}.tb-ticket-identity{padding:13px;gap:10px}.tb-ticket-identity strong{font-size:15px}}
+
+/* Clear event-ticket headline stays legible alongside the branded ticket stub. */
+.ticketbunker-site .tb-hero-standalone h1{font-size:clamp(52px,5.7vw,87px);max-width:790px;letter-spacing:-.066em}
+@media(max-width:760px){
+ .ticketbunker-site .tb-hero-standalone h1{font-size:clamp(34px,9.1vw,57px);line-height:1.01;letter-spacing:-.055em}
+}
