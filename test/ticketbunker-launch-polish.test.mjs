@@ -15,8 +15,8 @@ test('all TicketBunker imagery is unique branded artwork, never borrowed SoundBu
   assert.ok(!site.includes(path),'Studio image in events code: '+path);
   assert.ok(!events.includes(path),'Studio image in events page: '+path);
  }
- const images=[...site.matchAll(/image:'(\/assets\/ticketbunker\/posters\/[^']+)'/g)].map(m=>m[1]);
- assert.ok(new Set(images).size>=8,'Unique artwork for seven previews and showcase');
+ assert.doesNotMatch(site,/conceptEvents|demo:true/);
+ assert.match(site,/\/assets\/ticketbunker\/posters\/featured\.svg/);
  assert.match(events,/assets\/ticketbunker\/posters\/featured\.svg/);
  assert.match(read('event-free-test.html'),/assets\/ticketbunker\/posters\/test\.svg/);
 });
