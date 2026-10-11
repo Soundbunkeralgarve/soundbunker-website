@@ -19,12 +19,15 @@ test('original titles remain unchanged and links are generated without manual UR
  assert.match(api,/title,venue,organiser:organisation.display_name/);
  assert.match(api,/saved.error.code==='23505'/);
 });
-test('failed image upload cannot erase saved event or force duplicate entry',()=>{
+test('event creation is checkpointed before upload and dashboard work',()=>{
  const js=file('organiser.js');
+ assert.match(js,/savedCheckpoint\(signature\)/);
+ assert.match(js,/rememberEvent\(signature,currentDraftId\)/);
+ assert.match(js,/uploadedArtwork\[kind\]=true/);
+ assert.match(js,/dashboardError/);
+ assert.match(js,/Your event is saved, but the dashboard could not update/);
+ assert.match(js,/Check My Events before trying again to avoid duplicates/);
  assert.match(js,/Event and artwork saved/);
- assert.match(js,/await uploadMedia\(/);
- assert.match(js,/let uploadError=null/);
- assert.match(js,/Fix artwork using "Update event artwork"/);
- assert.match(js,/Event not saved:/);
- assert.doesNotMatch(js,/Your event draft may have saved/);
+ assert.doesNotMatch(js,/Event not saved:/);
+
 });
