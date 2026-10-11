@@ -8,7 +8,7 @@ export function premiumEventEmail({title,venue,when,poster,slug,organiser}){
  const subject='Featured TicketBunker event: '+title;
  const text='FEATURED ON TICKETBUNKER\n\n'+title+'\n'+venue+'\n'+when+
   '\n\nEvent by '+organiser+'\nView event & ticket options: '+ticketLink+
-  '\n\nTicketBunker adds no buyer booking fees. The ticket price is the ticket price.\n'+
+  '\n\nNo TicketBunker buyer booking fees. The ticket price is the ticket price.\n'+
   '\nYou are receiving this because you subscribed to SoundBunker event updates and promotions.\n'+
   'Unsubscribe: {{{RESEND_UNSUBSCRIBE_URL}}}';
  const template='<!doctype html><html><head><meta charset="utf-8"></head><body style="font-family:Arial,sans-serif;background:#f4f0f6;padding:26px 12px;color:#211629"><main style="max-width:590px;margin:auto;background:#fff;border-radius:18px;overflow:hidden">'+
