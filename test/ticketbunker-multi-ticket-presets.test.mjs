@@ -41,7 +41,7 @@ test('saved ticket prices are visible and user can add another type on review',(
  assert.match(client,/add\.hidden=false/);
  assert.match(client,/Add another ticket type/);
  assert.match(client,/renderSavedTickets\(\)/);
- assert.match(client,/type\+' is already saved/);
+ assert.match(client,/preset\+' is already saved/);
  assert.match(client,/refresh\(\)/);
 });
 test('saving and uploading have unambiguous pending, completed and error feedback',()=>{
