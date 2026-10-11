@@ -29,6 +29,6 @@ test('real free booking is isolated, 0 value, not in public event feed',()=>{
  assert.doesNotMatch(api,/api\.stripe\.com|STRIPE_SECRET_KEY|checkout\.stripe\.com/);
  assert.match(page,/NO STRIPE PAYMENT/);
  assert.match(js,/\/api\/event-free-test/);
- assert.match(file('event-scanner.js'),/REAL TEST ENTRY/);
+ assert.match(file('event-scanner.js'),/TEST QR VALID/);
  assert.match(file('event-ticket.js'),/REAL QR SYSTEM TEST/);
 });
