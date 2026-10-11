@@ -417,18 +417,41 @@ async function loadMyEventTickets(){
    const whatsapp='https://wa.me/?text='+encodeURIComponent(shareText);
    const email='mailto:?subject='+encodeURIComponent('Your ticket for '+t.title)+'&body='+encodeURIComponent(shareText);
    return '<article class="client-ticket-card">'+
-    (t.poster?'<img src="'+escapeHtml(t.poster)+'" loading="lazy" alt="Event poster">':'<img src="/academy-performance.jpg" loading="lazy" alt="Event atmosphere">')+
-    '<div><span class="client-ticket-status">'+(t.used?'Already checked in':t.test?'Real test ticket':'Ready for entry')+'</span>'+
-    '<h3>'+escapeHtml(t.title)+'</h3><p>'+escapeHtml(when)+'</p><p>'+escapeHtml(t.venue)+'</p><p>'+escapeHtml(t.ticketName)+'</p>'+
-    '<div class="client-ticket-links"><a href="'+escapeHtml(t.url)+'" target="_blank" rel="noopener noreferrer">Open QR</a>'+
+    (t.poster?'<img src="'+escapeHtml(t.poster)+'" loading="lazy" alt="Event poster">':'<img src="/assets/ticketbunker/posters/featured.svg" loading="lazy" alt="TicketBunker event poster">')+
+    '<div><span class="client-ticket-status">'+(t.used?'Checked in':t.test?'Private test ticket':'Ready for entry')+'</span>'+
+    '<h3>'+escapeHtml(t.title)+'</h3><p>'+escapeHtml(when)+' · '+escapeHtml(t.venue)+'</p>'+
+    '<div class="client-ticket-person"><span>ADMISSION</span><strong>'+escapeHtml(t.ticketName)+'</strong></div>'+
+    '<div class="client-ticket-person"><span>TICKET HOLDER</span><strong>'+escapeHtml(t.holderName)+'</strong></div>'+
+    '<div class="client-ticket-links"><a href="'+escapeHtml(t.url)+'" target="_blank" rel="noopener noreferrer">Open QR ticket</a>'+
     '<a class="client-ticket-secondary" href="'+escapeHtml(t.url)+'&print=1" target="_blank" rel="noopener noreferrer">Save / print</a>'+
-    '<a class="client-ticket-secondary" href="'+escapeHtml(whatsapp)+'" target="_blank" rel="noopener noreferrer">WhatsApp</a>'+
-    '<a class="client-ticket-secondary" href="'+escapeHtml(email)+'">Email</a>'+
+    '<a class="client-ticket-secondary" href="'+escapeHtml(whatsapp)+'" target="_blank" rel="noopener noreferrer">WhatsApp link</a>'+
+    '<a class="client-ticket-secondary" href="'+escapeHtml(email)+'">Email link</a>'+
     '<button class="client-ticket-secondary" type="button" data-copy-ticket="'+escapeHtml(t.id)+'">Copy link</button>'+
+    (t.canManage?'<button type="button" class="client-ticket-secondary" data-ticket-rename="'+escapeHtml(t.id)+'">Change name</button>'+
+      '<button type="button" class="client-ticket-secondary client-ticket-transfer" data-ticket-transfer="'+escapeHtml(t.id)+'">Transfer ticket →</button>':'')+
     '</div></div></article>';
-  }).join(''):'<p>No event tickets are attached to this email yet. Any confirmed tickets bought using the same email will appear here. <a href="/events">Explore events →</a></p>';
+  }).join(''):'<p>No event tickets belong to this email yet. Confirmed bookings and transferred tickets appear here when you sign in with the matching email. <a href="/events">Browse events →</a></p>';
   window.soundBunkerTicketLinks=new Map(tickets.map(t=>[t.id,t.url]));
+  window.soundBunkerTicketData=new Map(tickets.map(t=>[t.id,t]));
  }catch(err){root.textContent=err.message;}
+}
+function openTicketManage(id,action){
+ const ticket=window.soundBunkerTicketData?.get(id);if(!ticket||!ticket.canManage)return;
+ const transfer=action==='transfer',dialog=$('#ticketManageDialog');
+ $('#ticketManageId').value=id;
+ $('#ticketManageAction').value=action;
+ $('#ticketHolderName').value=ticket.holderName==='Ticket holder'?'':ticket.holderName;
+ $('#ticketRecipientWrap').hidden=!transfer;
+ $('#ticketTransferWarning').hidden=!transfer;
+ $('#ticketRecipientEmail').required=transfer;
+ $('#ticketRecipientEmail').value='';
+ $('#ticketManageTitle').textContent=transfer?'Transfer ticket to someone':'Change attendee name';
+ $('#ticketManageDescription').textContent=transfer?
+  'Give this ticket to another person using their SoundBunker login email.':
+  'Update the attendee name printed on your digital ticket.';
+ $('#submitTicketManage').textContent=transfer?'Transfer ticket securely':'Save attendee name';
+ $('#ticketManageStatus').textContent='';
+ dialog.showModal();
 }
 async function signOut() {
   await supabaseClient.auth.signOut();
@@ -450,11 +473,33 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#forgotPassword').addEventListener('click', forgot);
   $('#signOut').addEventListener('click', signOut);
   $('#myEventTickets')?.addEventListener('click',async event=>{
+   const rename=event.target.closest('[data-ticket-rename]')?.dataset.ticketRename;
+   const transfer=event.target.closest('[data-ticket-transfer]')?.dataset.ticketTransfer;
+   if(rename||transfer){openTicketManage(rename||transfer,transfer?'transfer':'name');return;}
    const id=event.target.closest('[data-copy-ticket]')?.dataset.copyTicket;
    if(!id)return;
    const url=window.soundBunkerTicketLinks?.get(id);if(!url)return;
    try{await navigator.clipboard.writeText(url);$('#ticketMessage').textContent='Ticket link copied. Share it only with the intended attendee.';}
    catch{$('#ticketMessage').textContent='Copy unavailable on this browser. Use WhatsApp or Email to share this ticket.';}
+  });
+  $('#closeTicketManage').addEventListener('click',()=>$('#ticketManageDialog').close());
+  $('#ticketManageForm').addEventListener('submit',async event=>{
+   event.preventDefault();
+   const form=event.currentTarget,button=$('#submitTicketManage'),action=$('#ticketManageAction').value;
+   const ticketId=$('#ticketManageId').value,name=$('#ticketHolderName').value.trim();
+   const recipientEmail=$('#ticketRecipientEmail').value.trim();
+   if(action==='transfer'&&!confirm('Transfer this ticket to '+recipientEmail+'? The old QR will immediately stop working.'))return;
+   button.disabled=true;
+   $('#ticketManageStatus').textContent=action==='transfer'?'Moving ticket and invalidating previous QR…':'Saving attendee name…';
+   try{
+    const result=await portalApi('/api/my-event-ticket-transfer',{action,ticketId,name,recipientEmail});
+    $('#ticketManageDialog').close();
+    $('#ticketMessage').textContent=action==='transfer'?
+      'Ticket transferred to '+recipientEmail+'. The previous QR is invalid.'+(result.emailSent?' Email confirmation sent.':' Email delivery was not confirmed; ask the recipient to check My Tickets.') :
+      'Ticket attendee name updated.';
+    await loadMyEventTickets();
+   }catch(error){$('#ticketManageStatus').textContent=error.message;}
+   finally{button.disabled=false;}
   });
   $('#refreshDropbox').addEventListener('click', checkDropbox);
   $('#musicUpload').addEventListener('change', event => uploadFiles(event.target, 'music'));

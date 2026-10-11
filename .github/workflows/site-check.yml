@@ -93,3 +93,7 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f SUPABASE_TICKETBUNKER_EVENT_PLUS_TERMS.sql
       - name: Test Event Plus tier gate and ensure no automatic payment
         run: psql -v ON_ERROR_STOP=1 -f test/ticketbunker-event-plus-terms-schema.sql
+      - name: Add named ticket holder and secure QR-transfer schema
+        run: psql -v ON_ERROR_STOP=1 -f SUPABASE_TICKETBUNKER_NAMED_TRANSFERS.sql
+      - name: Verify transferred QR invalidation, rename, check-in and service-role scope
+        run: psql -v ON_ERROR_STOP=1 -f test/ticketbunker-named-transfers.sql
