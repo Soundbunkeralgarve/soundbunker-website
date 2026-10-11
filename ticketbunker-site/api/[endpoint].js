@@ -3,6 +3,7 @@
 const UPSTREAM = 'https://www.soundbunker.pt';
 const PUBLIC = new Set(['supabase-config', 'events', 'event-ticket', 'event-wallet']);
 const METHODS = {
+  'event-guest-list':['GET','POST'], 'event-capacity':['GET','POST'],
   'supabase-config': ['GET'], events: ['GET'], 'event-ticket': ['GET'], 'event-wallet': ['GET'],
   organiser: ['GET', 'POST'], 'organiser-brand':['GET','POST'], 'event-media': ['POST'],
   'event-organiser-report': ['GET'], 'event-street-team': ['GET', 'POST'],

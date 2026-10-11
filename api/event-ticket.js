@@ -7,7 +7,7 @@ export default async function handler(req,res) {
     const id=String(req.query?.id||''),sig=String(req.query?.sig||'');
     const db=eventsDatabase();
     const found=await db.from('sb_event_tickets')
-       .select('id,event_id,checked_in_at,transfer_version,holder_name,sequence_number,sb_event_orders(customer_name,beta_test_order,status),sb_events(status,title,starts_at,ends_at,venue,venue_timezone,internal_free_test,public_beta_test,image_url,event_logo_url,organiser_profile_id),sb_event_tiers(name,price_cents)')
+       .select('id,event_id,checked_in_at,transfer_version,holder_name,sequence_number,sb_event_orders(customer_name,beta_test_order,status,guest_allocation_id),sb_events(status,title,starts_at,ends_at,venue,venue_timezone,internal_free_test,public_beta_test,image_url,event_logo_url,organiser_profile_id),sb_event_tiers(name,price_cents)')
        .eq('id',id).single();
     if(found.error||!found.data)return json(res,{error:'Ticket not found'},404);
     if(!validTicket(id,sig,found.data.transfer_version||0))return json(res,{error:'This QR is no longer valid. Open your current ticket in My Tickets.'},403);
@@ -22,9 +22,9 @@ export default async function handler(req,res) {
       holderName:found.data.holder_name||found.data.sb_event_orders?.customer_name||'Ticket holder',
       admissionNumber:found.data.sequence_number,
       title:found.data.sb_events?.title,date:found.data.sb_events?.starts_at,
-      venue:found.data.sb_events?.venue,timezone:found.data.sb_events?.venue_timezone,tier:found.data.sb_event_tiers?.name,
+      venue:found.data.sb_events?.venue,timezone:found.data.sb_events?.venue_timezone,tier:(found.data.sb_event_orders?.guest_allocation_id?'Guest list · ':'')+found.data.sb_event_tiers?.name,
       test:found.data.sb_event_orders?.beta_test_order===true||found.data.sb_events?.internal_free_test===true||found.data.sb_events?.public_beta_test===true,
-      priceCents:found.data.sb_event_orders?.beta_test_order?0:found.data.sb_event_tiers?.price_cents,
+      priceCents:(found.data.sb_event_orders?.beta_test_order||found.data.sb_event_orders?.guest_allocation_id)?0:found.data.sb_event_tiers?.price_cents,
       poster:found.data.sb_events?.image_url,
       eventLogo:organiserLogo,organiserName
     }});

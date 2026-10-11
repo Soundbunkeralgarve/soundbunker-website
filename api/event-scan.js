@@ -11,7 +11,7 @@ export default async function handler(req,res){
   const body=await parseJson(req),raw=String(body.code||'');
   let url;
   try{url=new URL(raw)}catch{return json(res,{status:'invalid',message:'Not a Ticket Bunker QR ticket'});}
-  if(url.hostname!=='www.soundbunker.pt'&&url.hostname!=='soundbunker.pt')
+  if(!['www.soundbunker.pt','soundbunker.pt','theticketbunker.com','www.theticketbunker.com'].includes(url.hostname))
    return json(res,{status:'invalid',message:'Wrong ticket issuer'});
   const id=url.searchParams.get('id'),sig=url.searchParams.get('sig');
   const ticket=await ctx.admin.from('sb_event_tickets').select('id,event_id,transfer_version').eq('id',id).maybeSingle();
