@@ -9,6 +9,7 @@ begin
  insert into public.sb_event_tiers(event_id,name,price_cents,quantity_total) values(ev,'General',2000,90) returning id into tier;
  insert into public.sb_event_listing_fees(event_id,organiser_profile_id,tier_code,amount_cents,currency,status) values(ev,org,'starter',5900,'eur','paid');
  update public.sb_events set status='published' where id=ev;
+ execute 'set local role service_role';
  a:=public.sb_manage_guest_allocation(actor,ev,tier,'QA DJ','artist-'||artist||'@example.test',10);
  if public.sb_guest_reserved(tier)<>10 then raise exception 'Guest places not reserved';end if;
  begin perform public.sb_manage_guest_allocation(stranger,ev,tier,'Bad','bad@example.test',5);raise exception 'ASSERT unauthorized allocation';exception when others then if SQLERRM like 'ASSERT%' then raise;end if;end;

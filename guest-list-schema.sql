@@ -66,7 +66,8 @@ revoke all on function public.sb_manage_guest_allocation(uuid,uuid,uuid,text,tex
 grant execute on function public.sb_manage_guest_allocation(uuid,uuid,uuid,text,text,integer,uuid,boolean) to service_role;
 
 create function public.sb_issue_guest_pass(p_allocation uuid,p_actor uuid,p_email text,p_name text,p_guest_email text,p_request uuid)
-returns uuid language plpgsql security invoker set search_path='' as $$
+-- Service-only issuer needs auth.users to verify the invited account; no auth table grants are widened.
+returns uuid language plpgsql security definer set search_path='' as $$
 declare a record; ev record; t record; existing record; used_count bigint; ord uuid; entry_id uuid;
 begin
  select * into a from public.sb_guest_allocations where id=p_allocation;
