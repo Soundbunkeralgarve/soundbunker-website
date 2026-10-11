@@ -25,11 +25,19 @@ async function scan(code){
  }catch(err){show(err.message,'error');}
  finally{setTimeout(()=>{busy=false;},1700);}
 }
+function showOrganiserLogo(event){
+ const img=$('#scannerOrganiserLogo');
+ if(!img)return;
+ const url=event?.event_logo_url||'';
+ img.hidden=!/^https:\/\//i.test(url);
+ if(!img.hidden)img.src=url;
+}
 async function events(){
  const params=new URLSearchParams(location.search),requested=params.get('eventId')||'';
  const qs=new URLSearchParams({mode:'my'});if(requested)qs.set('eventId',requested);
  const result=await request('/api/event-staff?'+qs);
  const list=result.events||[];
+ window.__ticketbunkerScannerEvents=list;
  const select=$('#scanEvent');select.replaceChildren();
  for(const event of list){
   const option=document.createElement('option');option.value=event.id;
@@ -41,6 +49,7 @@ async function events(){
  $('#scanEvent').hidden=list.length===1;
  $('#scanEventLabel').hidden=list.length===1;
  $('#assignedEventName').textContent=list.find(e=>e.id===select.value)?.title||'Your event';
+  showOrganiserLogo(list.find(e=>e.id===select.value));
  if(!list.length){
   status('No active assigned event. Ask the organiser to invite you or reopen your private event scanner link.');
   return;
@@ -58,6 +67,8 @@ async function events(){
 $('#scanEvent').addEventListener('change',()=>{
  const option=$('#scanEvent').selectedOptions[0];
  $('#assignedEventName').textContent=option?.textContent||'Your event';
+ const all=window.__ticketbunkerScannerEvents||[];
+ showOrganiserLogo(all.find(e=>e.id===$('#scanEvent').value));
  show('Ready to scan '+(option?.textContent||'the selected event')+'.','neutral');
 });
 async function start(){
