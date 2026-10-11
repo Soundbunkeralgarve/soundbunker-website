@@ -1,12 +1,18 @@
 import {$,api,escapeHtml as esc,safeUrl,date} from './shared.js';
+import {normalizeBusinessWebsite} from './profile-fields.js';
 let currentEvents=[],profileLoaded=false;
 async function token(){const sb=window.ticketbunkerAuth;if(!sb)throw Error('Please wait for sign-in.');const {data}=await sb.auth.getSession();if(!data.session)throw Error('Please sign in again.');return data.session.access_token;}
 async function profile(){
  try{const d=await api('organiser-profile',null,await token()),o=d.organiser,f=$('#profile-form');f.elements.displayName.value=o.display_name;for(const field of ['legalName','contactName','email','phone','website','address','taxNumber','bio'])f.elements[field].value=o.public_profile?.[field]||'';$('#profile-status').textContent='';profileLoaded=true;}catch(e){$('#profile-status').textContent=e.message;}
 }
 $('#profile-form').onsubmit=async e=>{
- e.preventDefault();const b=e.submitter;b.disabled=true;$('#profile-status').textContent='Saving your details…';
- try{const d=await api('organiser-profile',Object.fromEntries(new FormData(e.target)),await token());$('#profile-status').textContent=d.message;await window.ticketbunkerRefresh?.();}catch(err){$('#profile-status').textContent=err.message;}finally{b.disabled=false;}
+ e.preventDefault();const b=e.submitter||e.target.querySelector('button[type="submit"]');b.disabled=true;$('#notice').hidden=true;$('#profile-status').textContent='Saving your details…';
+ try{
+  const body=Object.fromEntries(new FormData(e.target));body.website=normalizeBusinessWebsite(body.website);e.target.elements.website.value=body.website;
+  const d=await api('organiser-profile',body,await token());
+  $('#profile-status').textContent='Business details saved successfully.';profileLoaded=true;
+  window.dispatchEvent(new CustomEvent('ticketbunker:profile-saved',{detail:d.organiser}));
+ }catch(err){$('#profile-status').textContent=err.message;}finally{b.disabled=false;$('#profile-status').scrollIntoView({behavior:'smooth',block:'nearest'});}
 };
 async function promotions(){
  try{const d=await api('organiser',null,await token());currentEvents=(d.events||[]).filter(e=>e.status==='draft');$('#featured-event').innerHTML='<option value="">Choose an event draft</option>'+currentEvents.map(e=>`<option value="${esc(e.id)}">${esc(e.title)}</option>`).join('');$('#featured-status').textContent=currentEvents.length?'Create your campaign from your event’s saved artwork and details.':'Save an event draft first to request featured placement.';}catch(e){$('#featured-status').textContent=e.message;}

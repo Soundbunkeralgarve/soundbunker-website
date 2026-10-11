@@ -1,0 +1,17 @@
+# Organiser verification release — 11 October 2026
+
+New and existing SoundBunker clients keep their existing verified login. After creating their organiser profile, uploading their logo and saving company billing details, they are prompted to validate their account. A permanent Validate your account navigation item and Business details button let current users resume at any time.
+
+POST /api/organiser-connect accepts only the onboarding action. Account IDs are derived from the authenticated owner. Stripe hosts identity, banking and agreement collection. Account creation uses a stable organiser idempotency key; resuming reuses the stored account. Only live credentials are allowed in this production flow. The endpoint does not create charges, transfers or payouts.
+
+Accounts v2 recipient configuration, Express dashboard and application-owned fees/loss responsibility support the requested future separate charges and transfers model. The platform owner must complete Connect platform activation and accept responsibility in Stripe. Code must not accept that acknowledgement or user KYC on their behalf.
+
+Verification is retrieved from Stripe on login, return and manual refresh. It requires a live compatible account, active transfer capability and enabled bank payouts. A return URL never proves completion. The account flag is updated independently of tax review and event publication approval. Ticket checkout, listing-fee checkout and payouts remain disabled; no status flag here overrides those gates.
+
+Deployment: set EVENTS_CONNECT_ENABLED=true in the existing SoundBunker backend production environment, retain the existing STRIPE_SECRET_KEY, and deploy both that backend and ticketbunker-site from main. api/supabase-config exposes only enabled/live booleans for runtime verification; never expose secret values.
+
+Before enabling ticket sales or automated releases: configure a dedicated signed Connect event destination for verification changes, check fresh Stripe capability state before financial operations, complete reconciliation and post-show transfer/refund workers, and verify end-to-end with the owner's real account. Current onboarding status is refreshed on demand; background Stripe event synchronization is not enabled by this change.
+
+Business details save fix: normalize public website formats (including http and pasted slash mistakes) to HTTPS, keep errors alongside the form, clear stale publication notices on navigation, and update the account name without invoking a full dashboard/payment refresh. Saving company details never calls event publication.
+
+Validation: 15 focused backend tests and 12 frontend/service tests pass. No fake account or financial transaction was created. Owner completion of the hosted Stripe journey remains necessary.

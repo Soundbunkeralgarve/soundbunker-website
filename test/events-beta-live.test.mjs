@@ -18,11 +18,11 @@ test('organiser listing fees are hard-disabled',async()=>{
  assert.equal(response.statusCode,503);
  assert.match(response.data.error,/BETA/);
 });
-test('Connect onboarding is hard-disabled',async()=>{
+test('Connect onboarding requires authentication while ticket payments stay disabled',async()=>{
  const response=mock();
- await connectOnboarding({method:'POST'},response);
- assert.equal(response.statusCode,503);
- assert.match(response.data.error,/BETA/);
+ await connectOnboarding({method:'POST',headers:{}},response);
+ assert.equal(response.statusCode,401);
+ assert.match(response.data.error,/signed in/);
 });
 test('real Events and organiser pages display beta warning and no checkout dialog',()=>{
  const events=file('events.html'),organiser=file('organiser.html'),home=file('index.html'),client=file('events.js');

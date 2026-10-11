@@ -9,7 +9,7 @@ const METHODS = {
   'event-staff': ['GET', 'POST'], 'event-scan': ['POST'],
   'my-event-tickets': ['GET'], 'my-event-ticket-transfer': ['POST'],
   'client-marketing-consent': ['GET', 'POST'],
-  'organiser-profile':['GET','POST'], 'settlement': ['GET'], 'refund-request': ['GET','POST']
+  'organiser-connect':['GET','POST'], 'organiser-profile':['GET','POST'], 'settlement': ['GET'], 'refund-request': ['GET','POST']
 };
 let configCache;
 async function verifyAccount(token){

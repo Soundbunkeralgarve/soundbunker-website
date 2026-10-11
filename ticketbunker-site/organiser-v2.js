@@ -3,10 +3,10 @@
 const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s)),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const LEGACY_CUTOFF='2026-10-11T16:00:00Z';
 let sb,session,token,profile,events=[],currentDraft=null,currentPage='overview',reportCache={},latestReport=null;
-let billingComplete=false,billingRecord=null;
+let billingComplete=false,billingRecord=null,connectState=null,connectBusy=false,verificationDeferred=false;
 function notice(msg,bad=false){const el=$('#notice');el.hidden=false;el.classList.toggle('error',bad);el.textContent=msg;el.scrollIntoView({behavior:'smooth',block:'nearest'});}
 async function api(url,body){const liveSession=await sb.auth.getSession();if(!liveSession.data.session)throw Error('Your session expired. Please sign in again.');token=liveSession.data.session.access_token;const r=await fetch(url,{method:body?'POST':'GET',cache:'no-store',headers:{authorization:'Bearer '+token,...body?{'content-type':'application/json'}:{}},body:body?JSON.stringify(body):undefined});let d;try{d=await r.json()}catch{throw Error('The service returned an unreadable response. Please retry.')}if(!r.ok)throw Error(d.error||'Request failed ('+r.status+')');return d;}
-function page(name){if(!profile&&name!=='branding'){return showOnboarding();}currentPage=name;$$('.page').forEach(x=>x.hidden=x.id!=='page-'+name);$('#onboarding').hidden=true;$$('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.page===name));$('#sidebar').classList.remove('open');window.scrollTo(0,0);if(name==='create')renderBranding();if(name==='overview')renderOverview();if(name==='events')renderEvents();if(name==='branding')renderBranding();if(name==='profile')renderBillingForms();if(name==='reports')loadReportPage();if(name==='staff')loadStaffPage();if(name==='street')loadStreetPage();window.dispatchEvent(new CustomEvent('ticketbunker:page',{detail:name}));}
+function page(name){if(!profile&&name!=='branding'){return showOnboarding();}currentPage=name;$('#notice').hidden=true;$$('.page').forEach(x=>x.hidden=x.id!=='page-'+name);$('#onboarding').hidden=true;$$('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.page===name));$('#sidebar').classList.remove('open');window.scrollTo(0,0);if(name==='create')renderBranding();if(name==='overview')renderOverview();if(name==='events')renderEvents();if(name==='branding')renderBranding();if(name==='profile')renderBillingForms();if(name==='verification')loadStripeStatus();if(name==='reports')loadReportPage();if(name==='staff')loadStaffPage();if(name==='street')loadStreetPage();window.dispatchEvent(new CustomEvent('ticketbunker:page',{detail:name}));}
 $$('[data-page]').forEach(x=>x.onclick=()=>{if(x.dataset.page==='create')startNewEvent();page(x.dataset.page)});$$('[data-go]').forEach(x=>x.onclick=()=>{if(x.dataset.go==='create')startNewEvent();page(x.dataset.go)});$('#menu-btn').onclick=()=>{const yes=$('#sidebar').classList.toggle('open');$('#menu-btn').setAttribute('aria-expanded',String(yes))};
 function money(n,c='eur'){return new Intl.NumberFormat('en-GB',{style:'currency',currency:c==='gbp'?'GBP':'EUR'}).format(Number(n||0)/100);}
 function safeEvents(){return events.filter(e=>e.internal_free_test!==true&&(!e.created_at||Date.parse(e.created_at)>=Date.parse(LEGACY_CUTOFF)));}
@@ -17,13 +17,21 @@ function drawEvent(e){return '<div class="event-row">'+(e.image_url?'<img class=
 function wireRows(root){root.querySelectorAll('[data-report]').forEach(b=>b.onclick=()=>{page('reports');$('#report-event').value=b.dataset.report;fetchReport(b.dataset.report)});root.querySelectorAll('[data-tickets]').forEach(b=>b.onclick=()=>{currentDraft=events.find(e=>e.id===b.dataset.tickets);page('create');nextStep(2);$('#tier-event-name').textContent=currentDraft?.title||'';});}
 function renderOverview(){let visible=safeEvents();$('#greeting').textContent='Welcome, '+(profile?.display_name||'organiser')+'. Real records, clear numbers and tools in one place.';$('#metric-events').textContent=visible.length;$('#metric-paid').textContent='—';$('#metric-scanned').textContent='—';$('#metric-money').textContent='—';let root=$('#overview-events');root.innerHTML=visible.length?visible.slice(0,4).map(drawEvent).join(''):empty('No events yet. Choose Create Event to build your first show.');wireRows(root);if(visible.length){fetchReport(visible[0].id,true).then(()=>{}).catch(()=>{});}else{$('#metric-paid').textContent='0';$('#metric-scanned').textContent='0';$('#metric-money').textContent=money(0,profile.country_code==='GB'?'gbp':'eur');}}
 function renderEvents(){const visible=safeEvents(),el=$('#all-events');el.innerHTML=visible.length?visible.map(drawEvent).join(''):empty('You have no new events. Start by creating your first event.');wireRows(el);}
-async function refresh(){const d=await api('/api/organiser');profile=d.organiser;events=d.events||[];if(!profile){showOnboarding();return;}$('#sidebar-name').textContent=profile.display_name;$('#sidebar-country').textContent=profile.country_code==='GB'?'United Kingdom':'Portugal';$('#account-status').textContent=profile.status==='approved'?'Verified':'Verification pending';await loadBilling();if(!profile.logo_url||!billingComplete){showOnboarding();return;}$('#page-app').hidden=false;$('#loading').hidden=true;page(currentPage||'overview');}
+async function refresh(){
+ const d=await api('/api/organiser');profile=d.organiser;events=d.events||[];
+ if(!profile){connectState=null;showOnboarding();return;}
+ $('#sidebar-name').textContent=profile.display_name;$('#sidebar-country').textContent=profile.country_code==='GB'?'United Kingdom':'Portugal';
+ await loadBilling();await loadStripeStatus();
+ if(!profile.logo_url||!billingComplete||(!connectState?.ready&&!verificationDeferred)){showOnboarding();return;}
+ $('#page-app').hidden=false;$('#loading').hidden=true;page(currentPage||'overview');
+}
 function showOnboarding(){
  $('#page-app').hidden=false;$('#loading').hidden=true;$$('.page').forEach(x=>x.hidden=true);
  $('#onboarding').hidden=false;
  $('#register-form').hidden=!!profile;
  $('#onboarding-logo').hidden=!profile||!!profile.logo_url;
  $('#onboarding-billing').hidden=!profile||!profile.logo_url||billingComplete;
+ $('#onboarding-stripe').hidden=!profile||!profile.logo_url||!billingComplete;
  $('#sidebar-name').textContent=profile?.display_name||'New organiser';
  renderBillingForms();
 }
@@ -50,12 +58,44 @@ function renderBillingForms(){
    el.value=(billingRecord?.[field]??(field==='billing_email'?session?.user?.email:field==='legal_name'?profile?.display_name:''))||'';
   }
  }
- const status=$('#stripe-account-status');
- if(status){
-  const ready=profile?.stripe_connected===true&&profile?.stripe_capabilities_ready===true&&profile?.tax_review_complete===true&&profile?.status==='approved';
-  status.textContent=ready?'Stripe connected-account checks are complete. Event publication also requires the agreed listing fee.':'Billing details can be saved now. Live Stripe Connect onboarding is not yet enabled on TicketBunker. No bank details or charges are collected here; you can create event drafts meanwhile.';
- }
+ renderConnectStatus();
 }
+function renderConnectStatus(){
+ const s=connectState||{state:'checking'};
+ let text={checking:'Checking your Stripe account…',not_started:'Not started. Validate your account to add your business, identity and bank details on Stripe.',action_required:'Action needed. Continue on Stripe to finish or update your verification details.',under_review:'Under review. Stripe is checking your submitted information. Check again later for the result.',verified:'Verified by Stripe for receiving transfers and bank payouts. Ticket sales and post-show payment release are activated separately.',restricted:'This Stripe connection needs support before it can receive payouts.',unavailable:'Live Stripe verification is temporarily unavailable. Your company details are saved.',error:'We could not check your Stripe verification. Please try Check verification status.'}[s.state]||'Check your Stripe verification status.';
+ if(!profile)text='Create your organiser profile first.';
+ else if(!profile.logo_url||!billingComplete)text='Save your organiser logo and Company & Billing details before starting Stripe verification.';
+ const label=s.ready?'Update Stripe details →':s.connected?'Continue verification →':'Validate your account →';
+ $$('[data-connect-status], [data-connect-summary]').forEach(el=>el.textContent=text);
+ $$('[data-connect-setup]').forEach(el=>el.hidden=!!profile?.logo_url&&billingComplete);
+ $$('[data-connect-start]').forEach(el=>{el.disabled=connectBusy||!profile?.logo_url||!billingComplete||s.canOnboard!==true;el.textContent=connectBusy?'Opening Stripe…':label;});
+ $$('[data-connect-refresh]').forEach(el=>el.disabled=connectBusy||!profile);
+ if($('#stripe-account-status'))$('#stripe-account-status').textContent=text;
+ $('#verification-banner').hidden=!profile||s.ready===true;
+ $('#account-status').textContent=s.ready?'Stripe verified':s.state==='under_review'?'Stripe reviewing':'Validation needed';
+}
+async function loadStripeStatus(){
+ if(!profile){renderConnectStatus();return;}
+ try{connectState=await api('/api/organiser-connect');$$('[data-connect-error]').forEach(el=>el.textContent=connectState.error||'');}
+ catch(err){connectState={state:'error',canOnboard:false};$$('[data-connect-error]').forEach(el=>el.textContent=err.message);}
+ renderConnectStatus();
+}
+async function startStripeOnboarding(){
+ if(connectBusy)return;connectBusy=true;renderConnectStatus();$$('[data-connect-error]').forEach(el=>el.textContent='');
+ try{
+  const result=await api('/api/organiser-connect',{action:'onboard'});
+  const url=new URL(result.url);
+  if(url.protocol!=='https:'||!['connect.stripe.com','accounts.stripe.com'].includes(url.hostname)||url.username||url.password)throw Error('Stripe returned an invalid verification link. Please retry.');
+  location.assign(url.href);
+ }catch(err){$$('[data-connect-error]').forEach(el=>el.textContent=err.message);notice(err.message,true);}
+ finally{connectBusy=false;renderConnectStatus();}
+}
+$$('[data-connect-start]').forEach(el=>el.onclick=startStripeOnboarding);
+$$('[data-connect-setup]').forEach(el=>el.onclick=showOnboarding);
+window.addEventListener('ticketbunker:profile-saved',e=>{if(profile&&e.detail?.id===profile.id){profile={...profile,display_name:e.detail.display_name};$('#sidebar-name').textContent=profile.display_name;}});
+$$('[data-connect-refresh]').forEach(el=>el.onclick=async()=>{el.disabled=true;await loadStripeStatus();});
+$('#verification-later').onclick=()=>{verificationDeferred=true;page('overview');};
+
 async function saveBilling(event){
  event.preventDefault();
  if(!profile?.id||!session?.user?.id){notice('Sign in and create your organiser profile first.',true);return;}
@@ -78,7 +118,7 @@ async function saveBilling(event){
   if(saved.error)throw Error('Unable to save billing details: '+saved.error.message);
   billingRecord=record;billingComplete=true;renderBillingForms();
   notice('Company and billing details saved. No registration or membership charge.');
-  if(form.id==='billing-form'){await refresh();page('overview')}
+  if(form.id==='billing-form'){verificationDeferred=false;await refresh();}
   else $('#billing-edit-status').textContent='Billing details updated successfully.';
  }catch(err){
   const node=form.id==='billing-form'?$('#billing-status'):$('#billing-edit-status');
@@ -189,6 +229,6 @@ function loadStreetPage(){let arr=safeEvents(),s=$('#street-event');s.innerHTML=
 $('#street-event').onchange=async()=>{let id=$('#street-event').value;if(!id)return;try{let r=await api('/api/event-street-team?eventId='+encodeURIComponent(id));$('#street-list').innerHTML=r.team?.length?r.team.map(p=>'<div class="roster-line"><b>'+esc(p.name)+'</b> — '+Number(p.paidTickets||0)+' paid ticket sales <br><a href="'+esc(p.link)+'" target="_blank" rel="noopener">'+esc(p.link)+'</a></div>').join(''):empty('No street-team members yet.');}catch(err){notice(err.message,true)}};
 $('#street-form').onsubmit=async e=>{e.preventDefault();const btn=e.submitter;btn.disabled=true;try{const id=$('#street-event').value;if(!id)throw Error('Choose an event first.');const f=new FormData(e.target),r=await api('/api/event-street-team',{action:'create',eventId:id,name:f.get('name'),email:f.get('email'),rewardType:f.get('rewardType'),rewardGoal:Number(f.get('rewardGoal')),rewardDescription:f.get('rewardDescription'),rewardValueCents:Math.round(Number(f.get('rewardValue')||0)*100)});notice('Promoter link created: '+r.link);$('#street-event').dispatchEvent(new Event('change'));e.target.reset();}catch(err){notice(err.message,true)}finally{btn.disabled=false;}};
 $('#sign-out').onclick=async()=>{try{await sb.auth.signOut();location.replace('/login.html?next=%2Forganiser.html')}catch(err){notice(err.message,true)}};
-async function boot(){try{const r=await fetch('/api/supabase-config',{cache:'no-store'});if(!r.ok)throw Error('Shared login service is unavailable');const cfg=await r.json();if(!window.supabase)throw Error('Authentication library failed to load');sb=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true}});let auth=await sb.auth.getSession();session=auth.data?.session;if(!session){location.replace('/login.html?next=%2Forganiser.html');return;}const verified=await sb.auth.getUser();if(verified.error||!verified.data.user)throw Error('Please sign in again.');token=session.access_token;window.ticketbunkerAuth=sb;window.ticketbunkerRefresh=async()=>{await reloadEvents();await refresh();};sb.auth.onAuthStateChange((event,s)=>{if(event==='TOKEN_REFRESHED')token=s.access_token;if(event==='SIGNED_OUT')location.replace('/login?role=organiser');});if(!verified.data.user.email_confirmed_at)throw Error('Please confirm your account email before opening the Organiser Portal.');await refresh();window.dispatchEvent(new Event('ticketbunker:ready'));if(location.hash==='#featured-placement')page('promotions');if(location.hash==='#business-details')page('profile');}catch(err){$('#loading').classList.add('error');$('#loading-text').textContent=err.message;const a=document.createElement('a');a.href='/login?role=organiser';a.textContent='Return to sign-in →';a.style.color='#00e0a6';$('#loading').append(a);}}
+async function boot(){try{const r=await fetch('/api/supabase-config',{cache:'no-store'});if(!r.ok)throw Error('Shared login service is unavailable');const cfg=await r.json();if(!window.supabase)throw Error('Authentication library failed to load');sb=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true}});let auth=await sb.auth.getSession();session=auth.data?.session;if(!session){location.replace('/login.html?next=%2Forganiser.html');return;}const verified=await sb.auth.getUser();if(verified.error||!verified.data.user)throw Error('Please sign in again.');token=session.access_token;window.ticketbunkerAuth=sb;window.ticketbunkerRefresh=async()=>{await reloadEvents();await refresh();};sb.auth.onAuthStateChange((event,s)=>{if(event==='TOKEN_REFRESHED')token=s.access_token;if(event==='SIGNED_OUT')location.replace('/login?role=organiser');});if(!verified.data.user.email_confirmed_at)throw Error('Please confirm your account email before opening the Organiser Portal.');await refresh();window.dispatchEvent(new Event('ticketbunker:ready'));if(location.hash==='#featured-placement')page('promotions');if(location.hash==='#business-details')page('profile');if(location.hash==='#verification')page('verification');const onboarding=new URLSearchParams(location.search).get('onboarding');if(onboarding){history.replaceState(null,'','/organiser#verification');page('verification');if(onboarding==='refresh'&&connectState?.canOnboard)await startStripeOnboarding();else if(onboarding==='returned')notice(connectState?.ready?'Stripe has confirmed your account verification.':'You have returned from Stripe. Check the current verification status below.');}}catch(err){$('#loading').classList.add('error');$('#loading-text').textContent=err.message;const a=document.createElement('a');a.href='/login?role=organiser';a.textContent='Return to sign-in →';a.style.color='#00e0a6';$('#loading').append(a);}}
 boot();
 })();

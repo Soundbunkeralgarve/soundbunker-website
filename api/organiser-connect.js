@@ -1,84 +1,91 @@
-// Stripe Connect Accounts v2: direct-charging organisers own the customer relationship.
-// Disabled until the Portugal platform's UK/PT Connect configuration is approved.
+// TicketBunker recipient onboarding. This endpoint never charges or releases money.
 import { requireUser } from './lib/supabase-auth.js';
 import { organiserForUser } from './organiser.js';
-import { json } from './lib/http.js';
-
+import { json, parseJson } from './lib/http.js';
 const BASE='https://api.stripe.com';
+const PORTAL='https://theticketbunker.com/organiser';
+const VERSION='2026-09-30.preview';
 const stripeId=s=>/^acct_[A-Za-z0-9]+$/.test(s||'');
-const origin=()=>new URL(process.env.SITE_URL||'https://www.soundbunker.pt').origin;
-
-export function createConnectAccountBody(organiser,email) {
- if(!['GB','PT'].includes(organiser.country_code))throw Error('Country is not eligible for pilot');
- return {
-  contact_email:email,
-  display_name:organiser.display_name,
-  identity:{country:organiser.country_code},
-  dashboard:'full',
-  configuration:{merchant:{capabilities:{card_payments:{requested:true}}}},
-  defaults:{responsibilities:{fees_collector:'stripe',losses_collector:'stripe'}},
-  include:['configuration.merchant','requirements']
- };
+export const liveConnectKey=()=>/^(sk|rk)_live_/.test(process.env.STRIPE_SECRET_KEY||'');
+export function createConnectAccountBody(org,email){
+ if(!['GB','PT'].includes(org.country_code))throw Error('Unsupported organiser country');
+ return {contact_email:email,display_name:org.display_name,identity:{country:org.country_code},
+  dashboard:'express',configuration:{recipient:{capabilities:{stripe_balance:{stripe_transfers:{requested:true}}}}},
+  defaults:{responsibilities:{fees_collector:'application',losses_collector:'application'}},
+  metadata:{ticketbunker_organiser_id:org.id},include:['configuration.recipient','defaults','requirements']};
 }
-async function stripeCall(path,{method='GET',body,idem}={}){
- if(!process.env.STRIPE_SECRET_KEY)throw Error('Stripe is not configured');
- const r=await fetch(BASE+path,{method,headers:{
-   Authorization:'Bearer '+process.env.STRIPE_SECRET_KEY,
-   ...(body?{'Content-Type':'application/json'}:{}),
-   ...(idem?{'Idempotency-Key':idem}:{})
+export function connectAccountStatus(account,legacy){
+ const capabilities=account?.configuration?.recipient?.capabilities?.stripe_balance;
+ const transfer=capabilities?.stripe_transfers;
+ const compatible=account?.dashboard==='express'&&account?.defaults?.responsibilities?.fees_collector==='application'&&account?.defaults?.responsibilities?.losses_collector==='application'&&!!transfer;
+ const live=account?.livemode===true;
+ const ready=live&&compatible&&!account.closed&&transfer.status==='active'&&legacy?.payouts_enabled===true;
+ const due=legacy?.requirements?.currently_due||[],past=legacy?.requirements?.past_due||[],pending=legacy?.requirements?.pending_verification||[];
+ const rejected=String(legacy?.requirements?.disabled_reason||'').startsWith('rejected.');
+ let state=ready?'verified':!compatible||!live||account.closed||rejected?'restricted':pending.length&&!due.length&&!past.length?'under_review':'action_required';
+ return {connected:true,ready,live,state,canOnboard:live&&compatible&&!account.closed&&!rejected,
+  transfersEnabled:live&&transfer?.status==='active',payoutsEnabled:live&&legacy?.payouts_enabled===true,
+  requirementsDue:due.length+past.filter(x=>!due.includes(x)).length,requirementsPending:pending.length,
+  checkedAt:new Date().toISOString(),ticketSalesEnabled:false};
+}
+export function connectAccountReady(account,legacy){return connectAccountStatus(account,legacy).ready;}
+export async function stripeCall(path,{method='GET',body,idem}={}){
+ const response=await fetch(BASE+path,{method,redirect:'error',signal:AbortSignal.timeout(20000),headers:{
+  Authorization:'Bearer '+process.env.STRIPE_SECRET_KEY,'Stripe-Version':VERSION,
+  ...(body?{'Content-Type':'application/json'}:{}),...(idem?{'Idempotency-Key':idem}:{})
  },body:body?JSON.stringify(body):undefined});
- const data=await r.json().catch(()=>({}));
- if(!r.ok)throw Error('Stripe Connect request failed ('+r.status+')');
+ const data=await response.json().catch(()=>({}));
+ if(!response.ok){const err=Error('Stripe request failed');err.stripeCode=data.error?.code||data.code||'stripe_unavailable';err.stripeStatus=response.status;err.platformSetup=/loss liability|platform profile|sign up for Connect|onboard.*Connect|responsibilities|not.*connect platform/i.test(data.error?.message||data.message||'')||['accounts_v2_access_blocked','non_connect_platform_accounts_v2_access_blocked'].includes(err.stripeCode);throw err;}
  return data;
 }
-export function connectAccountReady(account) {
- return account?.configuration?.merchant?.capabilities?.card_payments?.status==='active' &&
-    account?.defaults?.responsibilities?.fees_collector==='stripe' &&
-    account?.defaults?.responsibilities?.losses_collector==='stripe';
+async function fetchStatus(account){
+ const query=new URLSearchParams();['configuration.recipient','defaults','requirements'].forEach(x=>query.append('include[]',x));
+ const [v2,v1]=await Promise.all([stripeCall('/v2/core/accounts/'+account+'?'+query),stripeCall('/v1/accounts/'+account)]);
+ return connectAccountStatus(v2,v1);
 }
+export function safeStripeLink(value){const url=new URL(value);if(url.protocol!=='https:'||!['connect.stripe.com','accounts.stripe.com'].includes(url.hostname)||url.username||url.password)throw Error('Invalid Stripe onboarding destination');return url.href;}
 export default async function handler(req,res){
  if(!['GET','POST'].includes(req.method))return json(res,{error:'Method not allowed'},405);
-  // Public BETA safety: never initiate payments or Connect onboarding.
-  return json(res,{error:'SoundBunker Events is in BETA. Checkout and payments are not live.'},503);
  const ctx=await requireUser(req);if(ctx.error)return json(res,{error:ctx.error},ctx.status);
- if(process.env.EVENTS_CONNECT_ENABLED!=='true')
-   return json(res,{error:'Stripe Connect onboarding is not yet enabled for organisers'},503);
+ if(!ctx.user.email_confirmed_at)return json(res,{error:'Confirm your email before validating your organiser account.'},403);
  try{
   const org=await organiserForUser(ctx.admin,ctx.user.id);
-  if(!org)return json(res,{error:'Register as an organiser first'},403);
-  if(org.status==='suspended')return json(res,{error:'Organiser account suspended'},403);
+  if(!org)return json(res,{error:'Create your organiser profile first.',code:'profile_required'},409);
+  if(org.status==='suspended')return json(res,{error:'This organiser account is suspended. Contact support.'},403);
+  const enabled=process.env.EVENTS_CONNECT_ENABLED==='true'&&liveConnectKey();
+  if(!enabled)return json(res,{connected:!!org.stripe_account_id,ready:false,live:false,state:'unavailable',canOnboard:false,error:'Live Stripe onboarding is not configured. Your details are saved; contact TicketBunker support.'},req.method==='GET'?200:503);
   if(req.method==='GET'){
-   if(!stripeId(org.stripe_account_id))return json(res,{connected:false,ready:false});
-   const account=await stripeCall('/v2/core/accounts/'+encodeURIComponent(org.stripe_account_id)+'?include[]=configuration.merchant&include[]=defaults');
-   const ready=connectAccountReady(account);
-   if(ready!==org.stripe_capabilities_ready){
-     const saved=await ctx.admin.from('sb_event_organisers').update({stripe_capabilities_ready:ready}).eq('id',org.id);
-     if(saved.error)throw saved.error;
-   }
-   return json(res,{connected:true,ready});
-  }
-  let account=org.stripe_account_id;
-  if(!account){
-   const created=await stripeCall('/v2/core/accounts',{
-     method:'POST',body:createConnectAccountBody(org,ctx.user.email),
-     idem:'soundbunker-connect-onboard-'+org.id
-   });
-   if(!stripeId(created.id))throw Error('Stripe did not create a connected account');
-   account=created.id;
-   const saved=await ctx.admin.from('sb_event_organisers').update({stripe_account_id:account}).eq('id',org.id).is('stripe_account_id',null).select('id').maybeSingle();
+   if(!stripeId(org.stripe_account_id))return json(res,{connected:false,ready:false,live:true,state:'not_started',canOnboard:true,ticketSalesEnabled:false});
+   const status=await fetchStatus(org.stripe_account_id);
+   const saved=await ctx.admin.from('sb_event_organisers').update({stripe_capabilities_ready:status.ready}).eq('id',org.id).eq('stripe_account_id',org.stripe_account_id);
    if(saved.error)throw saved.error;
-   if(!saved.data)return json(res,{error:'A Connect onboarding was started already. Refresh and try again.'},409);
+   return json(res,status);
   }
-  const link=await stripeCall('/v2/core/account_links',{
-   method:'POST',
-   body:{account,use_case:{type:'account_onboarding',account_onboarding:{
-    configurations:['merchant'],refresh_url:origin()+'/organiser?onboarding=refresh',
-    return_url:origin()+'/organiser?onboarding=returned'
-   }}}
-  });
-  const url=new URL(link.url);
-  if(url.protocol!=='https:'||!(url.hostname==='connect.stripe.com'||url.hostname.endsWith('.stripe.com')))
-    throw Error('Stripe did not return a valid onboarding URL');
-  return json(res,{url:url.toString()});
- }catch(err){console.error('Connect onboarding failed',err);return json(res,{error:'Stripe Connect onboarding is unavailable. Please try again later.'},503);}
+  let body;try{body=await parseJson(req);}catch{return json(res,{error:'Invalid request'},400);}
+  if(body?.action!=='onboard')return json(res,{error:'Choose Validate your account to continue.'},400);
+  // All IDs come from the authenticated owner's server record, never from the request.
+  const billing=await ctx.admin.from('tb_organiser_billing').select('organiser_profile_id,legal_name,billing_email,address_line_1,city,postal_code').eq('organiser_profile_id',org.id).eq('owner_user_id',ctx.user.id).maybeSingle();
+  if(billing.error)throw billing.error;
+  if(!org.logo_url||!billing.data||['legal_name','billing_email','address_line_1','city','postal_code'].some(k=>!String(billing.data[k]||'').trim()))return json(res,{error:'Save your organiser logo and company billing details first.',code:'setup_required'},409);
+  let account=org.stripe_account_id;
+  if(account&&!stripeId(account))throw Error('Invalid saved account');
+  if(account){
+   const status=await fetchStatus(account);
+   if(!status.canOnboard)return json(res,{error:'Your Stripe connection needs platform support before it can be updated.',code:'connection_review_required',...status},409);
+  }else{
+   const created=await stripeCall('/v2/core/accounts',{method:'POST',body:createConnectAccountBody(org,ctx.user.email),idem:'ticketbunker-recipient-live-'+org.id});
+   if(!stripeId(created.id)||created.livemode!==true)throw Error('Stripe did not return a live account');
+   account=created.id;
+   const saved=await ctx.admin.from('sb_event_organisers').update({stripe_account_id:account,stripe_capabilities_ready:false}).eq('id',org.id).is('stripe_account_id',null).select('stripe_account_id').maybeSingle();
+   if(saved.error)throw saved.error;
+   if(!saved.data){const current=await organiserForUser(ctx.admin,ctx.user.id);if(current?.stripe_account_id!==account)return json(res,{error:'Account setup changed. Refresh and try again.'},409);}
+  }
+  const link=await stripeCall('/v2/core/account_links',{method:'POST',body:{account,use_case:{type:'account_onboarding',account_onboarding:{configurations:['recipient'],refresh_url:PORTAL+'?onboarding=refresh#verification',return_url:PORTAL+'?onboarding=returned#verification'}}}});
+  if(link.livemode!==true||link.account!==account)throw Error('Stripe returned an incorrect link');
+  return json(res,{url:safeStripeLink(link.url),expiresAt:link.expires_at});
+ }catch(err){
+  console.error('TicketBunker Connect error',{code:err.stripeCode||'onboarding_error',status:err.stripeStatus||500});
+  const platform=err.platformSetup===true;
+  return json(res,{error:platform?'TicketBunker must complete its Stripe Connect platform activation before organiser verification can start. Your details are saved.':'Stripe verification could not be loaded. Please try again; your saved details are safe.',code:platform?'platform_setup_required':'stripe_unavailable',...(platform&&ctx.profile?.role==='admin'?{setupUrl:'https://dashboard.stripe.com/settings/connect/platform-profile'}:{})},503);
+ }
 }

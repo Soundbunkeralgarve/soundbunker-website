@@ -1,3 +1,4 @@
+import {normalizeBusinessWebsite} from '../profile-fields.js';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
 const headers={'Content-Type':'application/json','Cache-Control':'private, no-store'};
 const response=(status:number,data:unknown)=>new Response(JSON.stringify(data),{status,headers});
@@ -20,7 +21,7 @@ Deno.serve(async(req:Request)=>{
    const limits:Record<string,number>={legalName:180,contactName:120,email:254,phone:50,website:500,address:500,taxNumber:40,bio:1500};
    const details:Record<string,string>={};for(const [key,max] of Object.entries(limits)){details[key]=String(body[key]||'').trim();if(details[key].length>max)return response(400,{error:'The '+key+' field is too long.'});}
    if(details.email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(details.email))return response(400,{error:'Enter a valid contact email.'});
-   if(details.website){try{const u=new URL(details.website);if(u.protocol!=='https:')throw Error('https');}catch{return response(400,{error:'Use a complete https:// website address.'});}}
+   try{details.website=normalizeBusinessWebsite(details.website);}catch{return response(400,{error:'Enter a website such as www.soundbunker.pt.'});}
    const result=await db.from('sb_event_organisers').update({display_name:name,public_profile:details,updated_at:new Date().toISOString()}).eq('id',org.data.id).eq('owner_user_id',auth.user.id).select('id,display_name,country_code,status,logo_url,public_profile').single();
    if(result.error)throw result.error;
    return response(200,{organiser:result.data,message:'Your organiser details are saved. Payment verification is handled separately.'});
