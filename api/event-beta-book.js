@@ -30,7 +30,7 @@ export default async function handler(req,res){
   }
   const [tickets,tier]=await Promise.all([
    db.from('sb_event_tickets').select('id,sequence_number').eq('order_id',issued.data).order('sequence_number'),
-   db.from('sb_event_tiers').select('name,sb_events(title,starts_at,venue,venue_timezone)')
+   db.from('sb_event_tiers').select('name,sb_events(title,starts_at,venue,venue_timezone,event_logo_url,image_url)')
     .eq('id',tierId).single()
   ]);
   if(tickets.error||tier.error||tickets.data?.length!==quantity)throw Error('Ticket verification failed');
@@ -44,7 +44,7 @@ export default async function handler(req,res){
     to:email,key:'ticketbunker-public-beta-'+issued.data,
     subject:'Booking confirmed · '+show.title+' · TicketBunker',
     show:show.title,date:when,venue:show.venue,tier:tier.data.name,
-    attendee:name,quantity,links
+    attendee:name,quantity,links,organiserLogo:show.event_logo_url||null,poster:show.image_url||null
    });
    emailSent=true;
   }catch(error){console.error('TicketBunker confirmation delivery failed',error);}
