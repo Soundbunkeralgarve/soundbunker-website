@@ -397,7 +397,7 @@ $('#showcaseForm').addEventListener('submit',async e=>{
  try{
   $('#showcaseMessage').textContent='Submitting your request…';
   await request({action:'featureRequest',eventId});
-  $('#showcaseMessage').textContent='Premium package requested: featured homepage position + one subscriber email, subject to approval. No payment taken and no email sent.';
+  $('#showcaseMessage').textContent='Premium package requested: featured homepage position + one subscriber email, automatically sent after verified payment and event publication. No payment taken and no email sent now.';
   await refresh();
  }catch(error){$('#showcaseMessage').textContent=error.message;}
 });
