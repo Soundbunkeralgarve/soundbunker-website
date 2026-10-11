@@ -100,8 +100,10 @@ export default async function handler(req,res){
    const source=await db.from('sb_events')
     .select('title,starts_at,status,public_beta_test,beta_test_expires_at')
     .eq('id',eventId).single();
-   if(source.error||!source.data||!scannerEventIsOpen(source.data))
-    return json(res,{error:'Only events currently open for QR scanning can receive door staff invitations'},409);
+   if(source.error||!source.data||source.data.status==='cancelled'||
+       (source.data.status!=='published'&&source.data.status!=='draft')||
+       (Date.parse(source.data.starts_at)<Date.now() && !scannerEventIsOpen(source.data)))
+    return json(res,{error:'Choose an upcoming event or an active €0 test event before inviting door staff'},409);
    const token=randomBytes(32).toString('hex');
    const result=await db.from('sb_event_staff_invites').insert({
     event_id:eventId,invited_email:email,token_digest:digest(token),invited_by:ctx.user.id
