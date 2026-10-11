@@ -266,6 +266,16 @@ function updateShowcasePrice(event){
  const fee=event.currency==='gbp'?'£49':'€59';
  element.textContent=event.showcase?'Request status: '+event.showcase.status.toUpperCase()+'. No payment required in BETA.':'Proposed Featured Showcase add-on: '+fee+' for this event. No payment during BETA.';
 }
+function openLargeEventQuoteFromLink(){
+ if(location.hash!=='#largeEventQuote')return;
+ const section=$('#largeEventQuote');
+ section.open=true;
+ if(!$('#workspace').hidden)section.scrollIntoView({behavior:'smooth',block:'start'});
+}
+window.addEventListener('hashchange',openLargeEventQuoteFromLink);
+document.querySelectorAll('a[href="#largeEventQuote"]').forEach(link=>
+ link.addEventListener('click',()=>{$('#largeEventQuote').open=true;})
+);
 $('#largeEventId').addEventListener('change',()=>{
  const ev=eventFor($('#largeEventId').value);
  $('#largeEventMessage').textContent=ev?.festivalQuote
@@ -547,7 +557,7 @@ async function boot(){
  supabase=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true}});
  const {data:{session}}=await supabase.auth.getSession();
  if(!session){$('#guest').hidden=false;notify('Sign in to get started.');return;}
- token=session.access_token;await refresh();
+ token=session.access_token;await refresh();openLargeEventQuoteFromLink();
  }catch(e){notify(e.message,true);}
 }
 window.addEventListener('load',boot);
