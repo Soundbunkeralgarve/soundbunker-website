@@ -194,18 +194,23 @@
 <section id="streetTeam" class="tb-panel tb-street-team" aria-labelledby="streetTeamTitle">
  <div class="tb-panel-head"><div><span class="tb-step-number">STREET TEAM · PROMOTERS</span>
   <h2 id="streetTeamTitle">Give promoters their own ticket links</h2>
-  <p>Track each promoter's tickets and choose a reward target. Cash, free tickets, VIP tables or custom perks can be earned from <strong>real paid sales only</strong>.</p></div></div>
+  <p>Give each promoter their own tracked link. Build custom milestones for free tickets, VIP tables, cash bonuses, guest-list places or any perk you choose. Only <strong>confirmed paid sales</strong> unlock rewards.</p></div></div>
  <form id="streetTeamForm" class="organiser-form tb-form-grid">
   <label class="tb-span-full">Event<select id="streetTeamEvent" name="eventId" required></select></label>
   <label>Promoter name<input name="name" required minlength="2" maxlength="100" placeholder="Street Team member"></label>
   <label>Promoter email<input name="email" type="email" required placeholder="promoter@example.com"></label>
-  <label>Reward type<select id="streetRewardType" name="rewardType" required><option value="free_tickets">Free tickets after target</option><option value="vip_table">VIP table after target</option><option value="cash_per_sale">Cash per paid ticket</option><option value="other_perk">Other perk / experience</option></select></label>
-  <label>Target paid tickets<input name="rewardGoal" type="number" min="1" max="100000" step="1" inputmode="numeric" required value="20"></label>
-  <label id="streetCashAmount" hidden>Cash per paid ticket (€ / £)<input name="rewardMoney" type="number" min="0.01" max="10000" step="0.01" value="1.00"></label>
-  <label class="tb-span-full">Reward details<input name="rewardDescription" maxlength="400" placeholder="E.g. 1 VIP table for 4 people after 25 paid tickets"></label>
-  <div class="tb-form-actions tb-span-full"><button class="solid" type="submit" id="createStreetLink">Create promoter sales link →</button></div>
- </form>
- <p class="tb-field-help">During €0 testing, test bookings are tracked separately. They do not count toward cash, VIP tables, free tickets or perks. Rewards are agreements between the organiser and promoter; TicketBunker does not issue rewards or transfer money automatically.</p>
+  <div class="tb-span-full tb-street-reward-intro">
+   <strong>Customise your promoter's perks</strong>
+   <p>Add up to six reward milestones. Choose exactly what they earn and how many <b>confirmed paid tickets</b> unlock each one. VIP tables, guest lists, free tickets, cash bonuses or your own perk.</p>
+  </div>
+  <div id="streetRewardRows" class="tb-span-full tb-street-reward-rows" aria-label="Custom promoter reward milestones"></div>
+  <div class="tb-span-full tb-street-reward-actions">
+   <button type="button" class="outline" id="addStreetPerk">+ Add another perk milestone</button>
+   <span id="streetPerkCount" aria-live="polite">1 of 6 milestones</span>
+  </div>
+  <input type="hidden" id="editingStreetPersonId" name="personId">
+  <div class="tb-form-actions tb-span-full"><button class="solid" type="submit" id="createStreetLink">Create promoter sales link →</button><button type="button" class="outline" id="cancelStreetPerkEdit" hidden>Cancel editing</button></div> </form>
+ <p class="tb-field-help">€0 test bookings are tracked separately and never earn rewards. You can edit perks and targets later without changing the promoter's link. Rewards are organised and fulfilled by the event organiser, not automatically issued or paid by TicketBunker.</p>
  <label class="tb-roster-label" for="streetReportEvent">Promoter results for event<select id="streetReportEvent"></select></label>
  <p id="streetTeamStatus" role="status">Create your first promoter link to start tracking.</p>
  <div id="streetTeamRoster" class="tb-street-roster"></div>
