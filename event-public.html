@@ -33,9 +33,13 @@
     <p id="eventDescription"></p><div class="tb-event-brand" id="eventBrand" hidden><img id="eventLogo" alt="Organiser logo"><span>Official organiser event artwork</span></div>
     <p class="tb-event-safe">Every ticket has a unique signed QR. Once scanned, that QR cannot be used a second time. Attendee names and account transfers are available inside My Tickets.</p>
    </section>
-   <section id="ticketTypes" class="tb-event-booking"><p class="tb-event-eyebrow">CHOOSE YOUR TICKETS</p><h2>Available ticket types</h2>
-    <p>All the ticket options created by the organiser. For this beta test, each available type costs €0/£0.</p>
+   <section id="ticketTypes" class="tb-event-booking"><p class="tb-event-eyebrow">CHOOSE YOUR TICKETS</p><h2>Choose a ticket type <span id="ticketTypeCount" class="tb-ticket-type-count">Loading…</span></h2>
+    <p>Every available ticket type is listed below. During the system test, all saved types cost €0/£0.</p>
     <div id="ticketOptions" class="tb-ticket-type-list" aria-label="Choose ticket type"></div>
+    <div id="manageTicketOptions" class="tb-ticket-organiser-help" hidden>
+      <div><strong>Need VIP, Concessions 60+ or Kids?</strong><p>Only the ticket types created by the organiser appear here. Add more types in Step 2 and they will show here automatically.</p></div>
+      <a id="manageTicketOptionsLink" href="/organiser">Manage ticket options ↗</a>
+    </div>
     <form id="betaBookingForm" class="tb-test-book-form" hidden>
      <div class="tb-book-heading"><strong id="selectedTicketLabel">Selected ticket</strong><span>€0 TEST BOOKING</span></div>
      <input id="selectedTier" name="tierId" type="hidden">
