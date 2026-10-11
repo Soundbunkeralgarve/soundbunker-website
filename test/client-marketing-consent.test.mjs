@@ -37,9 +37,10 @@ test('account preferences include explicit unsubscribe control with persisted ve
  assert.match(api,/email_confirmed_at/);
  assert.match(api,/marketing_opt_in:consent/);
  assert.match(api,/marketing_opt_in_at:when/);
- assert.match(api,/method:'PATCH'/);
- assert.match(api,/unsubscribed:true/);
- assert.match(api,/unsubscribed:false/);
+ assert.match(api,/syncSoundBunkerMarketing/);
+ assert.match(get('api/lib/soundbunker-promo-list.js'),/method:'DELETE'/);
+ assert.match(get('api/lib/soundbunker-promo-list.js'),/unsubscribed:false/);
+ assert.match(get('api/lib/soundbunker-promo-list.js'),/unsubscribed:false/);
 });
 test('marketing endpoint rejects unauthenticated requests and never lists subscribers publicly',async()=>{
  for(const method of ['GET','POST']){
