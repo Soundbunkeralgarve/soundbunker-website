@@ -107,3 +107,18 @@
 
 .tb-organiser-app #streetCashAmount[hidden]{display:none!important}
 @media print{.tb-ticket-pass-top{-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#23192e!important}.tb-ticket-official-logo{filter:none!important}}
+
+
+/* One-column, thumb-friendly event setup on small phones. Scanner controls
+   only appear in the live-event dashboard after publication. */
+.tb-organiser-app #staffAccess[hidden],.tb-organiser-app a[href="#staffAccess"][hidden]{display:none!important}
+.tb-organiser-app .tb-scanner-dashboard{margin-top:20px;scroll-margin-top:96px;background:#faf7fc;border:1px solid #ded1e6}
+@media(max-width:700px){
+ .tb-organiser-app .tb-wizard-steps{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+ .tb-organiser-app .tb-wizard-steps button{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:6px;min-height:74px;padding:9px 4px;text-align:center;border-radius:11px;font-size:11px;line-height:1.25}
+ .tb-organiser-app .tb-wizard-steps button b{padding:5px 9px}
+ .tb-organiser-app .tb-form-grid{grid-template-columns:minmax(0,1fr)}
+ .tb-organiser-app .tb-form-grid>label,.tb-organiser-app .tb-form-grid input,.tb-organiser-app .tb-form-grid select,.tb-organiser-app .tb-form-grid textarea{min-width:0;max-width:100%;width:100%;box-sizing:border-box}
+ .tb-organiser-app .tb-form-actions button,.tb-organiser-app #staffInviteResult button,.tb-organiser-app #staffInviteResult a{min-height:48px;width:100%;justify-content:center}
+ .tb-organiser-app #staffInviteResult input{max-width:100%;box-sizing:border-box}
+}
