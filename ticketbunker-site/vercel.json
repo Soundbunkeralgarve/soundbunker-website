@@ -9,27 +9,27 @@
   "rewrites": [
     {
       "source": "/login",
-      "destination": "/account.html"
+      "destination": "/account"
     },
     {
       "source": "/my-tickets",
-      "destination": "/account.html"
+      "destination": "/account"
     },
     {
       "source": "/client",
-      "destination": "/account.html"
+      "destination": "/account"
     },
     {
       "source": "/portal",
-      "destination": "/account.html"
+      "destination": "/account"
     },
     {
       "source": "/events",
-      "destination": "/index.html"
+      "destination": "/"
     },
     {
       "source": "/event/:slug",
-      "destination": "/event.html"
+      "destination": "/event"
     }
   ],
   "redirects": [
