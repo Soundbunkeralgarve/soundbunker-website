@@ -229,7 +229,7 @@ async function refresh(){
  $('#orgName').textContent=account.display_name;
  $('#orgState').textContent='Country '+account.country_code+' · Review status: '+account.status+' · Stripe: '+(account.stripe_connected?'Connected':'Not connected');
  const currency=account.country_code==='GB'?'GBP':'EUR';
- $('#priceLabel').firstChild.textContent='Ticket price ('+currency+')';
+ // Ticket types are now priced individually in the multi-ticket builder.
  document.querySelectorAll('[data-price-gbp]').forEach(e=>{e.textContent=currency==='GBP'?e.dataset.priceGbp:e.dataset.priceEur;});
  const list=data.events||[];
  latestEvents=list;
