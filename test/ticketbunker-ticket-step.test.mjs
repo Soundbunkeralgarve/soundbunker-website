@@ -13,22 +13,22 @@ test('review displays required actions for incomplete event, and can jump to tic
  assert.match(js,/goToTicketSetup\(\$\('#reviewEvent'\)\.value\)/);
  assert.match(js,/data-add-tickets/);
  assert.match(js,/publish.disabled=issues.length>0/);
- assert.match(js,/add.hidden=hasTickets/);
+ assert.match(js,/add.hidden=false/);
  assert.match(css,/\.tb-readiness/);
 });
-test('successfully adding a paid tier advances to review and retains event selection',()=>{
- assert.match(js,/await request\(\{action:'tier',eventId/);
+test('successfully saving several paid types advances to review and retains event selection',()=>{
+ assert.match(js,/await request\(\{action:'tiers',eventId/);
  assert.match(js,/currentDraftId=eventId;/);
  assert.match(js,/await refresh\(\)/);
  assert.match(js,/setWizard\('review'\)/);
- assert.match(js,/Saving ticket type/);
- assert.match(js,/const confirmation=d.get\('name'\)/);
- assert.match(js,/Ticket type was not saved:/);
+ assert.match(js,/Saving ticket types/);
+ assert.match(js,/const message=count\+/);
+ assert.match(js,/Ticket types were not saved:/);
  assert.match(api,/price<100/);
 });
 test('ticket missing prevents publication, no payment bypass',()=>{
  assert.match(api,/Add at least one ticket type first/);
  assert.match(api,/EVENTS_MARKETPLACE_PAYMENTS_ENABLED/);
- assert.match(page,/Minimum paid ticket price: €1 \/ £1/);
+ assert.match(page,/Paid tickets start at €1 \/ £1/);
  assert.doesNotMatch(js,/stripe\.com\/checkout/);
 });

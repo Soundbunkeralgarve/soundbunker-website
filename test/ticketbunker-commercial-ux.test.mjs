@@ -40,7 +40,7 @@ test('Commercial organiser setup keeps all existing forms and country prices',()
  assert.match(org,/STEP 01/);
  assert.match(org,/STEP 02/);
  assert.match(org,/STEP 03/);
- assert.match(org,/max="2000"/);
+ assert.match(orgJs,/max="2000"/);
  assert.match(orgJs,/data-price-gbp/);
  assert.match(orgJs,/tb-owned-event/);
  assert.match(org,/BETA · NOT LIVE YET/);

@@ -135,6 +135,45 @@ export default async function handler(req,res){
      if(saved.error||!saved.data)throw Error('Could not request event review');
      return json(res,{event:saved.data,message:'Your event is saved and submitted for review. No payments or live ticket sales are enabled yet.'});
    }
+   if(action==='tiers'){
+     if(!uuid(body.eventId))return json(res,{error:'Choose a valid draft event'},400);
+     const ev=await db.from('sb_events').select('id,status,internal_free_test')
+       .eq('id',body.eventId).eq('organiser_profile_id',organisation.id).maybeSingle();
+     if(ev.error||!ev.data||ev.data.status!=='draft'||ev.data.internal_free_test)
+       return json(res,{error:'Only your ordinary draft events can add ticket types'},403);
+     if(!Array.isArray(body.tiers)||body.tiers.length<1||body.tiers.length>10)
+       return json(res,{error:'Choose between 1 and 10 ticket types at a time'},400);
+     const items=body.tiers.map(item=>({
+       name:safeText(item?.name,100),price_cents:Number(item?.priceCents),
+       quantity_total:Number(item?.capacity)
+     }));
+     if(items.some(item=>item.name.length<2||!Number.isInteger(item.price_cents)||
+       item.price_cents<100||item.price_cents>10000000||!Number.isInteger(item.quantity_total)||
+       item.quantity_total<1||item.quantity_total>2000))
+       return json(res,{error:'Every ticket needs a name, valid price (minimum 1) and quantity (1–2,000)'},400);
+     const unique=new Set(items.map(item=>item.name.toLocaleLowerCase()));
+     if(unique.size!==items.length)
+       return json(res,{error:'You have chosen the same ticket type more than once. Each name must be unique.'},409);
+     const existing=await db.from('sb_event_tiers').select('name,quantity_total').eq('event_id',ev.data.id);
+     if(existing.error)throw existing.error;
+     const already=new Set(existing.data.map(item=>item.name.toLocaleLowerCase()));
+     const duplicate=items.find(item=>already.has(item.name.toLocaleLowerCase()));
+     if(duplicate)return json(res,{error:duplicate.name+' is already saved for this event. Pick a different ticket type.'},409);
+     const currentCount=existing.data.reduce((total,item)=>total+Number(item.quantity_total||0),0);
+     const addedCount=items.reduce((total,item)=>total+item.quantity_total,0);
+     if(currentCount+addedCount>2000)
+       return json(res,{error:'Your combined ticket quantities exceed 2,000. Reduce a quantity before saving.'},409);
+     // One database insert for the complete batch: no partially saved types.
+     // The Postgres 2,000-ticket trigger protects against concurrent requests.
+     const saved=await db.from('sb_event_tiers').insert(
+       items.map(item=>({...item,event_id:ev.data.id}))
+     ).select('id,name,price_cents,quantity_total');
+     if(saved.error){
+       console.error('Bulk event ticket insert failed',{code:saved.error.code,message:saved.error.message});
+       return json(res,{error:'Could not save these ticket types. No partial batch was accepted; please check quantities and retry.'},409);
+     }
+     return json(res,{tiers:saved.data,added:addedCount,total:currentCount+addedCount},201);
+   }
    if(action==='tier'){
      if(!uuid(body.eventId))return json(res,{error:'Select a valid event'},400);
      const ev=await db.from('sb_events').select('id,status').eq('id',body.eventId).eq('organiser_profile_id',organisation.id).maybeSingle();
