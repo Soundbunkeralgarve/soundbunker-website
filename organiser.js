@@ -746,55 +746,179 @@ async function streetAPI(body,eventId){
  const data=await response.json();if(!response.ok)throw Error(data.error||'Street Team unavailable');
  return data;
 }
+const streetRewardKinds=[
+ ['free_tickets','Free event tickets','2 free tickets'],
+ ['vip_table','VIP table / reserved seating','VIP table for four'],
+ ['cash_bonus','Cash bonus at target','Sales milestone cash bonus'],
+ ['cash_per_sale','Cash for each paid ticket','Cash per paid ticket'],
+ ['other_perk','Custom perk / guest list / merchandise','Custom promoter perk']
+];
+let streetRewardRowIndex=0;
+function refreshStreetRewardRows(){
+ const rows=[...document.querySelectorAll('#streetRewardRows .tb-street-reward-row')];
+ $('#streetPerkCount').textContent=rows.length+' of 6 milestones';
+ $('#addStreetPerk').disabled=rows.length>=6;
+ rows.forEach((row,i)=>{
+  row.querySelector('.tb-street-reward-number').textContent='Milestone '+(i+1);
+  const remove=row.querySelector('[data-remove-street-reward]');
+  remove.disabled=rows.length===1;remove.hidden=rows.length===1;
+  const cash=row.querySelector('.tb-street-cash');
+  const type=row.querySelector('[data-street-type]').value;
+  cash.hidden=!['cash_bonus','cash_per_sale'].includes(type);
+  cash.querySelector('input').required=!cash.hidden;
+ });
+}
+function addStreetRewardRow(reward){
+ const existing=document.querySelectorAll('#streetRewardRows .tb-street-reward-row').length;
+ if(existing>=6){$('#streetTeamStatus').textContent='Maximum six rewards per promoter.';return;}
+ const item=reward||{type:existing?'vip_table':'free_tickets',title:existing?'VIP table for four':'2 free tickets',
+  target:existing?25:10,quantity:existing?1:2,cashCents:0,details:''};
+ const row=document.createElement('div');
+ row.className='tb-street-reward-row';
+ row.dataset.rewardRow=String(++streetRewardRowIndex);
+ const options=streetRewardKinds.map(([type,label])=>
+  '<option value="'+esc(type)+'"'+(type===item.type?' selected':'')+'>'+esc(label)+'</option>').join('');
+ row.innerHTML='<div class="tb-street-reward-head"><strong class="tb-street-reward-number">Milestone</strong>'+
+  '<button type="button" data-remove-street-reward class="tb-street-reward-remove">Remove</button></div>'+
+  '<div class="tb-street-reward-fields">'+
+  '<label>Reward type<select data-street-type required>'+options+'</select></label>'+
+  '<label>Reward name<input data-street-title type="text" minlength="2" maxlength="80" required '+
+   'placeholder="e.g. VIP table for 4" value="'+esc(item.title||'')+'"></label>'+
+  '<label>Unlock after confirmed paid tickets<input data-street-target type="number" inputmode="numeric" min="1" max="100000" step="1" required value="'+Number(item.target||1)+'"></label>'+
+  '<label>Reward quantity<input data-street-quantity type="number" inputmode="numeric" min="1" max="50" step="1" required value="'+Number(item.quantity||1)+'"></label>'+
+  '<label class="tb-street-cash" hidden>Cash amount per reward (€ / £)<input data-street-cash type="number" inputmode="decimal" min="0.01" max="10000" step=".01" value="'+(Number(item.cashCents||0)/100).toFixed(2)+'"></label>'+
+  '<label class="tb-street-details">What is included? (optional)<input data-street-details type="text" maxlength="300" '+
+   'placeholder="e.g. reserved table for four, excludes drinks" value="'+esc(item.details||'')+'"></label>'+
+  '</div>';
+ $('#streetRewardRows').appendChild(row);
+ refreshStreetRewardRows();
+ return row;
+}
+function collectStreetRewards(){
+ return [...document.querySelectorAll('#streetRewardRows .tb-street-reward-row')].map(row=>{
+  const type=row.querySelector('[data-street-type]').value;
+  return {
+   type,title:row.querySelector('[data-street-title]').value.trim(),
+   target:Number(row.querySelector('[data-street-target]').value),
+   quantity:Number(row.querySelector('[data-street-quantity]').value),
+   cashCents:['cash_bonus','cash_per_sale'].includes(type)?
+    Math.round(Number(row.querySelector('[data-street-cash]').value)*100):0,
+   details:row.querySelector('[data-street-details]').value.trim()
+  };
+ });
+}
+function resetStreetRewardEditor(){
+ const form=$('#streetTeamForm'),lastEvent=$('#streetReportEvent').value;
+ form.reset();form.dataset.editId='';
+ form.querySelector('[name="name"]').readOnly=false;
+ form.querySelector('[name="email"]').readOnly=false;
+ $('#streetTeamEvent').disabled=false;
+ if(lastEvent&&[...$('#streetTeamEvent').options].some(x=>x.value===lastEvent))$('#streetTeamEvent').value=lastEvent;
+ $('#editingStreetPersonId').value='';
+ $('#createStreetLink').textContent='Create promoter sales link →';
+ $('#cancelStreetPerkEdit').hidden=true;
+ $('#streetRewardRows').replaceChildren();
+ addStreetRewardRow({type:'free_tickets',title:'2 free tickets',target:10,quantity:2,cashCents:0,details:''});
+}
+function editStreetRewardPerks(person){
+ const form=$('#streetTeamForm');
+ form.dataset.editId=person.id;
+ form.querySelector('[name="name"]').value=person.name;
+ form.querySelector('[name="email"]').value=person.email;
+ form.querySelector('[name="name"]').readOnly=true;
+ form.querySelector('[name="email"]').readOnly=true;
+ $('#streetTeamEvent').value=$('#streetReportEvent').value;
+ $('#streetTeamEvent').disabled=true;
+ $('#editingStreetPersonId').value=person.id;
+ $('#streetRewardRows').replaceChildren();
+ for(const reward of person.rewards)addStreetRewardRow(reward);
+ $('#createStreetLink').textContent='Save updated perks →';
+ $('#cancelStreetPerkEdit').hidden=false;
+ $('#streetTeamStatus').textContent='Editing rewards for '+person.name+'. The promoter link will stay the same.';
+ $('#streetTeamForm').scrollIntoView({behavior:'smooth',block:'start'});
+}
+$('#addStreetPerk').addEventListener('click',()=>addStreetRewardRow());
+$('#cancelStreetPerkEdit').addEventListener('click',()=>{
+ resetStreetRewardEditor();$('#streetTeamStatus').textContent='Perk editing cancelled. No changes saved.';
+});
+$('#streetRewardRows').addEventListener('click',event=>{
+ const button=event.target.closest('[data-remove-street-reward]');if(!button)return;
+ if(document.querySelectorAll('#streetRewardRows .tb-street-reward-row').length<=1)return;
+ button.closest('.tb-street-reward-row')?.remove();refreshStreetRewardRows();
+});
+$('#streetRewardRows').addEventListener('change',event=>{
+ if(!event.target.matches('[data-street-type]'))return;
+ const row=event.target.closest('.tb-street-reward-row');
+ const kind=streetRewardKinds.find(([type])=>type===event.target.value);
+ const title=row.querySelector('[data-street-title]');
+ if(!title.value||streetRewardKinds.some(x=>x[2]===title.value))title.value=kind?.[2]||'Custom perk';
+ refreshStreetRewardRows();
+});
+resetStreetRewardEditor();
 async function loadStreetTeam(){
  const id=$('#streetReportEvent').value;
  if(!id){$('#streetTeamRoster').textContent='Create an event to start a Street Team.';return;}
  const data=await streetAPI(null,id);
- $('#streetTeamRoster').innerHTML=data.team.length?data.team.map(p=>
-  '<article class="tb-street-entry"><div><strong>'+esc(p.name)+'</strong><small>'+esc(p.email)+'</small>'+
-  '<p>'+esc(p.rewardType.replaceAll('_',' '))+' · '+p.rewardGoal+' confirmed paid tickets to qualify'+
-  (p.rewardDescription?' · '+esc(p.rewardDescription):'')+'</p></div><div class="tb-street-numbers"><b>'+p.paidTickets+' paid</b>'+
-  '<span>'+p.testTickets+' €0 tests</span><span>'+money(p.revenueCents,eventFor(id)?.currency)+'</span></div>'+
-  '<div class="tb-street-actions"><button type="button" data-copy-street="'+esc(p.id)+'">Copy promoter link</button>'+
-  (p.active?'<button type="button" data-deactivate-street="'+esc(p.id)+'">Disable</button>':'<span>Link disabled</span>')+
-  '</div></article>').join(''):'<p>No promoters yet. Add a name, reward and target above.</p>';
+ window.streetTeamData=new Map(data.team.map(person=>[person.id,person]));
  window.streetTeamLinks=new Map(data.team.map(person=>[person.id,person.link]));
+ $('#streetTeamRoster').innerHTML=data.team.length?data.team.map(p=>{
+  const rewards=(p.rewards||[]).map(reward=>
+   '<div class="tb-street-milestone'+(reward.unlocked?' is-earned':'')+'"><div><strong>'+
+   esc(reward.title)+'</strong><small>'+esc(reward.details||streetRewardKinds.find(x=>x[0]===reward.type)?.[1]||'Custom perk')+
+   '</small></div><span>'+p.paidTickets+'/'+Number(reward.target)+' paid tickets'+
+   (reward.unlocked?' · TARGET MET':'')+'</span></div>').join('');
+  return '<article class="tb-street-entry"><div><strong>'+esc(p.name)+'</strong><small>'+esc(p.email)+'</small>'+
+   '<div class="tb-street-milestone-list">'+rewards+'</div></div><div class="tb-street-numbers"><b>'+
+   Number(p.paidTickets)+' paid</b><span>'+Number(p.testTickets)+' €0 tests</span><span>'+
+   money(p.revenueCents,eventFor(id)?.currency)+'</span></div>'+
+   '<div class="tb-street-actions"><button type="button" data-copy-street="'+esc(p.id)+'">Copy promoter link</button>'+
+   (p.active?'<button type="button" data-edit-street="'+esc(p.id)+'">Edit perks & targets</button>'+
+   '<button type="button" data-deactivate-street="'+esc(p.id)+'">Disable</button>':'<span>Link disabled</span>')+
+   '</div></article>';
+ }).join(''):'<p>No promoters yet. Add a name, reward and target above.</p>';
  $('#streetTeamStatus').textContent=data.team.length+' promoters. Only verified paid ticket sales count toward rewards. Tests are separate.';
 }
 $('#streetReportEvent').addEventListener('change',()=>loadStreetTeam().catch(e=>{$('#streetTeamStatus').textContent=e.message;}));
-$('#streetRewardType').addEventListener('change',()=>{
- $('#streetCashAmount').hidden=$('#streetRewardType').value!=='cash_per_sale';
-});
 $('#streetTeamForm').addEventListener('submit',async e=>{
- e.preventDefault();const button=$('#createStreetLink'),form=e.currentTarget,d=new FormData(form);
- button.disabled=true;button.textContent='Creating secure promoter link…';
+ e.preventDefault();
+ const button=$('#createStreetLink'),form=e.currentTarget,d=new FormData(form),editing=form.dataset.editId||'';
+ const rewards=collectStreetRewards();
+ if(!rewards.length){$('#streetTeamStatus').textContent='Add at least one reward milestone.';return;}
+ button.disabled=true;button.textContent=editing?'Updating reward milestones…':'Creating promoter link…';
  try{
-  const created=await streetAPI({action:'create',eventId:d.get('eventId'),name:d.get('name'),
-   email:d.get('email'),rewardType:d.get('rewardType'),rewardGoal:Number(d.get('rewardGoal')),
-   rewardDescription:d.get('rewardDescription'),rewardValueCents:Math.round(Number(d.get('rewardMoney')||0)*100)},null);
-  $('#streetReportEvent').value=d.get('eventId');
+  const payload={action:editing?'updateRewards':'create',
+   eventId:editing?$('#streetReportEvent').value:d.get('eventId'),
+   personId:editing||undefined,name:d.get('name'),email:d.get('email'),
+   rewardRules:rewards};
+  const result=await streetAPI(payload,null);
+  $('#streetReportEvent').value=payload.eventId;
   await loadStreetTeam();
-  $('#streetTeamStatus').textContent='Promoter link created. Copy it below and send it directly to your promoter.';
-  if(navigator.clipboard?.writeText){
-   try{await navigator.clipboard.writeText(created.link);$('#streetTeamStatus').textContent+=' Link copied.';}catch{}
+  resetStreetRewardEditor();
+  $('#streetTeamStatus').textContent=editing?
+   'Updated rewards and sales targets. Existing promoter link is unchanged.':
+   'Promoter link created. Copy it below to share with your promoter.';
+  if(!editing&&navigator.clipboard?.writeText){
+   try{await navigator.clipboard.writeText(result.link);$('#streetTeamStatus').textContent+=' Link copied.';}catch{}
   }
-  form.querySelector('[name="name"]').value='';form.querySelector('[name="email"]').value='';
  }catch(error){$('#streetTeamStatus').textContent=error.message;}
- finally{button.disabled=false;button.textContent='Create promoter sales link →';}
+ finally{button.disabled=false;button.textContent=form.dataset.editId?'Save updated perks →':'Create promoter sales link →';}
 });
-$('#streetTeamRoster').addEventListener('click',async e=>{
- const copy=e.target.closest('[data-copy-street]')?.dataset.copyStreet;
- const deactivate=e.target.closest('[data-deactivate-street]')?.dataset.deactivateStreet;
+$('#streetTeamRoster').addEventListener('click',async event=>{
+ const copy=event.target.closest('[data-copy-street]')?.dataset.copyStreet;
+ const edit=event.target.closest('[data-edit-street]')?.dataset.editStreet;
+ const deactivate=event.target.closest('[data-deactivate-street]')?.dataset.deactivateStreet;
+ if(edit){const person=window.streetTeamData?.get(edit);if(person&&person.active)editStreetRewardPerks(person);return;}
  if(copy){
   const link=window.streetTeamLinks?.get(copy);if(!link)return;
   try{await navigator.clipboard.writeText(link);$('#streetTeamStatus').textContent='Promoter link copied.';}
-  catch{$('#streetTeamStatus').textContent='Copy is unavailable in this browser. Open the event page and share its promoter link manually.';}
+  catch{$('#streetTeamStatus').textContent='Copy unavailable. Open the event page and share the promoter link manually.';}
  }
  if(deactivate){
   if(!confirm('Disable this promoter link? Existing bookings and reports remain recorded.'))return;
-  try{await streetAPI({action:'deactivate',eventId:$('#streetReportEvent').value,personId:deactivate});
-   await loadStreetTeam();$('#streetTeamStatus').textContent='Promoter link disabled.';}
-  catch(err){$('#streetTeamStatus').textContent=err.message;}
+  try{
+   await streetAPI({action:'deactivate',eventId:$('#streetReportEvent').value,personId:deactivate});
+   await loadStreetTeam();$('#streetTeamStatus').textContent='Promoter link disabled.';
+  }catch(error){$('#streetTeamStatus').textContent=error.message;}
  }
 });
 async function loadStaff(){
