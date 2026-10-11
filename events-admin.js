@@ -20,6 +20,18 @@ async function refresh(){
      '<p>'+esc(ev?.title||'Event draft')+' · '+esc(c.country_code)+'</p>'+
      '<p>Registered charity number: <strong>'+esc(c.registration_number)+'</strong></p>'+review+'</article>';
  }).join(''):'<div class="empty">No registered charity applications waiting.</div>';
+ const terms=d.paymentTermsRequests||[];
+ $('#eventPlusTermsQueue').innerHTML=terms.length?terms.map(q=>{
+  const ev=(d.events||[]).find(x=>x.id===q.event_id);
+  const org=(d.organisers||[]).find(x=>x.id===q.organiser_profile_id);
+  const sign=q.currency==='gbp'?'£':'€';
+  return '<article class="event-info" style="padding:16px;border-radius:10px;background:#352640;border:1px solid #806391">'+
+   '<span class="pill">'+esc(q.status)+'</span><h3>'+esc(ev?.title||'Event draft')+'</h3>'+
+   '<p>Organiser: '+esc(org?.display_name||'Unknown')+'</p>'+
+   '<p>Event Plus · '+Number(q.ticket_capacity).toLocaleString('en-GB')+' tickets · proposed '+sign+(q.proposed_listing_fee_cents/100).toFixed(2)+'</p>'+
+   '<p>Preference: Deposit upfront, capped balance recovered from eligible sales. Requires written terms and Stripe Connect approval.</p>'+
+   '<p>'+esc(q.notes||'')+'</p><small>Enquiry only — no payment authorised</small></article>';
+ }).join(''):'<p>No Event Plus flexible payment enquiries yet.</p>';
  const largeQuotes=d.largeQuotes||[];
  $('#largeQuoteQueue').innerHTML=largeQuotes.length?largeQuotes.map(q=>{
   const ev=(d.events||[]).find(item=>item.id===q.event_id);
