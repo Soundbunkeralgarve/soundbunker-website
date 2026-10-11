@@ -5,7 +5,7 @@ DECLARE e uuid; tier uuid; buyer uuid; o uuid; one_ticket uuid; other_ticket uui
 BEGIN
  buyer:=gen_random_uuid();
  INSERT INTO auth.users(id) VALUES(buyer);
- INSERT INTO public.profiles(id,role) VALUES(buyer,'admin');
+ INSERT INTO public.profiles(id,role) VALUES(buyer,'admin') ON CONFLICT(id) DO UPDATE SET role='admin';
  INSERT INTO public.sb_events(slug,title,description,starts_at,status,public_beta_test,beta_test_expires_at)
  VALUES('public-beta-qa-'||substr(gen_random_uuid()::text,1,8),'Real Tester Event',
   'Full event page and zero-price booking test.',now()+interval '2 days','draft',true,now()+interval '48 hours')
