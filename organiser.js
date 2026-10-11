@@ -3,6 +3,11 @@ const $=q=>document.querySelector(q);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let supabase,token,account,currentDraftId=null,latestEvents=[];
 let savedEventSignature='',uploadedArtwork={poster:false,logo:false};
+function scannerCrewEventIsLive(event,now=Date.now()){
+ if(!event)return false;
+ if(event.status==='published')return Date.parse(event.starts_at)>now-36*60*60*1000;
+ return event.status==='draft'&&event.public_beta_test===true&&Date.parse(event.beta_test_expires_at)>now;
+}
 const checkpointKey='ticketbunker-confirmed-event-v1';
 function savedCheckpoint(signature){
  try{
@@ -287,7 +292,7 @@ async function refresh(){
  if(streetTeamEvent)await loadStreetTeam().catch(error=>{$('#streetTeamStatus').textContent=error.message;});
  if($('#reportEvent').value)await loadReport().catch(error=>{$('#reportStatus').textContent=error.message;});
  // Door-scanner invites belong to the dashboard after the event has been published.
- const staffEvents=list.filter(ev=>ev.status==='published'&&Date.parse(ev.starts_at)>Date.now()-36*60*60*1000);
+ const staffEvents=list.filter(scannerCrewEventIsLive);
  const staffOptions=staffEvents.map(ev=>'<option value="'+esc(ev.id)+'">'+esc(ev.title)+'</option>').join('');
  const previous=$('#manageStaffEvent').value;
  $('#staffAccess').hidden=staffEvents.length===0;
@@ -744,8 +749,8 @@ $('#staffInviteForm').addEventListener('submit',async e=>{
  const submit=$('#sendStaffInvite');submit.disabled=true;submit.textContent='Sending secure staff invite…';
  const data=new FormData(e.target);
  try{
-  if(eventFor(data.get('eventId'))?.status!=='published')
-    throw Error('Publish the event before inviting scanner crew.');
+  if(!scannerCrewEventIsLive(eventFor(data.get('eventId'))))
+    throw Error('Make your event live before inviting scanner crew.');
    notify('Generating secure invitation…');
   const invited=await staffRequest({action:'invite',eventId:data.get('eventId'),email:data.get('email')});
   $('#staffInviteResult').hidden=false;
