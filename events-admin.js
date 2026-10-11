@@ -20,6 +20,19 @@ async function refresh(){
      '<p>'+esc(ev?.title||'Event draft')+' · '+esc(c.country_code)+'</p>'+
      '<p>Registered charity number: <strong>'+esc(c.registration_number)+'</strong></p>'+review+'</article>';
  }).join(''):'<div class="empty">No registered charity applications waiting.</div>';
+ const largeQuotes=d.largeQuotes||[];
+ $('#largeQuoteQueue').innerHTML=largeQuotes.length?largeQuotes.map(q=>{
+  const ev=(d.events||[]).find(item=>item.id===q.event_id);
+  const org=(d.organisers||[]).find(item=>item.id===q.organiser_profile_id);
+  const currency=q.currency==='gbp'?'GBP':'EUR';
+  return '<article class="event-info" style="background:#34233f;border:1px solid #745b85;padding:16px;border-radius:9px">'+
+   '<span class="pill">'+esc(q.status)+'</span><h3>'+esc(ev?.title||'Event draft')+'</h3>'+
+   '<p>Organiser: '+esc(org?.display_name||'Unknown')+' · '+esc(currency)+'</p>'+
+   '<p>Expected tickets: <strong>'+Number(q.expected_tickets).toLocaleString('en-GB')+'</strong></p>'+
+   '<p style="white-space:pre-line;overflow-wrap:anywhere">'+esc(q.event_details||'')+'</p>'+
+   '<p>Requested: '+new Date(q.created_at).toLocaleString('en-GB')+'</p>'+
+   '<strong>ENQUIRY ONLY · NO PAYMENT AUTHORISED</strong></article>';
+ }).join(''):'<p>No large-event quote enquiries yet.</p>';
  const requests=d.events.filter(e=>e.status==='draft'&&e.publish_requested_at);
  $('#publicationQueue').innerHTML=requests.length?requests.map(e=>'<article class="event-info" style="background:#34233f;border:1px solid #745b85;padding:16px;border-radius:9px">'+(e.image_url?'<img src="'+esc(e.image_url)+'" alt="Event poster" style="width:100%;max-height:140px;object-fit:cover;border-radius:7px">':'')+'<h3>'+esc(e.title)+'</h3><p>'+esc(e.venue)+' · '+new Date(e.starts_at).toLocaleString('en-GB')+'</p><p>'+esc(e.description||'')+'</p><p>'+d.tiers.filter(t=>t.event_id===e.id).map(t=>esc(t.name)+' · '+t.quantity_total+' tickets').join(' / ')+'</p><p>Submitted: '+new Date(e.publish_requested_at).toLocaleString('en-GB')+'</p><strong>AWAITING VERIFICATION — NO PAYMENTS</strong></article>').join(''):'<p>No new publication requests.</p>';
  $('#list').innerHTML=d.events.map(e=>{
