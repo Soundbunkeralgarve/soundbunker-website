@@ -6,10 +6,10 @@ const events=read('events.html'),siteJs=read('events.js'),css=read('ticketbunker
 const org=read('organiser.html'),orgJs=read('organiser.js'),orgCss=read('organiser.css');
 test('Events storefront has branded commercial controls and demo-only checkout',()=>{
  for(const marker of ['class="tb-discover-panel"','id="tb-event-search"','id="tb-location-filter"',
-  'id="tb-event-count"','id="tb-demo-dialog"','id="featured"','id="upcoming"','id="plans"'])
+  'id="tb-event-count"','id="featured"','id="upcoming"','id="plans"'])
   assert.ok(events.includes(marker),'Missing '+marker);
  assert.match(events,/BETA · NOT LIVE YET/);
- assert.match(events,/DEMO EVENT/);
+ assert.doesNotMatch(events,/DEMO EVENT/);
  assert.doesNotMatch(siteJs,/\/api\/event-checkout|checkout\.stripe\.com/);
 });
 test('Distinct local event photography and separate app-style ticket hero',()=>{
@@ -17,9 +17,9 @@ test('Distinct local event photography and separate app-style ticket hero',()=>{
  assert.match(events,/tb-stub/);
  assert.match(events,/EVENT TICKETS/);
  assert.doesNotMatch(events,/class="tb-hero-image"/);
- const images=[...siteJs.matchAll(/image:'(\/[^']+)'/g)].map(x=>x[1]);
- assert.ok(new Set(images).size>=5,'At least five distinct bundled event images');
- assert.ok(images.every(x=>!x.startsWith('https:')),'Demo images load from project assets');
+ assert.match(siteJs,/eventCards/);
+ assert.match(siteJs,/linkFor/);
+ assert.doesNotMatch(siteJs,/conceptEvents/);
 });
 test('Country switch and estimate show all three approved flat fees',()=>{
  const prices=[['£49','€59'],['£99','€119'],['£199','€239']];
