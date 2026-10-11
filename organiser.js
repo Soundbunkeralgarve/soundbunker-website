@@ -338,6 +338,17 @@ function openLargeEventQuoteFromLink(){
  section.open=true;
  if(!$('#workspace').hidden)section.scrollIntoView({behavior:'smooth',block:'start'});
 }
+function openPremiumPlacementFromLink(){
+ if(location.hash!=='#featured-placement')return;
+ const section=$('#featured-placement');
+ const details=section?.closest('details');
+ if(details)details.open=true;
+ if(section&&!$('#workspace').hidden)section.scrollIntoView({behavior:'smooth',block:'start'});
+}
+window.addEventListener('hashchange',openPremiumPlacementFromLink);
+document.querySelectorAll('a[href="#featured-placement"]').forEach(link=>
+ link.addEventListener('click',()=>openPremiumPlacementFromLink())
+);
 window.addEventListener('hashchange',openLargeEventQuoteFromLink);
 document.querySelectorAll('a[href="#largeEventQuote"]').forEach(link=>
  link.addEventListener('click',()=>{$('#largeEventQuote').open=true;})
