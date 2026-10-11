@@ -25,6 +25,10 @@ async function init(){
   }
   $('eventHeroBadge').textContent=ev.public_beta_test?'LIVE €0 TEST · NO ADMISSION':'EVENT INFORMATION';
   $('eventPrice').textContent=ev.public_beta_test?'FREE €0 / £0 TEST':'Ticket options below';
+  const ticketCount=(ev.tiers||[]).length;
+  $('ticketTypeCount').textContent=ticketCount+' available '+(ticketCount===1?'type':'types');
+  $('manageTicketOptions').hidden=false;
+  $('manageTicketOptionsLink').href='/organiser?eventId='+encodeURIComponent(ev.id)+'&step=tickets';
   $('ticketOptions').innerHTML=(ev.tiers||[]).map(t=>{
    const left=Number(t.remaining)||0,active=ev.public_beta_test&&left>0;
    return '<article class="tb-ticket-type" data-tier-id="'+esc(t.id)+'">'+
