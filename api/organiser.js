@@ -192,6 +192,47 @@ export default async function handler(req,res){
      if(saved.error)throw saved.error;
      return json(res,{tier:saved.data});
    }
+   if(action==='eventPlusTerms'){
+     const id=String(body.eventId||'');
+     if(!uuid(id)||body.paymentPreference!=='deposit_sales')
+       return json(res,{error:'Choose an Event Plus draft and an approved payment preference'},400);
+     const ev=await db.from('sb_events').select('id,title,status,currency,internal_free_test,starts_at')
+       .eq('id',id).eq('organiser_profile_id',organisation.id).maybeSingle();
+     if(ev.error||!ev.data||ev.data.status!=='draft'||ev.data.internal_free_test
+        ||Date.parse(ev.data.starts_at)<=Date.now())
+       return json(res,{error:'Choose one of your future ordinary draft events'},403);
+     const tiers=await db.from('sb_event_tiers').select('quantity_total').eq('event_id',id);
+     if(tiers.error)throw tiers.error;
+     const capacity=tiers.data.reduce((n,t)=>n+Number(t.quantity_total||0),0);
+     if(capacity<501||capacity>2000)
+       return json(res,{error:'Deposit terms are available only for Event Plus (501–2,000) and separately quoted larger events.'},400);
+     const existing=await db.from('sb_event_payment_terms_requests').select('id,status')
+       .eq('event_id',id).maybeSingle();
+     if(existing.error)throw existing.error;
+     if(existing.data)return json(res,{error:'Flexible payment terms have already been requested for this event.'},409);
+     const amount=ev.data.currency==='gbp'?19900:23900;
+     const notes=safeText(body.notes,1200);
+     const saved=await db.from('sb_event_payment_terms_requests').insert({
+       event_id:id,organiser_profile_id:organisation.id,
+       ticket_capacity:capacity,currency:ev.data.currency,
+       proposed_listing_fee_cents:amount,payment_preference:'deposit_sales',
+       notes,status:'requested'
+     }).select('id,status,ticket_capacity').single();
+     if(saved.error){
+       if(saved.error.code==='23505')return json(res,{error:'Flexible terms already requested for this event.'},409);
+       throw saved.error;
+     }
+     const email=await sendStudioEmail(process.env.BOOKING_NOTIFICATION_EMAIL||'bookings@soundbunker.pt',
+       'TicketBunker Event Plus flexible payment request · '+ev.data.title,
+       'Flexible listing payment enquiry (no authorisation to charge)\nEvent: '+ev.data.title
+       +'\nOrganiser: '+organisation.display_name
+       +'\nTier: Event Plus · '+capacity+' tickets\nIndicative listing fee: '
+       +(ev.data.currency==='gbp'?'£199':'€239')
+       +'\nRequested terms: Deposit upfront plus capped recovery from eligible ticket sales, subject to written terms and Stripe Connect approval.'
+       +'\nNotes: '+notes);
+     if(email.status!=='sent')console.warn('Event Plus enquiry email notification not confirmed',{requestId:saved.data.id,status:email.status});
+     return json(res,{request:saved.data,message:'Flexible payment terms request saved. We will contact you to agree deposit and revenue collection terms. No payment was taken or ticket sales enabled.'},201);
+   }
    if(action==='festivalQuote'){
      const id=String(body.eventId||''),expected=Number(body.expectedTickets);
      const paymentPreference=safeText(body.paymentPreference,30);
