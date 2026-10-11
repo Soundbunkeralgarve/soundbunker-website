@@ -51,7 +51,7 @@ test('withdrawal removes only SoundBunker promo segment not unrelated lists',asy
 test('premium email is branded, show specific, safe and includes unsubscribe',()=>{
  const campaign=premiumEventEmail({title:'A Night <Special>',venue:'Venue & Town',when:'23 Oct, 20:00',
   poster:'https://images.example.test/poster.jpg',slug:'a-night',organiser:'Event Owner'});
- assert.match(campaign.subject,/Featured TicketBunker event/);
+ assert.match(campaign.subject,/Featured on TicketBunker/);
  assert.ok(campaign.html.includes('A Night &lt;Special&gt;'));
  assert.ok(!campaign.html.includes('A Night <Special>'));
  assert.match(campaign.html,/RESEND_UNSUBSCRIBE_URL/);
