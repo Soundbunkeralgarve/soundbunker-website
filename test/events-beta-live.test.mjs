@@ -26,8 +26,8 @@ test('Connect onboarding is hard-disabled',async()=>{
 });
 test('real Events and organiser pages display beta warning and no checkout dialog',()=>{
  const events=file('events.html'),organiser=file('organiser.html'),home=file('index.html'),client=file('events.js');
- assert.match(events,/BETA · NOT LIVE YET/);
- assert.match(organiser,/BETA · NOT LIVE YET/);
+ assert.match(events,/LIVE €0 TESTING · PAID SALES OFF/);
+ assert.match(organiser,/LIVE €0 TESTING · PAID SALES OFF/);
  assert.match(home,/header-beta-pill/);
  assert.doesNotMatch(events,/<dialog id="checkout">/);
  assert.doesNotMatch(client,/\/api\/event-checkout|checkout\.stripe\.com/);
