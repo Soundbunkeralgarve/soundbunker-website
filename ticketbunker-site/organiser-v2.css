@@ -4,3 +4,14 @@
 @media(max-width:1120px){.metric-grid{grid-template-columns:repeat(2,1fr)}.app-header{padding:0 23px}.main-body{padding:32px 26px}}
 @media(max-width:750px){.sidebar{transform:translateX(-100%);transition:transform .22s;width:235px}.sidebar.open{transform:translateX(0)}.app-main{margin:0}.mobile-menu{display:block;border:0;background:#f2f8f3;padding:6px 10px;font-size:22px}.app-header{height:70px}.website-link{display:none}.main-body{padding:23px 17px 65px}.page-lead.split{flex-direction:column;align-items:flex-start}.panel{padding:19px}.form-grid,.logo-settings{grid-template-columns:1fr}.steps{gap:5px}.step{padding:9px 7px;font-size:10px;gap:4px}.step b{font-size:21px}.metric{padding:15px}.metric strong{font-size:37px}.event-row{gap:10px;align-items:flex-start;flex-wrap:wrap}.event-row .thumb{width:68px;height:59px}.event-row .event-actions{width:100%}.tier-row{grid-template-columns:1fr 1fr}.tier-row label:first-child{grid-column:1/-1}.tier-row .remove-tier{width:100%}.report-stats{grid-template-columns:repeat(2,1fr)}.inline-form{flex-direction:column;align-items:stretch}.upload-box{flex-direction:column;align-items:flex-start}}
 
+
+#onboarding-billing{border-top:1px solid #ddeae0;padding-top:21px;margin-top:22px}
+#onboarding-billing h2{margin-bottom:10px}
+#billing-form>.form-grid{margin:16px 0 20px}
+#billing-edit-fields .form-grid{margin-bottom:18px}
+#billing-settings-panel .panel-head{margin-bottom:14px}
+#billing-settings-panel .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+#billing-settings-panel .form-grid input,#billing-settings-panel .form-grid select{width:100%;padding:12px 13px;border:1px solid #becdc1;border-radius:5px}
+#billing-settings-panel .form-grid label.wide{grid-column:1/-1}
+#billing-status,#billing-edit-status{font-size:12px;color:#356347}
+@media(max-width:650px){#billing-settings-panel .form-grid{grid-template-columns:1fr}}
