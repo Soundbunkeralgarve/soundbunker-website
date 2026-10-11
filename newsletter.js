@@ -11,7 +11,7 @@ newsletter?.addEventListener('submit', async event => {
     const response = await fetch('/api/newsletter', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || 'Please try again.');
-    status.textContent = result.existing ? 'This address is already on the list. If you unsubscribed, contact the studio to rejoin.' : 'You’re on the list. Watch your inbox for studio news.';
+    status.textContent = result.existing ? 'You’re already on our SoundBunker events and promotions list.' : 'You’re on the SoundBunker list for events, studio news and promotions. Welcome!';
     newsletter.reset();
   } catch (error) { status.textContent = error.message; }
   finally { button.disabled = false; }
