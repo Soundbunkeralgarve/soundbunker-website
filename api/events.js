@@ -7,10 +7,11 @@ export default async function handler(req,res) {
     const event=await db.from('sb_events').select('id,slug,title,description,organiser,venue,image_url,event_logo_url,headline_artist,venue_city,starts_at,ends_at,country_code,currency,venue_timezone,event_kind,status,public_beta_test,beta_test_expires_at')
       .eq('internal_free_test',false)
       .or('status.eq.published,public_beta_test.eq.true')
-      .gt('starts_at',new Date().toISOString()).order('starts_at',{ascending:true}).limit(60);
+      .order('starts_at',{ascending:true}).limit(60);
     if(event.error) throw event.error;
     const now=Date.now();
-    const visible=event.data.filter(e=>e.status==='published'||
+    const visible=event.data.filter(e=>
+      (e.status==='published'&&Date.parse(e.starts_at)>now)||
       (e.status==='draft'&&e.public_beta_test&&Date.parse(e.beta_test_expires_at)>now));
     const ids=visible.map(e=>e.id);
     const tiers=ids.length?await db.from('sb_event_tiers').select('id,event_id,name,price_cents,quantity_total').in('event_id',ids):{data:[],error:null};

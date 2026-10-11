@@ -62,7 +62,7 @@ BEGIN
   INTO ev FROM public.sb_event_tiers t JOIN public.sb_events e ON e.id=t.event_id
   WHERE t.id=p_tier FOR UPDATE OF e;
  IF NOT FOUND OR NOT ev.public_beta_test OR ev.status<>'draft' OR
-    ev.beta_test_expires_at<=now() OR ev.starts_at<=now()
+    ev.beta_test_expires_at<=now()
  THEN RAISE EXCEPTION 'This test booking is closed'; END IF;
  SELECT id,quantity_total,price_cents INTO tier
   FROM public.sb_event_tiers WHERE id=p_tier AND event_id=ev.id FOR UPDATE;
