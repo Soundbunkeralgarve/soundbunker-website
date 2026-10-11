@@ -153,7 +153,14 @@ function goToTicketSetup(id){
 function renderReviewReadiness(){
  const ev=eventFor($('#reviewEvent').value);
  const message=$('#reviewReadiness'),add=$('#reviewAddTickets'),publish=$('#requestPublish');
- if(!ev){message.textContent='Choose an event draft first.';add.hidden=true;publish.disabled=true;$('#eventPlusPaymentOptions').hidden=true;return;}
+ if(!ev){message.textContent='Choose an event draft first.';add.hidden=true;publish.disabled=true;$('#eventPlusPaymentOptions').hidden=true;$('#activateBetaTest').disabled=true;$('#stopBetaTest').hidden=true;$('#betaTestLink').hidden=true;return;}
+ const testing=Boolean(ev.public_beta_test&&Date.parse(ev.beta_test_expires_at)>Date.now());
+ $('#activateBetaTest').disabled=testing;
+ $('#activateBetaTest').textContent=testing?'€0 test listing is live ✓':'Make live for €0 testing →';
+ $('#stopBetaTest').hidden=!testing;
+ $('#betaTestLink').hidden=!testing;
+ if(testing)$('#betaTestLink').href='/event?slug='+encodeURIComponent(ev.slug);
+
  const hasTickets=Array.isArray(ev.tiers)&&ev.tiers.length>0;
  const hasPoster=Boolean(ev.image_url);
  const hasBio=Boolean(ev.description?.trim()?.length>=20);
@@ -264,7 +271,7 @@ async function refresh(){
   return '<article class="tb-owned-event"><div>'+(e.image_url?'<img src="'+esc(e.image_url)+'" alt="Event cover" style="width:95px;aspect-ratio:4/3;object-fit:cover;border-radius:7px;margin-bottom:9px">':'')+'<strong>'+esc(e.title)+'</strong><p>'+esc(e.venue)+' · '+esc(e.event_kind)+'</p></div>'+
    '<div><p>'+esc(localDate(e.starts_at,e.venue_timezone))+'</p><p>'+types+'</p></div>'+
    '<div><span class="tb-owned-status">'+esc(e.status==='draft'?'DRAFT · NOT PUBLISHED':e.status.toUpperCase())+'</span>'+
-   (e.status==='draft'&&!e.tiers.length?'<button type="button" class="outline tb-add-tickets" data-add-tickets="'+esc(e.id)+'">+ Add tickets to this event →</button>':'')+(e.publish_requested_at?'<small class="tb-owned-charity">PUBLICATION REVIEW REQUESTED</small>':'')+(e.charity?'<small class="tb-owned-charity">'+(e.charity.status==='verified'?'Charity verified · Free listing':e.charity.status==='rejected'?'Charity claim not approved':'Charity number received · Review pending')+'</small>':'')+'</div></article>';
+   (e.status==='draft'&&!e.tiers.length?'<button type="button" class="outline tb-add-tickets" data-add-tickets="'+esc(e.id)+'">+ Add tickets to this event →</button>':'')+(e.public_beta_test&&Date.parse(e.beta_test_expires_at)>Date.now()?'<a class="tb-event-live-link" href="/event?slug='+encodeURIComponent(e.slug)+'" target="_blank" rel="noopener noreferrer">LIVE €0 TEST — VIEW EVENT ↗</a>':'')+(e.publish_requested_at?'<small class="tb-owned-charity">PUBLICATION REVIEW REQUESTED</small>':'')+(e.charity?'<small class="tb-owned-charity">'+(e.charity.status==='verified'?'Charity verified · Free listing':e.charity.status==='rejected'?'Charity claim not approved':'Charity number received · Review pending')+'</small>':'')+'</div></article>';
  }).join(''):'<div class="tb-no-events"><strong>Nothing here yet</strong><p>Create an event above to see your drafts in this workspace.</p></div>';
  if(list.length)await loadStaff().catch(error=>{$('#staffRoster').textContent=error.message;});
  else $('#staffRoster').textContent='Create an event draft to invite staff.';
@@ -488,6 +495,29 @@ $('#myEvents').addEventListener('click',e=>{
  if(id)goToTicketSetup(id);
 });
 document.querySelectorAll('input[name="eventPlusPayment"]').forEach(input=>input.addEventListener('change',renderReviewReadiness));
+$('#activateBetaTest').addEventListener('click',async()=>{
+ const eventId=$('#reviewEvent').value;
+ if(!eventId)return $('#betaTestMessage').textContent='Choose your saved event first.';
+ if(!startOperation('Making test event live','Checking event artwork and ticket types…',$('#activateBetaTest')))return;
+ try{
+  const data=await request({action:'activateBetaTest',eventId});
+  $('#betaTestMessage').textContent=data.message;
+  currentDraftId=eventId;
+  updateOperation('Live test ready','Refreshing event details…');
+  await refresh();
+  finishOperation('The real event page is publicly visible with €0 QR test tickets.');
+  $('#betaTestLink').hidden=false;
+  $('#betaTestLink').href='/event?slug='+encodeURIComponent(eventFor(eventId)?.slug||'');
+  notify('Live €0 test activated. Open your event page and make a real QR test booking.');
+ }catch(err){$('#betaTestMessage').textContent=err.message;finishOperation(err.message,true);notify(err.message,true);}
+});
+$('#stopBetaTest').addEventListener('click',async()=>{
+ const eventId=$('#reviewEvent').value;
+ if(!eventId||!confirm('End the public €0 test for this event? Existing test QR tickets remain in accounts but can no longer be scanned after test mode closes.'))return;
+ if(!startOperation('Ending public test','Removing the €0 event from public listings…',$('#stopBetaTest')))return;
+ try{await request({action:'stopBetaTest',eventId});await refresh();finishOperation('Test event hidden. Your saved ticket prices remain unchanged.');notify('Test event hidden.');}
+ catch(err){finishOperation(err.message,true);notify(err.message,true);}
+});
 $('#requestPublish').addEventListener('click',async()=>{
  const eventId=$('#reviewEvent').value;
  if(!eventId)return $('#publishMessage').textContent='Choose an event first.';
