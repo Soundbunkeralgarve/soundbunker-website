@@ -1,0 +1,99 @@
+/* TicketBunker live-band hero: licensed performance video, no studio-brand imagery.
+   Source: https://www.pexels.com/video/people-watching-a-band-854054/ (Pexels free license)
+   Footage is strictly atmosphere and does not represent events currently on sale. */
+.ticketbunker-site .tb-hero-standalone{
+  min-height:575px;
+  background:#17101d;
+  isolation:isolate;
+  position:relative;
+  overflow:hidden;
+}
+.ticketbunker-site .tb-hero-standalone::after{
+  background:none;
+}
+.ticketbunker-site .tb-live-band-media{
+  position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;
+  background:#160f1d url("https://images.pexels.com/videos/854054/free-video-854054.jpg?auto=compress&dpr=1&h=750&w=1260")
+  center 47%/cover no-repeat;
+}
+.ticketbunker-site .tb-live-band-video{
+  width:100%;height:100%;display:block;position:absolute;inset:0;
+  object-fit:cover;object-position:64% 46%;
+  opacity:0;transition:opacity .8s ease;
+  background:transparent;filter:saturate(.9) contrast(1.07);
+}
+.ticketbunker-site .tb-live-band-video.is-playing{opacity:1}
+.ticketbunker-site .tb-live-band-scrim{
+  position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(90deg,
+    rgba(17,12,23,.98) 0%,
+    rgba(22,15,28,.91) 28%,
+    rgba(26,17,31,.64) 53%,
+    rgba(26,17,31,.28) 80%,
+    rgba(22,14,28,.2) 100%),
+    linear-gradient(0deg,rgba(22,13,28,.68),transparent 31%),
+    linear-gradient(180deg,rgba(15,9,22,.25),transparent 45%);
+}
+.ticketbunker-site .tb-hero-standalone .tb-hero-inner{z-index:3}
+.ticketbunker-site .tb-hero-standalone h1{
+ text-shadow:0 3px 32px rgba(0,0,0,.19);
+}
+.ticketbunker-site .tb-hero-standalone .tb-hero-inner>p:not(.tb-eyebrow){
+ color:#f0eaf2;max-width:540px;text-wrap:pretty;
+}
+.ticketbunker-site .tb-live-band-kicker{
+ position:absolute;z-index:3;right:max(30px,calc((100vw - 1220px)/2));bottom:30px;
+ padding:11px 14px;display:inline-flex;align-items:center;gap:9px;
+ background:rgba(15,10,23,.5);border:1px solid rgba(255,255,255,.25);
+ backdrop-filter:blur(12px);color:#fff;border-radius:999px;
+ font:800 10px/1.2 'DM Sans',Arial,sans-serif;letter-spacing:.12em;
+ text-shadow:0 1px 8px #0007;white-space:nowrap;
+}
+.ticketbunker-site .tb-live-band-dot{
+ width:7px;height:7px;border-radius:50%;background:#ead6f0;
+ box-shadow:0 0 0 4px rgba(241,217,248,.13);
+}
+.ticketbunker-site .tb-motion-toggle{
+ display:inline-flex;align-items:center;gap:13px;
+ margin:8px 0 0;padding:7px 12px;border:1px solid rgba(255,255,255,.37);
+ background:rgba(25,17,32,.53);border-radius:999px;
+ color:#f5edf7;min-height:34px;font-size:11px;font-weight:800;cursor:pointer;
+ backdrop-filter:blur(8px);
+}
+.ticketbunker-site .tb-motion-toggle span{font-size:13px}
+.ticketbunker-site .tb-motion-toggle[hidden]{display:none!important}
+.ticketbunker-site .tb-motion-toggle:focus-visible{
+ outline:3px solid #fff;outline-offset:4px;
+}
+@media(max-width:900px){
+ .ticketbunker-site .tb-hero-standalone{min-height:515px}
+ .ticketbunker-site .tb-live-band-video{object-position:68% center}
+ .ticketbunker-site .tb-live-band-scrim{
+  background:linear-gradient(90deg,rgba(18,12,25,.96),rgba(21,14,28,.77) 48%,rgba(25,16,33,.4)),
+  linear-gradient(0deg,rgba(17,10,24,.6),transparent 45%);
+ }
+ .ticketbunker-site .tb-live-band-kicker{right:22px;bottom:16px}
+}
+@media(max-width:760px){
+ .ticketbunker-site .tb-hero-standalone{min-height:500px}
+ .ticketbunker-site .tb-live-band-media{background-position:57% center}
+ .ticketbunker-site .tb-live-band-video{object-position:63% center}
+ .ticketbunker-site .tb-live-band-scrim{
+  background:linear-gradient(90deg,rgba(19,12,26,.93),rgba(21,13,29,.73) 61%,rgba(20,12,29,.57)),
+  linear-gradient(0deg,rgba(15,9,22,.83),transparent 51%);
+ }
+ .ticketbunker-site .tb-hero-standalone .tb-hero-inner{padding:50px 0 65px}
+ .ticketbunker-site .tb-live-band-kicker{right:18px;bottom:12px;font-size:8px;padding:7px 11px;letter-spacing:.07em}
+ .ticketbunker-site .tb-motion-toggle{min-height:31px;font-size:10px;margin-top:8px}
+}
+@media(max-width:430px){
+ .ticketbunker-site .tb-hero-standalone{min-height:525px}
+ .ticketbunker-site .tb-live-band-video{object-position:62% center}
+ .ticketbunker-site .tb-hero-standalone .tb-hero-inner{padding:42px 0 65px}
+ .ticketbunker-site .tb-live-band-kicker{font-size:8px}
+}
+@media(prefers-reduced-motion:reduce){
+ .ticketbunker-site .tb-live-band-video{display:none!important}
+ .ticketbunker-site .tb-motion-toggle{display:none!important}
+ .ticketbunker-site .tb-live-band-dot{box-shadow:none}
+}
