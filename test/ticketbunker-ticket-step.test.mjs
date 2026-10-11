@@ -13,10 +13,10 @@ test('review displays required actions for incomplete event, and can jump to tic
  assert.match(js,/goToTicketSetup\(\$\('#reviewEvent'\)\.value\)/);
  assert.match(js,/data-add-tickets/);
  assert.match(js,/publish.disabled=issues.length>0/);
- assert.match(js,/add.hidden=hasTickets/);
+ assert.match(js,/add.hidden=false/);
  assert.match(css,/\.tb-readiness/);
 });
-test('successfully adding a paid tier advances to review and retains event selection',()=>{
+test('successfully saving several paid types advances to review and retains event selection',()=>{
  assert.match(js,/await request\(\{action:'tiers',eventId/);
  assert.match(js,/currentDraftId=eventId;/);
  assert.match(js,/await refresh\(\)/);
