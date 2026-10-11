@@ -347,6 +347,25 @@ charityToggle.addEventListener('change',()=>{
  $('#charityNumber').required=isCharity;
  if(!isCharity)$('#charityNumber').value='';
 });
+const artworkObjectUrls=new Map();
+function prepareArtworkPreview(inputId,previewId,imageId){
+ const input=$('#'+inputId),preview=$('#'+previewId),image=$('#'+imageId);
+ input.addEventListener('change',()=>{
+  const previous=artworkObjectUrls.get(inputId);if(previous)URL.revokeObjectURL(previous);
+  artworkObjectUrls.delete(inputId);
+  const file=input.files?.[0];
+  preview.hidden=!file;
+  if(!file){image.removeAttribute('src');return;}
+  if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>7_000_000){
+   preview.hidden=true;input.value='';notify('Choose JPEG, PNG or WebP under 7 MB.',true);return;
+  }
+  const src=URL.createObjectURL(file);
+  artworkObjectUrls.set(inputId,src);image.src=src;
+  preview.querySelector('p').textContent=file.name+' · '+(file.size/1024/1024).toFixed(1)+' MB · ready to upload';
+ });
+}
+prepareArtworkPreview('eventPoster','posterPreview','posterPreviewImage');
+prepareArtworkPreview('eventLogo','logoPreview','logoPreviewImage');
 function resizedImage(file,width){
  return new Promise((resolve,reject)=>{
   if(!file)return resolve(null);
