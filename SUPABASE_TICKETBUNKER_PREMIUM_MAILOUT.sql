@@ -9,5 +9,4 @@ CREATE UNIQUE INDEX IF NOT EXISTS sb_showcase_premium_broadcast_unique
 ALTER TABLE public.sb_event_showcase_requests DROP CONSTRAINT IF EXISTS sb_premium_email_payment_guard;
 ALTER TABLE public.sb_event_showcase_requests ADD CONSTRAINT sb_premium_email_payment_guard
  CHECK (premium_broadcast_id IS NULL OR
-   (status IN ('paid','scheduled','live') AND paid_at IS NOT NULL
-    AND stripe_session_id IS NOT NULL));
+   (paid_at IS NOT NULL AND stripe_session_id IS NOT NULL));
