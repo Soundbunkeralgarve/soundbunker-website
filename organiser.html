@@ -15,7 +15,7 @@
  <section id="operationStatus" class="tb-operation-status" role="status" aria-live="polite" aria-atomic="true" hidden>
   <div class="tb-operation-heading"><span id="operationSpinner" class="tb-operation-spinner" aria-hidden="true"></span>
     <div class="tb-operation-copy"><strong id="operationTitle">Working on your request…</strong><p id="operationDetail">Please keep this page open.</p></div>
-    <span id="operationPercent" class="tb-operation-percent" hidden></span>
+    <span id="operationPercent" class="tb-operation-percent" hidden></span><button type="button" id="dismissOperation" class="tb-operation-dismiss" aria-label="Dismiss progress message">×</button>
   </div>
   <div id="operationTrack" class="tb-operation-track" role="progressbar" aria-label="Task progress" aria-valuemin="0" aria-valuemax="100" aria-valuetext="Processing">
     <div id="operationBar" class="tb-operation-bar"></div>
@@ -67,12 +67,28 @@
    <section id="ticket-types" class="tb-panel" aria-labelledby="ticket-types-heading" hidden>
     <div class="tb-panel-head"><div><span class="tb-step-number">STEP 02</span><h2 id="ticket-types-heading">Set up your tickets</h2><p>Ticket types, prices and availability for your event.</p></div></div>
     <form id="tierForm" class="organiser-form tb-form-grid">
-      <label class="tb-span-full">Select draft event<select name="eventId" id="tierEvent" required></select></label>
-      <label class="tb-span-full">Ticket name<input name="name" value="General Admission" required maxlength="100"></label>
-      <label id="priceLabel">Ticket price<input name="price" type="number" min="1" step=".01" required placeholder="20.00"></label>
-      <label>Number of tickets<input name="capacity" type="number" min="1" max="2000" required placeholder="250"></label>
-      <p class="tb-field-note tb-span-full">Tickets must have a name, price and quantity. Minimum paid ticket price: €1 / £1. The private €0 testing system is separate. Total capacity is 2,000 tickets.</p><p class="tb-span-full tb-field-help" id="ticketSetupStatus" role="status">Choose your saved event and add a ticket type to continue.</p>
-      <div class="tb-form-actions tb-span-full"><button class="solid" type="submit">Add ticket type →</button><button type="button" class="outline" id="toReview">Review event →</button></div>
+      <label class="tb-span-full">Your event<select name="eventId" id="tierEvent" required></select></label>
+      <div class="tb-span-full tb-ticket-list-panel" aria-live="polite">
+        <div class="tb-ticket-list-header"><strong>Saved ticket types</strong><span id="ticketCapacitySummary">0 of 2,000 tickets allocated</span></div>
+        <div id="savedTicketList" class="tb-saved-ticket-list"><p>No ticket types added yet.</p></div>
+      </div>
+      <div class="tb-span-full tb-ticket-picker-header">
+        <h3>Which tickets would you like to sell?</h3>
+        <p>Tap all the types you need, then enter a price and quantity for each.</p>
+      </div>
+      <div id="ticketPicker" class="tb-ticket-picker tb-span-full" role="group" aria-label="Quick-add ticket types">
+        <button type="button" class="tb-ticket-preset" data-ticket-preset="General Admission"><span aria-hidden="true">+</span> General Admission</button>
+        <button type="button" class="tb-ticket-preset" data-ticket-preset="VIP"><span aria-hidden="true">+</span> VIP</button>
+        <button type="button" class="tb-ticket-preset" data-ticket-preset="Concessions 60+"><span aria-hidden="true">+</span> Concessions 60+</button>
+        <button type="button" class="tb-ticket-preset" data-ticket-preset="Kids"><span aria-hidden="true">+</span> Kids</button>
+        <button type="button" class="tb-ticket-preset" data-ticket-preset="Student"><span aria-hidden="true">+</span> Student</button>
+        <button type="button" class="tb-ticket-preset" data-ticket-preset="Early Bird"><span aria-hidden="true">+</span> Early Bird</button>
+        <button type="button" class="tb-ticket-preset" data-ticket-preset="custom"><span aria-hidden="true">+</span> Other ticket</button>
+      </div>
+      <div id="newTicketRows" class="tb-new-ticket-rows tb-span-full" aria-label="New ticket types to save"></div>
+      <p class="tb-field-note tb-span-full">Set individual prices and quantities. Paid tickets start at €1 / £1. Maximum combined event capacity: 2,000. The private €0 test is separate.</p>
+      <p class="tb-span-full tb-field-help" id="ticketSetupStatus" role="status" aria-live="polite">Choose one or more ticket types above.</p>
+      <div class="tb-form-actions tb-span-full"><button class="solid" type="submit" id="saveAllTickets" disabled>Save ticket types →</button><button type="button" class="outline" id="toReview">Review event →</button></div>
     </form>
     <form id="artworkRetry" class="organiser-form tb-form-grid" style="margin:15px 0;padding:16px;background:#f7f2fa;border-radius:9px"><h3 class="tb-span-full">Update your event poster / logo</h3><p class="tb-span-full">Select the draft above, then upload fresh artwork. This also works if your original upload was interrupted.</p><label>Replacement poster<input type="file" id="updatePoster" accept="image/png,image/jpeg,image/webp"></label><label>Replacement logo<input type="file" id="updateLogo" accept="image/png,image/jpeg,image/webp"></label><div class="tb-span-full"><button class="outline" type="submit">Update event artwork</button></div></form><div class="tb-setup-help"><strong>Payments &amp; payouts</strong><p>Stripe processes ticket payments and charges its card-processing fee directly to the organiser's account, like a card-machine fee. ticketBunker does not collect or distribute ticket revenue, add a buyer booking fee, or take a per-ticket commission. Checkout is not available in BETA.</p></div>
    </section>
