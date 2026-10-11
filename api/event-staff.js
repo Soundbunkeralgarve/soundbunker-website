@@ -39,7 +39,7 @@ async function myEvents(db,ctx,requestedId=''){
  // Admins may service active events across organisers, but never see drafts
  // that do not accept ticket scans. Invited staff only get assigned events.
  const q=db.from('sb_events')
-  .select('id,title,starts_at,status,venue,venue_timezone,public_beta_test,beta_test_expires_at')
+  .select('id,title,starts_at,status,venue,venue_timezone,event_logo_url,image_url,public_beta_test,beta_test_expires_at')
   .order('starts_at',{ascending:false}).limit(300);
  let events;
  if(requestedId){
