@@ -138,5 +138,11 @@
     "api/*.js": {
       "includeFiles": "assets/soundbunker-email-footer.png"
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/premium-mail-reconcile",
+      "schedule": "0 * * * *"
+    }
+  ]
 }

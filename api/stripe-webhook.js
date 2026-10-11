@@ -1,6 +1,7 @@
 import { fulfillShopCheckout } from './lib/printful-shop.js';
 import { fulfillEventCheckout } from './lib/events.js';
 import { fulfilListingCheckout } from './lib/event-listings.js';
+import { fulfilPremiumPlacementCheckout } from './lib/ticketbunker-premium-autosend.js';
 import { verifyStripeSignature } from "./lib/stripe.js";
 import { createCalendarEvent } from "./lib/google-calendar.js";
 import { sendToInvoiceXpressAutomation } from "./lib/invoicexpress.js";
@@ -24,6 +25,10 @@ export default async function handler(request, response) {
     if (metadata.purchase_type === 'event_listing_fee') {
       const result = await fulfilListingCheckout(checkout);
       return json(response, {received:true,event_listing:result.status});
+    }
+    if (metadata.purchase_type === 'event_featured_promotion') {
+      const result=await fulfilPremiumPlacementCheckout(checkout);
+      return json(response,{received:true,premium_placement:result.status,subscriber_mail:result.mail});
     }
     if (metadata.purchase_type === 'event_ticket') {
       const result = await fulfillEventCheckout(checkout);

@@ -24,7 +24,7 @@ function render(){
       (activeLocation==='Portugal'&&e.country_code==='PT');
   return country&&(activeCategory==='All'||tagType(e.event_kind)===activeCategory)&&
    (!term||(e.title+' '+e.venue+' '+e.description+' '+e.event_kind).toLocaleLowerCase().includes(term));
- }).sort((a,b)=>new Date(a.starts_at)-new Date(b.starts_at));
+ }).sort((a,b)=>Number(b.featured===true)-Number(a.featured===true)||new Date(a.starts_at)-new Date(b.starts_at));
  $('#tb-event-count').textContent=shown.length+' real event'+(shown.length===1?'':'s');
  const root=$('#eventCards');
  if(!shown.length){
@@ -83,7 +83,7 @@ async function loadReal(){
   if(!r.ok)throw Error('Events service unavailable');
   const data=await r.json();if(!Array.isArray(data.events))throw Error('Unexpected event feed');
   listedEvents=data.events;
-  const feature=$('#featured'),first=listedEvents[0];
+  const feature=$('#featured'),first=listedEvents.find(e=>e.featured===true)||listedEvents[0];
   feature.hidden=!first;
   if(first){
    $('#feature-title').textContent=first.title;
@@ -92,7 +92,7 @@ async function loadReal(){
    $('#featureVenue').textContent=first.venue;
    $('#featureDescription').textContent=first.description||'View all ticket types and event information.';
    $('#featureLink').href=linkFor(first);
-   $('#featureStatus').textContent=first.public_beta_test?'LIVE €0 SYSTEM TEST · NO ADMISSION':'REAL EVENT';
+   $('#featureStatus').textContent=first.public_beta_test?'LIVE €0 SYSTEM TEST · NO ADMISSION':first.featured?'PREMIUM FEATURED EVENT':'REAL EVENT';
   }
   render();
  }catch(error){console.error('Unable to load genuine events',error);

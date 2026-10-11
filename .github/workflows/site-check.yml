@@ -72,6 +72,10 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f SUPABASE_TICKETBUNKER_PREMIUM_MAILOUT.sql
       - name: Verify premium campaign drafts require a paid placement
         run: psql -v ON_ERROR_STOP=1 -f test/ticketbunker-premium-mailout-schema.sql
+      - name: Add premium subscriber email automatic send and retry records
+        run: psql -v ON_ERROR_STOP=1 -f SUPABASE_TICKETBUNKER_PREMIUM_AUTOSEND.sql
+      - name: Verify automatic premium emails require a verified paid placement
+        run: psql -v ON_ERROR_STOP=1 -f test/ticketbunker-premium-autosend-schema.sql
       - name: Apply bespoke Festival and Festival Pro pricing schema
         run: psql -v ON_ERROR_STOP=1 -f SUPABASE_TICKETBUNKER_FESTIVAL_QUOTES.sql
       - name: Verify festival quote requests stay unpaid

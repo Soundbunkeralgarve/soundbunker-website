@@ -51,26 +51,30 @@ test('withdrawal removes only SoundBunker promo segment not unrelated lists',asy
 test('premium email is branded, show specific, safe and includes unsubscribe',()=>{
  const campaign=premiumEventEmail({title:'A Night <Special>',venue:'Venue & Town',when:'23 Oct, 20:00',
   poster:'https://images.example.test/poster.jpg',slug:'a-night',organiser:'Event Owner'});
- assert.match(campaign.subject,/Featured TicketBunker event/);
+ assert.match(campaign.subject,/Featured on TicketBunker/);
  assert.ok(campaign.html.includes('A Night &lt;Special&gt;'));
  assert.ok(!campaign.html.includes('A Night <Special>'));
  assert.match(campaign.html,/RESEND_UNSUBSCRIBE_URL/);
  assert.match(campaign.html,/ticketbunker-logo/);
  assert.match(campaign.ticketLink,/\/event\?slug=a-night/);
- assert.match(campaign.text,/No TicketBunker buyer booking fees/);
+ assert.match(campaign.text,/No TicketBunker booking fees/);
 });
-test('premium drafts require admin and paid verified placements, never auto-send',async()=>{
+test('automatic subscriber mail only follows paid live featured placement, with protected recovery',async()=>{
  const response=reply();
  await mailer({method:'POST',headers:{}},response);
  assert.equal(response.statusCode,401);
- const code=load('api/admin-premium-email-draft.js');
- assert.match(code,/requireAdmin\(req\)/);
- assert.match(code,/paid_at/);
- assert.match(code,/stripe_session_id/);
- assert.match(code,/EVENTS_MARKETPLACE_PAYMENTS_ENABLED/);
- assert.match(code,/send:false/);
- assert.doesNotMatch(code,/\/broadcasts\/[^'"]+\/send/);
- assert.match(code,/SOUNDBUNKER_PROMO_SEGMENT_ID/);
+ const recovery=load('api/admin-premium-email-draft.js');
+ const module=load('api/lib/ticketbunker-premium-autosend.js');
+ assert.match(recovery,/requireAdmin\(req\)/);
+ assert.match(recovery,/dispatchPremiumPlacementEmail/);
+ assert.match(module,/paid_at/);
+ assert.match(module,/stripe_session_id/);
+ assert.match(module,/premiumEmailAutoEnabled/);
+ assert.match(module,/send:false/);
+ assert.match(module,/\/send/);
+ assert.match(module,/SOUNDBUNKER_PROMO_SEGMENT_ID/);
+ assert.match(module,/event_ended/);
+ assert.match(module,/waiting_for_live_event/);
 });
 test('upgrade includes featured home placement and subscriber email at one quoted fee',()=>{
  const organiser=load('organiser.html'),events=load('events.html');
