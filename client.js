@@ -54,22 +54,58 @@ async function boot() {
   }
 }
 
+async function marketingConsentRequest(session,body){
+ const response=await fetch('/api/client-marketing-consent',{
+  method:body?'POST':'GET',cache:'no-store',
+  headers:{authorization:'Bearer '+session.access_token,...(body?{'content-type':'application/json'}:{})},
+  body:body?JSON.stringify(body):undefined
+ });
+ const data=await response.json();
+ if(!response.ok)throw Error(data.error||'Could not update marketing email preferences');
+ return data;
+}
+let signupMarketingSync=null;
+async function applyPendingSignupMarketing(session){
+ if(session?.user?.user_metadata?.ticketbunker_marketing_signup_pending!==true)return;
+ if(signupMarketingSync)return signupMarketingSync;
+ signupMarketingSync=marketingConsentRequest(session,{source:'signup'}).catch(error=>{
+  console.warn('Signup email preference needs retry',error);
+  const status=$('#marketingPreferencesStatus');
+  if(status)status.textContent='Your signup preference could not be confirmed yet. Please save it below.';
+ }).finally(()=>{signupMarketingSync=null;});
+ return signupMarketingSync;
+}
+async function loadMarketingPreferences(session){
+ const status=$('#marketingPreferencesStatus');
+ try{
+  const data=await marketingConsentRequest(session);
+  $('#accountMarketingConsent').checked=data.optedIn===true;
+  if(status)status.textContent=data.optedIn?'Subscribed to event news and promotions.':'Not subscribed to event news and promotions.';
+ }catch(error){if(status)status.textContent=error.message;}
+}
 async function authenticate(event) {
   event.preventDefault();
   const email = $('#email').value.trim();
   const password = $('#password').value;
   const fullName = $('#fullName').value.trim();
+  const marketingOptIn=$('#authMarketingConsent').checked===true;
   $('#authSubmit').disabled = true;
   message(mode === 'signup' ? 'Creating your account...' : 'Signing in...');
   const next = new URLSearchParams(location.search).get('next');
   const permittedNext = ['/redeem','/organiser','/client#my-tickets'].includes(next) ? next : '';
   const result = mode === 'signup'
-    ? await supabaseClient.auth.signUp({ email, password, options: { emailRedirectTo: location.origin+'/client'+(permittedNext?'?next='+encodeURIComponent(permittedNext):''), data: { full_name: fullName, name: fullName } } })
+    ? await supabaseClient.auth.signUp({ email, password, options: { emailRedirectTo: location.origin+'/client'+(permittedNext?'?next='+encodeURIComponent(permittedNext):''), data: { full_name: fullName, name: fullName, ticketbunker_marketing_signup_pending: marketingOptIn } } })
     : await supabaseClient.auth.signInWithPassword({ email, password });
   $('#authSubmit').disabled = false;
   if (result.error) return message(result.error.message, true);
   if (mode === 'signup' && !result.data.session) return message('Account created. Check your email to confirm your address, then sign in.');
-  if (result.data.session) await enterPortal(result.data.session);
+  if(result.data.session){
+    if(mode==='login'&&marketingOptIn){
+      try{await marketingConsentRequest(result.data.session,{source:'account',consent:true});}
+      catch(error){console.warn('Sign-in email opt-in failed',error);}
+    }
+    await enterPortal(result.data.session);
+  }
 }
 
 async function forgot() {
@@ -84,12 +120,13 @@ async function enterPortal(session) {
   show('#portalPanel', true);
   const profile = await refreshProfile(session, true);
   if (!profile) return;
+  await applyPendingSignupMarketing(session);
   const next = new URLSearchParams(location.search).get('next');
   if (next === '/redeem') { location.replace('/redeem'); return; }
   if (next === '/organiser') { location.replace('/organiser'); return; }
   if (next === '/client#my-tickets') history.replaceState(null,'','/client#my-tickets');
   if (profile.role === 'admin' && !['#inbox','#notifications','#my-tickets'].includes(location.hash)) { location.replace('/admin'); return; }
-  await Promise.all([loadProjects(session), loadGalleries(session), loadVouchers(session), loadBookings(), loadNotifications(), loadInbox(), loadMyEventTickets()]);
+  await Promise.all([loadProjects(session), loadGalleries(session), loadVouchers(session), loadBookings(), loadNotifications(), loadInbox(), loadMyEventTickets(), loadMarketingPreferences(session)]);
   if(location.hash==='#my-files') document.querySelector('#my-files')?.scrollIntoView({block:'start'});
   if(location.hash==='#my-tickets') document.querySelector('#my-tickets')?.scrollIntoView({block:'start'});
   if(location.hash==='#session-upload') document.querySelector('#session-upload')?.scrollIntoView({block:'start'});
@@ -467,6 +504,20 @@ document.addEventListener('DOMContentLoaded', () => {
    const title=$('#authPanel .client-auth-copy h1');if(title)title.textContent='All your tickets. One SoundBunker account.';
    const welcome=$('#authPanel .client-login-card h2');if(welcome)welcome.textContent='Sign in to view your event tickets.';
   }
+  $('#marketingPreferencesForm').addEventListener('submit',async event=>{
+    event.preventDefault();
+    const button=$('#saveMarketingPreferences'),status=$('#marketingPreferencesStatus');
+    const consent=$('#accountMarketingConsent').checked===true;
+    button.disabled=true;status.textContent='Saving your email preference…';
+    try{
+      const {data:{session}}=await supabaseClient.auth.getSession();
+      if(!session)throw Error('Sign in again to update your preferences.');
+      const result=await marketingConsentRequest(session,{source:'account',consent});
+      status.textContent=result.providerWarning||
+       (result.optedIn?'Subscribed to event news and promotions.':'Marketing emails switched off.');
+    }catch(error){status.textContent=error.message;}
+    finally{button.disabled=false;}
+  });
   $('#loginForm').addEventListener('submit', authenticate);
   $('#loginTab').addEventListener('click', () => setMode('login'));
   $('#signupTab').addEventListener('click', () => setMode('signup'));
