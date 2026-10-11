@@ -26,49 +26,26 @@ ALTER TABLE public.sb_event_orders
 CREATE INDEX IF NOT EXISTS sb_event_order_street_team_idx
  ON public.sb_event_orders(street_team_id,status) WHERE street_team_id IS NOT NULL;
 
--- Preserve existing beta procedure contract; add a fifth *optional* referral argument.
-CREATE OR REPLACE FUNCTION public.sb_issue_public_beta_ticket(
- p_tier uuid,p_name text,p_email text,p_quantity integer,p_ref text DEFAULT null
+-- Wrapper preserves the audited 4-argument issuer and all quota/locking
+-- protections. Referral attribution and ticket issuance are ONE transaction.
+CREATE OR REPLACE FUNCTION public.sb_issue_public_beta_ticket_ref(
+ p_tier uuid,p_name text,p_email text,p_quantity integer,p_ref text
 ) RETURNS uuid LANGUAGE plpgsql SECURITY INVOKER SET search_path='' AS $$
-DECLARE ev record; tier record; used_count bigint; existing bigint; created uuid; promoter uuid;
+DECLARE booked uuid; target_event uuid; promoter uuid;
 BEGIN
- IF p_quantity NOT BETWEEN 1 AND 4 OR char_length(trim(p_name)) NOT BETWEEN 2 AND 100
-    OR char_length(trim(p_email)) NOT BETWEEN 5 AND 254
- THEN RAISE EXCEPTION 'Invalid test booking details'; END IF;
- SELECT e.id,e.status,e.currency,e.public_beta_test,e.beta_test_expires_at,e.starts_at
-  INTO ev FROM public.sb_event_tiers t JOIN public.sb_events e ON e.id=t.event_id
-  WHERE t.id=p_tier FOR UPDATE OF e;
- IF NOT FOUND OR NOT ev.public_beta_test OR ev.status<>'draft' OR ev.beta_test_expires_at<=now()
- THEN RAISE EXCEPTION 'This test booking is closed'; END IF;
- SELECT id,quantity_total,price_cents INTO tier
- FROM public.sb_event_tiers WHERE id=p_tier AND event_id=ev.id FOR UPDATE;
- IF NOT FOUND OR tier.price_cents<100 THEN RAISE EXCEPTION 'Ticket type unavailable'; END IF;
- SELECT coalesce(sum(quantity),0) INTO used_count FROM public.sb_event_orders
- WHERE tier_id=tier.id AND status IN ('paid','needs_attention')
- AND (NOT beta_test_order OR (SELECT e.public_beta_test AND e.beta_test_expires_at>now()
-   FROM public.sb_events e WHERE e.id=event_id));
- IF used_count+p_quantity>least(tier.quantity_total,50)
- THEN RAISE EXCEPTION 'Test ticket allocation is full'; END IF;
- SELECT coalesce(sum(quantity),0) INTO existing FROM public.sb_event_orders
- WHERE event_id=ev.id AND lower(customer_email)=lower(trim(p_email))
- AND status='paid' AND beta_test_order;
- IF existing+p_quantity>4 THEN RAISE EXCEPTION 'Maximum four test tickets per email per event'; END IF;
- IF p_ref IS NOT NULL AND p_ref <> '' THEN
-  SELECT st.id INTO promoter FROM public.sb_event_street_team st
-  WHERE st.referral_code=p_ref AND st.active AND st.event_id=ev.id;
+ booked:=public.sb_issue_public_beta_ticket(p_tier,p_name,p_email,p_quantity);
+ IF p_ref ~ '^[0-9a-f]{16}$' THEN
+  SELECT t.event_id INTO target_event FROM public.sb_event_tiers t WHERE t.id=p_tier;
+  SELECT s.id INTO promoter FROM public.sb_event_street_team s
+    WHERE s.referral_code=p_ref AND s.event_id=target_event AND s.active;
+  IF promoter IS NOT NULL THEN
+   UPDATE public.sb_event_orders SET street_team_id=promoter
+    WHERE id=booked AND beta_test_order=true AND event_id=target_event;
+  END IF;
  END IF;
- INSERT INTO public.sb_event_orders
- (event_id,tier_id,customer_name,customer_email,quantity,total_cents,status,reserved_until,currency,paid_at,beta_test_order,street_team_id)
- VALUES(ev.id,tier.id,trim(p_name),lower(trim(p_email)),p_quantity,0,'paid',now(),ev.currency,now(),true,promoter)
- RETURNING id INTO created;
- INSERT INTO public.sb_event_tickets(order_id,event_id,tier_id,sequence_number)
- SELECT created,ev.id,tier.id,n FROM generate_series(1,p_quantity) n;
- RETURN created;
+ RETURN booked;
 END $$;
-REVOKE ALL ON FUNCTION public.sb_issue_public_beta_ticket(uuid,text,text,integer,text)
+REVOKE ALL ON FUNCTION public.sb_issue_public_beta_ticket_ref(uuid,text,text,integer,text)
  FROM PUBLIC,anon,authenticated;
-GRANT EXECUTE ON FUNCTION public.sb_issue_public_beta_ticket(uuid,text,text,integer,text)
+GRANT EXECUTE ON FUNCTION public.sb_issue_public_beta_ticket_ref(uuid,text,text,integer,text)
  TO service_role;
--- Remove legacy four-argument function to prevent side-path that bypasses tracking
--- and keep all callers compatible via the optional fifth parameter.
-DROP FUNCTION IF EXISTS public.sb_issue_public_beta_ticket(uuid,text,text,integer);
