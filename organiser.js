@@ -221,6 +221,9 @@ async function refresh(){
  $('#tierEvent').innerHTML=list.filter(e=>e.status==='draft').map(e=>'<option value="'+esc(e.id)+'">'+esc(e.title)+(e.tiers.length?' · '+e.tiers.length+' ticket type(s)':' · NO TICKETS YET')+'</option>').join('');
  $('#showcaseEvent').innerHTML=list.filter(e=>e.status==='draft').map(e=>'<option value="'+esc(e.id)+'">'+esc(e.title)+(e.showcase?' (requested)':'')+'</option>').join('');
  $('#reviewEvent').innerHTML=list.filter(e=>e.status==='draft'&&!e.internal_free_test).map(e=>'<option value="'+esc(e.id)+'">'+esc(e.title)+(e.publish_requested_at?' · Review requested':'')+'</option>').join('');
+ const quoteEventPrevious=$('#largeEventId').value;
+ $('#largeEventId').innerHTML=list.filter(e=>e.status==='draft'&&!e.internal_free_test).map(e=>'<option value="'+esc(e.id)+'">'+esc(e.title)+(e.festivalQuote?' · Quote '+e.festivalQuote.status:'')+'</option>').join('');
+ if(list.some(e=>e.id===quoteEventPrevious))$('#largeEventId').value=quoteEventPrevious;
  if(currentDraftId){$('#tierEvent').value=currentDraftId;$('#reviewEvent').value=currentDraftId;}
  else{
   if(list.some(e=>e.id===previousTicket))$('#tierEvent').value=previousTicket;
@@ -231,6 +234,12 @@ async function refresh(){
   $('#newTicketRows').replaceChildren();ticketEditorEvent=$('#tierEvent').value;
  }
  renderSavedTickets();
+ const quoteSelected=eventFor($('#largeEventId').value);
+ if(quoteSelected?.festivalQuote){
+  $('#largeEventMessage').textContent='Custom quote '+quoteSelected.festivalQuote.status.replaceAll('_',' ')+': '+Number(quoteSelected.festivalQuote.expected_tickets).toLocaleString('en-GB')+' tickets. No payment has been taken.';
+ }else if(quoteSelected){
+  $('#largeEventMessage').textContent='No quote requested yet for '+quoteSelected.title+'.';
+ }
 
  const selected=list.find(e=>e.id===$('#showcaseEvent').value);
  updateShowcasePrice(selected);
@@ -257,6 +266,34 @@ function updateShowcasePrice(event){
  const fee=event.currency==='gbp'?'£49':'€59';
  element.textContent=event.showcase?'Request status: '+event.showcase.status.toUpperCase()+'. No payment required in BETA.':'Proposed Featured Showcase add-on: '+fee+' for this event. No payment during BETA.';
 }
+$('#largeEventId').addEventListener('change',()=>{
+ const ev=eventFor($('#largeEventId').value);
+ $('#largeEventMessage').textContent=ev?.festivalQuote
+  ?'Custom quote '+ev.festivalQuote.status.replaceAll('_',' ')+'. Our team will contact you. No payment is collected here.'
+  :'This request is free and creates no payment obligation.';
+});
+$('#largeEventForm').addEventListener('submit',async e=>{
+ e.preventDefault();const form=e.currentTarget;
+ const data=new FormData(form),eventId=String(data.get('eventId')||'');
+ const tickets=Number(data.get('expectedTickets'));
+ if(!eventId||!Number.isSafeInteger(tickets)||tickets<2001){
+  $('#largeEventMessage').textContent='Choose your draft event and enter 2,001 or more expected tickets.';return;
+ }
+ if(!startOperation('Requesting custom quote','Saving your large-event details and preferred payment arrangement…',form.querySelector('[type=submit]')))return;
+ try{
+  const result=await request({action:'festivalQuote',eventId,expectedTickets:tickets,
+    paymentPreference:data.get('paymentPreference'),notes:data.get('notes')});
+  updateOperation('Custom quote saved','Confirming your enquiry…');
+  const message=result.message||'Your bespoke enquiry was saved. No payment taken.';
+  try{await refresh();}catch(error){console.warn('Could not refresh quote status',error);}
+  $('#largeEventMessage').textContent=message;
+  finishOperation(message);notify(message);
+ }catch(error){
+  const message='Quote request not saved: '+error.message;
+  $('#largeEventMessage').textContent=message;
+  finishOperation(message,true);notify(message,true);
+ }
+});
 $('#showcaseEvent').addEventListener('change',()=>{
  const selected=$('#showcaseEvent').value;
  request().then(data=>updateShowcasePrice(data.events.find(e=>e.id===selected))).catch(e=>notify(e.message,true));
