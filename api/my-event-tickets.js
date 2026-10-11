@@ -29,7 +29,7 @@ export default async function handler(req,res){
     .select('id,order_id,event_id,tier_id,sequence_number,checked_in_at,holder_email,holder_name,transfer_version')
     .in('order_id',[...allowed.keys()]).limit(300),
    db.from('sb_events')
-    .select('id,title,starts_at,venue,venue_timezone,image_url,event_logo_url,internal_free_test')
+    .select('id,title,starts_at,venue,venue_timezone,image_url,event_logo_url,internal_free_test,public_beta_test')
     .in('id',[...new Set(orders.data.map(x=>x.event_id))]),
    db.from('sb_event_tiers').select('id,name,price_cents')
     .in('id',[...new Set(orders.data.map(x=>x.tier_id))])
@@ -48,7 +48,7 @@ export default async function handler(req,res){
     ticketName:tier?.name||'General admission',priceCents:tier?.price_cents??null,used:!!t.checked_in_at,
     holderName:t.holder_name||order?.customer_name||'Ticket holder',admissionNumber:t.sequence_number,
     canManage:!t.checked_in_at&&Date.parse(event?.starts_at||'')>Date.now()&&version<5,
-    test:event?.internal_free_test===true,url:base+'/event-ticket.html?id='+encodeURIComponent(t.id)+'&sig='+signedTicket(t.id,version)};
+    test:event?.internal_free_test===true||event?.public_beta_test===true,url:base+'/event-ticket.html?id='+encodeURIComponent(t.id)+'&sig='+signedTicket(t.id,version)};
   }).sort((a,b)=>new Date(a.startsAt||0)-new Date(b.startsAt||0))});
  }catch(err){console.error('My event tickets failed',err);return json(res,{error:'Unable to load your event tickets'},503);}
 }
