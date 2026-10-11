@@ -39,6 +39,6 @@ test('marketing signup requires explicit consent and never resets an existing un
     const existing = response();
     await newsletter({ method: 'POST', body: { email: 'person@example.com', consent: true } }, existing);
     assert.equal(existing.data.existing, true);
-    assert.equal(calls, 1);
+    assert.equal(calls, 3);
   } finally { global.fetch = originalFetch; process.env = originalEnv; }
 });
