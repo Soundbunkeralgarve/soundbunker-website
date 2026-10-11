@@ -137,9 +137,6 @@
     },
     "api/*.js": {
       "includeFiles": "assets/soundbunker-email-footer.png"
-    },
-    "api/premium-mail-reconcile.js": {
-      "maxDuration": 60
     }
   },
   "crons": [
