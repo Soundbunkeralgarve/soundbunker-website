@@ -31,7 +31,7 @@ test('real Events and organiser pages display beta warning and no checkout dialo
  assert.match(home,/header-beta-pill/);
  assert.doesNotMatch(events,/<dialog id="checkout">/);
  assert.doesNotMatch(client,/\/api\/event-checkout|checkout\.stripe\.com/);
- assert.match(events,/id="tb-demo-dialog"/);
- assert.match(client,/No tickets sold|checkout disabled|not bookable/i);
- assert.match(client,/DEMO/);
+ assert.doesNotMatch(events,/id="tb-demo-dialog"/);
+ assert.match(client,/real event/i);
+ assert.match(client,/\/event\?slug=/);
 });
