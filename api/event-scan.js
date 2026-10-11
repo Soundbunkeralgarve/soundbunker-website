@@ -14,9 +14,10 @@ export default async function handler(req,res){
   if(url.hostname!=='www.soundbunker.pt'&&url.hostname!=='soundbunker.pt')
    return json(res,{status:'invalid',message:'Wrong ticket issuer'});
   const id=url.searchParams.get('id'),sig=url.searchParams.get('sig');
-  if(!validTicket(id,sig))return json(res,{status:'invalid',message:'Invalid ticket signature'});
-  const ticket=await ctx.admin.from('sb_event_tickets').select('id,event_id').eq('id',id).maybeSingle();
+  const ticket=await ctx.admin.from('sb_event_tickets').select('id,event_id,transfer_version').eq('id',id).maybeSingle();
   if(ticket.error||!ticket.data)return json(res,{status:'invalid',message:'Ticket not found'});
+  if(!validTicket(id,sig,ticket.data.transfer_version||0))
+   return json(res,{status:'invalid',message:'Transferred ticket — old QR has expired'});
   const requestedEvent=String(body.eventId||'');
   if(ticket.data.event_id!==requestedEvent)
    return json(res,{status:'wrong_event',message:'Ticket belongs to a different event'});
@@ -31,7 +32,9 @@ export default async function handler(req,res){
    if(staff.error||!staff.data && owner?.data?.owner_user_id!==ctx.user.id)
      return json(res,{error:'You are not authorised to scan tickets for this event'},403);
   }
-  const scanned=await ctx.admin.rpc('sb_checkin_event_ticket',{p_ticket:id,p_actor:ctx.user.id});
+  const scanned=await ctx.admin.rpc('sb_checkin_event_ticket_versioned',{
+   p_ticket:id,p_actor:ctx.user.id,p_version:ticket.data.transfer_version||0
+  });
   if(scanned.error)throw scanned.error;
   const eventMeta=await ctx.admin.from('sb_events').select('internal_free_test').eq('id',ticket.data.event_id).single();
   if(eventMeta.error)throw eventMeta.error;
