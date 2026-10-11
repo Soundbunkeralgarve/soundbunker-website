@@ -126,7 +126,21 @@
         <a class="client-bento-card client-book" href="index.html#booking"><span>BOOK A SESSION</span><div><h3>Ready for the next one?</h3><p>Choose recording, production, mixing, voice-over, photography or an experience.</p><b>Explore bookings →</b></div></a>
       </section>
 
-      <section class="client-my-tickets" id="my-tickets"><div class="client-tickets-heading"><div><p class="eyebrow">EVENTS &amp; TICKETS</p><h2>My Tickets</h2><p>All event tickets purchased with your SoundBunker email appear here. Open each QR ticket, save it or share it with someone attending.</p></div><a href="/events" class="client-action-solid">Browse events ↗</a></div><p class="client-ticket-warning">Each QR code can only be scanned once. Anyone you share the ticket link with can present it at the door — send each ticket to one person only.</p><div id="myEventTickets" class="client-ticket-grid"><p>Loading your event tickets…</p></div><p id="ticketMessage" role="status"></p></section>
+      <section class="client-my-tickets" id="my-tickets"><div class="client-tickets-heading"><div><p class="eyebrow">EVENTS &amp; TICKETS</p><h2>My Tickets</h2><p>Your tickets and tickets transferred to you, in one account. Add attendee names or securely transfer individual tickets to friends.</p></div><a href="/events" class="client-action-solid">Browse events ↗</a></div><p class="client-ticket-warning">Each QR code admits one person. Use Transfer Ticket to move a ticket into another SoundBunker account and invalidate its previous QR.</p><div id="myEventTickets" class="client-ticket-grid"><p>Loading your event tickets…</p></div><p id="ticketMessage" role="status" aria-live="polite"></p>
+      <dialog id="ticketManageDialog" class="client-ticket-dialog" aria-labelledby="ticketManageTitle">
+       <form id="ticketManageForm">
+        <div class="client-ticket-dialog-top"><h3 id="ticketManageTitle">Manage attendee</h3><button type="button" id="closeTicketManage" aria-label="Close">×</button></div>
+        <p id="ticketManageDescription">Each ticket can have its own attendee name.</p>
+        <input id="ticketManageId" type="hidden">
+        <input id="ticketManageAction" type="hidden">
+        <label for="ticketHolderName">Attendee name<input id="ticketHolderName" type="text" minlength="2" maxlength="100" required autocomplete="name"></label>
+        <label id="ticketRecipientWrap" for="ticketRecipientEmail" hidden>Recipient's SoundBunker login email<input id="ticketRecipientEmail" type="email" autocomplete="email" placeholder="attendee@example.com"></label>
+        <p class="client-ticket-dialog-warning" id="ticketTransferWarning" hidden>Transferring moves this ticket into the recipient's SoundBunker account. The old QR stops working immediately. The recipient needs to sign in or register using this exact email.</p>
+        <p id="ticketManageStatus" role="status" aria-live="polite"></p>
+        <button type="submit" id="submitTicketManage">Save attendee</button>
+       </form>
+      </dialog>
+      </section>
       <section class="client-vouchers-section" id="my-vouchers">
         <div class="client-voucher-head">
           <div><p class="eyebrow">My Gift Vouchers</p><h2>Your experiences, ready when you are.</h2><p>Paid vouchers are automatically matched to the purchaser or recipient email on this account.</p></div>
