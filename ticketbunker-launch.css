@@ -232,3 +232,36 @@
 .tb-premium-offer small{font-size:11px;color:#d4c0df;line-height:1.6}
 .tb-premium-offer a{white-space:nowrap;text-align:center;flex:0 0 auto;padding:14px 18px;min-height:44px;background:#faf5ff;color:#26182f;border-radius:12px;text-decoration:none;font-weight:900;font-size:12px}
 @media(max-width:760px){.tb-premium-offer{padding:21px 17px;display:grid;gap:18px}.tb-premium-offer a{width:100%;box-sizing:border-box}}
+
+/* Flexible Street Team milestones with editable rewards and paid-only progress. */
+.tb-street-reward-intro{background:#f7f3f9;border:1px solid #e4d9e9;border-radius:13px;padding:15px 18px}
+.tb-street-reward-intro strong{font-size:16px;font-weight:900;color:#291c32}
+.tb-street-reward-intro p{font-size:12px;line-height:1.6;color:#675971;margin:7px 0 0}
+.tb-street-reward-rows{display:grid;gap:12px;min-width:0}
+.tb-street-reward-row{border:1px solid #d5c7df;background:#fff;border-radius:15px;padding:15px;box-shadow:0 5px 16px #1e102610}
+.tb-street-reward-head{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:13px}
+.tb-street-reward-head strong{font:850 16px 'Space Grotesk',sans-serif;color:#2e2137}
+.tb-organiser-app .tb-street-reward-remove{border:0;background:transparent;padding:7px 4px;color:#874660;font-weight:800;font-size:12px;cursor:pointer}
+.tb-organiser-app .tb-street-reward-remove[hidden],.tb-street-cash[hidden],#cancelStreetPerkEdit[hidden]{display:none!important}
+.tb-street-reward-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.tb-street-reward-fields label{display:grid;gap:6px;min-width:0;font-size:11px;font-weight:800;color:#65566d}
+.tb-street-reward-fields input,.tb-street-reward-fields select{width:100%;max-width:100%;box-sizing:border-box;min-height:46px;padding:12px 11px;font-size:16px;color:#291e32;background:#fff;border:1px solid #d5c9dd;border-radius:10px}
+.tb-street-reward-fields label.tb-street-details{grid-column:1/-1}
+.tb-street-reward-actions{display:flex;align-items:center;gap:15px;justify-content:space-between}
+.tb-street-reward-actions button{min-height:46px;white-space:normal}
+.tb-street-reward-actions span{font-size:11px;font-weight:900;color:#795d8c}
+.tb-street-milestone-list{display:grid;gap:7px;margin-top:12px}
+.tb-street-milestone{display:flex;gap:11px;align-items:start;justify-content:space-between;background:#f7f3f8;border:1px solid #e5dbe8;padding:10px 12px;border-radius:10px;color:#332640}
+.tb-street-milestone strong{display:block;font-size:12px;margin-bottom:3px}
+.tb-street-milestone small{display:block;font-size:11px;color:#726578;line-height:1.5}
+.tb-street-milestone>span{font-size:11px;white-space:nowrap;color:#674c76;font-weight:850}
+.tb-street-milestone.is-earned{background:#ecf7f1;border-color:#b3d4c1}
+.tb-street-milestone.is-earned>span{color:#296e48}
+@media(max-width:760px){
+ .tb-street-reward-fields{grid-template-columns:1fr}
+ .tb-street-reward-fields label.tb-street-details{grid-column:auto}
+ .tb-street-reward-actions{display:grid;gap:6px}
+ .tb-street-reward-row{padding:13px}
+ .tb-street-milestone{display:grid}
+ .tb-street-milestone>span{white-space:normal}
+}
