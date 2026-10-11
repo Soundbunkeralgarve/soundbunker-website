@@ -1,9 +1,9 @@
 // The existing SoundBunker ticket service owns authentication, authorisation,
 // event inventory, QR signatures and payments. No service credentials reach this site.
 const UPSTREAM = 'https://www.soundbunker.pt';
-const PUBLIC = new Set(['supabase-config', 'events', 'event-ticket']);
+const PUBLIC = new Set(['supabase-config', 'events', 'event-ticket', 'event-wallet']);
 const METHODS = {
-  'supabase-config': ['GET'], events: ['GET'], 'event-ticket': ['GET'],
+  'supabase-config': ['GET'], events: ['GET'], 'event-ticket': ['GET'], 'event-wallet': ['GET'],
   organiser: ['GET', 'POST'], 'organiser-brand':['GET','POST'], 'event-media': ['POST'],
   'event-organiser-report': ['GET'], 'event-street-team': ['GET', 'POST'],
   'event-staff': ['GET', 'POST'], 'event-scan': ['POST'],
@@ -71,6 +71,7 @@ export default async function handler(req, res) {
   try {
     if(!PUBLIC.has(endpoint)&&!(await verifyAccount(token)))return reply(401,{error:'Please sign in with a verified email account.'});
     const upstream = await fetch(url,{method:req.method,headers:{accept:'application/json',...(token?{authorization:token}:{}),...(body?{'content-type':'application/json'}:{})},body:body?JSON.stringify(body):undefined,redirect:'error',signal:AbortSignal.timeout(45000)});
+    if(endpoint==='event-wallet'&&upstream.ok&&upstream.headers.get('content-type')?.includes('application/vnd.apple.pkpass')){res.setHeader('Content-Type','application/vnd.apple.pkpass');res.setHeader('Content-Disposition','attachment; filename="ticketbunker.pkpass"');return res.status(200).send(Buffer.from(await upstream.arrayBuffer()));}
     const data = await upstream.json();
     if (endpoint === 'event-ticket' && data.ticket?.test) return reply(404,{error:'This is a test ticket and is not valid for admission.'});
     return reply(upstream.status,upstream.ok?cleanResponse(endpoint,data):data);

@@ -10,12 +10,12 @@ const row={id:'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee',event_id:'bbbbbbbb-cccc-4dd
 const paid={id:row.stripe_session_id,client_reference_id:row.id,amount_total:5900,
  currency:'eur',payment_status:'paid',livemode:true,
  metadata:{purchase_type:'event_featured_promotion',premium_request_id:row.id,event_id:row.event_id}};
-test('promotional email uses SoundBunker email design, event poster, organiser logo and bio',()=>{
+test('promotional email uses TicketBunker footer, event poster, organiser logo and bio',()=>{
  const e=premiumEventEmail({title:'The Night <Special>',venue:'Loulé & More',
   when:'25 Oct 2026 21:00',poster:'https://example.com/event-poster.jpg',
   logo:'https://example.com/promoter-logo.png',bio:'Artist lineup &\nMore details',slug:'night-special',
   organiser:'The Promoter'});
- assert.match(e.html,/assets\/soundbunker-email-footer\.png/);
+ assert.match(e.html,/lh3\.googleusercontent\.com\/d\/1l0WTM8jHq8VQwKWcF6tUYFicpxT2QFIr/);
  assert.match(e.html,/ticketbunker-email-logo\.png/);
  assert.match(e.html,/event-poster\.jpg/);
  assert.match(e.html,/promoter-logo\.png/);

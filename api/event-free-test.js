@@ -92,7 +92,7 @@ export default async function handler(req,res){
   const links=tickets.data.map(t=>ticketUrl(t.id));
   let emailSent=false;
   try{
-   await sendTransactionalEmail({to:email,key:'ticketbunker-free-real-test-'+issued.data,
+   await sendTransactionalEmail({brand:'ticketbunker',to:email,key:'ticketbunker-free-real-test-'+issued.data,
     subject:'Your FREE ticketBunker QR test tickets (not for a real event)',
     text:'Hi '+name+',\n\nThese are REAL test-system QR tickets with a price of €0/£0. No payment has been made and this is NOT a real public event.\n\n'+event.title+'\n'+event.venue+'\n\nOpen each unique test QR link:\n'+links.join('\n')+'\n\nEach ticket can be checked in once using the ticketBunker door scanner.\n\nSoundBunker Algarve'});
    emailSent=true;

@@ -116,7 +116,7 @@ export default async function handler(req,res){
    const base=(process.env.SITE_URL||'https://www.soundbunker.pt').replace(/\/$/,'');
    const invitationUrl=base+'/event-scanner?invite='+token;
    let emailSent=false;
-   try{await sendTransactionalEmail({to:email,key:'ticketbunker-scanner-'+result.data.id,
+   try{await sendTransactionalEmail({brand:'ticketbunker',to:email,key:'ticketbunker-scanner-'+result.data.id,
      subject:'TicketBunker Door Crew · '+source.data.title,
      text:'TICKETBUNKER · DOOR SCANNER INVITATION\n\nEvent: '+source.data.title+'\n\nYou have been invited to the door crew for this event only.\n\n1. Open your private invite: '+invitationUrl+'\n2. Sign in or create a SoundBunker account using THIS exact email address ('+email+').\n3. Accept the invitation and start scanning.\n\nThe invitation expires in 72 hours. Access is event-specific and the organiser can revoke it. Do not forward this link.\n\nTicketBunker'});emailSent=true;}
    catch(error){console.error('Unable to email scanner invitation',error);}
