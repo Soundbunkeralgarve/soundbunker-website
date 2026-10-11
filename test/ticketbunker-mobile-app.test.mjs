@@ -7,12 +7,13 @@ const client=read('client.html'),free=read('event-free-test.html'),ticket=read('
 const css=read('ticketbunker-app.css'),clientCss=read('client-mobile-app.css');
 test('TicketBunker is its own ticketing brand, no main-site photo hero or decorative bars',()=>{
  assert.match(events,/class="tb-hero tb-hero-standalone"/);
- assert.match(events,/tb-stub/);
+ assert.match(events,/id="tbLiveBandVideo"/);
+ assert.match(events,/class="tb-live-band-scrim"/);
  assert.match(events,/EVENT TICKETS/);
  assert.match(events,/MADE SIMPLE/);
  assert.doesNotMatch(events,/class="tb-hero-image"/);
  assert.doesNotMatch(events,/tb-stub-barcode/);
- assert.match(css,/\.tb-stub\{/);
+ assert.match(css,/\.tb-hero-standalone/);
  assert.match(css,/\.tb-hero-standalone/);
  assert.match(css,/background:linear-gradient\(137deg,#1d1628/);
 });
