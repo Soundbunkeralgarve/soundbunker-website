@@ -54,6 +54,11 @@ async function boot() {
   }
 }
 
+function safeAccountReturn(next){
+ if(['/redeem','/organiser','/client#my-tickets'].includes(next))return next;
+ if(/^\/event-scanner\?(?:invite=[a-f0-9]{64}|eventId=[a-f0-9-]{36})$/i.test(String(next||'')))return next;
+ return '';
+}
 async function authenticate(event) {
   event.preventDefault();
   const email = $('#email').value.trim();
@@ -62,7 +67,7 @@ async function authenticate(event) {
   $('#authSubmit').disabled = true;
   message(mode === 'signup' ? 'Creating your account...' : 'Signing in...');
   const next = new URLSearchParams(location.search).get('next');
-  const permittedNext = ['/redeem','/organiser','/client#my-tickets'].includes(next) ? next : '';
+  const permittedNext = safeAccountReturn(next);
   const result = mode === 'signup'
     ? await supabaseClient.auth.signUp({ email, password, options: { emailRedirectTo: location.origin+'/client'+(permittedNext?'?next='+encodeURIComponent(permittedNext):''), data: { full_name: fullName, name: fullName } } })
     : await supabaseClient.auth.signInWithPassword({ email, password });
@@ -87,6 +92,7 @@ async function enterPortal(session) {
   const next = new URLSearchParams(location.search).get('next');
   if (next === '/redeem') { location.replace('/redeem'); return; }
   if (next === '/organiser') { location.replace('/organiser'); return; }
+  if (safeAccountReturn(next).startsWith('/event-scanner?')) { location.replace(next); return; }
   if (next === '/client#my-tickets') history.replaceState(null,'','/client#my-tickets');
   if (profile.role === 'admin' && !['#inbox','#notifications','#my-tickets'].includes(location.hash)) { location.replace('/admin'); return; }
   await Promise.all([loadProjects(session), loadGalleries(session), loadVouchers(session), loadBookings(), loadNotifications(), loadInbox(), loadMyEventTickets()]);
@@ -460,7 +466,10 @@ async function signOut() {
 
 document.addEventListener('DOMContentLoaded', () => {
   const accountPurpose=new URLSearchParams(location.search).get('next');
-  if(accountPurpose==='/organiser'){
+  if(safeAccountReturn(accountPurpose).startsWith('/event-scanner?')){
+   const title=$('#authPanel .client-auth-copy h1');if(title)title.textContent='Door crew access.';
+   const welcome=$('#authPanel .client-login-card h2');if(welcome)welcome.textContent='Sign in to your assigned event scanner.';
+  }else if(accountPurpose==='/organiser'){
    const title=$('#authPanel .client-auth-copy h1');if(title)title.textContent='Your event business starts here.';
    const welcome=$('#authPanel .client-login-card h2');if(welcome)welcome.textContent='Sign in or create an organiser account.';
   }else if(accountPurpose==='/client#my-tickets'){
