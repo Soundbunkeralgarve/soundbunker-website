@@ -30,7 +30,8 @@ export default async function handler(req,res) {
   const width=bytes.readUInt32BE(16),height=bytes.readUInt32BE(20),colorType=bytes[25];
   if(width<32||height<32||width>4096||height>4096)return json(res,{error:'Use a logo from 32 to 4096 pixels'},400);
   // RGBA or greyscale-alpha PNG required; client validates actual transparent pixels.
-  if(colorType!==6&&colorType!==4)return json(res,{error:'A transparent PNG with an alpha channel is required'},400);
+  const indexedTransparency=colorType===3&&bytes.includes(Buffer.from('tRNS'));
+  if(colorType!==6&&colorType!==4&&!indexedTransparency)return json(res,{error:'A transparent PNG is required. Remove the solid background.'},400);
   const location=ctx.user.id+'/organisers/'+profile.data.id+'/logo-'+randomUUID()+'.png';
   const storage=db.storage.from('ticket-bunker-media');
   const uploaded=await storage.upload(location,bytes,{contentType:'image/png',upsert:false,cacheControl:'3600'});
