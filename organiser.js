@@ -634,7 +634,16 @@ async function boot(){
  supabase=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true}});
  const {data:{session}}=await supabase.auth.getSession();
  if(!session){$('#guest').hidden=false;notify('Sign in to get started.');return;}
- token=session.access_token;await refresh();openLargeEventQuoteFromLink();
+ token=session.access_token;await refresh();
+ const params=new URLSearchParams(location.search);
+ const requestedEvent=params.get('eventId');
+ if(params.get('step')==='tickets'&&requestedEvent){
+  const owned=eventFor(requestedEvent);
+  if(owned&&owned.status==='draft'){
+   goToTicketSetup(requestedEvent);
+   notify('Editing ticket options for '+owned.title+'. Choose VIP, Concessions 60+, Kids or any additional ticket type and save them together.');
+  }else notify('This event is not available in your organiser account. Please check you are signed into the correct account.',true);
+ }else openLargeEventQuoteFromLink();
  }catch(e){notify(e.message,true);}
 }
 window.addEventListener('load',boot);
