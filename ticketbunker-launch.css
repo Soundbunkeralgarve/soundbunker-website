@@ -86,3 +86,53 @@
 
 .tb-free-test-app .tb-claim-progress{display:block;width:100%;height:8px;margin:10px 0;accent-color:#5b3d71}
 .tb-free-test-app .tb-claim-progress[hidden]{display:none!important}
+
+/* Simple multi-ticket builder: clear saved state, one-tap ticket presets and prices. */
+.tb-ticket-list-panel{padding:18px 20px;border-radius:15px;background:#f8f5f9;border:1px solid #e5dce9;min-width:0}
+.tb-ticket-list-header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-bottom:12px}
+.tb-ticket-list-header strong{font:800 14px 'Space Grotesk',sans-serif;color:#302338}
+.tb-ticket-list-header span{font-size:11px;font-weight:800;color:#75667b}
+.tb-saved-ticket-list{display:grid;gap:7px}
+.tb-saved-ticket{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid #e5e0e9;background:#fff;border-radius:11px;padding:12px 13px}
+.tb-saved-ticket strong{display:block;color:#2d2334;font-size:13px}
+.tb-saved-ticket small{display:block;color:#796f7d;font-size:11px;margin-top:3px}
+.tb-saved-ticket b{font:800 17px 'Space Grotesk',sans-serif;white-space:nowrap;color:#392743}
+.tb-saved-empty{color:#75667c;font-size:13px;margin:2px 0}
+.tb-ticket-picker-header{margin-top:13px}
+.tb-ticket-picker-header h3{font:800 clamp(18px,2vw,23px) 'Space Grotesk',sans-serif;letter-spacing:-.03em;margin:0 0 5px;color:#291e30}
+.tb-ticket-picker-header p{font-size:12px;color:#766b7d;margin:0;line-height:1.5}
+.tb-ticket-picker{display:flex;flex-wrap:wrap;gap:9px}
+.tb-organiser-app .tb-ticket-preset{appearance:none;display:inline-flex;align-items:center;gap:9px;min-height:46px;padding:10px 15px;
+ border:1px solid #cdbfd2;background:#fff;border-radius:11px;color:#34273b;font-weight:800;font-size:12px;cursor:pointer;transition:.18s}
+.tb-organiser-app .tb-ticket-preset>span{display:grid;place-items:center;width:19px;height:19px;border-radius:50%;background:#f0e8f4;font-size:15px;line-height:1;color:#624270;font-weight:800}
+.tb-organiser-app .tb-ticket-preset[aria-pressed=true]{background:#2c2036;color:white;border-color:#2c2036}
+.tb-organiser-app .tb-ticket-preset[aria-pressed=true]>span{background:#ffffff35;color:#fff}
+.tb-organiser-app .tb-ticket-preset.already-saved,.tb-organiser-app .tb-ticket-preset:disabled{cursor:default;opacity:.66;background:#f0edf1;color:#655b6a;border-color:#e1d9e3}
+.tb-new-ticket-rows{display:grid;gap:12px;min-width:0}
+.tb-ticket-edit-row{padding:15px 17px;background:#fff;border:1px solid #cfc0d7;border-radius:15px;box-shadow:0 4px 14px #1c101d08}
+.tb-ticket-row-title{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:13px}
+.tb-ticket-row-title strong{font:800 17px 'Space Grotesk',sans-serif;color:#2f2336}
+.tb-organiser-app .tb-ticket-remove{background:transparent;color:#7b587c;border:0;padding:7px 2px;font-size:11px;min-height:32px;font-weight:800;cursor:pointer}
+.tb-ticket-row-inputs{display:grid;grid-template-columns:1.35fr 1fr 1fr;gap:11px;min-width:0}
+.tb-ticket-row-inputs label{min-width:0;font-size:11px!important;color:#66596f;font-weight:800}
+.tb-ticket-row-inputs input{width:100%;box-sizing:border-box;min-width:0;padding:13px 12px;border:1px solid #cdbed3;border-radius:10px;color:#231a2a;background:white;font-size:16px}
+.tb-ticket-row-inputs input[readonly]{background:#f6f2f6;color:#36263b}
+.tb-ticket-row-inputs input:focus-visible{outline:2px solid #67457a;outline-offset:2px}
+.tb-organiser-app #saveAllTickets:disabled{opacity:.53;cursor:not-allowed}
+.tb-organiser-app .tb-operation-dismiss{background:transparent;border:0;color:#634869;padding:2px 8px;font-size:25px;line-height:1;cursor:pointer;font-weight:400}
+.tb-operation-status[data-state=working] .tb-operation-dismiss{display:none}
+@media(max-width:760px){
+ .tb-ticket-list-panel{padding:15px;border-radius:13px}
+ .tb-ticket-list-header{align-items:flex-start;flex-direction:column;gap:5px}
+ .tb-ticket-picker{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .tb-organiser-app .tb-ticket-preset{padding:10px 9px;min-height:51px;justify-content:flex-start;font-size:11px;line-height:1.25}
+ .tb-organiser-app .tb-ticket-preset>span{flex:0 0 19px}
+ .tb-ticket-edit-row{padding:13px;border-radius:13px}
+ .tb-ticket-row-inputs{grid-template-columns:1fr 1fr;gap:10px}
+ .tb-ticket-row-inputs .tb-ticket-name{grid-column:1/-1}
+ .tb-ticket-row-inputs input{min-height:49px}
+}
+@media(max-width:370px){
+ .tb-ticket-picker{grid-template-columns:1fr}
+ .tb-organiser-app .tb-ticket-preset{min-height:44px}
+}
