@@ -100,9 +100,14 @@ export default async function handler(req,res){
    const source=await db.from('sb_events')
     .select('title,starts_at,status,public_beta_test,beta_test_expires_at')
     .eq('id',eventId).single();
-   if(source.error||!source.data||source.data.status!=='published'||
+   if(source.error||!source.data)return json(res,{error:'Event could not be found'},404);
+   // Live beta testing permits scanner access; ordinary unpublished drafts do not.
+   const liveBeta=source.data.status==='draft'&&source.data.public_beta_test===true&&
+    Date.parse(source.data.beta_test_expires_at)>Date.now();
+   const published=source.data.status==='published';
+   if((!published&&!liveBeta)||
        (Date.parse(source.data.starts_at)<Date.now() && !scannerEventIsOpen(source.data)))
-    return json(res,{error:'Publish the event before inviting scanner crew from the live dashboard'},409);
+    return json(res,{error:'Make the event live before inviting scanner crew from the dashboard'},409);
    const token=randomBytes(32).toString('hex');
    const result=await db.from('sb_event_staff_invites').insert({
     event_id:eventId,invited_email:email,token_digest:digest(token),invited_by:ctx.user.id
