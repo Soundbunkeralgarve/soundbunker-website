@@ -10,7 +10,7 @@
 <div class="beta-banner" role="status"><strong>BETA · NOT LIVE YET</strong> — Create your event drafts and invite staff. Checkout, ticket sales and payouts are not live.</div>
 <header class="topbar tb-workspace-header"><a class="brand" href="/events"><img src="/assets/ticketbunker/ticketbunker-logo.svg" alt="ticketBunker" width="1273" height="125"></a><nav aria-label="Workspace navigation"><a href="/" class="tb-return-link">← Return to SoundBunker</a><a href="/events">Discover events</a><a href="/client?next=%2Fclient%23my-tickets">Buyer / My Tickets</a><a href="/client">My account</a><a href="/">SoundBunker Studio</a></nav></header>
 <main class="tb-workspace-shell"><div class="tb-return-mobile"><a href="/">← Return to SoundBunker</a></div>
- <div class="tb-workspace-intro"><div><p class="eyebrow">TICKETBUNKER / ORGANISER WORKSPACE</p><h1>Launch your next event.</h1><p>Event details, poster, ticket types, then Review &amp; Pay. Three simple steps, with your progress saved.</p></div><div class="tb-intro-side"><span>PUBLIC BETA</span><strong>Up to 2,000 tickets</strong><small>UK &amp; Portugal pilot</small></div></div>
+ <div class="tb-workspace-intro"><div><p class="eyebrow">TICKETBUNKER / ORGANISER WORKSPACE</p><h1>Launch your next event.</h1><p>Event details, poster, ticket types, then Review &amp; Pay. Three simple steps, with your progress saved.</p></div><div class="tb-intro-side"><span>PUBLIC BETA</span><strong>Independent &amp; large events</strong><small>UK &amp; Portugal pilot</small></div></div>
  <div id="notice" role="status" class="message tb-workspace-notice">Checking your organiser account…</div>
  <section id="operationStatus" class="tb-operation-status" role="status" aria-live="polite" aria-atomic="true" hidden>
   <div class="tb-operation-heading"><span id="operationSpinner" class="tb-operation-spinner" aria-hidden="true"></span>
@@ -35,7 +35,7 @@
   <div class="tb-wizard-heading"><h2>Create your event in three easy steps</h2><p>Review your event, check the listing fee and pay to publish when payments are enabled. Drafts stay private.</p></div>
   <nav id="wizardSteps" class="tb-wizard-steps" aria-label="Event setup progress"><button type="button" data-wizard="details" class="active" aria-current="step"><b>01</b><span>Event &amp; artwork</span></button><button type="button" data-wizard="tickets"><b>02</b><span>Ticket options</span></button><button type="button" data-wizard="review"><b>03</b><span>Review &amp; Pay</span></button></nav>
   <div class="tb-account-strip"><div><span class="tb-strip-caption">YOUR ORGANISER ACCOUNT</span><strong id="orgName">Organiser</strong><p id="orgState"></p></div><div><span class="tb-strip-caption">EVENT SALES</span><strong>BETA · Not active</strong><p>Stripe onboarding, publishing and payments come after testing.</p></div><div><span class="tb-strip-caption">YOUR BUSINESS MODEL</span><strong>0% ticketBunker commission</strong><p>Stripe handles card-processing fees separately.</p></div></div>
-  <nav class="tb-workspace-jumps" aria-label="Organiser shortcuts"><a href="#staffAccess">Door team &amp; scanner invites</a><a href="#featured-placement">Event promotion</a><a href="#listing-plans">Pricing</a></nav>
+  <nav class="tb-workspace-jumps" aria-label="Organiser shortcuts"><a href="#largeEventQuote">Large event quote</a><a href="#staffAccess">Door team &amp; scanner invites</a><a href="#featured-placement">Event promotion</a><a href="#listing-plans">Pricing</a></nav>
   <div id="setup" class="tb-setup-grid">
    <section class="tb-panel" id="eventBasics" aria-labelledby="create-event-heading">
     <div class="tb-panel-head"><div><span class="tb-step-number">STEP 01</span><h2 id="create-event-heading">Create an event</h2><p>Keep it simple. You can edit your event before it goes on sale.</p></div></div>
@@ -86,7 +86,7 @@
         <button type="button" class="tb-ticket-preset" data-ticket-preset="custom"><span aria-hidden="true">+</span> Other ticket</button>
       </div>
       <div id="newTicketRows" class="tb-new-ticket-rows tb-span-full" aria-label="New ticket types to save"></div>
-      <p class="tb-field-note tb-span-full">Set individual prices and quantities. Paid tickets start at €1 / £1. Maximum combined event capacity: 2,000. The private €0 test is separate.</p>
+      <p class="tb-field-note tb-span-full">Add ticket types for standard events. Planning more than 2,000 tickets? <a href="#largeEventQuote" class="tb-quote-inline">Request a custom event quote</a> instead. The private €0 test is separate.</p>
       <p class="tb-span-full tb-field-help" id="ticketSetupStatus" role="status" aria-live="polite">Choose one or more ticket types above.</p>
       <div class="tb-form-actions tb-span-full"><button class="solid" type="submit" id="saveAllTickets" disabled>Save ticket types →</button><button type="button" class="outline" id="toReview">Review event →</button></div>
     </form>
@@ -100,6 +100,7 @@
     <div><span>Starter</span><strong>1–100 sold</strong><b data-price-gbp="£49" data-price-eur="€59">€59</b></div>
     <div><span>Standard</span><strong>101–500 sold</strong><b data-price-gbp="£99" data-price-eur="€119">€119</b></div>
     <div><span>Event Plus</span><strong>501–2,000 sold</strong><b data-price-gbp="£199" data-price-eur="€239">€239</b></div>
+    <div class="tb-organiser-custom-tier"><span>Large events</span><strong>More than 2,000</strong><a href="#largeEventQuote">Custom quote ↗</a></div>
    </div>
    <div class="tb-test-pilot"><div><span class="tb-pilot-tag">INTERNAL TEST / €0 · £0</span><strong>Private QR test bracket</strong><p>Keep the real ticket and scanner test available for tomorrow. Restricted to authorised internal testing; no public event or Stripe charge.</p></div><a href="/events-admin">Open test tools →</a></div>
    <div class="tb-charity-price-strip"><div><strong>Registered charity event?</strong><span>Free ticketBunker event listing when your charity number is verified.</span></div><span>£0 / €0 listing fee</span></div>
@@ -107,6 +108,24 @@
    <p class="tb-field-help">BETA prices are proposals; listing payments and live ticket checkout remain disabled.</p>
   </section>
   </details>
+  <details class="tb-advanced tb-large-quote" id="largeEventQuote">
+   <summary>Large event? Request a custom quote (2,000+)</summary>
+   <section class="tb-panel">
+    <div class="tb-panel-head"><div><span class="tb-step-number">BESPOKE EVENTS</span>
+     <h2>Tell us about your event</h2>
+     <p>For events expecting more than 2,000 attendees, we'll quote individually. This is an enquiry — not a payment or approval.</p></div></div>
+    <form id="largeEventForm" class="organiser-form tb-form-grid">
+     <label class="tb-span-full">Choose your saved event draft<select id="largeEventId" name="eventId" required></select></label>
+     <label>Expected number of tickets<input type="number" name="expectedTickets" min="2001" max="1000000" inputmode="numeric" required placeholder="e.g. 3500"></label>
+     <label>How would you prefer to pay?<select name="paymentPreference" required><option value="upfront">Pay the agreed listing fee upfront</option><option value="deposit_sales">Pay a deposit, then collect balance from ticket sales (subject to Stripe approval)</option><option value="discuss">Discuss flexible terms</option></select></label>
+     <label class="tb-span-full">Event notes (optional)<textarea name="notes" rows="3" maxlength="1200" placeholder="Capacity, dates, expected ticket prices, special requirements…"></textarea></label>
+     <p class="tb-span-full tb-field-note">No payment is collected with this request. If agreed, a capped amount may be deducted from eligible ticket sales through Stripe Connect. This is not an automatic deduction from a completed bank payout. All fees and terms are agreed before going live.</p>
+     <div class="tb-form-actions tb-span-full"><button type="submit" class="solid">Request custom quote →</button></div>
+    </form>
+    <p id="largeEventMessage" class="tb-field-help" role="status" aria-live="polite">Save the event details in Step 1 first. You do not need to add ticket tiers before requesting a quote.</p>
+   </section>
+  </details>
+
   <div class="tb-bottom-grid">
    <section id="staffAccess" class="tb-panel" aria-labelledby="staffHeading">
     <div class="tb-panel-head"><div><span class="tb-step-number">STAFF ACCESS</span><h2 id="staffHeading">Invite your scanner crew</h2><p>Send an event-specific link by email, or share it by WhatsApp/SMS. Staff sign in with their verified SoundBunker email, then each scan is logged.</p></div></div>
