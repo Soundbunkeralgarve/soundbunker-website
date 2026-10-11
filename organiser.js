@@ -76,14 +76,78 @@ async function uploadWithProgress(eventId,kind,dataUrl){
 }
 
 function eventFor(id){return latestEvents.find(event=>event.id===id);}
+let nextTicketRowId=0;
+let ticketEditorEvent='';
+const displayMoney=(cents,currency)=>new Intl.NumberFormat('en-GB',{style:'currency',currency:currency==='gbp'?'GBP':'EUR'}).format(Number(cents||0)/100);
+function ticketDraftRows(){return Array.from(document.querySelectorAll('#newTicketRows .tb-ticket-edit-row'));}
+function updateTicketSaveButton(){
+ const count=ticketDraftRows().length,button=$('#saveAllTickets');
+ if(!activeOperation)button.disabled=!count;
+ button.textContent=count?'Save '+count+' ticket type'+(count===1?'':'s')+' →':'Choose ticket types above';
+}
+function renderSavedTickets(){
+ const ev=eventFor($('#tierEvent').value),root=$('#savedTicketList');
+ const tiers=ev?.tiers||[],used=tiers.reduce((sum,t)=>sum+Number(t.quantity_total||0),0);
+ $('#ticketCapacitySummary').textContent=used.toLocaleString('en-GB')+' of 2,000 allocated';
+ root.innerHTML=tiers.length?tiers.map(t=>
+  '<div class="tb-saved-ticket"><div><strong>✓ '+esc(t.name)+'</strong><small>'+
+  esc(Number(t.quantity_total).toLocaleString('en-GB'))+' tickets</small></div><b>'+
+  esc(displayMoney(t.price_cents,ev.currency))+'</b></div>').join('')
+  :'<p class="tb-saved-empty">No ticket types yet. Choose one or more options below.</p>';
+ const saved=new Set(tiers.map(t=>String(t.name).toLocaleLowerCase()));
+ document.querySelectorAll('#ticketPicker [data-ticket-preset]').forEach(button=>{
+  const type=button.dataset.ticketPreset;
+  const existing=type!=='custom'&&saved.has(type.toLocaleLowerCase());
+  button.disabled=existing;
+  button.classList.toggle('already-saved',existing);
+  button.setAttribute('aria-pressed',String(ticketDraftRows().some(row=>row.dataset.preset===type)));
+  const prefix=button.querySelector('span');
+  if(prefix)prefix.textContent=existing?'✓':ticketDraftRows().some(row=>row.dataset.preset===type)?'−':'+';
+ });
+ updateTicketSaveButton();
+}
+function addTicketRow(preset){
+ const ev=eventFor($('#tierEvent').value);
+ if(!ev)return $('#ticketSetupStatus').textContent='First choose an event draft.';
+ const existing=new Set((ev.tiers||[]).map(t=>String(t.name).toLocaleLowerCase()));
+ if(preset!=='custom'&&existing.has(preset.toLocaleLowerCase())){
+  $('#ticketSetupStatus').textContent=preset+' is already saved. Choose another ticket type.';return;
+ }
+ const selected=ticketDraftRows().find(row=>row.dataset.preset===preset);
+ if(selected&&preset!=='custom'){selected.remove();renderSavedTickets();return;}
+ if(ticketDraftRows().length>=10){$('#ticketSetupStatus').textContent='Save these ten ticket types before adding more.';return;}
+ const id=++nextTicketRowId;
+ const row=document.createElement('section');row.className='tb-ticket-edit-row';
+ row.dataset.preset=preset;row.dataset.rowId=String(id);
+ const custom=preset==='custom';
+ row.innerHTML='<div class="tb-ticket-row-title"><strong>'+(custom?'Other ticket type':esc(preset))+'</strong>'+
+  '<button type="button" class="tb-ticket-remove" data-remove-ticket-row="'+id+'" aria-label="Remove '+esc(preset)+' ticket row">Remove ×</button></div>'+
+  '<div class="tb-ticket-row-inputs"><label class="tb-ticket-name">Ticket name<input name="typeName" maxlength="100" minlength="2" required '+
+  (custom?'placeholder="e.g. Backstage or Family Pass"':'readonly')+' value="'+(custom?'':esc(preset))+'"></label>'+
+  '<label>Price ('+(ev.currency==='gbp'?'£':'€')+')<input name="typePrice" type="number" inputmode="decimal" min="1" max="100000" step=".01" placeholder="e.g. 20.00" required></label>'+
+  '<label>Quantity<input name="typeQuantity" type="number" inputmode="numeric" min="1" max="2000" step="1" placeholder="e.g. 100" required></label></div>';
+ $('#newTicketRows').append(row);
+ $('#ticketSetupStatus').textContent='Choose a price and quantity for each selected ticket type, then save all together.';
+ renderSavedTickets();
+ if(custom)row.querySelector('[name=typeName]').focus();
+}
+document.querySelector('#ticketPicker').addEventListener('click',event=>{
+ const button=event.target.closest('[data-ticket-preset]');if(button&&!button.disabled)addTicketRow(button.dataset.ticketPreset);
+});
+document.querySelector('#newTicketRows').addEventListener('click',event=>{
+ const button=event.target.closest('[data-remove-ticket-row]');if(!button)return;
+ button.closest('.tb-ticket-edit-row')?.remove();renderSavedTickets();
+});
+$('#dismissOperation').addEventListener('click',()=>{if(!activeOperation)$('#operationStatus').hidden=true;});
+
 function goToTicketSetup(id){
  const ev=eventFor(id);
  if(!ev||ev.status!=='draft')return notify('Only draft events can have tickets added.',true);
  currentDraftId=id;
  $('#tierEvent').value=id;
  setWizard('tickets');
- $('#ticketSetupStatus').textContent='Add the ticket name, price and quantity for '+ev.title+'. Save this before publication review.';
- $('#tierForm').querySelector('[name="name"]')?.focus();
+ renderSavedTickets();
+ $('#ticketSetupStatus').textContent='Choose ticket types and set individual prices and quantities for '+ev.title+'. Save them together.';
 }
 function renderReviewReadiness(){
  const ev=eventFor($('#reviewEvent').value);
@@ -99,7 +163,8 @@ function renderReviewReadiness(){
  message.innerHTML='<div class="tb-readiness-row"><strong>Event & artwork</strong><span>'+ (hasPoster&&hasBio?'✓ Complete':'Needs attention')+'</span></div>'+ 
   '<div class="tb-readiness-row"><strong>Ticket types</strong><span>'+(hasTickets?'✓ '+ev.tiers.length+' saved':'Required — none saved')+'</span></div>'+
   (issues.length?'<p class="tb-readiness-warning">Before payment: '+issues.map(esc).join('; ')+'.</p>':'<p class="tb-readiness-success">Event is ready for the payment step. Secure checkout is not live during BETA.</p>');
- add.hidden=hasTickets;
+ add.hidden=false;
+ add.textContent=hasTickets?'Add another ticket type →':'Add a ticket type →';
  const capacity=(ev.tiers||[]).reduce((sum,t)=>sum+Number(t.quantity_total||0),0);
  const prices=ev.currency==='gbp'?[49,99,199]:[59,119,239];
  const names=['Starter','Standard','Event Plus'];
@@ -124,6 +189,7 @@ function setWizard(stage){
  $('#my-events-section').hidden=stage!=='review';
  if(stage!=='review')$('#setup').hidden=false;
  else $('#setup').hidden=true;
+ if(!activeOperation&&$('#operationStatus').dataset.state==='error')$('#operationStatus').hidden=true;
  $('#wizardSteps').scrollIntoView({behavior:'smooth',block:'start'});
 }
 document.querySelectorAll('#wizardSteps [data-wizard]').forEach(b=>b.addEventListener('click',()=>setWizard(b.dataset.wizard)));
@@ -160,6 +226,10 @@ async function refresh(){
   if(list.some(e=>e.id===previousReview))$('#reviewEvent').value=previousReview;
  }
  renderReviewReadiness();
+ if(ticketEditorEvent!==$('#tierEvent').value){
+  $('#newTicketRows').replaceChildren();ticketEditorEvent=$('#tierEvent').value;
+ }
+ renderSavedTickets();
 
  const selected=list.find(e=>e.id===$('#showcaseEvent').value);
  updateShowcasePrice(selected);
@@ -276,39 +346,63 @@ $('#eventForm').addEventListener('submit',async e=>{
   notify('Event not saved: '+err.message+'. Your details are still here.',true);
  }
 });
-$('#tierForm').addEventListener('submit',async e=>{
- e.preventDefault();const form=e.currentTarget,d=new FormData(form);
- const eventId=d.get('eventId');
- if(!eventId){$('#ticketSetupStatus').textContent='First save or select an event draft.';return;}
- const price=Number(d.get('price')),capacity=Number(d.get('capacity'));
- if(!Number.isFinite(price)||price<1||!Number.isInteger(capacity)||capacity<1){
-  $('#ticketSetupStatus').textContent='Enter a price of at least 1 and a positive whole-number quantity.';return;
+$('#tierForm').addEventListener('submit',async event=>{
+ event.preventDefault();
+ const form=event.currentTarget,eventId=$('#tierEvent').value;
+ const ev=eventFor(eventId),rows=ticketDraftRows();
+ if(!ev)return $('#ticketSetupStatus').textContent='Choose a draft event first.';
+ if(!rows.length)return $('#ticketSetupStatus').textContent='Tap General Admission, VIP, Concessions 60+, Kids or another ticket type above.';
+ const selected=rows.map(row=>({
+  name:row.querySelector('[name=typeName]').value.trim(),
+  priceCents:Math.round(Number(row.querySelector('[name=typePrice]').value)*100),
+  capacity:Number(row.querySelector('[name=typeQuantity]').value)
+ }));
+ const existing=new Set((ev.tiers||[]).map(t=>String(t.name).toLocaleLowerCase()));
+ const seen=new Set();
+ for(const item of selected){
+  const key=item.name.toLocaleLowerCase();
+  if(item.name.length<2||existing.has(key)||seen.has(key)){
+   $('#ticketSetupStatus').textContent='Use a unique name for every new ticket type. Saved types are listed above.';return;
+  }
+  if(!Number.isInteger(item.priceCents)||item.priceCents<100||!Number.isInteger(item.capacity)||item.capacity<1||item.capacity>2000){
+   $('#ticketSetupStatus').textContent='Every ticket needs a valid price of at least 1 and a quantity between 1 and 2,000.';return;
+  }
+  seen.add(key);
  }
- if(!startOperation('Saving ticket type','Adding '+d.get('name')+' to your event…',form.querySelector('[type=submit]')))return;
+ const currentTotal=(ev.tiers||[]).reduce((n,t)=>n+Number(t.quantity_total||0),0);
+ const added=selected.reduce((n,t)=>n+t.capacity,0);
+ if(currentTotal+added>2000){
+  $('#ticketSetupStatus').textContent='Total tickets would be '+(currentTotal+added)+'. Reduce the quantities to stay within 2,000.';return;
+ }
+ if(!startOperation('Saving ticket types','Adding '+selected.length+' ticket type(s) securely…',$('#saveAllTickets')))return;
+ let saved=false;
  try{
-  $('#ticketSetupStatus').textContent='Saving '+d.get('name')+'…';
-  await request({action:'tier',eventId,name:d.get('name'),priceCents:Math.round(price*100),capacity});
-  currentDraftId=eventId;
-  updateOperation('Confirming ticket type','Refreshing your event and checking the ticket inventory…');
-  await refresh();
-  $('#reviewEvent').value=eventId;
-  renderReviewReadiness();
+  $('#ticketSetupStatus').textContent='Saving '+selected.map(t=>t.name).join(', ')+'…';
+  const result=await request({action:'tiers',eventId,tiers:selected});
+  saved=true;currentDraftId=eventId;
+  updateOperation('Tickets saved','Checking the saved ticket inventory…');
+  try{await refresh();}
+  catch(refreshError){console.warn('Ticket inventory refresh failed',refreshError);}
+  $('#newTicketRows').replaceChildren();renderSavedTickets();
+  const count=result.tiers?.length||selected.length;
+  const message=count+' ticket type'+(count===1?'':'s')+' saved · '+added.toLocaleString('en-GB')+' tickets added.';
+  $('#ticketSetupStatus').textContent=message;
+  $('#publishMessage').textContent=message+' Review the price summary below.';
+  finishOperation(message);notify(message);
+  $('#reviewEvent').value=eventId;renderReviewReadiness();
   setWizard('review');
-  const currency=account?.country_code==='GB'?'£':'€';
-  const confirmation=d.get('name')+' saved — '+capacity+' tickets at '+currency+price.toFixed(2)+' each.';
-  $('#publishMessage').textContent=confirmation+' Check the total listing fee below.';
-  finishOperation(confirmation);
-  notify(confirmation);
- }catch(err){
-  const failure='Ticket type was not saved: '+err.message+'. Check the details and try again.';
-  $('#ticketSetupStatus').textContent=failure;
-  finishOperation(failure,true);
-  notify(failure,true);
+ }catch(error){
+  const message=saved?'Ticket types were saved, but the dashboard did not update. Refresh to see your tickets.':
+   'Ticket types were not saved: '+error.message+'. Your prices and quantities are still here.';
+  $('#ticketSetupStatus').textContent=message;
+  finishOperation(message,true);notify(message,true);
  }
 });
 $('#tierEvent').addEventListener('change',()=>{
- const ev=eventFor($('#tierEvent').value);
- $('#ticketSetupStatus').textContent=ev?'Selected '+ev.title+'. '+(ev.tiers.length?ev.tiers.length+' ticket types already saved. You can add another.':'No ticket types saved yet. Add your first ticket type below.'):'Choose an event draft.';
+ const id=$('#tierEvent').value,ev=eventFor(id);
+ if(ticketEditorEvent!==id){$('#newTicketRows').replaceChildren();ticketEditorEvent=id;}
+ renderSavedTickets();
+ $('#ticketSetupStatus').textContent=ev?'Selected '+ev.title+'. '+(ev.tiers.length?ev.tiers.length+' type(s) already saved.':'Start by selecting one or more ticket types.'):'Choose an event draft.';
 });
 $('#reviewEvent').addEventListener('change',renderReviewReadiness);
 $('#reviewAddTickets').addEventListener('click',()=>goToTicketSetup($('#reviewEvent').value));
