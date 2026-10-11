@@ -155,7 +155,7 @@ export default async function handler(req,res){
       .eq('status','draft').select('id,slug,beta_test_expires_at').single();
      if(result.error)throw result.error;
      return json(res,{active:true,
-      url:(process.env.SITE_URL||'https://www.soundbunker.pt').replace(/\\/$/,'')+'/event?slug='+encodeURIComponent(ev.data.slug),
+      url:(process.env.SITE_URL||'https://www.soundbunker.pt').replace(/\/$/,'')+'/event?slug='+encodeURIComponent(ev.data.slug),
       expiresAt:until,message:'Event is publicly visible in €0 TEST MODE for 72 hours. No payment or real admission.'});
    }
    if(action==='requestPublish'){
