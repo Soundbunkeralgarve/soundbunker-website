@@ -13,7 +13,7 @@ test('TicketBunker is prominently branded with approved vector, without altering
 });
 test('Events landing keeps a clean ticketing experience',()=>{
  assert.match(events,/ticketbunker\.css/);
- assert.match(events,/Upcoming Events/);
+ assert.match(events,/Explore Event Tickets/);
  assert.match(events,/tb-feature-section/);
  assert.match(events,/Featured Showcase/);
  assert.match(events,/DEMO EVENT/);
