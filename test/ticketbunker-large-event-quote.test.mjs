@@ -59,3 +59,38 @@ test('existing checkout controls and quote trigger stay intact',()=>{
  const limit=read('SUPABASE_TICKETBUNKER_SMALL_EVENTS_LIMIT.sql');
  assert.match(limit,/other_total\+NEW\.quantity_total>2000/);
 });
+
+test('flexible deposit is offered only on tier three Event Plus and bespoke custom events',()=>{
+ assert.match(events,/Starter require upfront|Starter and Standard require upfront/);
+ assert.match(events,/Event Plus \(501–2,000\)/);
+ assert.match(events,/subject to Stripe Connect approval/);
+ assert.match(organiser,/id="eventPlusPaymentOptions"/);
+ assert.match(organiser,/name="eventPlusPayment" value="upfront"/);
+ assert.match(organiser,/name="eventPlusPayment" value="deposit_sales"/);
+ assert.match(orgJs,/const eligible=capacity>=501&&capacity<=2000&&!verifiedCharity/);
+ assert.match(orgJs,/\$\('#eventPlusPaymentOptions'\)\.hidden=!eligible/);
+ assert.match(orgJs,/action:'eventPlusTerms',eventId,paymentPreference:'deposit_sales'/);
+ assert.match(orgJs,/ev\.flexibleTerms/);
+});
+test('Event Plus deposit enquiries are owner-scoped, not Stripe payments',()=>{
+ assert.match(orgApi,/if\(action==='eventPlusTerms'\)/);
+ assert.match(orgApi,/capacity<501\|\|capacity>2000/);
+ assert.match(orgApi,/sb_event_payment_terms_requests/);
+ assert.match(orgApi,/paymentPreference!=='deposit_sales'/);
+ assert.match(orgApi,/proposed_listing_fee_cents:amount/);
+ assert.match(orgApi,/No payment was taken or ticket sales enabled/);
+ const schema=read('SUPABASE_TICKETBUNKER_EVENT_PLUS_TERMS.sql');
+ assert.match(schema,/ticket_capacity BETWEEN 501 AND 2000/);
+ assert.match(schema,/organiser_profile_id uuid NOT NULL/);
+ assert.match(schema,/ENABLE ROW LEVEL SECURITY/);
+ assert.match(schema,/REVOKE ALL ON public\.sb_event_payment_terms_requests/);
+ assert.match(schema,/proposed_listing_fee_cents<>19900/);
+ assert.match(schema,/proposed_listing_fee_cents<>23900/);
+});
+test('admin can inspect Event Plus terms without approving payment automatically',()=>{
+ assert.match(admin,/id="eventPlusTermsQueue"/);
+ assert.match(adminJs,/paymentTermsRequests/);
+ assert.match(adminApi,/sb_event_payment_terms_requests/);
+ assert.match(adminApi,/paymentTermsRequests:paymentTermsRequests\.data/);
+ assert.match(adminJs,/Enquiry only — no payment authorised/);
+});
