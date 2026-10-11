@@ -97,3 +97,7 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f SUPABASE_TICKETBUNKER_NAMED_TRANSFERS.sql
       - name: Verify transferred QR invalidation, rename, check-in and service-role scope
         run: psql -v ON_ERROR_STOP=1 -f test/ticketbunker-named-transfers.sql
+      - name: Apply scoped public €0 beta booking for real events
+        run: psql -v ON_ERROR_STOP=1 -f SUPABASE_TICKETBUNKER_PUBLIC_BETA_TEST.sql
+      - name: Verify real €0 booking, scanner, pricing and inventory separation
+        run: psql -v ON_ERROR_STOP=1 -f test/ticketbunker-public-beta-schema.sql
