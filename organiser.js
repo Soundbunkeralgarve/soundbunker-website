@@ -153,7 +153,7 @@ function goToTicketSetup(id){
 function renderReviewReadiness(){
  const ev=eventFor($('#reviewEvent').value);
  const message=$('#reviewReadiness'),add=$('#reviewAddTickets'),publish=$('#requestPublish');
- if(!ev){message.textContent='Choose an event draft first.';add.hidden=true;publish.disabled=true;return;}
+ if(!ev){message.textContent='Choose an event draft first.';add.hidden=true;publish.disabled=true;$('#eventPlusPaymentOptions').hidden=true;return;}
  const hasTickets=Array.isArray(ev.tiers)&&ev.tiers.length>0;
  const hasPoster=Boolean(ev.image_url);
  const hasBio=Boolean(ev.description?.trim()?.length>=20);
@@ -175,8 +175,18 @@ function renderReviewReadiness(){
  $('#listingPlan').textContent=verifiedCharity?'Verified charity listing':names[tier]+' listing';
  $('#listingTotal').textContent=capacity>2000?'Check capacity':verifiedCharity?sign+'0':sign+prices[tier];
  $('#listingBreakdown').textContent=(capacity||0)+' total tickets · '+(verifiedCharity?'Verified charity exemption':'one flat fee, plus applicable tax')+'. No per-ticket ticketBunker commission.';
+ const eligible=capacity>=501&&capacity<=2000&&!verifiedCharity;
+ $('#eventPlusPaymentOptions').hidden=!eligible;
+ const pending=Boolean(ev.flexibleTerms);
+ const deposit=$('#eventPlusPaymentOptions input[value="deposit_sales"]');
+ deposit.disabled=pending;
+ if(pending&&deposit.checked)$('#eventPlusPaymentOptions input[value="upfront"]').checked=true;
+ $('#eventPlusTermsStatus').textContent=pending
+  ?'Flexible terms '+ev.flexibleTerms.status.replaceAll('_',' ')+'. No deposit or deductions are active. We will contact you.'
+  :'Deposit terms are by request only, subject to a written agreement and verified Stripe Connect setup. No payment or deductions occur now.';
  publish.disabled=issues.length>0||capacity>2000;
- publish.textContent='Continue to secure payment →';
+ const option=eligible?document.querySelector('input[name="eventPlusPayment"]:checked')?.value:'upfront';
+ publish.textContent=option==='deposit_sales'?'Request deposit terms →':'Continue to secure payment →';
 }
 
 function setWizard(stage){
@@ -458,6 +468,7 @@ $('#myEvents').addEventListener('click',e=>{
  const id=e.target.closest('[data-add-tickets]')?.dataset.addTickets;
  if(id)goToTicketSetup(id);
 });
+document.querySelectorAll('input[name="eventPlusPayment"]').forEach(input=>input.addEventListener('change',renderReviewReadiness));
 $('#requestPublish').addEventListener('click',async()=>{
  const eventId=$('#reviewEvent').value;
  if(!eventId)return $('#publishMessage').textContent='Choose an event first.';
@@ -465,6 +476,23 @@ $('#requestPublish').addEventListener('click',async()=>{
  if(!ev?.tiers?.length){goToTicketSetup(eventId);return;}
  const capacity=ev.tiers.reduce((n,t)=>n+Number(t.quantity_total||0),0);
  const plan=capacity<=100?'starter':capacity<=500?'standard':'event_plus';
+ const choice=document.querySelector('input[name="eventPlusPayment"]:checked')?.value;
+ if(choice==='deposit_sales'&&capacity>=501&&capacity<=2000&&ev.charity?.status!=='verified'){
+  if(ev.flexibleTerms){$('#publishMessage').textContent='Flexible payment terms already requested for this event.';return;}
+  if(!startOperation('Requesting deposit terms','Saving your Event Plus flexible payment enquiry…',$('#requestPublish')))return;
+  try{
+   const response=await request({action:'eventPlusTerms',eventId,paymentPreference:'deposit_sales'});
+   const message=response.message||'Deposit terms request saved. No payment taken.';
+   try{await refresh();}catch(error){console.warn('Could not refresh Event Plus terms status',error);}
+   $('#publishMessage').textContent=message;
+   finishOperation(message);notify(message);
+  }catch(error){
+   const message='Deposit terms request not saved: '+error.message;
+   $('#publishMessage').textContent=message;
+   finishOperation(message,true);notify(message,true);
+  }
+  return;
+ }
  if(!startOperation('Preparing secure payment','Checking listing eligibility and secure checkout availability…',$('#requestPublish')))return;
  try{
   const r=await fetch('/api/organiser-listing',{method:'POST',
