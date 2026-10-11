@@ -46,6 +46,11 @@
             <div id="nameField" hidden><label>Your name<input id="fullName" type="text" autocomplete="name" placeholder="Your full name"></label></div>
             <label>Email<input id="email" type="email" autocomplete="email" placeholder="you@example.com" required></label>
             <label>Password<input id="password" type="password" autocomplete="current-password" minlength="8" placeholder="Minimum 8 characters" required></label>
+            <label class="client-marketing-consent" for="authMarketingConsent">
+              <input id="authMarketingConsent" type="checkbox" name="marketingConsent" value="yes">
+              <span><strong>Yes, email me about new events and promotions.</strong>
+                <small>TicketBunker events, SoundBunker news and special offers. Optional, and you can unsubscribe anytime.</small></span>
+            </label>
             <button id="authSubmit" class="client-primary" type="submit">Sign in</button>
             <button id="forgotPassword" class="text-button" type="button">Forgot password?</button>
             <p id="authMessage" class="muted" role="status"></p>
@@ -70,6 +75,18 @@
         <div><span>Signed in as</span><strong id="clientEmail"></strong></div>
         <div class="client-account-actions"><span id="roleBadge" class="role-badge">Client</span><button id="signOut" class="ghost-button">Sign out</button></div>
       </div>
+      <details id="accountEmailPreferences" class="client-email-preferences">
+        <summary><span>Events &amp; promotions emails</span><small>Manage email preferences</small></summary>
+        <form id="marketingPreferencesForm">
+          <label class="client-marketing-consent" for="accountMarketingConsent">
+            <input id="accountMarketingConsent" type="checkbox">
+            <span><strong>Email me about new events and offers</strong>
+              <small>Receive TicketBunker event announcements and SoundBunker promotions. Booking receipts and QR tickets are sent regardless of this setting.</small></span>
+          </label>
+          <button id="saveMarketingPreferences" type="submit">Save email preferences</button>
+          <p id="marketingPreferencesStatus" role="status" aria-live="polite">Choose your preference and save.</p>
+        </form>
+      </details>
 
       <section class="client-account-categories" aria-label="Your SoundBunker account areas"><a href="#manage-sessions"><span>01 / STUDIO</span><strong>Studio bookings</strong><small>Sessions and audio projects</small></a><a href="#my-files"><span>02 / PHOTOGRAPHY</span><strong>My Photography</strong><small>Galleries and downloads</small></a><a href="#my-vouchers"><span>03 / GIFT VOUCHERS</span><strong>Gift Vouchers</strong><small>Experiences and gift codes</small></a><a href="#my-tickets"><span>04 / EVENT TICKETS</span><strong>My Tickets</strong><small>QR tickets, downloads and sharing</small></a></section>
       <section class="client-session-upload" id="session-upload">
