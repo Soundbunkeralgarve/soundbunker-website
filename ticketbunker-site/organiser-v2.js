@@ -121,7 +121,7 @@ async function inspectLogo(file,preview){
  return {uri,width:image.width,height:image.height,kilobytes:Math.round(file.size/1024),transparent:true,black:true};
 }
 async function checkSelectedLogo(which){
- const input=$('#'+which+'-file'),preview=$('#'+(which==='brand'?'brand-preview':'initial-logo-preview'));
+ const input=$(which==='initial'?'#initial-logo-file':'#brand-file'),preview=$('#'+(which==='brand'?'brand-preview':'initial-logo-preview'));
  const save=$('#'+(which==='brand'?'brand-save':'initial-logo-save'));
  const status=$('#'+which+'-logo-status'),ready=$('#'+which+'-logo-ready');
  const hint=$('#'+(which==='brand'?'brand-preview-hint':'initial-preview-hint'));
