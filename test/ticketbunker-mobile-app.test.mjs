@@ -8,8 +8,8 @@ const css=read('ticketbunker-app.css'),clientCss=read('client-mobile-app.css');
 test('TicketBunker is its own ticketing brand, no main-site photo hero or decorative bars',()=>{
  assert.match(events,/class="tb-hero tb-hero-standalone"/);
  assert.match(events,/tb-stub/);
- assert.match(events,/GOOD NIGHTS/);
- assert.match(events,/GREAT STORIES/);
+ assert.match(events,/EVENT TICKETS/);
+ assert.match(events,/MADE SIMPLE/);
  assert.doesNotMatch(events,/class="tb-hero-image"/);
  assert.doesNotMatch(events,/tb-stub-barcode/);
  assert.match(css,/\.tb-stub\{/);
@@ -32,8 +32,8 @@ test('All ticketBunker pages have phone bottom tab navigation',()=>{
  assert.match(css,/@media\(max-width:390px\)/);
 });
 test('Mobile discovery keeps useful actions and one-column cards',()=>{
- assert.match(events,/href="#upcoming">Buy Tickets/);
- assert.match(events,/href="\/organiser">Organise an Event/);
+ assert.match(events,/href="#upcoming">Explore Event Tickets/);
+ assert.match(events,/href="\/organiser">Sell Event Tickets/);
  assert.match(css,/\.ticketbunker-site \.tb-card-grid\{display:grid;grid-template-columns:1fr/);
  assert.match(css,/\.ticketbunker-site \.tb-categories\{width:100%;display:flex;flex-wrap:nowrap;overflow-x:auto/);
  assert.match(css,/\.ticketbunker-site #tb-event-search/);
