@@ -80,13 +80,3 @@ REVOKE ALL ON FUNCTION public.sb_checkin_event_ticket_versioned(uuid,uuid,intege
  FROM PUBLIC,anon,authenticated;
 GRANT EXECUTE ON FUNCTION public.sb_checkin_event_ticket_versioned(uuid,uuid,integer) TO service_role;
 
--- Optional large-event quote preference only; NEVER an automatic debit or
--- authorisation to withhold future payouts. Collecting a balance from ticket
--- sales needs a separate verified Stripe Connect flow and explicit terms.
-ALTER TABLE public.sb_event_festival_quotes
- ADD COLUMN IF NOT EXISTS preferred_payment text NOT NULL DEFAULT 'upfront';
-ALTER TABLE public.sb_event_festival_quotes
- DROP CONSTRAINT IF EXISTS sb_large_quote_payment_preference;
-ALTER TABLE public.sb_event_festival_quotes
- ADD CONSTRAINT sb_large_quote_payment_preference
- CHECK (preferred_payment IN ('upfront','deposit_from_sales'));
