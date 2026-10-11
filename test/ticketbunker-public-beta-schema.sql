@@ -31,6 +31,10 @@ BEGIN
  EXCEPTION WHEN raise_exception THEN
   IF SQLERRM='Per-email limit exceeded' THEN RAISE; END IF;
  END;
+ -- Software tests must remain usable after the displayed event date passes,
+ -- so long as the explicitly authorised 72-hour beta window remains active.
+ UPDATE public.sb_events SET starts_at=now()-interval '1 hour' WHERE id=e;
+ PERFORM public.sb_issue_public_beta_ticket(tier,'After Displayed Start','afterstart@example.test',1);
  UPDATE public.sb_events SET public_beta_test=false,beta_test_expires_at=null WHERE id=e;
  SELECT public.sb_checkin_event_ticket_versioned(other_ticket,buyer,0) INTO scan;
  IF scan->>'status'<>'not_open' THEN RAISE EXCEPTION 'Test QR remained usable after closing %',scan; END IF;
