@@ -14,13 +14,19 @@ export default async function handler(req,res) {
       (e.status==='published'&&Date.parse(e.starts_at)>now)||
       (e.status==='draft'&&e.public_beta_test&&Date.parse(e.beta_test_expires_at)>now));
     const ids=visible.map(e=>e.id);
+    // Only paid Premium Placements are granted featured-position priority.
+    const promotions=ids.length?await db.from('sb_event_showcase_requests')
+      .select('event_id').in('event_id',ids).in('status',['paid','scheduled','live']).not('paid_at','is',null)
+      :{data:[],error:null};
+    if(promotions.error)throw promotions.error;
+    const featured=new Set(promotions.data.map(p=>p.event_id));
     const tiers=ids.length?await db.from('sb_event_tiers').select('id,event_id,name,price_cents,quantity_total').in('event_id',ids):{data:[],error:null};
     if(tiers.error) throw tiers.error;
     const inventory=await db.rpc('sb_event_inventory');
     if(inventory.error) throw inventory.error;
     const used=new Map((inventory.data||[]).map(row=>[row.tier_id,Number(row.used_count)]));
     return json(res,{events:visible.map(e=>({
-      ...e,public_beta_test:e.public_beta_test===true,
+      ...e,featured:featured.has(e.id),public_beta_test:e.public_beta_test===true,
       beta_test_expires_at:undefined,
       tiers:tiers.data.filter(t=>t.event_id===e.id).map(t=>({
        id:t.id,name:t.name,
