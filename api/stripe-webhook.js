@@ -1,5 +1,6 @@
 import { fulfillShopCheckout } from './lib/printful-shop.js';
 import { fulfillEventCheckout } from './lib/events.js';
+import { fulfilCapacityCheckout } from './lib/event-capacity.js';
 import { fulfilListingCheckout } from './lib/event-listings.js';
 import { fulfilPremiumPlacementCheckout } from './lib/ticketbunker-premium-autosend.js';
 import { verifyStripeSignature } from "./lib/stripe.js";
@@ -22,6 +23,7 @@ export default async function handler(request, response) {
   if (!checkout || checkout.payment_status !== "paid") return json(response, { received: true });
   try {
     const metadata = checkout.metadata || {};
+    if(metadata.purchase_type==='event_capacity_upgrade'){const result=await fulfilCapacityCheckout(checkout);return json(response,{received:true,capacity:result.status});}
     if (metadata.purchase_type === 'event_listing_fee') {
       const result = await fulfilListingCheckout(checkout);
       return json(response, {received:true,event_listing:result.status});

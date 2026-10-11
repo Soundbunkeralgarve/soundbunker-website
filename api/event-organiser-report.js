@@ -25,7 +25,7 @@ export default async function handler(req,res){
 
   const [orders,tiers,tickets]=await Promise.all([
    db.from('sb_event_orders')
-    .select('id,tier_id,quantity,total_cents,status,beta_test_order')
+    .select('id,tier_id,quantity,total_cents,status,beta_test_order,guest_allocation_id')
     .eq('event_id',eventId).limit(10000),
    db.from('sb_event_tiers').select('id,name,quantity_total,price_cents')
     .eq('event_id',eventId).limit(200),
@@ -38,11 +38,12 @@ export default async function handler(req,res){
   // Every confirmed paid order contributes to revenue whether its ticket is scanned or not.
   // €0 beta orders contribute to attendance only and are never paid revenue.
   const approved=(orders.data||[]).filter(order=>order.status==='paid');
-  const paidOrders=approved.filter(order=>order.beta_test_order!==true);
+  const paidOrders=approved.filter(order=>order.beta_test_order!==true&&!order.guest_allocation_id);
+  const guestOrders=approved.filter(order=>!!order.guest_allocation_id);
   const testOrders=approved.filter(order=>order.beta_test_order===true);
   const approvedById=new Map(approved.map(order=>[order.id,order]));
   const checked=(tickets.data||[]).filter(ticket=>ticket.checked_in_at&&approvedById.has(ticket.order_id));
-  const paidCheckins=checked.filter(ticket=>approvedById.get(ticket.order_id).beta_test_order!==true);
+  const paidCheckins=checked.filter(ticket=>approvedById.get(ticket.order_id).beta_test_order!==true&&!approvedById.get(ticket.order_id).guest_allocation_id);
   const testCheckins=checked.filter(ticket=>approvedById.get(ticket.order_id).beta_test_order===true);
   const paidTickets=count(paidOrders),testTickets=count(testOrders);
   const tierNames=new Map((tiers.data||[]).map(tier=>[tier.id,tier.name]));
@@ -66,10 +67,10 @@ export default async function handler(req,res){
    const actor=ticket.checked_in_by||'unknown';
    const order=approvedById.get(ticket.order_id);
    const entry=staffCounts.get(actor)||{
-    ...identity(ticket.checked_in_by),total:0,paid:0,test:0,lastScanAt:null
+    ...identity(ticket.checked_in_by),total:0,paid:0,test:0,guest:0,lastScanAt:null
    };
    entry.total+=1;
-   if(order.beta_test_order===true)entry.test+=1;else entry.paid+=1;
+   if(order.beta_test_order===true)entry.test+=1;else if(order.guest_allocation_id)entry.guest+=1;else entry.paid+=1;
    if(!entry.lastScanAt||ticket.checked_in_at>entry.lastScanAt)entry.lastScanAt=ticket.checked_in_at;
    staffCounts.set(actor,entry);
   }
@@ -83,10 +84,10 @@ export default async function handler(req,res){
    currency:event.data.currency,startsAt:event.data.starts_at,endsAt:event.data.ends_at,
    venueTimezone:event.data.venue_timezone,eventFinished,
    capacity:(tiers.data||[]).reduce((total,tier)=>total+Number(tier.quantity_total||0),0),
-   paidTickets,testTickets,issuedTickets:paidTickets+testTickets,
+   paidTickets,testTickets,guestTickets:count(guestOrders),issuedTickets:paidTickets+testTickets+count(guestOrders),
    revenueCents:moneyTotal(paidOrders),
    // Attendance never changes revenue or Stripe settlement.
-   checkedIn:checked.length,paidCheckedIn:paidCheckins.length,testCheckedIn:testCheckins.length,
+   guestCheckedIn:checked.filter(t=>!!approvedById.get(t.order_id).guest_allocation_id).length,checkedIn:checked.length,paidCheckedIn:paidCheckins.length,testCheckedIn:testCheckins.length,
    paidNotCheckedIn:Math.max(0,paidTickets-paidCheckins.length),
    testNotCheckedIn:Math.max(0,testTickets-testCheckins.length),
    scannedByStaff:[...staffCounts.values()].sort((a,b)=>b.total-a.total||a.name.localeCompare(b.name)),

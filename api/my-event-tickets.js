@@ -12,7 +12,7 @@ export default async function handler(req,res){
   // Ticket ownership is attached to the verified account email. Purchased tickets
   // show only while untransferred; transferred tickets move to the recipient.
   const [purchases,incoming]=await Promise.all([
-   db.from('sb_event_orders').select('id,event_id,tier_id,customer_email,customer_name,status,created_at,beta_test_order')
+   db.from('sb_event_orders').select('id,event_id,tier_id,customer_email,customer_name,status,created_at,beta_test_order,guest_allocation_id')
     .eq('customer_email',email).eq('status','paid').order('created_at',{ascending:false}).limit(100),
    db.from('sb_event_tickets').select('order_id').eq('holder_email',email).limit(100)
   ]);
@@ -20,7 +20,7 @@ export default async function handler(req,res){
   const ids=[...new Set([...(purchases.data||[]).map(o=>o.id),...(incoming.data||[]).map(t=>t.order_id)])];
   if(!ids.length)return json(res,{tickets:[]});
   const orders=await db.from('sb_event_orders')
-   .select('id,event_id,tier_id,customer_email,customer_name,status,created_at,beta_test_order').in('id',ids).eq('status','paid').limit(200);
+   .select('id,event_id,tier_id,customer_email,customer_name,status,created_at,beta_test_order,guest_allocation_id').in('id',ids).eq('status','paid').limit(200);
   if(orders.error)throw orders.error;
   const allowed=new Map((orders.data||[]).map(o=>[o.id,o]));
   if(!allowed.size)return json(res,{tickets:[]});
@@ -45,7 +45,7 @@ export default async function handler(req,res){
     order=allowed.get(t.order_id),version=t.transfer_version||0;
    return {id:t.id,eventId:t.event_id,title:event?.title||'Event',startsAt:event?.starts_at,venue:event?.venue||'',
     timezone:event?.venue_timezone||'Europe/Lisbon',poster:event?.image_url||null,logo:event?.event_logo_url||null,
-    ticketName:tier?.name||'General admission',priceCents:order?.beta_test_order?0:(tier?.price_cents??null),used:!!t.checked_in_at,
+    ticketName:(order?.guest_allocation_id?'Guest list · ':'')+(tier?.name||'General admission'),priceCents:(order?.beta_test_order||order?.guest_allocation_id)?0:(tier?.price_cents??null),used:!!t.checked_in_at,
     holderName:t.holder_name||order?.customer_name||'Ticket holder',admissionNumber:t.sequence_number,
     canManage:!t.checked_in_at&&Date.parse(event?.starts_at||'')>Date.now()&&version<5,
     test:order?.beta_test_order===true||event?.internal_free_test===true||event?.public_beta_test===true,url:base+'/event-ticket.html?id='+encodeURIComponent(t.id)+'&sig='+signedTicket(t.id,version)};
