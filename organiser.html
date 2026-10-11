@@ -39,14 +39,28 @@
   <section id="organiserReports" class="tb-panel tb-reports" aria-labelledby="reportsTitle">
  <div class="tb-panel-head"><div><span class="tb-step-number">ORGANISER · PROGRESS &amp; REPORTS</span><h2 id="reportsTitle">Your event performance</h2><p>Real ticket sales, test QR activity and door check-ins — no confusing fake revenue.</p></div></div>
  <div class="tb-report-top"><label>Choose event<select id="reportEvent"></select></label><button id="refreshReport" type="button" class="outline">Refresh report ↻</button></div>
- <div class="tb-report-metrics">
-  <article><span>REAL TICKETS SOLD</span><strong id="metricPaidTickets">—</strong></article>
-  <article><span>TICKET REVENUE</span><strong id="metricRevenue">—</strong></article>
-  <article><span>TEST QR BOOKINGS</span><strong id="metricTestTickets">—</strong></article>
-  <article><span>CHECKED IN</span><strong id="metricCheckedIn">—</strong></article>
+ <h3 class="tb-report-section-title">Sales &amp; revenue</h3>
+ <div class="tb-report-metrics tb-sales-metrics">
+  <article><span>PAID TICKETS SOLD</span><strong id="metricPaidTickets">—</strong></article>
+  <article><span>GROSS TICKET REVENUE</span><strong id="metricRevenue">—</strong></article>
+  <article><span>FREE TEST TICKETS</span><strong id="metricTestTickets">—</strong></article>
+  <article><span>TICKETS ISSUED · TOTAL</span><strong id="metricIssuedTickets">—</strong></article>
+ </div>
+ <h3 class="tb-report-section-title">Entry &amp; attendance</h3>
+ <div class="tb-report-metrics tb-attendance-metrics">
+  <article><span>ALL TICKETS SCANNED</span><strong id="metricCheckedIn">—</strong></article>
+  <article><span>PAID TICKETS SCANNED</span><strong id="metricPaidCheckedIn">—</strong></article>
+  <article><span id="metricPaidNotArrivedLabel">PAID NOT YET SCANNED</span><strong id="metricPaidNotArrived">—</strong></article>
+  <article><span>FREE TEST TICKETS SCANNED</span><strong id="metricTestCheckedIn">—</strong></article>
  </div>
  <p id="reportStatus" role="status">Select an event to see your figures.</p>
+ <p class="tb-report-explainer">Paid ticket revenue is based on confirmed sales, <strong>not</strong> who attends. Free test tickets never count as sales. Stripe handles its own processing fees and payouts.</p>
+ <h3 class="tb-report-section-title">Admissions by ticket type</h3>
  <div id="reportByType" class="tb-report-tiers"></div>
+ <div class="tb-door-audit">
+  <section aria-labelledby="scanCrewTitle"><h3 id="scanCrewTitle" class="tb-report-section-title">Scans by staff member</h3><div id="reportScanCrew" class="tb-report-tiers" aria-live="polite"><p>Scan records will appear here.</p></div></section>
+  <section aria-labelledby="scanLogTitle"><h3 id="scanLogTitle" class="tb-report-section-title">Recent door scans</h3><div id="reportRecentScans" class="tb-report-tiers" aria-live="polite"><p>Scan records will appear here.</p></div></section>
+ </div>
 <section id="staffAccess" class="tb-panel tb-scanner-dashboard" hidden aria-labelledby="staffHeading">
     <div class="tb-panel-head"><div><span class="tb-step-number">STAFF ACCESS</span><h2 id="staffHeading">Your door scanner team</h2><p>Choose an event and enter a staff member's email. We'll create their private access link. They sign into that event scanner with the same verified email.</p></div></div>
     <form id="staffInviteForm" class="organiser-form tb-form-grid"><label class="tb-span-full">Choose event<select id="inviteStaffEvent" name="eventId" required></select></label><label class="tb-span-full">Staff email<input type="email" name="email" autocomplete="email" maxlength="254" required placeholder="colleague@example.com"></label><div class="tb-form-actions tb-span-full"><button class="solid" id="sendStaffInvite" type="submit">Invite to scan tickets →</button></div></form>

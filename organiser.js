@@ -283,10 +283,15 @@ async function refresh(){
  const selected=list.find(e=>e.id===$('#showcaseEvent').value);
  updateShowcasePrice(selected);
 
- const reportOptions=list.map(e=>'<option value="'+esc(e.id)+'">'+esc(e.title)+'</option>').join('');
+ const reportOptions=list.map(e=>'<option value="'+esc(e.id)+'">'+esc(e.title)+
+  (e.public_beta_test&&Date.parse(e.beta_test_expires_at)>Date.now()?' · LIVE €0 TEST':
+   e.status==='published'?' · PUBLISHED':' · DRAFT')+'</option>').join('');
+ const defaultActiveReport=list.find(e=>e.public_beta_test&&Date.parse(e.beta_test_expires_at)>Date.now())
+  ||list.find(e=>e.status==='published');
  for(const selector of ['#reportEvent','#streetTeamEvent','#streetReportEvent']){
   const el=$(selector),old=el.value;el.innerHTML=reportOptions;
   if(list.some(e=>e.id===old))el.value=old;
+  else if(selector==='#reportEvent'&&defaultActiveReport)el.value=defaultActiveReport.id;
  }
  const streetTeamEvent=$('#streetTeamEvent').value;
  if(streetTeamEvent)await loadStreetTeam().catch(error=>{$('#streetTeamStatus').textContent=error.message;});
@@ -676,25 +681,63 @@ async function staffRequest(body, eventId){
 function money(cents,currency){
  return new Intl.NumberFormat('en-GB',{style:'currency',currency:currency==='gbp'?'GBP':'EUR'}).format(Number(cents||0)/100);
 }
+let reportRefreshing=false;
 async function loadReport(){
  const id=$('#reportEvent').value;
- if(!id)return;
- $('#reportStatus').textContent='Loading event progress and sales…';
- const response=await fetch('/api/event-organiser-report?eventId='+encodeURIComponent(id),{
-  headers:{authorization:'Bearer '+token},cache:'no-store'});
- const payload=await response.json();if(!response.ok)throw Error(payload.error||'Cannot load report');
- const d=payload.report;
- $('#metricPaidTickets').textContent=d.paidTickets.toLocaleString('en-GB');
- $('#metricRevenue').textContent=money(d.revenueCents,d.currency);
- $('#metricTestTickets').textContent=d.testTickets.toLocaleString('en-GB');
- $('#metricCheckedIn').textContent=d.checkedIn.toLocaleString('en-GB');
- $('#reportStatus').textContent='Current figures for '+d.title+'. €0 test bookings are never counted as paid revenue.';
- $('#reportByType').innerHTML=d.ticketsByType.map(t=>
-  '<div><strong>'+esc(t.name)+'</strong><span>'+t.paidTickets+' paid · '+t.testTickets+' test · '+t.capacity+' capacity</span></div>'
- ).join('')||'<p>Set up ticket types to see admission breakdowns.</p>';
+ if(!id||reportRefreshing)return;
+ reportRefreshing=true;
+ $('#reportStatus').textContent='Updating ticket sales and door scans…';
+ try{
+  const response=await fetch('/api/event-organiser-report?eventId='+encodeURIComponent(id),{
+   headers:{authorization:'Bearer '+token},cache:'no-store'});
+  const payload=await response.json();
+  if(!response.ok)throw Error(payload.error||'Cannot load report');
+  if($('#reportEvent').value!==id)return; // Ignore a late result for a different event.
+  const d=payload.report;
+  const formatCount=n=>Number(n||0).toLocaleString('en-GB');
+  $('#metricPaidTickets').textContent=formatCount(d.paidTickets);
+  $('#metricRevenue').textContent=money(d.revenueCents,d.currency);
+  $('#metricTestTickets').textContent=formatCount(d.testTickets);
+  $('#metricIssuedTickets').textContent=formatCount(d.issuedTickets);
+  $('#metricCheckedIn').textContent=formatCount(d.checkedIn);
+  $('#metricPaidCheckedIn').textContent=formatCount(d.paidCheckedIn);
+  $('#metricPaidNotArrived').textContent=formatCount(d.paidNotCheckedIn);
+  $('#metricPaidNotArrivedLabel').textContent=d.eventFinished?'PAID NO-SHOWS':'PAID NOT YET SCANNED';
+  $('#metricTestCheckedIn').textContent=formatCount(d.testCheckedIn);
+  $('#reportStatus').textContent='Showing '+d.title+': '+formatCount(d.issuedTickets)+
+   ' tickets issued, '+formatCount(d.checkedIn)+' checked in. '+formatCount(d.testNotCheckedIn)+
+   ' free test ticket(s) not scanned. Updated '+new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+'.';
+  $('#reportByType').innerHTML=d.ticketsByType.map(t=>
+   '<div><strong>'+esc(t.name)+'</strong><span>'+
+   formatCount(t.paidTickets)+' paid sold · '+formatCount(t.paidCheckedIn)+' paid scanned · '+
+   formatCount(t.testTickets)+' free tests · '+formatCount(t.testCheckedIn)+' tests scanned · '+
+   formatCount(t.capacity)+' capacity</span></div>'
+  ).join('')||'<p>Add ticket types to see sales and admission breakdowns.</p>';
+  $('#reportScanCrew').innerHTML=d.scannedByStaff.length?d.scannedByStaff.map(person=>
+   '<div class="tb-scan-crew-row"><div><strong>'+esc(person.name)+'</strong>'+
+   (person.email?'<small>'+esc(person.email)+'</small>':'')+'</div>'+
+   '<span><b>'+formatCount(person.total)+' scanned</b><small>'+
+   formatCount(person.paid)+' paid · '+formatCount(person.test)+' free tests</small></span></div>'
+  ).join(''):'<p>No tickets scanned for this event yet.</p>';
+  $('#reportRecentScans').innerHTML=d.recentScans.length?d.recentScans.map(scan=>
+   '<div class="tb-checkin-row"><div><strong>'+esc(scan.ticketType)+
+   (scan.ticketNumber?' · #'+esc(scan.ticketNumber):'')+'</strong>'+
+   '<small>'+esc(scan.test?'Free test ticket':'Paid ticket')+'</small></div>'+
+   '<span><b>'+esc(scan.scannedBy?.name||'Scanner')+'</b><small>'+
+   esc(localDate(scan.checkedInAt,d.venueTimezone))+'</small></span></div>'
+  ).join(''):'<p>When your crew scans a valid ticket, their name and the check-in time will appear here.</p>';
+ }finally{
+  reportRefreshing=false;
+ }
 }
 $('#reportEvent').addEventListener('change',()=>loadReport().catch(e=>{$('#reportStatus').textContent=e.message;}));
 $('#refreshReport').addEventListener('click',()=>loadReport().catch(e=>{$('#reportStatus').textContent=e.message;}));
+ // Keep the door count useful while an organiser has the dashboard open.
+ // This is a read-only refresh; the scan endpoints alone can mark tickets as used.
+ setInterval(()=>{
+  if(!document.hidden&&!$('#workspace').hidden&&$('#reportEvent').value)
+   loadReport().catch(error=>{$('#reportStatus').textContent=error.message;});
+ },30000);
 async function streetAPI(body,eventId){
  const url=body?'/api/event-street-team':'/api/event-street-team?eventId='+encodeURIComponent(eventId);
  const response=await fetch(url,{method:body?'POST':'GET',headers:{
