@@ -23,7 +23,7 @@ export default async function handler(req,res){
    const organisation=await organiserForUser(db,ctx.user.id);
    if(req.method==='GET') {
      if(!organisation)return json(res,{organiser:null,events:[]});
-     const ev=await db.from('sb_events').select('id,slug,title,description,venue,starts_at,ends_at,status,country_code,currency,venue_timezone,event_kind,image_url,event_logo_url,headline_artist,venue_city,publish_requested_at,public_beta_test,beta_test_expires_at')
+     const ev=await db.from('sb_events').select('id,slug,title,description,venue,starts_at,ends_at,status,country_code,currency,venue_timezone,event_kind,image_url,event_logo_url,headline_artist,venue_city,publish_requested_at,public_beta_test,beta_test_expires_at,created_at,internal_free_test')
        .eq('organiser_profile_id',organisation.id).order('starts_at',{ascending:false}).limit(200);
      if(ev.error)throw ev.error;
      const ids=ev.data.map(v=>v.id);
