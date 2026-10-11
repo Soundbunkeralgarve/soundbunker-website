@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="index,follow"><meta name="theme-color" content="#1c1027">
-<meta name="description" content="TicketBunker: event tickets made simple. Discover tickets for club nights, concerts, comedy and live events, or create an event and manage ticket sales. Ticket checkout is in BETA.">
+<meta name="description" content="TicketBunker lists genuine organiser events with full ticket options and secure €0 QR test checkout. Paid ticket sales are not yet active.">
 <title>TicketBunker | Event Tickets Made Simple · BETA</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/ticketbunker.css">
@@ -13,7 +13,7 @@
 </head>
 <body class="ticketbunker-site">
 <a class="tb-skip" href="#upcoming">Skip to events</a>
-<div class="tb-beta-ribbon" role="status"><strong>BETA · NOT LIVE YET</strong><span>Preview the platform. All sample events are demos; ticket payments are disabled.</span></div>
+<div class="tb-beta-ribbon" role="status"><strong>BETA · NOT LIVE YET</strong><span>Real organiser test events are bookable at €0/£0 for QR testing only. No real admission or paid sales.</span></div>
 <header class="tb-header">
  <a class="tb-brand" href="/events" aria-label="ticketBunker Events home"><img src="/assets/ticketbunker/ticketbunker-logo.svg" alt="ticketBunker" width="1273" height="125"></a>
  <nav class="tb-nav" aria-label="Main ticketBunker navigation"><a href="/" class="tb-return-link">← Return to SoundBunker</a><a href="/events" aria-current="page">Event Tickets</a><a href="#featured">Featured Showcase</a><a href="#plans">Sell Tickets</a><a href="/organiser">Organiser dashboard</a><a href="/client?next=%2Fclient%23my-tickets">My Tickets</a></nav>
@@ -62,34 +62,29 @@
  </div>
 </section>
 
-<section id="featured" class="tb-feature-section" aria-labelledby="feature-title">
- <div class="tb-section-head compact"><div><p class="tb-eyebrow">THE SPOTLIGHT</p><h2>Featured Event</h2></div><span class="tb-feature-side-note">Premium placement · Demo preview</span></div>
+<section id="featured" class="tb-feature-section" aria-labelledby="feature-title" hidden>
+ <div class="tb-section-head compact"><div><p class="tb-eyebrow">IN FOCUS</p><h2>Featured Event</h2></div><span class="tb-feature-side-note">Real organiser listing</span></div>
  <div class="tb-feature-card">
-  <div class="tb-feature-image"><img src="/assets/ticketbunker/posters/featured.svg" alt="Original TicketBunker featured-event concept artwork" width="1100" height="660" loading="lazy"><span class="tb-feature-image-tag">DEMO EVENT</span></div>
-  <div class="tb-feature-copy">
-   <div class="tb-feature-label"><span class="tb-tag featured">FEATURED SHOWCASE</span><span class="tb-tag demo">DEMO EVENT</span></div>
-   <p class="tb-eyebrow">CLUB NIGHT · ALGARVE</p>
-   <h2 id="feature-title">Midnight Sessions Live</h2>
-   <p class="tb-feature-meta">Loulé, Portugal · Electronic / House</p>
-   <p>A premium spot for the events people shouldn't miss. Your event could take this headline position when ticketBunker launches paid placement.</p>
-   <div class="tb-actions"><button class="tb-button primary" type="button" data-demo="sunset">Preview Demo Event <span aria-hidden="true">↗</span></button><a href="/organiser#featured-placement" class="tb-link">Request this position →</a></div>
-   <p class="tb-disclaimer">Illustrative demo. No real event, ticket availability or payment offer.</p>
+  <div class="tb-feature-image"><img id="tb-feature-image" src="/assets/ticketbunker/posters/featured.svg" alt="Event poster" width="1100" height="660" loading="lazy"><span id="featureStatus" class="tb-feature-image-tag">REAL EVENT</span></div>
+  <div class="tb-feature-copy"><p class="tb-eyebrow">DISCOVER EVENT TICKETS</p>
+   <h2 id="feature-title">Loading event…</h2><p id="featureVenue" class="tb-feature-meta"></p>
+   <p id="featureDescription"></p><a id="featureLink" class="tb-button primary" href="#upcoming">View full event &amp; tickets →</a>
   </div>
  </div>
 </section>
 
 <section id="upcoming" class="tb-upcoming" aria-labelledby="upcoming-title">
- <div class="tb-section-head"><div><p class="tb-eyebrow">WHAT'S HAPPENING</p><h2 id="upcoming-title">Explore Event Tickets</h2><p>Discover the types of events you can list or attend. Current sample listings are previews only; paid ticket checkout is not yet open.</p></div><div class="tb-count" id="tb-event-count" role="status">Loading events</div></div>
+ <div class="tb-section-head"><div><p class="tb-eyebrow">WHAT'S HAPPENING</p><h2 id="upcoming-title">Explore Event Tickets</h2><p>Discover the types of events you can list or attend. Only real organiser listings appear. €0 test tickets have no event admission value.</p></div><div class="tb-count" id="tb-event-count" role="status">Loading events</div></div>
  <div class="tb-quick-filters" role="group" aria-label="Filter events by type"><button type="button" class="selected" data-filter="All" aria-pressed="true">All events</button><button type="button" data-filter="Clubs" aria-pressed="false">Club nights</button><button type="button" data-filter="Live" aria-pressed="false">Live music</button><button type="button" data-filter="Comedy" aria-pressed="false">Comedy</button><button type="button" data-filter="Arts" aria-pressed="false">Arts & culture</button></div>
- <div id="eventCards" class="tb-card-grid" aria-live="polite"><p>Loading event previews…</p></div>
- <p class="tb-demo-footer"><strong>Demo events only:</strong> These listings demonstrate the platform design; they aren't real scheduled shows and no tickets can be purchased.</p>
+ <div id="eventCards" class="tb-card-grid" aria-live="polite"><p>Loading events…</p></div>
+ <p class="tb-demo-footer"><strong>Test bookings:</strong> €0 QR tickets are for software testing only. They do not grant entry to a real event.</p>
 </section>
 
 <section id="plans" class="tb-plans" aria-labelledby="tb-plans-title">
  <div class="tb-plans-wrap">
   <div class="tb-section-head compact"><div><p class="tb-eyebrow">FOR EVENT ORGANISERS</p><h2 id="tb-plans-title">Sell event tickets. Keep more of your revenue.</h2><p>List your event for one flat fee, with no extra TicketBunker commission on every ticket sold.</p></div><a href="/organiser" class="tb-button outline">Create a free event draft <span aria-hidden="true">↗</span></a></div>
   <div class="tb-price-toolbar"><div><strong>Choose your country</strong><span>Prices are per event, not per ticket</span></div><div class="tb-currency-switch" role="group" aria-label="Organiser country for prices"><button type="button" data-currency="gbp" aria-pressed="true" class="selected">United Kingdom · GBP</button><button type="button" data-currency="eur" aria-pressed="false">Portugal · EUR</button></div></div>
-  <div class="tb-test-pilot"><div><span class="tb-pilot-tag">PRIVATE TEST / €0 · £0</span><strong>Real QR test mode</strong><p>Internal test tickets, genuine one-time QR scanning and branded confirmation emails — no Stripe charge. Kept available for our next test, not a public sale.</p></div><a href="/events-admin">Open admin test tools →</a></div>
+  <div class="tb-test-pilot"><div><span class="tb-pilot-tag">PRIVATE TEST / €0 · £0</span><strong>Real €0 QR test mode</strong><p>Internal test tickets, genuine one-time QR scanning and branded confirmation emails — no Stripe charge. Kept available for our next test, not a public sale.</p></div><a href="/events-admin">Open admin test tools →</a></div>
   <div class="tb-plan-grid">
    <article class="tb-plan"><div><span class="tb-plan-label">01 / SMALL</span><h3 class="tb-plan-name">Starter</h3><p class="tb-plan-volume">1–100 tickets sold</p></div><div><p class="tb-plan-price"><span data-price-gbp="£49" data-price-eur="€59">£49</span> <small>/ event</small></p><p>For open mic nights, small gigs and community shows. Upfront listing payment.</p></div><span class="tb-plan-included">0% ticketBunker commission</span></article>
    <article class="tb-plan"><div><span class="tb-plan-label">02 / GROWING</span><h3 class="tb-plan-name">Standard</h3><p class="tb-plan-volume">101–500 tickets sold</p></div><div><p class="tb-plan-price"><span data-price-gbp="£99" data-price-eur="€119">£99</span> <small>/ event</small></p><p>Independent club nights, shows and local promoters. Upfront listing payment.</p></div><span class="tb-plan-included">0% ticketBunker commission</span></article>
@@ -115,5 +110,5 @@
 <section class="tb-organiser-cta" aria-labelledby="organiser-cta-title"><div><p class="tb-eyebrow">READY TO BUILD YOUR NEXT EVENT?</p><h2 id="organiser-cta-title">The good nights<br>start here.</h2><p>Create an organiser profile and build your event before ticket sales go live.</p><a href="/organiser" class="tb-button primary">Open organiser workspace <span aria-hidden="true">↗</span></a></div><img src="/assets/ticketbunker/posters/algorithm.svg" alt="Original TicketBunker live-music concept poster" loading="lazy" width="1100" height="760"></section>
 </main>
 <footer class="tb-footer"><a href="/events" class="tb-brand"><img src="/assets/ticketbunker/ticketbunker-logo.svg" alt="ticketBunker" width="1273" height="125"></a><p>Part of SoundBunker Algarve · BETA</p><nav aria-label="Footer"><a href="/">← Return to SoundBunker</a><a href="/organiser">Organisers</a><a href="/privacy.html">Privacy</a><a href="/terms">Terms</a></nav></footer>
-<dialog id="tb-demo-dialog" class="tb-demo-dialog" aria-labelledby="tb-demo-title"><div class="tb-dialog-top"><span class="tb-tag demo">DEMO EVENT · NOT BOOKABLE</span><button type="button" id="tb-demo-close" aria-label="Close event preview">×</button></div><img id="tb-demo-image" src="/assets/ticketbunker/posters/bassline.svg" alt="" loading="lazy"><h2 id="tb-demo-title">Event preview</h2><p id="tb-demo-detail"></p><p class="tb-demo-warning">This event is an example only. No real event, ticket availability or payment offer. No tickets are on sale and no real booking is available.</p><button type="button" class="tb-button outline" id="tb-demo-back">Back to Events</button></dialog>
+
 </body></html>
