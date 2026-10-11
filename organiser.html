@@ -35,7 +35,19 @@
   <div class="tb-wizard-heading"><h2>Create your event in three easy steps</h2><p>Review your event, activate a real €0 test listing, or pay to publish once checkout is enabled. Paid prices stay saved.</p></div>
   <nav id="wizardSteps" class="tb-wizard-steps" aria-label="Event setup progress"><button type="button" data-wizard="details" class="active" aria-current="step"><b>01</b><span>Event &amp; artwork</span></button><button type="button" data-wizard="tickets"><b>02</b><span>Ticket options</span></button><button type="button" data-wizard="review"><b>03</b><span>Review &amp; Pay</span></button></nav>
   <div class="tb-account-strip"><div><span class="tb-strip-caption">YOUR ORGANISER ACCOUNT</span><strong id="orgName">Organiser</strong><p id="orgState"></p></div><div><span class="tb-strip-caption">EVENT SALES</span><strong>BETA · Not active</strong><p>Stripe onboarding, publishing and payments come after testing.</p></div><div><span class="tb-strip-caption">YOUR BUSINESS MODEL</span><strong>0% ticketBunker commission</strong><p>Stripe handles card-processing fees separately.</p></div></div>
-  <nav class="tb-workspace-jumps" aria-label="Organiser shortcuts"><a href="#largeEventQuote">Large event quote</a><a href="#staffAccess">Door team &amp; scanner invites</a><a href="#featured-placement">Event promotion</a><a href="#listing-plans">Pricing</a></nav>
+  <section id="organiserReports" class="tb-panel tb-reports" aria-labelledby="reportsTitle">
+ <div class="tb-panel-head"><div><span class="tb-step-number">ORGANISER · PROGRESS &amp; REPORTS</span><h2 id="reportsTitle">Your event performance</h2><p>Real ticket sales, test QR activity and door check-ins — no confusing fake revenue.</p></div></div>
+ <div class="tb-report-top"><label>Choose event<select id="reportEvent"></select></label><button id="refreshReport" type="button" class="outline">Refresh report ↻</button></div>
+ <div class="tb-report-metrics">
+  <article><span>REAL TICKETS SOLD</span><strong id="metricPaidTickets">—</strong></article>
+  <article><span>TICKET REVENUE</span><strong id="metricRevenue">—</strong></article>
+  <article><span>TEST QR BOOKINGS</span><strong id="metricTestTickets">—</strong></article>
+  <article><span>CHECKED IN</span><strong id="metricCheckedIn">—</strong></article>
+ </div>
+ <p id="reportStatus" role="status">Select an event to see your figures.</p>
+ <div id="reportByType" class="tb-report-tiers"></div>
+</section>
+<nav class="tb-workspace-jumps" aria-label="Organiser shortcuts"><a href="#organiserReports">Sales &amp; reports</a><a href="#staffAccess">Door scanner team</a><a href="#streetTeam">Street Team</a><a href="#featured-placement">Premium placement</a><a href="#payoutOptions">Payouts</a><a href="#largeEventQuote">Large events</a><a href="#listing-plans">Pricing</a></nav>
   <div id="setup" class="tb-setup-grid">
    <section class="tb-panel" id="eventBasics" aria-labelledby="create-event-heading">
     <div class="tb-panel-head"><div><span class="tb-step-number">STEP 01</span><h2 id="create-event-heading">Create an event</h2><p>Keep it simple. You can edit your event before it goes on sale.</p></div></div>
@@ -143,17 +155,48 @@
    </section>
   </details>
 
+<section class="tb-panel tb-premium-note"><span class="tb-step-number">OPTIONAL PREMIUM LOCATION</span><h2>Get your event seen first</h2>
+ <p>Put your event in TicketBunker's featured position above standard listings. A fair fixed upgrade: <strong>£49 UK / €59 Portugal</strong> (proposed, before any applicable tax). One-time per event, subject to availability and approval.</p>
+ <a class="outline" href="#featured-placement">Request Premium Placement ↗</a><small>No payment is taken while listing upgrades are in BETA.</small></section>
+<section id="payoutOptions" class="tb-panel tb-payout-options" aria-labelledby="payoutHeading">
+ <div class="tb-panel-head"><div><span class="tb-step-number">PAYMENTS · PAYOUTS</span><h2 id="payoutHeading">Choose how you get paid</h2>
+ <p>Buyer payments go through Stripe. TicketBunker never adds a buyer booking fee or takes a per-ticket commission.</p></div></div>
+ <div class="tb-payout-grid">
+  <article><span>STANDARD</span><h3>Normal bank payouts</h3><p>Follows your Stripe account's normal schedule. Commonly around 2–3 business days after funds become available, but actual timing depends on your account, country and bank.</p><strong>No TicketBunker payout charge</strong></article>
+  <article><span>OPTIONAL · ELIGIBLE ACCOUNTS</span><h3>Faster payouts</h3><p>Eligible organisers may request Stripe Instant Payouts for available balances. Stripe's instant payout charge and any separately agreed TicketBunker convenience fee must be shown before confirmation.</p><strong>Fee quoted before you choose</strong><small>Not active in BETA. No request will collect money or change your Stripe payout schedule.</small></article>
+ </div>
+ <p class="tb-field-help"><strong>Your ticket price is the ticket price.</strong> Your only TicketBunker charge for standard sales is the agreed upfront flat listing fee. Stripe deducts its standard card-processing fees. Optional premium placement and faster payouts are separate, clearly priced services chosen by the organiser.</p>
+</section>
   <div class="tb-bottom-grid">
    <section id="staffAccess" class="tb-panel" aria-labelledby="staffHeading">
-    <div class="tb-panel-head"><div><span class="tb-step-number">STAFF ACCESS</span><h2 id="staffHeading">Invite your scanner crew</h2><p>Send an event-specific link by email, or share it by WhatsApp/SMS. Staff sign in with their verified SoundBunker email, then each scan is logged.</p></div></div>
-    <form id="staffInviteForm" class="organiser-form tb-form-grid"><label class="tb-span-full">Choose event<select id="inviteStaffEvent" name="eventId" required></select></label><label class="tb-span-full">Staff email<input type="email" name="email" autocomplete="email" maxlength="254" required placeholder="colleague@example.com"></label><div class="tb-form-actions tb-span-full"><button class="solid" type="submit">Generate scanner invitation →</button></div></form>
-    <div id="staffInviteResult" class="tb-invite-result" hidden><strong>Invitation created</strong><p>Share privately. Access requires a verified account using the invited email.</p><input id="staffInviteLink" type="text" readonly aria-label="Scanner invitation link"><button id="copyStaffInvite" type="button" class="solid">Copy secure link</button><a id="shareStaffSms" href="#" class="solid">Share by SMS ↗</a><a id="shareStaffWhatsApp" href="https://wa.me/" class="solid" target="_blank" rel="noopener noreferrer">Share privately on WhatsApp ↗</a></div>
+    <div class="tb-panel-head"><div><span class="tb-step-number">STAFF ACCESS</span><h2 id="staffHeading">Your door scanner team</h2><p>Choose an event and enter a staff member's email. We'll create their private access link. They sign into that event scanner with the same verified email.</p></div></div>
+    <form id="staffInviteForm" class="organiser-form tb-form-grid"><label class="tb-span-full">Choose event<select id="inviteStaffEvent" name="eventId" required></select></label><label class="tb-span-full">Staff email<input type="email" name="email" autocomplete="email" maxlength="254" required placeholder="colleague@example.com"></label><div class="tb-form-actions tb-span-full"><button class="solid" id="sendStaffInvite" type="submit">Invite to scan tickets →</button></div></form>
+    <div id="staffInviteResult" class="tb-invite-result" hidden><strong id="staffInviteStatus">Invitation created</strong><p>Staff sign into their assigned event only, using the same verified email. You can revoke access any time.</p><input id="staffInviteLink" type="text" readonly aria-label="Scanner invitation link"><button id="copyStaffInvite" type="button" class="solid">Copy secure link</button><a id="shareStaffSms" href="#" class="solid">Share by SMS ↗</a><a id="shareStaffWhatsApp" href="https://wa.me/" class="solid" target="_blank" rel="noopener noreferrer">Share privately on WhatsApp ↗</a></div>
     <label class="tb-roster-label" for="manageStaffEvent">Manage staff for event<select id="manageStaffEvent"></select></label><div id="staffRoster" class="tb-staff-roster"></div>
-    <p class="tb-field-help">Invitations expire after 72 hours and access can be revoked. Phone-number invitations are not yet active.</p>
+    <p class="tb-field-help">Staff access is limited to assigned events while QR entry is open. Invitations expire after 72 hours, but accepted access lasts until revoked or the event closes. WhatsApp/SMS buttons open share messages; they do not auto-send.</p>
    </section>
-   <details class="tb-advanced"><summary>Optional Featured Showcase promotion</summary><section id="featured-placement" class="tb-panel" aria-labelledby="featured-placement-heading">
-    <div class="tb-panel-head"><div><span class="tb-step-number">OPTIONAL PROMOTION</span><h2 id="featured-placement-heading">Featured Showcase</h2><p>Apply to put your event in the top featured position.</p></div></div>
-    <div class="tb-showcase-preview"><span>PREMIUM PLACEMENT</span><strong>Give your event the spotlight.</strong><p>Request the headline spot on ticketBunker’s discovery page.</p></div>
+<section id="streetTeam" class="tb-panel tb-street-team" aria-labelledby="streetTeamTitle">
+ <div class="tb-panel-head"><div><span class="tb-step-number">STREET TEAM · PROMOTERS</span>
+  <h2 id="streetTeamTitle">Give promoters their own ticket links</h2>
+  <p>Track each promoter's tickets and choose a reward target. Cash, free tickets, VIP tables or custom perks can be earned from <strong>real paid sales only</strong>.</p></div></div>
+ <form id="streetTeamForm" class="organiser-form tb-form-grid">
+  <label class="tb-span-full">Event<select id="streetTeamEvent" name="eventId" required></select></label>
+  <label>Promoter name<input name="name" required minlength="2" maxlength="100" placeholder="Street Team member"></label>
+  <label>Promoter email<input name="email" type="email" required placeholder="promoter@example.com"></label>
+  <label>Reward type<select id="streetRewardType" name="rewardType" required><option value="free_tickets">Free tickets after target</option><option value="vip_table">VIP table after target</option><option value="cash_per_sale">Cash per paid ticket</option><option value="other_perk">Other perk / experience</option></select></label>
+  <label>Target paid tickets<input name="rewardGoal" type="number" min="1" max="100000" step="1" inputmode="numeric" required value="20"></label>
+  <label id="streetCashAmount" hidden>Cash per paid ticket (€ / £)<input name="rewardMoney" type="number" min="0.01" max="10000" step="0.01" value="1.00"></label>
+  <label class="tb-span-full">Reward details<input name="rewardDescription" maxlength="400" placeholder="E.g. 1 VIP table for 4 people after 25 paid tickets"></label>
+  <div class="tb-form-actions tb-span-full"><button class="solid" type="submit" id="createStreetLink">Create promoter sales link →</button></div>
+ </form>
+ <p class="tb-field-help">During €0 testing, test bookings are tracked separately. They do not count toward cash, VIP tables, free tickets or perks. Rewards are agreements between the organiser and promoter; TicketBunker does not issue rewards or transfer money automatically.</p>
+ <label class="tb-roster-label" for="streetReportEvent">Promoter results for event<select id="streetReportEvent"></select></label>
+ <p id="streetTeamStatus" role="status">Create your first promoter link to start tracking.</p>
+ <div id="streetTeamRoster" class="tb-street-roster"></div>
+</section>
+   <details class="tb-advanced"><summary>Premium Placement — headline event position</summary><section id="featured-placement" class="tb-panel" aria-labelledby="featured-placement-heading">
+    <div class="tb-panel-head"><div><span class="tb-step-number">OPTIONAL PROMOTION</span><h2 id="featured-placement-heading">Featured Showcase</h2><p>Apply for the main featured spot buyers see before ordinary event listings.</p></div></div>
+    <div class="tb-showcase-preview"><span>PREMIUM PLACEMENT</span><strong>Get in front of more ticket buyers.</strong><p>Request the headline spot on ticketBunker’s discovery page.</p></div>
     <form id="showcaseForm" class="organiser-form tb-form-grid"><label class="tb-span-full">Choose a draft event<select id="showcaseEvent" name="eventId" required></select></label><p id="showcasePrice" class="tb-field-note tb-span-full">Proposed upgrade: £49 for UK events / €59 for Portuguese events.</p><div class="tb-form-actions tb-span-full"><button class="solid" type="submit">Request Featured Showcase →</button></div></form><p id="showcaseMessage" role="status" class="tb-action-response"></p>
     <p class="tb-field-help">No charge is taken when you request a place. Price, availability, tax and booking terms require confirmation before paid placements launch.</p>
    </section></details>
