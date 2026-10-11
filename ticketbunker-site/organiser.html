@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="noindex,follow" name="robots"/><meta content="#20112c" name="theme-color"/>
+<title>Organiser workspace | TicketBunker</title>
+<link href="/events.css" rel="stylesheet"/><link href="/organiser.css" rel="stylesheet"/><link href="/ticketbunker-app.css" rel="stylesheet"/>
+<script defer="" src="/vendor/supabase.js"></script><script defer="" src="/organiser.js"></script>
+<link href="/ticketbunker-launch.css" rel="stylesheet"/>
+<link href="/ticketbunker-sales-ops.css" rel="stylesheet"/>
+<link href="/workspace.css" rel="stylesheet"/><script src="/settlement.js" type="module"></script></head>
+<body class="tb-organiser-app">
+
+<header class="topbar tb-workspace-header"><a class="brand" href="/events"><img alt="ticketBunker" height="125" src="/assets/ticketbunker/ticketbunker-logo.svg" width="1273"/></a><nav aria-label="Workspace navigation"><a href="/#discover">Find events</a><a href="/my-tickets">My tickets</a><button class="outline" id="organiser-signout" type="button">Sign out</button></nav></header>
+<main class="tb-workspace-shell">
+<div class="tb-workspace-intro"><div><p class="eyebrow">TICKETBUNKER / ORGANISER WORKSPACE</p><h1>Your events. All in one place.</h1><p>Add your event details and artwork, choose ticket types and prices, then review everything in one place. Drafts save as you go.</p></div><div class="tb-intro-side"><span>YOUR EVENT. YOUR RULES.</span><strong>Built for the live experience.</strong><small>Powered by SoundBunker Algarve</small></div></div>
+<div class="message tb-workspace-notice" id="notice" role="status">Checking your organiser account…</div>
+<section aria-atomic="true" aria-live="polite" class="tb-operation-status" hidden="" id="operationStatus" role="status">
+<div class="tb-operation-heading"><span aria-hidden="true" class="tb-operation-spinner" id="operationSpinner"></span>
+<div class="tb-operation-copy"><strong id="operationTitle">Working on your request…</strong><p id="operationDetail">Please keep this page open.</p></div>
+<span class="tb-operation-percent" hidden="" id="operationPercent"></span><button aria-label="Dismiss progress message" class="tb-operation-dismiss" id="dismissOperation" type="button">×</button>
+</div>
+<div aria-label="Task progress" aria-valuemax="100" aria-valuemin="0" aria-valuetext="Processing" class="tb-operation-track" id="operationTrack" role="progressbar">
+<div class="tb-operation-bar" id="operationBar"></div>
+</div>
+</section>
+<section class="tb-panel tb-guest-panel" hidden="" id="guest"><h2>Sign in to start your event.</h2><p>Use your SoundBunker account to create a free organiser profile and prepare an event draft.</p><a class="solid" href="/client?next=%2Forganiser">Sign in / Create organiser account ↗</a></section>
+<section class="tb-panel tb-register-panel" hidden="" id="register">
+<div class="tb-panel-head"><div><p class="tb-step-number">ACCOUNT SETUP</p><h2>Create your organiser profile</h2><p>One account to manage your events and team.</p></div></div>
+<form class="organiser-form tb-form-grid" id="registerForm">
+<label>Promoter / business name<input maxlength="160" minlength="2" name="displayName" placeholder="Your promoter or event brand" required=""/></label>
+<label>Based in<select name="country" required=""><option value="PT">Portugal · EUR</option><option value="GB">United Kingdom · GBP</option></select></label>
+<label class="check tb-span-full"><input name="acceptTerms" required="" type="checkbox"/><span>I agree to the <a href="/terms">terms</a> and understand that identity and tax verification will be required before ticket sales go live.</span></label>
+<div class="tb-form-actions tb-span-full"><button class="solid" type="submit">Create free organiser profile →</button></div>
+</form>
+</section>
+<section hidden="" id="workspace">
+<div class="tb-wizard-heading"><h2>Create your event in three steps</h2><p>Add event details, set ticket prices, then review. Once published, manage staff and sales from your dashboard.</p></div>
+<nav aria-label="Event setup progress" class="tb-wizard-steps" id="wizardSteps"><button aria-current="step" class="active" data-wizard="details" type="button"><b>01</b><span>Event &amp; artwork</span></button><button data-wizard="tickets" type="button"><b>02</b><span>Ticket options</span></button><button data-wizard="review" type="button"><b>03</b><span>Review &amp; publish</span></button></nav>
+<div class="tb-account-strip"><div><span class="tb-strip-caption">YOUR ORGANISER ACCOUNT</span><strong id="orgName">Organiser</strong><p id="orgState"></p></div><div><span class="tb-strip-caption">PAYMENT ACTIVATION</span><strong>Verification required</strong><p>Live ticket sales open after Stripe setup and event approval.</p></div><div><span class="tb-strip-caption">YOUR BUSINESS MODEL</span><strong>0% ticketBunker commission</strong><p>Stripe handles card-processing fees separately.</p></div></div>
+<section aria-labelledby="reportsTitle" class="tb-panel tb-reports" id="organiserReports">
+<div class="tb-panel-head"><div><span class="tb-step-number">ORGANISER · PROGRESS &amp; REPORTS</span><h2 id="reportsTitle">Your event performance</h2><p>Confirmed ticket sales, attendance and your automatic post-show report.</p></div></div>
+<div class="tb-report-top"><label>Choose event<select id="reportEvent"></select></label><button class="outline" id="refreshReport" type="button">Refresh report ↻</button></div>
+<h3 class="tb-report-section-title">Sales &amp; revenue</h3>
+<div class="tb-report-metrics tb-sales-metrics">
+<article><span>PAID TICKETS SOLD</span><strong id="metricPaidTickets">—</strong></article>
+<article><span>GROSS TICKET REVENUE</span><strong id="metricRevenue">—</strong></article>
+<article hidden=""><span>FREE TEST TICKETS</span><strong id="metricTestTickets">—</strong></article>
+<article hidden=""><span>TICKETS ISSUED · TOTAL</span><strong id="metricIssuedTickets">—</strong></article>
+</div>
+<h3 class="tb-report-section-title">Entry &amp; attendance</h3>
+<div class="tb-report-metrics tb-attendance-metrics">
+<article hidden=""><span>ALL TICKETS SCANNED</span><strong id="metricCheckedIn">—</strong></article>
+<article><span>PAID TICKETS SCANNED</span><strong id="metricPaidCheckedIn">—</strong></article>
+<article><span id="metricPaidNotArrivedLabel">PAID NOT YET SCANNED</span><strong id="metricPaidNotArrived">—</strong></article>
+<article hidden=""><span>FREE TEST TICKETS SCANNED</span><strong id="metricTestCheckedIn">—</strong></article>
+</div>
+<p id="reportStatus" role="status">Select an event to see your figures.</p>
+<p class="tb-report-explainer">Ticket revenue comes from confirmed sales. Door scans measure attendance and do not reduce revenue.</p><section aria-labelledby="settlementHeading" class="settlement-panel" id="postShowReport"><div class="settlement-heading"><div><span class="tb-step-number">AUTOMATIC · FINISH + 12 HOURS</span><h3 id="settlementHeading">Post-show report &amp; payout</h3></div><button class="outline" disabled="" id="downloadReport" type="button">Download report ↓</button></div><p id="settlementStatus" role="status">Select an event to see its reporting schedule.</p><div id="settlementBody"></div><div id="refundRequests"></div></section>
+<h3 class="tb-report-section-title">Admissions by ticket type</h3>
+<div class="tb-report-tiers" id="reportByType"></div>
+<div class="tb-door-audit">
+<section aria-labelledby="scanCrewTitle"><h3 class="tb-report-section-title" id="scanCrewTitle">Scans by staff member</h3><div aria-live="polite" class="tb-report-tiers" id="reportScanCrew"><p>Scan records will appear here.</p></div></section>
+<section aria-labelledby="scanLogTitle"><h3 class="tb-report-section-title" id="scanLogTitle">Recent door scans</h3><div aria-live="polite" class="tb-report-tiers" id="reportRecentScans"><p>Scan records will appear here.</p></div></section>
+</div>
+<section aria-labelledby="staffHeading" class="tb-panel tb-scanner-dashboard" hidden="" id="staffAccess">
+<div class="tb-panel-head"><div><span class="tb-step-number">STAFF ACCESS</span><h2 id="staffHeading">Your door scanner team</h2><p>Choose an event and enter a staff member's email. We'll create their private access link. They sign into that event scanner with the same verified email.</p></div></div>
+<form class="organiser-form tb-form-grid" id="staffInviteForm"><label class="tb-span-full">Choose event<select id="inviteStaffEvent" name="eventId" required=""></select></label><label class="tb-span-full">Staff email<input autocomplete="email" maxlength="254" name="email" placeholder="colleague@example.com" required="" type="email"/></label><div class="tb-form-actions tb-span-full"><button class="solid" id="sendStaffInvite" type="submit">Invite to scan tickets →</button></div></form>
+<div class="tb-invite-result" hidden="" id="staffInviteResult"><strong id="staffInviteStatus">Invitation created</strong><p>Staff sign into their assigned event only, using the same verified email. You can revoke access any time.</p><input aria-label="Scanner invitation link" id="staffInviteLink" readonly="" type="text"/><button class="solid" id="copyStaffInvite" type="button">Copy secure link</button><a class="solid" href="#" id="shareStaffSms">Share by SMS ↗</a><a class="solid" href="https://wa.me/" id="shareStaffWhatsApp" rel="noopener noreferrer" target="_blank">Share privately on WhatsApp ↗</a></div>
+<label class="tb-roster-label" for="manageStaffEvent">Manage staff for event<select id="manageStaffEvent"></select></label><div class="tb-staff-roster" id="staffRoster"></div>
+<p class="tb-field-help">Staff access is limited to assigned events while QR entry is open. Invitations expire after 72 hours, but accepted access lasts until revoked or the event closes. WhatsApp/SMS buttons open share messages; they do not auto-send.</p>
+</section>
+</section>
+<nav aria-label="Organiser shortcuts" class="tb-workspace-jumps"><a href="#organiserReports">Sales &amp; reports</a><a hidden="" href="#staffAccess">Scanner crew</a><a href="#streetTeam">Street Team</a><a href="#featured-placement">Premium placement</a><a href="#payoutOptions">Payouts</a><a href="#largeEventQuote">Large events</a><a href="#listing-plans">Pricing</a></nav>
+<div class="tb-setup-grid" id="setup">
+<section aria-labelledby="create-event-heading" class="tb-panel" id="eventBasics">
+<div class="tb-panel-head"><div><span class="tb-step-number">STEP 01</span><h2 id="create-event-heading">Create an event</h2><p>Keep it simple. You can edit your event before it goes on sale.</p></div></div>
+<form class="organiser-form tb-form-grid" id="eventForm">
+<label class="tb-span-full">Event name<input maxlength="160" minlength="3" name="title" placeholder="Friday Night Sessions" required=""/></label>
+<p class="tb-field-help tb-span-full" id="eventLinkHint" role="status">Your event link is created automatically from its name. You can keep the original event name exactly as written.</p>
+<label>Event type<select name="kind" required=""><option value="club">Club night</option><option value="show">Live music / concert</option><option value="comedy">Comedy show</option><option value="festival">Festival / open air</option><option value="workshop">Workshop / class</option><option value="community">Community / cultural</option><option value="sports">Sporting event</option><option value="other">Other event</option></select></label>
+<label>Venue &amp; city<input name="venue" placeholder="The Venue, Bristol" required=""/></label>
+<label>Start · venue local time<input name="startsAt" required="" type="datetime-local"/></label>
+<label>Finish · venue local time<input name="endsAt" required="" type="datetime-local"/></label>
+<label class="tb-span-full">Event poster / cover image<input accept="image/png,image/jpeg,image/webp" id="eventPoster" required="" type="file"/><span class="tb-field-help">Tap to choose a poster. JPEG, PNG or WebP, up to 7 MB. We prepare it automatically.</span></label><div class="tb-art-preview tb-span-full" hidden="" id="posterPreview"><img alt="Preview of your selected event poster" id="posterPreviewImage"/><p>Poster ready to upload when you save the event.</p></div>
+<label class="tb-span-full">Event / promoter logo (optional)<input accept="image/png,image/jpeg,image/webp" id="eventLogo" type="file"/><span class="tb-field-help">Your logo appears alongside TicketBunker on each ticket.</span></label><div class="tb-art-preview tb-art-logo tb-span-full" hidden="" id="logoPreview"><img alt="Preview of your selected event logo" id="logoPreviewImage"/><p>Logo ready to upload.</p></div>
+<label>Artist or headliner (optional)<input maxlength="120" name="headlineArtist" placeholder="DJ, artist or special guest"/></label>
+<label>City<input maxlength="120" name="venueCity" placeholder="Loulé, Bristol, London"/></label>
+<label class="tb-span-full">Event bio / description<textarea maxlength="4000" minlength="20" name="description" placeholder="Tell people about the event, music, lineup, atmosphere, dress code and anything they need to know." required="" rows="5"></textarea></label>
+<label class="tb-span-full tb-charity-choice">
+<input id="charityEventToggle" name="charityEvent" type="checkbox" value="on"/>
+<span><strong>Registered charity event</strong><small>Free ticketBunker listing after charity registration verification.</small></span>
+</label>
+<div class="tb-span-full tb-charity-details" hidden="" id="charityNumberPanel">
+<label for="charityNumber">Charity registration number
+        <input autocomplete="off" id="charityNumber" maxlength="40" minlength="3" name="charityNumber" placeholder="Registered charity number" type="text"/>
+</label>
+<p class="tb-field-help">That's all we need to request a free listing. We'll check the number against the appropriate charity register before waiving the listing fee. Stripe's normal card-processing charges still apply to ticket transactions.</p>
+</div>
+<div class="tb-form-actions tb-span-full"><button class="solid" type="submit">Save event &amp; continue to tickets →</button></div>
+</form>
+</section>
+<section aria-labelledby="ticket-types-heading" class="tb-panel" hidden="" id="ticket-types">
+<div class="tb-panel-head"><div><span class="tb-step-number">STEP 02</span><h2 id="ticket-types-heading">Set up your tickets</h2><p>Ticket types, prices and availability for your event.</p></div></div>
+<form class="organiser-form tb-form-grid" id="tierForm">
+<label class="tb-span-full">Your event<select id="tierEvent" name="eventId" required=""></select></label>
+<div aria-live="polite" class="tb-span-full tb-ticket-list-panel">
+<div class="tb-ticket-list-header"><strong>Saved ticket types</strong><span id="ticketCapacitySummary">0 tickets allocated</span></div>
+<div class="tb-saved-ticket-list" id="savedTicketList"><p>No ticket types added yet.</p></div>
+</div>
+<div class="tb-span-full tb-ticket-picker-header">
+<h3>Which tickets would you like to sell?</h3>
+<p>Tap all the types you need, then enter a price and quantity for each.</p>
+</div>
+<div aria-label="Quick-add ticket types" class="tb-ticket-picker tb-span-full" id="ticketPicker" role="group">
+<button class="tb-ticket-preset" data-ticket-preset="General Admission" type="button"><span aria-hidden="true">+</span> General Admission</button>
+<button class="tb-ticket-preset" data-ticket-preset="VIP" type="button"><span aria-hidden="true">+</span> VIP</button>
+<button class="tb-ticket-preset" data-ticket-preset="Concessions 60+" type="button"><span aria-hidden="true">+</span> Concessions 60+</button>
+<button class="tb-ticket-preset" data-ticket-preset="Kids" type="button"><span aria-hidden="true">+</span> Kids</button>
+<button class="tb-ticket-preset" data-ticket-preset="Student" type="button"><span aria-hidden="true">+</span> Student</button>
+<button class="tb-ticket-preset" data-ticket-preset="Early Bird" type="button"><span aria-hidden="true">+</span> Early Bird</button>
+<button class="tb-ticket-preset" data-ticket-preset="custom" type="button"><span aria-hidden="true">+</span> Other ticket</button>
+</div>
+<div aria-label="New ticket types to save" class="tb-new-ticket-rows tb-span-full" id="newTicketRows"></div>
+<p class="tb-field-note tb-span-full">Add ticket types for standard events. Planning more than 2,000 tickets? Request a custom event quote instead. </p>
+<p aria-live="polite" class="tb-span-full tb-field-help" id="ticketSetupStatus" role="status">Choose one or more ticket types above.</p>
+<div class="tb-form-actions tb-span-full"><button class="solid" disabled="" id="saveAllTickets" type="submit">Save ticket types →</button><button class="outline" id="toReview" type="button">Review event →</button></div>
+</form>
+<form class="organiser-form tb-form-grid" id="artworkRetry" style="margin:15px 0;padding:16px;background:#f7f2fa;border-radius:9px"><h3 class="tb-span-full">Update your event poster / logo</h3><p class="tb-span-full">Select the draft above, then upload fresh artwork. This also works if your original upload was interrupted.</p><label>Replacement poster<input accept="image/png,image/jpeg,image/webp" id="updatePoster" type="file"/></label><label>Replacement logo<input accept="image/png,image/jpeg,image/webp" id="updateLogo" type="file"/></label><div class="tb-span-full"><button class="outline" type="submit">Update event artwork</button></div></form><div class="tb-setup-help"><strong>Payments &amp; payouts</strong><p>Stripe processes ticket payments. The post-show report is scheduled 12 hours after the recorded finish time. Payouts require reconciled funds and a verified account. Live payments are awaiting activation.</p></div>
+</section>
+</div>
+<section class="tb-panel tb-events-panel" hidden="" id="my-events-section"><div class="tb-panel-head tb-panel-head-row"><div><span class="tb-step-number">STEP 03</span><h2>Your events</h2><p>Drafts appear here after you create them.</p></div><a href="#setup">+ New event</a></div><div class="tb-owned-events" id="myEvents"></div><div class="tb-publication-review"><h3>Review your event</h3><p>Check the dates, artwork, ticket options and listing fee, then submit your draft for review.</p><label>Choose your completed event<select id="reviewEvent"></select></label><div aria-live="polite" class="tb-readiness" id="reviewReadiness">Checking which steps are complete…</div><button class="solid" hidden="" id="reviewAddTickets" type="button">Add a ticket type →</button><section class="tb-activate-panel" hidden="">
+<div><span class="tb-pilot-tag">LIVE PUBLIC TEST / €0</span><h3>Test this real event on the website</h3>
+<p>Use the organiser's poster, details and ticket types. Visitors can book €0 QR tickets, receive emails and test the scanner. Original paid prices stay saved. <strong>TEST ONLY — NO REAL ADMISSION.</strong></p></div>
+<div class="tb-activate-actions">
+<button class="solid" id="activateBetaTest" type="button">Make live for €0 testing →</button>
+<button class="outline" hidden="" id="stopBetaTest" type="button">End live test</button>
+<a hidden="" href="/events" id="betaTestLink" rel="noopener noreferrer" target="_blank">Open live test event ↗</a>
+</div>
+<p aria-live="polite" id="betaTestMessage" role="status"></p>
+</section>
+<div aria-label="Event listing fee" class="tb-listing-summary" id="listingSummary" role="group"><strong id="listingPlan">Choose an event</strong><span id="listingTotal">—</span><small id="listingBreakdown">Listing fee calculated from total ticket capacity.</small></div><div class="tb-event-plus-payment" hidden="" id="eventPlusPaymentOptions">
+<strong>Event Plus payment options</strong>
+<p>Available on tier 3 (501–2,000 tickets) and custom-quoted events only. Select the option you prefer.</p>
+<label><input checked="" name="eventPlusPayment" type="radio" value="upfront"/> Pay the listing fee upfront</label>
+<label><input name="eventPlusPayment" type="radio" value="deposit_sales"/> Request deposit now, balance recovered from ticket sales (subject to approval)</label>
+<p aria-live="polite" id="eventPlusTermsStatus" role="status">Deposit arrangements require agreed terms and Stripe Connect verification; no charge is taken when requesting them.</p>
+</div>
+<button class="solid" id="requestPublish" type="button">Submit for review →</button><p id="publishMessage" role="status">Submitting a draft does not take payment or publish tickets for sale.</p></div></section>
+<details class="tb-advanced" id="more-pricing"><summary>View listing prices</summary><section aria-labelledby="listing-plans-heading" class="tb-panel tb-pricing-panel" id="listing-plans">
+<div class="tb-panel-head"><div><span class="tb-step-number">SIMPLE PRICING</span><h2 id="listing-plans-heading">One event. One flat fee.</h2><p>Three plans for independent events. Prices shown in your organiser's local currency.</p></div><a href="/events#plans">View full pricing ↗</a></div>
+<div aria-label="Three ticketBunker listing fee brackets" class="tb-organiser-price-list">
+<div><span>Starter</span><strong>1–100 tickets</strong><b data-price-eur="€59" data-price-gbp="£49">€59</b></div>
+<div><span>Standard</span><strong>101–500 tickets</strong><b data-price-eur="€119" data-price-gbp="£99">€119</b></div>
+<div><span>Event Plus</span><strong>501–2,000 tickets</strong><b data-price-eur="€239" data-price-gbp="£199">€239</b><small>Full upfront or deposit enquiry</small></div>
+<div class="tb-organiser-custom-tier"><span>Large events</span><strong>More than 2,000</strong><a href="#largeEventQuote">Custom quote ↗</a></div>
+</div>
+
+<div class="tb-charity-price-strip"><div><strong>Registered charity event?</strong><span>Free ticketBunker event listing when your charity number is verified.</span></div><span>£0 / €0 listing fee</span></div>
+<p class="tb-pricing-note">One flat listing fee, with 0% TicketBunker ticket commission and no added buyer booking fee. Card-processing charges, applicable taxes and optional upgrades are separate. Your actual payout is confirmed after the event and reconciliation.</p>
+<p class="tb-field-help">Starter and Standard are upfront-only. Event Plus and bespoke events can request agreed deposit terms. Listing checkout will open after payment activation.</p>
+</section>
+</details>
+<details class="tb-advanced tb-large-quote" id="largeEventQuote">
+<summary>Large event? Request a custom quote (2,000+)</summary>
+<section class="tb-panel">
+<div class="tb-panel-head"><div><span class="tb-step-number">BESPOKE EVENTS</span>
+<h2>Tell us about your event</h2>
+<p>For events expecting more than 2,000 attendees, we'll quote individually. This is an enquiry — not a payment or approval.</p></div></div>
+<form class="organiser-form tb-form-grid" id="largeEventForm">
+<label class="tb-span-full">Choose your saved event draft<select id="largeEventId" name="eventId" required=""></select></label>
+<label>Expected number of tickets<input inputmode="numeric" max="1000000" min="2001" name="expectedTickets" placeholder="e.g. 3500" required="" type="number"/></label>
+<label>How would you prefer to pay?<select name="paymentPreference" required=""><option value="upfront">Pay the agreed listing fee upfront</option><option value="deposit_sales">Pay a deposit, then collect balance from ticket sales (subject to Stripe approval)</option><option value="discuss">Discuss flexible terms</option></select></label>
+<label class="tb-span-full">Event notes (optional)<textarea maxlength="1200" name="notes" placeholder="Capacity, dates, expected ticket prices, special requirements…" rows="3"></textarea></label>
+<p class="tb-span-full tb-field-note">No payment is collected with this request. If agreed, a capped amount may be deducted from eligible ticket sales through Stripe Connect. This is not an automatic deduction from a completed bank payout. All fees and terms are agreed before going live.</p>
+<div class="tb-form-actions tb-span-full"><button class="solid" type="submit">Request custom quote →</button></div>
+</form>
+<p aria-live="polite" class="tb-field-help" id="largeEventMessage" role="status">Save the event details in Step 1 first. You do not need to add ticket tiers before requesting a quote.</p>
+</section>
+</details>
+<section class="tb-panel tb-premium-note"><span class="tb-step-number">OPTIONAL PREMIUM LOCATION</span><h2>Get your event seen first</h2>
+<p>Feature your event above standard listings for <strong>€59 / £49 per event</strong>, plus applicable tax. Includes one promotional email to opted-in subscribers, subject to availability and approval.</p>
+<a class="outline" href="#featured-placement">Request Premium Placement ↗</a><small>A placement request does not take payment or send an email.</small></section>
+<section class="tb-panel tb-payout-options" id="payoutOptions"><span class="tb-step-number">AFTER THE APPLAUSE</span><h2>Your report. Your payout.</h2><p>Your automatic report becomes available 12 hours after the event's recorded finish time. All times are shown in the event's local timezone.</p><div class="tb-payout-grid"><article><span>01 / SHOW FINISHES</span><h3>Sales and attendance recorded</h3><p>Paid tickets, gross revenue, refunds and staff scans are kept separately. Uns­canned paid tickets still count as sales.</p></article><article><span>02 / FINISH + 12 HOURS</span><h3>Your post-show report</h3><p>The report is generated automatically. The payout section shows the reconciled amount, deductions, chosen payout method and Stripe's expected arrival date when available.</p></article><article><span>03 / STANDARD</span><h3>No TicketBunker speed surcharge</h3><p>Funds are released only after the show, the report and the required checks. Bank arrival depends on available funds, Stripe and your bank; the confirmed date appears here.</p></article><article><span>OPTIONAL / FAST PAYOUT</span><h3>Stripe's cost. No added markup.</h3><p>Indicative fee: 1% of the payout (€10 per €1,000). The exact fee must be confirmed before payment. Eligible instant payouts typically arrive within 30 minutes of Stripe accepting the payout, after the post-show checks.</p><strong>Awaiting live Stripe activation</strong><p>A fast payout is shown as paid only after verified payment. It cannot release money before the event or bypass refunds and account checks.</p></article></div><p class="tb-field-help">The 12-hour report is not a promise that money has reached your bank. No payout amount or arrival date is invented while reconciliation or Stripe confirmation is pending.</p></section>
+<div class="tb-bottom-grid">
+<section aria-labelledby="streetTeamTitle" class="tb-panel tb-street-team" id="streetTeam">
+<div class="tb-panel-head"><div><span class="tb-step-number">STREET TEAM · PROMOTERS</span>
+<h2 id="streetTeamTitle">Give promoters their own ticket links</h2>
+<p>Track each promoter's tickets and choose a reward target. Cash, free tickets, VIP tables or custom perks can be earned from <strong>real paid sales only</strong>.</p></div></div>
+<form class="organiser-form tb-form-grid" id="streetTeamForm">
+<label class="tb-span-full">Event<select id="streetTeamEvent" name="eventId" required=""></select></label>
+<label>Promoter name<input maxlength="100" minlength="2" name="name" placeholder="Street Team member" required=""/></label>
+<label>Promoter email<input name="email" placeholder="promoter@example.com" required="" type="email"/></label>
+<label>Reward type<select id="streetRewardType" name="rewardType" required=""><option value="free_tickets">Free tickets after target</option><option value="vip_table">VIP table after target</option><option value="cash_per_sale">Cash per paid ticket</option><option value="other_perk">Other perk / experience</option></select></label>
+<label>Target paid tickets<input inputmode="numeric" max="100000" min="1" name="rewardGoal" required="" step="1" type="number" value="20"/></label>
+<label hidden="" id="streetCashAmount">Cash per paid ticket (€ / £)<input max="10000" min="0.01" name="rewardMoney" step="0.01" type="number" value="1.00"/></label>
+<label class="tb-span-full">Reward details<input maxlength="400" name="rewardDescription" placeholder="E.g. 1 VIP table for 4 people after 25 paid tickets"/></label>
+<div class="tb-form-actions tb-span-full"><button class="solid" id="createStreetLink" type="submit">Create promoter sales link →</button></div>
+</form>
+<p class="tb-field-help">Rewards are based on confirmed paid sales. They are agreements between the organiser and promoter; TicketBunker does not issue rewards or transfer reward money automatically.</p>
+<label class="tb-roster-label" for="streetReportEvent">Promoter results for event<select id="streetReportEvent"></select></label>
+<p id="streetTeamStatus" role="status">Create your first promoter link to start tracking.</p>
+<div class="tb-street-roster" id="streetTeamRoster"></div>
+</section>
+<details class="tb-advanced"><summary>Premium Placement — headline event position</summary><section aria-labelledby="featured-placement-heading" class="tb-panel" id="featured-placement">
+<div class="tb-panel-head"><div><span class="tb-step-number">OPTIONAL PROMOTION</span><h2 id="featured-placement-heading">Featured Showcase</h2><p>Apply for the main featured spot buyers see before ordinary event listings.</p></div></div>
+<div class="tb-showcase-preview"><span>ONE PREMIUM PACKAGE</span><strong>Featured spot + subscriber email.</strong>
+<p>A featured event position and one professional event email to the opted-in SoundBunker events audience. The campaign can run only after payment is verified, the event is published and live sending is activated.</p></div>
+<div class="tb-premium-benefits">
+<div><strong>01 / Featured position</strong><span>Top placement for ticket buyers on the main TicketBunker page</span></div>
+<div><strong>02 / Dedicated event email</strong><span>Automatically emailed to opted-in SoundBunker subscribers after verified payment. Existing unsubscribes stay respected.</span></div>
+</div>
+<form class="organiser-form tb-form-grid" id="showcaseForm"><label class="tb-span-full">Choose a draft event<select id="showcaseEvent" name="eventId" required=""></select></label><p class="tb-field-note tb-span-full" id="showcasePrice">€59 / £49 per event, plus applicable tax. Featured placement and one subscriber email.</p><div class="tb-form-actions tb-span-full"><button class="solid" type="submit">Request Premium Placement + Email →</button></div></form><p class="tb-action-response" id="showcaseMessage" role="status"></p><section aria-label="Premium email example" class="tb-premium-mail-preview" id="premiumEmailPreview">
+<div class="tb-premium-preview-head"><span>YOUR PROMOTIONAL EMAIL PREVIEW</span><strong>TicketBunker · Powered by SoundBunker Algarve</strong></div>
+<div class="tb-premium-preview-body">
+<img alt="Event preview artwork" hidden="" id="premiumPreviewPoster" loading="lazy"/>
+<p class="tb-premium-eyebrow">FEATURED TICKETBUNKER EVENT</p>
+<h3 id="premiumPreviewName">Your event in the spotlight.</h3>
+<p id="premiumPreviewDetails">Select your event above to preview the email.</p>
+<span class="tb-premium-preview-link">View event &amp; tickets →</span>
+<small>No TicketBunker buyer booking fees. The ticket price is the ticket price.</small>
+</div>
+</section>
+<p class="tb-field-help">The one-time premium fee includes a featured spot and one email campaign. No charge is taken when you request Premium Placement, and no promotional email is sent until approved after verified payment. Once Premium Placement payment is verified and the event is publicly live, the poster, promoter logo and bio are automatically emailed to opted-in SoundBunker subscribers, with a Buy Tickets link. One campaign per paid placement. Only people subscribed to the SoundBunker event/promotions audience are eligible.</p>
+</section></details>
+</div>
+</section>
+</main>
+<footer class="tb-workspace-footer"><a href="/">← TicketBunker</a><a href="https://www.soundbunker.pt/">Powered by SoundBunker Algarve ↗</a><a href="/terms">Terms &amp; privacy</a></footer>
+<nav aria-label="Organiser mobile navigation" class="tb-mobile-nav">
+<a aria-current="page" href="#organiserReports"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"></path></svg><span>Reports</span></a>
+<a data-open-wizard="details" href="#wizardSteps"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="m12 5v14M5 12h14"></path><circle cx="12" cy="12" r="10"></circle></svg><span>Create</span></a>
+<a hidden="" href="#staffAccess"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M5 8V5h4M19 8V5h-4M5 16v3h4M19 16v3h-4M8 12h8"></path></svg><span>Scanner crew</span></a>
+<a href="#streetTeam"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M3 7h18v4a2 2 0 0 0 0 4v4H3v-4a2 2 0 0 0 0-4zM14 7v12" stroke-dasharray="2 2"></path></svg><span>Street Team</span></a>
+</nav>
+</body></html>

@@ -1,0 +1,259 @@
+/* ticketBunker UI: its own compact ticketing-app identity.
+   Deep aubergine, ink and warm ivory; no decorative neon/purple highlight bars. */
+:root{--tb-app-ink:#1a1422;--tb-app-deep:#20172a;--tb-app-cream:#f8f6f2;--tb-app-outline:#e8e3ec;--tb-app-radius:18px}
+html{scroll-behavior:smooth}
+body.ticketbunker-site{background:var(--tb-app-cream)}
+.tb-mobile-nav{display:none}
+.ticketbunker-site .tb-header{background:#20182b;border-bottom:1px solid #ffffff1b;box-shadow:none}
+.ticketbunker-site .tb-head-action{background:#f7f5f0;color:#24182e;border-radius:999px;border:0;font-weight:800}
+.ticketbunker-site .tb-header .tb-nav a:hover{color:#fff}
+.ticketbunker-site .tb-hero-standalone{
+ min-height:510px;display:flex;align-items:center;overflow:hidden;position:relative;
+ background:linear-gradient(137deg,#1d1628 4%,#2d213a 54%,#21192d 100%);
+ color:#fff
+}
+.ticketbunker-site .tb-hero-standalone::after{
+ content:"";position:absolute;right:0;top:0;bottom:0;width:42%;
+ background:radial-gradient(ellipse at 60% 40%,#ffffff0c,transparent 66%);pointer-events:none
+}
+.ticketbunker-site .tb-hero-standalone .tb-hero-inner{width:min(1220px,calc(100% - 64px));padding:90px 0;position:relative;z-index:2;margin:0 auto}
+.ticketbunker-site .tb-hero-standalone .tb-eyebrow{font-size:11px;color:#e6dce9;letter-spacing:.21em;font-weight:800;margin-bottom:22px}
+.ticketbunker-site .tb-hero-standalone h1{font:800 clamp(53px,6.5vw,96px)/.96 'Space Grotesk',sans-serif;letter-spacing:-.07em;max-width:780px;margin:0 0 22px}
+.ticketbunker-site .tb-hero-standalone h1 em{font-style:normal;color:#f7f3ea}
+.ticketbunker-site .tb-hero-standalone .tb-hero-inner>p:not(.tb-eyebrow){color:#dbd4df;max-width:500px;font-size:16px;line-height:1.6}
+.ticketbunker-site .tb-hero-standalone .tb-hero-actions{margin:24px 0 19px}
+.ticketbunker-site .tb-hero-standalone .tb-button{border-radius:999px;min-height:49px;padding:14px 22px}
+.ticketbunker-site .tb-hero-standalone .tb-button.primary{background:#fff;color:#281d31;border:1px solid #fff}
+.ticketbunker-site .tb-hero-standalone .tb-button.ghost{border:1px solid #aa9cac;color:#fff;background:transparent}
+.ticketbunker-site .tb-hero-standalone .tb-hero-trust{font-size:10px;gap:12px;color:#e5dce9;letter-spacing:.04em}
+.ticketbunker-site .tb-hero-standalone .tb-hero-trust span{border:1px solid #ffffff36;border-radius:999px;padding:6px 11px}
+.ticketbunker-site .tb-hero-standalone .tb-hero-trust span:before{content:none}
+.ticketbunker-site .tb-hero-standalone .tb-account-note a{color:#fff}
+.tb-hero-decoration{position:absolute;width:40%;height:100%;right:0;top:0;pointer-events:none;display:grid;place-items:center;z-index:1}
+.tb-stub{width:min(345px,75%);min-height:390px;padding:26px 28px 20px;display:flex;flex-direction:column;
+ background:#f6f3ec;color:#201827;border-radius:22px;box-shadow:16px 20px 0 #ffffff0c,0 20px 65px #10091668;
+ transform:rotate(10deg);position:relative}
+.tb-stub::before,.tb-stub::after{content:"";position:absolute;width:36px;height:36px;border-radius:50%;background:#281e35;top:67%;transform:translateY(-50%)}
+.tb-stub::before{left:-18px}.tb-stub::after{right:-18px}
+.tb-stub-head{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:11px;letter-spacing:.13em;font-weight:900}
+.tb-stub-head span:last-child{font-size:30px;line-height:1}
+.tb-stub>strong{display:block;margin:44px 0 auto;font:900 clamp(34px,3.7vw,53px)/.92 'Space Grotesk',sans-serif;letter-spacing:-.07em}
+.tb-stub-tail{display:flex;justify-content:space-between;gap:12px;margin:25px 0 19px;padding-top:24px;border-top:2px dotted #bdb3c6;font-size:9px;letter-spacing:.08em;font-weight:900}
+.tb-stub-code{display:flex;justify-content:space-between;gap:10px;font-size:9px;font-weight:800;letter-spacing:.09em}
+.ticketbunker-site .tb-discover-panel{border-radius:19px;box-shadow:0 14px 36px #24162b1c;border:1px solid #eae4ee}
+.ticketbunker-site .tb-feature-section,.ticketbunker-site .tb-upcoming{background:#f8f6f2}
+.ticketbunker-site .tb-event-card{border:1px solid #e5dfea;border-radius:18px;box-shadow:0 6px 24px #1c142110;background:#fff}
+.ticketbunker-site .tb-card-media{overflow:hidden}
+.ticketbunker-site .tb-card-media img{border-radius:0}
+.ticketbunker-site .tb-category-band{background:#f8f6f2}
+.ticketbunker-site .tb-plan{border-radius:13px}
+.ticketbunker-site .tb-demo-dialog{border-radius:20px}
+
+/* Studio account remains SoundBunker-branded, but its ticket pages use touch-friendly layout. */
+@media(max-width:900px){
+ .ticketbunker-site .tb-hero-standalone .tb-hero-inner{width:calc(100% - 42px)}
+ .tb-hero-decoration{right:-7%;opacity:.54;width:45%}
+ .tb-stub{min-height:320px;padding:24px 18px}
+ .tb-stub>strong{font-size:34px}
+}
+@media(max-width:760px){
+ html{scroll-padding-top:68px}
+ body.ticketbunker-site,body.tb-organiser-app,body.tb-scanner-app,body.tb-free-test-app{padding-bottom:calc(88px + env(safe-area-inset-bottom,0px))}
+ .tb-mobile-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));position:fixed;bottom:0;left:0;right:0;
+   z-index:100;background:#fff;border-top:1px solid #e7e0eb;box-shadow:0 -6px 24px #18102013;
+   padding:9px max(8px,env(safe-area-inset-left,8px)) calc(9px + env(safe-area-inset-bottom,0px));gap:2px}
+ .tb-mobile-nav a{display:flex;align-items:center;flex-direction:column;justify-content:center;gap:5px;color:#73687b;
+   border-radius:12px;min-height:47px;text-decoration:none;font:800 10px/1.2 'DM Sans',Arial,sans-serif;letter-spacing:0;white-space:nowrap}
+ .tb-mobile-nav a[aria-current=page]{background:#f2edf6;color:#271831}
+ .tb-mobile-nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.85;stroke-linejoin:round;stroke-linecap:round}
+ .ticketbunker-site .tb-header{height:67px;padding:10px 17px;display:flex;flex-wrap:nowrap;position:sticky;top:0;z-index:45}
+ .ticketbunker-site .tb-header .tb-brand{width:clamp(155px,44vw,205px)}
+ .ticketbunker-site .tb-header .tb-nav{display:none}
+ .ticketbunker-site .tb-header .tb-head-action{font-size:11px;padding:11px 13px;min-height:39px;white-space:nowrap}
+ .ticketbunker-site .tb-beta-ribbon{font-size:10px;padding:7px 15px;line-height:1.3}
+ .ticketbunker-site .tb-hero-standalone{min-height:0;overflow:hidden}
+ .ticketbunker-site .tb-hero-standalone .tb-hero-inner{padding:39px 0 28px;width:calc(100% - 38px)}
+ .ticketbunker-site .tb-hero-standalone .tb-eyebrow{margin:0 0 17px;font-size:9px}
+ .ticketbunker-site .tb-hero-standalone h1{font-size:clamp(43px,10.5vw,69px);margin-bottom:16px;max-width:650px;line-height:.99}
+ .ticketbunker-site .tb-hero-standalone .tb-hero-inner>p:not(.tb-eyebrow){font-size:14px;line-height:1.52;max-width:450px}
+ .ticketbunker-site .tb-hero-standalone .tb-hero-actions{margin:20px 0 15px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+ .ticketbunker-site .tb-hero-standalone .tb-button{padding:12px 7px;font-size:12px;min-height:49px;white-space:nowrap}
+ .ticketbunker-site .tb-hero-standalone .tb-hero-trust{gap:7px;font-size:8px}
+ .ticketbunker-site .tb-hero-standalone .tb-hero-trust span{padding:5px 8px}
+ .ticketbunker-site .tb-hero-standalone .tb-account-note{font-size:11px!important;line-height:1.45}
+ .tb-hero-decoration{opacity:.12;right:-27%;width:66%;transform:rotate(7deg)}
+ .tb-stub{min-height:370px}
+ .ticketbunker-site .tb-discover-panel{margin:12px auto 6px;position:relative;z-index:2;
+   padding:13px;border-radius:16px;box-shadow:0 6px 19px #20142b11;width:calc(100% - 26px);grid-template-columns:1fr;gap:10px}
+ .ticketbunker-site .tb-search-wrap,.ticketbunker-site .tb-location-wrap{height:50px;border-radius:11px}
+ .ticketbunker-site #tb-event-search,.ticketbunker-site #tb-location-filter{font-size:16px}
+ .ticketbunker-site .tb-category-band{padding-top:8px;padding-bottom:8px}
+ .ticketbunker-site .tb-categories{width:100%;display:flex;flex-wrap:nowrap;overflow-x:auto;scroll-snap-type:x proximity;
+  gap:7px;padding:4px 13px 10px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+ .ticketbunker-site .tb-categories::-webkit-scrollbar{display:none}
+ .ticketbunker-site .tb-category{flex:0 0 auto;white-space:nowrap;scroll-snap-align:start;border-radius:999px;padding:10px 14px;min-height:42px}
+ .ticketbunker-site .tb-feature-section,.ticketbunker-site .tb-upcoming,.ticketbunker-site .tb-plans,.ticketbunker-site .tb-benefits{padding:25px 14px}
+ .ticketbunker-site .tb-feature-section h2,.ticketbunker-site .tb-upcoming h2,.ticketbunker-site .tb-plans h2{font-size:clamp(26px,7vw,34px)}
+ .ticketbunker-site .tb-feature-card{overflow:hidden;border-radius:18px}
+ .ticketbunker-site .tb-feature-image{height:205px;min-height:205px}
+ .ticketbunker-site .tb-feature-copy{padding:20px}
+ .ticketbunker-site .tb-card-grid{display:grid;grid-template-columns:1fr;gap:13px}
+ .ticketbunker-site .tb-event-card{border-radius:16px;overflow:hidden}
+ .ticketbunker-site .tb-card-media{aspect-ratio:1.65}
+ .ticketbunker-site .tb-card-content{padding:17px 17px 15px}
+ .ticketbunker-site .tb-card-content h3{font-size:21px;line-height:1.15}
+ .ticketbunker-site .tb-card-footer{gap:10px}
+ .ticketbunker-site .tb-card-footer button{min-height:44px;border-radius:11px}
+ .ticketbunker-site .tb-quick-filters{display:none}
+ .ticketbunker-site .tb-price-toolbar{display:flex;flex-direction:column;align-items:stretch;gap:14px}
+ .ticketbunker-site .tb-currency-switch{display:grid;grid-template-columns:1fr 1fr;width:100%}
+ .ticketbunker-site .tb-currency-switch button{min-height:45px;padding:10px 7px;font-size:11px}
+ .ticketbunker-site .tb-plan-grid{grid-template-columns:1fr;gap:12px}
+ .ticketbunker-site .tb-plan{padding:19px;border-radius:15px}
+ .ticketbunker-site .tb-quote-strip{display:grid;grid-template-columns:1fr;gap:12px}
+ .ticketbunker-site .tb-quote-result{text-align:left}
+ .ticketbunker-site .tb-stripe-panel{display:block}
+ .ticketbunker-site .tb-stripe-icon{margin-bottom:12px}
+ .ticketbunker-site .tb-benefit-grid{grid-template-columns:1fr;gap:10px}
+ .ticketbunker-site .tb-organiser-cta{grid-template-columns:1fr}
+ .ticketbunker-site .tb-organiser-cta img{display:none}
+ .ticketbunker-site .tb-footer{padding:22px 16px 100px}
+ .ticketbunker-site .tb-footer nav{gap:12px;flex-wrap:wrap}
+ .ticketbunker-site .tb-demo-dialog{max-height:calc(100dvh - 110px);overflow:auto;border-radius:17px;padding:14px}
+ .ticketbunker-site .tb-demo-dialog>img{height:175px}
+ 
+ /* organiser = one screen-sized stage at a time, no wide forms or horizontal nav */
+ .tb-organiser-app .topbar.tb-workspace-header{height:68px;padding:10px 15px;display:flex;flex-wrap:nowrap;align-items:center;gap:10px;position:sticky;top:0;z-index:60}
+ .tb-organiser-app .topbar.tb-workspace-header .brand{width:155px;min-width:145px;flex:none}
+ .tb-organiser-app .topbar.tb-workspace-header nav{display:none}
+ .tb-organiser-app .beta-banner{font-size:10px;line-height:1.3;padding:7px 13px}
+ .tb-organiser-app .tb-workspace-shell{padding:19px 12px 37px}
+ .tb-organiser-app .tb-workspace-intro{display:block;margin-bottom:15px}
+ .tb-organiser-app .tb-workspace-intro h1{font-size:clamp(29px,8vw,38px);letter-spacing:-.055em}
+ .tb-organiser-app .tb-workspace-intro p:not(.eyebrow){font-size:13px;line-height:1.5}
+ .tb-organiser-app .tb-intro-side{display:none}
+ .tb-organiser-app .tb-account-strip{grid-template-columns:1fr 1fr;gap:9px}
+ .tb-organiser-app .tb-account-strip>div{padding:12px;border-radius:12px;min-width:0}
+ .tb-organiser-app .tb-account-strip>div:nth-child(3){grid-column:1/-1}
+ .tb-organiser-app .tb-account-strip strong{font-size:13px;overflow-wrap:anywhere}
+ .tb-organiser-app .tb-account-strip p{font-size:10px}
+ .tb-organiser-app .tb-wizard-heading{margin:17px 0 9px}
+ .tb-organiser-app .tb-wizard-steps{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;position:sticky;top:67px;z-index:39;background:#f7f5f9;padding:7px 0 10px}
+ .tb-organiser-app .tb-wizard-steps button{padding:10px 5px;flex-direction:column;min-width:0;min-height:69px;text-align:center;gap:4px;border-radius:12px;font-size:10px;line-height:1.15}
+ .tb-organiser-app .tb-wizard-steps button b{padding:5px 8px;font-size:11px}
+ .tb-organiser-app .tb-wizard-steps button span{white-space:normal}
+ .tb-organiser-app .tb-workspace-jumps{display:none}
+ .tb-organiser-app #setup.tb-setup-grid{display:block;max-width:none}
+ .tb-organiser-app .tb-setup-grid,.tb-organiser-app .tb-bottom-grid{grid-template-columns:1fr;gap:13px}
+ .tb-organiser-app .tb-panel{padding:19px 15px;border-radius:16px;box-shadow:0 5px 15px #39204308}
+ .tb-organiser-app .tb-panel-head h2{font-size:22px}
+ .tb-organiser-app .tb-form-grid{display:grid;grid-template-columns:1fr;gap:14px}
+ .tb-organiser-app .tb-form-grid>*{min-width:0;grid-column:1/-1}
+ .tb-organiser-app .organiser-form label{font-size:13px;gap:7px}
+ .tb-organiser-app .organiser-form input:not([type=checkbox]):not([type=file]),.tb-organiser-app .organiser-form select,.tb-organiser-app .organiser-form textarea{
+  font-size:16px;min-height:51px;border-radius:11px;padding:12px 13px;max-width:100%;width:100%;background:#fff;color:#2b1e32
+ }
+ .tb-organiser-app .organiser-form input[type=file]{max-width:100%;width:100%;padding:13px;border-radius:12px;background:#f8f4fa;border:1px dashed #b89bc9;font-size:14px}
+ .tb-organiser-app .organiser-form textarea{min-height:130px;resize:vertical}
+ .tb-organiser-app .tb-form-actions{display:grid;grid-template-columns:1fr;gap:9px}
+ .tb-organiser-app .solid,.tb-organiser-app .outline{min-height:48px;border-radius:11px;padding:13px 15px;font-size:13px}
+ .tb-organiser-app .tb-form-actions>*{width:100%}
+ .tb-organiser-app .tb-owned-event{display:flex;flex-direction:column;gap:9px;border-radius:13px;padding:16px}
+ .tb-organiser-app .tb-owned-event>div{max-width:100%;min-width:0}
+ .tb-organiser-app .tb-publication-review{padding:18px 15px;border-radius:13px;max-width:none}
+ .tb-organiser-app .tb-publication-review button{width:100%}
+ .tb-organiser-app .tb-pricing-panel{margin-top:14px}
+ .tb-organiser-app .tb-organiser-price-list{grid-template-columns:1fr 1fr;gap:8px}
+ .tb-organiser-app .tb-organiser-price-list>div{padding:12px}
+ .tb-organiser-app .tb-staff-roster{min-width:0}
+ .tb-organiser-app #staffInviteResult{display:grid;gap:8px;min-width:0}
+ .tb-organiser-app #staffInviteResult[hidden]{display:none!important}
+ .tb-organiser-app #staffInviteLink{max-width:100%;min-width:0;width:100%;font-size:13px}
+ .tb-organiser-app #shareStaffWhatsApp,.tb-organiser-app #shareStaffSms,.tb-organiser-app #copyStaffInvite{width:100%}
+ .tb-organiser-app .tb-workspace-footer{padding:22px 15px 95px}
+ /* scanner */
+ body.tb-scanner-app .topbar{height:67px;display:flex;align-items:center;flex-direction:row;padding:11px 16px;gap:14px}
+ body.tb-scanner-app .topbar .brand img{height:40px;width:160px}
+ body.tb-scanner-app .topbar nav{display:none}
+ body.tb-scanner-app .events-content{padding:24px 15px;min-height:0}
+ body.tb-scanner-app .events-content h1{font-size:clamp(28px,8vw,40px);line-height:1.06;margin:9px 0 18px}
+ body.tb-scanner-app #authMessage{padding:13px;background:#291e36;border:1px solid #604275;border-radius:12px;font-size:13px}
+ body.tb-scanner-app #scannerPanel{padding:0}
+ body.tb-scanner-app #scanEvent{min-height:55px;border-radius:12px!important;font-size:16px!important}
+ body.tb-scanner-app #reader{border:1px solid #493356;border-radius:18px;overflow:hidden;min-height:245px;background:#1e1529}
+ body.tb-scanner-app #result{font-size:19px!important;line-height:1.4;border-radius:12px;position:sticky;top:75px;z-index:20}
+ body.tb-scanner-app #manual{background:#271b33;padding:17px;border-radius:15px}
+ body.tb-scanner-app #code{min-height:50px;border-radius:11px!important;font-size:16px}
+ body.tb-scanner-app #manual button{width:100%;min-height:51px;border-radius:12px}
+ body.tb-scanner-app #acceptInvite{width:100%;min-height:50px}
+ body.tb-scanner-app .beta-banner{font-size:10px;line-height:1.35;padding:9px 14px}
+ body.tb-free-test-app header{padding:14px 16px}
+ body.tb-free-test-app header img{width:190px}
+ body.tb-free-test-app .container{margin:14px auto;padding:0 12px}
+ body.tb-free-test-app .hero{border-radius:16px}
+ body.tb-free-test-app .hero .copy{padding:23px}
+ body.tb-free-test-app .hero h1{font-size:30px}
+ body.tb-free-test-app .card{padding:20px 16px;border-radius:15px}
+ body.tb-free-test-app .grid{grid-template-columns:1fr}
+ body.tb-free-test-app .grid .full{grid-column:1}
+ body.tb-free-test-app input,body.tb-free-test-app select{font-size:16px;min-height:50px;border-radius:11px}
+ body.tb-free-test-app #book{width:100%;min-height:52px}
+}
+@media(max-width:390px){
+ .ticketbunker-site .tb-hero-standalone h1{font-size:clamp(38px,10.7vw,43px)}
+ .ticketbunker-site .tb-hero-standalone .tb-hero-actions{gap:7px}
+ .ticketbunker-site .tb-hero-standalone .tb-button{font-size:11px}
+ .ticketbunker-site .tb-head-action{font-size:10px!important;padding:9px!important}
+ .tb-organiser-app .tb-wizard-steps button{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){.tb-stub,.ticketbunker-site .tb-event-card{transition:none!important}}
+
+/* Separate customer ticket pass, used by real €0 and eventual paid tickets. */
+body.tb-ticket-app{background:linear-gradient(#24192e,#150f1d);min-height:100dvh;color:#251e2b}
+body.tb-ticket-app .topbar{background:#20172a;border-color:#ffffff25}
+.tb-ticket-shell{width:min(510px,calc(100% - 32px));margin:0 auto;padding:28px 0 68px}
+.tb-ticket-intro{color:#fff;margin-bottom:21px}
+.tb-ticket-intro .eyebrow{font-size:10px;letter-spacing:.16em;color:#d3c5da}
+.tb-ticket-intro h1{font:800 clamp(28px,5vw,38px)/1.06 'Space Grotesk',sans-serif;letter-spacing:-.04em;margin:12px 0 7px}
+.tb-ticket-intro p{color:#d9cddd;font-size:13px;margin:0}
+.tb-ticket-pass{background:#faf9f6;border-radius:19px;overflow:hidden;box-shadow:0 24px 60px #1009156b;position:relative}
+.tb-ticket-pass-top{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:18px 22px;background:#efeae9;color:#302238;font-size:10px;font-weight:900;letter-spacing:.09em}
+.tb-ticket-pass-top strong{font-size:11px}
+.tb-ticket-artwork{display:flex;flex-direction:column;align-items:center}
+.tb-ticket-artwork>img:not(.event-brand-mark){display:block;width:100%;max-height:170px;object-fit:cover}
+.tb-ticket-artwork .event-brand-mark{max-height:70px;max-width:170px;object-fit:contain;margin:16px 0 0}
+.tb-ticket-details{padding:22px 22px 15px;text-align:center}
+.tb-ticket-details h2{font:800 25px/1.1 'Space Grotesk',sans-serif;margin:0 0 10px;color:#231a2c}
+.tb-ticket-details p{font-size:13px;color:#615568;line-height:1.6;margin:0}
+.tb-ticket-qr-wrap{position:relative;padding:25px 15px 23px;text-align:center;border-top:2px dashed #d7ccd8;border-bottom:2px dashed #d7ccd8}
+.tb-ticket-qr-wrap:before,.tb-ticket-qr-wrap:after{content:"";position:absolute;width:25px;height:25px;border-radius:50%;background:#20172a;top:-13px}
+.tb-ticket-qr-wrap:before{left:-13px}.tb-ticket-qr-wrap:after{right:-13px}
+.tb-ticket-qr-wrap #qr{width:max-content;max-width:100%;margin:0 auto;padding:13px;background:#fff;border:1px solid #eee7e9;border-radius:11px}
+.tb-ticket-qr-wrap #qr img,.tb-ticket-qr-wrap #qr canvas{display:block;max-width:100%;height:auto}
+.tb-ticket-qr-wrap p{margin:12px 0 0;font-size:10px;font-weight:900;letter-spacing:.14em;color:#4a3b51}
+.tb-ticket-note{padding:18px 22px 20px;text-align:center;color:#655970;font-size:12px;line-height:1.5}
+.tb-ticket-actions{margin-top:18px;padding:20px;background:#f8f6f9;border-radius:17px}
+.tb-ticket-actions h2{margin:0 0 5px;font:800 19px 'Space Grotesk',sans-serif;color:#291e30}
+.tb-ticket-actions p{color:#706578;font-size:12px;line-height:1.5}
+.tb-ticket-actions-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:18px}
+.tb-ticket-actions-grid button,.tb-ticket-actions-grid a{background:#261b32;color:#fff;border:1px solid #261b32;border-radius:11px;min-height:48px;display:flex;align-items:center;justify-content:center;padding:12px 9px;text-align:center;font-size:12px;font-weight:800;text-decoration:none;cursor:pointer}
+.tb-ticket-actions-grid a{background:#fff;color:#281d30;border-color:#cbbfd3}
+.tb-ticket-actions .tb-ticket-privacy{margin:13px 0 0}
+.tb-ticket-back{text-align:center;padding:24px;color:#f7f0fa;font-size:13px;font-weight:700}
+@media(max-width:760px){
+ body.tb-ticket-app{padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))}
+ body.tb-ticket-app .topbar{padding:10px 16px;height:68px}
+ body.tb-ticket-app .topbar .brand img{width:165px;height:45px;object-fit:contain}
+ body.tb-ticket-app .topbar nav{display:none}
+ .tb-ticket-shell{width:calc(100% - 28px);padding:21px 0 40px}
+ .tb-ticket-pass{border-radius:18px}
+ .tb-ticket-actions{border-radius:15px;padding:18px}
+ .tb-ticket-actions-grid button,.tb-ticket-actions-grid a{font-size:12px}
+}
+@media print{
+ body.tb-ticket-app{background:#fff!important;padding:0!important}
+ body.tb-ticket-app .topbar,.tb-ticket-intro,.tb-ticket-actions,.tb-ticket-back,.tb-mobile-nav{display:none!important}
+ .tb-ticket-shell{width:100%;max-width:440px;margin:0 auto;padding:0}
+ .tb-ticket-pass{box-shadow:none;border:1px solid #ccc}
+ .tb-ticket-qr-wrap:before,.tb-ticket-qr-wrap:after{background:#fff}
+}
