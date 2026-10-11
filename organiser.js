@@ -317,9 +317,20 @@ async function refresh(){
 }
 function updateShowcasePrice(event){
  const element=$('#showcasePrice');
- if(!event){element.textContent='Create a draft event first to request a Showcase slot.';return;}
+ if(!event){
+  element.textContent='Save your event to preview the bundled Premium Placement + subscriber email.';
+  $('#premiumPreviewName').textContent='Your event in the spotlight.';
+  $('#premiumPreviewDetails').textContent='Choose a saved event to preview the campaign.';
+  $('#premiumPreviewPoster').src='/assets/ticketbunker/posters/featured.svg';
+  return;
+ }
  const fee=event.currency==='gbp'?'£49':'€59';
- element.textContent=event.showcase?'Request status: '+event.showcase.status.toUpperCase()+'. No payment required in BETA.':'Proposed Featured Showcase add-on: '+fee+' for this event. No payment during BETA.';
+ const prefix=event.showcase?'Request: '+event.showcase.status.replaceAll('_',' ').toUpperCase()+'. ':'';
+ element.textContent=prefix+'Proposed Premium Placement package: '+fee+' flat for this event — featured position + one subscriber email. No payment or email send during BETA.';
+ $('#premiumPreviewName').textContent=event.title;
+ $('#premiumPreviewDetails').textContent=event.venue+' · '+localDate(event.starts_at,event.venue_timezone);
+ $('#premiumPreviewPoster').src=typeof event.image_url==='string'&&/^https:\/\//.test(event.image_url)
+  ?event.image_url:'/assets/ticketbunker/posters/featured.svg';
 }
 function openLargeEventQuoteFromLink(){
  if(location.hash!=='#largeEventQuote')return;
@@ -370,7 +381,7 @@ $('#showcaseForm').addEventListener('submit',async e=>{
  try{
   $('#showcaseMessage').textContent='Submitting your request…';
   await request({action:'featureRequest',eventId});
-  $('#showcaseMessage').textContent='Featured Showcase requested. No payment has been taken.';
+  $('#showcaseMessage').textContent='Premium package requested: featured homepage position + one subscriber email, subject to approval. No payment taken and no email sent.';
   await refresh();
  }catch(error){$('#showcaseMessage').textContent=error.message;}
 });
