@@ -1,8 +1,8 @@
 import {randomBytes} from 'node:crypto';
 import {requireUser} from './lib/supabase-auth.js';
+import {normaliseStreetRewardRules,progressForStreetRewards,legacyStreetReward,legacyStreetRewardType} from './lib/street-rewards.js';
 import {json,parseJson,safeText,validEmail} from './lib/http.js';
 const ID=/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i;
-const REWARDS=new Set(['cash_per_sale','free_tickets','vip_table','other_perk']);
 export default async function handler(req,res){
  if(!['GET','POST'].includes(req.method))return json(res,{error:'Method not allowed'},405);
  const ctx=await requireUser(req);
@@ -31,10 +31,13 @@ export default async function handler(req,res){
     const betaTickets=matching.filter(o=>o.beta_test_order).reduce((n,o)=>n+Number(o.quantity||0),0);
     const paidTickets=matching.filter(o=>!o.beta_test_order).reduce((n,o)=>n+Number(o.quantity||0),0);
     const revenueCents=matching.filter(o=>!o.beta_test_order).reduce((n,o)=>n+Number(o.total_cents||0),0);
+    const rules=person.reward_rules?.length?person.reward_rules:legacyStreetReward(person);
     return {id:person.id,name:person.promoter_name,email:person.promoter_email,code:person.referral_code,
       rewardType:person.reward_type,rewardGoal:person.reward_goal,rewardValueCents:person.reward_value_cents,
-      rewardDescription:person.reward_description,active:person.active,paidTickets,testTickets:betaTickets,revenueCents,
-      rewardEligible:paidTickets>=person.reward_goal, // informational only; never auto-issue or pay rewards
+      rewardDescription:person.reward_description,
+      rewards:progressForStreetRewards(rules,paidTickets),
+      active:person.active,paidTickets,testTickets:betaTickets,revenueCents,
+      rewardEligible:rules.some(rule=>paidTickets>=rule.target), // status only; no automatic reward delivery
       link:'https://www.soundbunker.pt/event?slug='+encodeURIComponent(ev.data.slug)+'&ref='+person.referral_code};
    });
    return json(res,{event:{id:ev.data.id,title:ev.data.title},team});
@@ -49,20 +52,29 @@ export default async function handler(req,res){
    if(change.error||!change.data)return json(res,{error:'Promoter not found'},404);
    return json(res,{deactivated:true});
   }
-  if(action!=='create')return json(res,{error:'Unknown Street Team action'},400);
+  if(action!=='create'&&action!=='updateRewards')return json(res,{error:'Unknown Street Team action'},400);
+  let rules;
+  try{
+   rules=normaliseStreetRewardRules(body.rewardRules);
+  }catch(error){return json(res,{error:error.message},400);}
+  const first=rules[0];
+  const legacy={
+   reward_type:legacyStreetRewardType(first.type),reward_goal:first.target,
+   reward_value_cents:first.cashCents,reward_description:first.details
+  };
+  if(action==='updateRewards'){
+   const personId=String(body.personId||'');
+   if(!ID.test(personId))return json(res,{error:'Choose an existing promoter'},400);
+   const change=await db.from('sb_event_street_team').update({
+    reward_rules:rules,...legacy,updated_at:new Date().toISOString()
+   }).eq('id',personId).eq('event_id',eventId).eq('organiser_profile_id',org.data.id)
+    .eq('active',true).select('id').maybeSingle();
+   if(change.error||!change.data)return json(res,{error:'Active promoter not found or perks could not be saved'},404);
+   return json(res,{updated:true,message:'Promoter reward milestones updated. Existing referral link stays the same; only paid sales unlock rewards.'});
+  }
   const name=safeText(body.name,100),email=safeText(body.email,254).toLowerCase();
-  const rewardType=safeText(body.rewardType,32),rewardGoal=Number(body.rewardGoal||1),
-    rewardValue=Number(body.rewardValueCents||0),description=safeText(body.rewardDescription,400);
-  if(name.length<2||!validEmail(email)||!REWARDS.has(rewardType)||
-     !Number.isInteger(rewardGoal)||rewardGoal<1||rewardGoal>100000||
-     !Number.isInteger(rewardValue)||rewardValue<0||rewardValue>1000000)
-   return json(res,{error:'Enter a promoter, valid email and realistic reward target'},400);
-  if(rewardType==='other_perk'&&description.length<3)
-   return json(res,{error:'Describe the reward or perk clearly'},400);
-  if(rewardType==='vip_table'&&description.length<3)
-   return json(res,{error:'Describe the VIP table reward (for example, 1 table for four)'},400);
-  if(rewardType==='cash_per_sale'&&rewardValue<1)
-   return json(res,{error:'Enter a cash amount per confirmed paid ticket'},400);
+  if(name.length<2||!validEmail(email))
+   return json(res,{error:'Enter a promoter name and valid email'},400);
   const current=await db.from('sb_event_street_team').select('id',{count:'exact',head:true})
     .eq('event_id',eventId).eq('active',true);
   if(current.error)throw current.error;
@@ -70,8 +82,7 @@ export default async function handler(req,res){
   const code=randomBytes(8).toString('hex');
   const saved=await db.from('sb_event_street_team').insert({
    event_id:eventId,organiser_profile_id:org.data.id,promoter_name:name,promoter_email:email,
-   referral_code:code,reward_type:rewardType,reward_goal:rewardGoal,reward_value_cents:rewardValue,
-   reward_description:description
+   referral_code:code,...legacy,reward_rules:rules
   }).select('id').single();
   if(saved.error)throw saved.error;
   return json(res,{created:true,link:'https://www.soundbunker.pt/event?slug='+
