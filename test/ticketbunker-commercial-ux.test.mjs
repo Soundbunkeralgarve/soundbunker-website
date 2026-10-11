@@ -15,7 +15,7 @@ test('Events storefront has branded commercial controls and demo-only checkout',
 test('Distinct local event photography and separate app-style ticket hero',()=>{
  assert.match(events,/tb-hero-standalone/);
  assert.match(events,/tb-stub/);
- assert.match(events,/GOOD NIGHTS/);
+ assert.match(events,/EVENT TICKETS/);
  assert.doesNotMatch(events,/class="tb-hero-image"/);
  const images=[...siteJs.matchAll(/image:'(\/[^']+)'/g)].map(x=>x[1]);
  assert.ok(new Set(images).size>=5,'At least five distinct bundled event images');
