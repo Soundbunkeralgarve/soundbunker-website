@@ -89,18 +89,77 @@ async function saveBilling(event){
 $('#billing-form').addEventListener('submit',saveBilling);
 $('#billing-edit-form').addEventListener('submit',saveBilling);
 
-async function selectPNG(file,preview){if(!file)throw Error('Choose your organiser logo first.');if(file.type!=='image/png')throw Error('Upload a transparent PNG. JPEG and solid backgrounds are not suitable.');if(file.size>2000000)throw Error('The organiser logo must be under 2 MB.');const uri=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('Logo could not be read'));reader.readAsDataURL(file)});
-const img=await new Promise((resolve,reject)=>{const el=new Image();el.onload=()=>resolve(el);el.onerror=()=>reject(Error('Logo is not a valid PNG image'));el.src=uri});const can=document.createElement('canvas');const scale=Math.min(1,450/Math.max(img.width,img.height));can.width=Math.max(1,Math.floor(img.width*scale));can.height=Math.max(1,Math.floor(img.height*scale));const context=can.getContext('2d',{willReadFrequently:true});context.drawImage(img,0,0,can.width,can.height);const bytes=context.getImageData(0,0,can.width,can.height).data;let transparent=0,dark=0,drawn=0;for(let i=0;i<bytes.length;i+=4){let a=bytes[i+3];if(a<200)transparent++;if(a>120){drawn++;if(bytes[i]<105&&bytes[i+1]<105&&bytes[i+2]<105)dark++;}}
-if(transparent<bytes.length/4*.02)throw Error('The logo appears to have a solid background. A transparent PNG is required.');
-if(drawn<10||dark<drawn*.20)throw Error('This logo needs visible black/dark lettering to remain readable on a white ticket.');
-preview.src=uri;preview.hidden=false;return uri;
+const checkedLogo=new Map();
+async function inspectLogo(file,preview){
+ if(!file)throw Error('Choose a transparent PNG logo.');
+ if(file.type!=='image/png'&&!/\.png$/i.test(file.name))throw Error('PNG required — JPG, SVG and WebP are not accepted for the organiser logo.');
+ if(file.size>2000000)throw Error('File too large. Compress the PNG to less than 2 MB.');
+ if(file.size<100)throw Error('This image file is too small or invalid.');
+ const uri=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=()=>reject(Error('Could not read the selected PNG'));r.readAsDataURL(file)});
+ const image=await new Promise((resolve,reject)=>{const el=new Image();el.onload=()=>resolve(el);el.onerror=()=>reject(Error('The selected file could not be decoded as a PNG'));el.src=uri});
+ if(image.width<300||image.height<70)throw Error('Resolution too small: '+image.width+' × '+image.height+' px. Minimum 300 × 70 px; 600 px+ wide is recommended.');
+ if(image.width>4096||image.height>4096)throw Error('Image too large in pixels ('+image.width+' × '+image.height+'). Maximum 4096 px in either direction.');
+ const canvas=document.createElement('canvas'),scale=Math.min(1,600/Math.max(image.width,image.height));
+ canvas.width=Math.max(1,Math.round(image.width*scale));canvas.height=Math.max(1,Math.round(image.height*scale));
+ const ctx=canvas.getContext('2d',{willReadFrequently:true});
+ if(!ctx)throw Error('Image checker unavailable on this browser. Please retry.');
+ ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(image,0,0,canvas.width,canvas.height);
+ const pixels=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+ let transparent=0,visible=0,dark=0,neutral=0,total=pixels.length/4;
+ for(let i=0;i<pixels.length;i+=4){
+  const a=pixels[i+3],r=pixels[i],g=pixels[i+1],b=pixels[i+2];
+  if(a<32)transparent++;
+  if(a>=175){visible++;const hi=Math.max(r,g,b),lo=Math.min(r,g,b);
+   if(hi<=145){dark++;if(hi-lo<=45)neutral++;}
+  }
+ }
+ const transparency=transparent/total,darkness=visible?dark/visible:0,neutrality=dark?neutral/dark:0;
+ if(transparency<.02)throw Error('No clear transparency detected. Remove the solid background and export as a transparent PNG.');
+ if(visible<25)throw Error('The logo is nearly invisible. Use visible black lettering or artwork.');
+ if(darkness<.58||neutrality<.73)throw Error('The visible logo looks too light or colourful. Use black or dark neutral artwork so it prints clearly on white tickets.');
+ preview.src=uri;preview.hidden=false;
+ return {uri,width:image.width,height:image.height,kilobytes:Math.round(file.size/1024),transparent:true,black:true};
 }
-async function uploadLogo(file,preview,check){if(!check.checked)throw Error('Please confirm your logo lettering is black and the background is transparent.');const dataUrl=await selectPNG(file,preview);const result=await api('/api/organiser-brand',{dataUrl});if(!result.logoUrl)throw Error('Logo was not saved.');profile.logo_url=result.logoUrl;notice('Your organiser logo is saved and will be used on events, tickets and reports.');await refresh();return result.logoUrl;}
-$('#register-form').onsubmit=async e=>{e.preventDefault();const b=e.submitter;b.disabled=true;try{const x=new FormData(e.target);await api('/api/organiser',{action:'register',displayName:x.get('displayName'),country:x.get('country'),acceptTerms:x.get('acceptTerms')==='on'});notice('Organiser profile saved. Now upload your permanent logo.');await refresh();}catch(err){notice(err.message,true)}finally{b.disabled=false;}};
-$('#initial-logo-file').onchange=async e=>{try{await selectPNG(e.target.files[0],$('#initial-logo-preview'));$('#initial-preview-hint').hidden=true;}catch(err){notice(err.message,true)}};
-$('#brand-file').onchange=async e=>{try{await selectPNG(e.target.files[0],$('#brand-preview'));$('#brand-preview-hint').hidden=true;}catch(err){notice(err.message,true)}};
-$('#initial-logo-save').onclick=async()=>{const b=$('#initial-logo-save');b.disabled=true;try{await uploadLogo($('#initial-logo-file').files[0],$('#initial-logo-preview'),$('#initial-black-confirm'))}catch(err){notice(err.message,true)}finally{b.disabled=false;}};
-$('#brand-save').onclick=async()=>{const b=$('#brand-save');b.disabled=true;try{await uploadLogo($('#brand-file').files[0],$('#brand-preview'),$('#brand-black-confirm'))}catch(err){notice(err.message,true)}finally{b.disabled=false;}};
+async function checkSelectedLogo(which){
+ const input=$('#'+which+'-file'),preview=$('#'+(which==='brand'?'brand-preview':'initial-logo-preview'));
+ const save=$('#'+(which==='brand'?'brand-save':'initial-logo-save'));
+ const status=$('#'+which+'-logo-status'),ready=$('#'+which+'-logo-ready');
+ const hint=$('#'+(which==='brand'?'brand-preview-hint':'initial-preview-hint'));
+ checkedLogo.delete(which);save.disabled=true;ready.textContent='Awaiting image check';
+ if(!input.files?.length){status.dataset.state='idle';status.textContent='Choose a transparent PNG to check it automatically.';return}
+ status.dataset.state='checking';status.textContent='Checking image format, dimensions, file size, transparency and contrast…';
+ try {
+  const file=input.files[0],result=await inspectLogo(file,preview);
+  if(input.files[0]!==file)return;
+  checkedLogo.set(which,{file,...result});
+  status.dataset.state='valid';
+  status.textContent='✓ PNG · '+result.width+' × '+result.height+' px · '+result.kilobytes+' KB · transparent background · black/dark lettering';
+  ready.textContent='✓ Ready to upload';
+  hint.hidden=true;save.disabled=false;
+ }catch(e){
+  preview.hidden=true;status.dataset.state='error';status.textContent='✕ '+e.message;
+  ready.textContent='Choose a corrected image';save.disabled=true;
+ }
+}
+async function uploadCheckedLogo(which){
+ const checked=checkedLogo.get(which),input=$('#'+which+'-file');
+ if(!checked||input.files?.[0]!==checked.file)throw Error('Choose a logo and wait for the green checks before uploading.');
+ const result=await api('/api/organiser-brand',{dataUrl:checked.uri});
+ if(!result.logoUrl)throw Error('Logo was not saved. Please try again.');
+ profile.logo_url=result.logoUrl;
+ notice('Your logo is saved and will appear with TicketBunker branding on event pages and tickets.');
+ checkedLogo.delete(which);await refresh();return result.logoUrl;
+}
+$('#initial-logo-file').addEventListener('change',()=>checkSelectedLogo('initial'));
+$('#brand-file').addEventListener('change',()=>checkSelectedLogo('brand'));
+$('#initial-logo-save').addEventListener('click',async()=>{
+ const btn=$('#initial-logo-save');btn.disabled=true;
+ try{await uploadCheckedLogo('initial')}catch(e){notice(e.message,true);btn.disabled=false;}
+});
+$('#brand-save').addEventListener('click',async()=>{
+ const btn=$('#brand-save');btn.disabled=true;
+ try{await uploadCheckedLogo('brand')}catch(e){notice(e.message,true);btn.disabled=false;}
+});
 function renderBranding(){if(profile?.logo_url){$('#brand-preview').src=profile.logo_url;$('#brand-preview').hidden=false;$('#brand-preview-hint').hidden=true;}$('#event-brand-preview').src=profile?.logo_url||'/brand-icon.png';}
 $('#event-poster').onchange=e=>{const file=e.target.files[0];if(!file)return;if(file.size>2000000||!['image/png','image/jpeg','image/webp'].includes(file.type)){notice('Poster must be PNG, JPG or WebP under 2 MB.',true);e.target.value='';return;}const reader=new FileReader();reader.onload=()=>{$('#poster-preview').src=reader.result;$('#poster-preview').hidden=false;};reader.readAsDataURL(file);};
 function startNewEvent(){currentDraft=null;$('#event-form').reset();$('#poster-preview').hidden=true;$('#tier-form').reset();const rows=$$('#tier-rows .tier-row');rows.slice(1).forEach(x=>x.remove());nextStep(1);}
