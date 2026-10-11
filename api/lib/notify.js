@@ -1,20 +1,21 @@
+import { ticketBunkerFrom, ticketBunkerReplyTo, ticketBunkerEmailContent, ticketBunkerFooterHtml, ticketBunkerContactText } from './ticketbunker-email-template.js';
 import { studioEmailContent } from './email-template.js';
 
-export async function sendStudioEmail(to, subject, body) {
-  const from = process.env.NOTIFICATION_FROM_EMAIL || process.env.RESEND_FROM_EMAIL;
+export async function sendStudioEmail(to, subject, body, { brand } = {}) {
+  const from = brand === 'ticketbunker' ? ticketBunkerFrom : (process.env.NOTIFICATION_FROM_EMAIL || process.env.RESEND_FROM_EMAIL);
   if (!process.env.RESEND_API_KEY || !from || !to) return { status: 'not configured' };
   try {
     const response = await fetch('https://api.resend.com/emails', { method: 'POST', headers: {
       authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'content-type': 'application/json'
-    }, body: JSON.stringify({ from, to: [to], subject, ...studioEmailContent(body) }) });
+    }, body: JSON.stringify({ from, to: [to], subject, ...(brand === 'ticketbunker' ? ticketBunkerEmailContent(body) : studioEmailContent(body)), ...(brand === 'ticketbunker' ? {reply_to: ticketBunkerReplyTo} : {}) }) });
     return { status: response.ok ? 'sent' : 'failed' };
   } catch { return { status: 'failed' }; }
 }
 
 // Stripe can deliver the same event repeatedly. A stable key for each recipient
 // lets Resend acknowledge retries without sending a second confirmation.
-export async function sendTransactionalEmail({ to, subject, text, key }) {
-  const from = process.env.NOTIFICATION_FROM_EMAIL || process.env.RESEND_FROM_EMAIL;
+export async function sendTransactionalEmail({ to, subject, text, key, brand }) {
+  const from = brand === 'ticketbunker' ? ticketBunkerFrom : (process.env.NOTIFICATION_FROM_EMAIL || process.env.RESEND_FROM_EMAIL);
   if (!process.env.RESEND_API_KEY || !from) throw new Error('Resend email is not configured');
   if (!to) throw new Error('Confirmation recipient is missing');
   const result = await fetch('https://api.resend.com/emails', {
@@ -24,7 +25,7 @@ export async function sendTransactionalEmail({ to, subject, text, key }) {
       'content-type': 'application/json',
       'Idempotency-Key': key
     },
-    body: JSON.stringify({ from, to: [to], subject, ...studioEmailContent(text), reply_to: 'bookings@soundbunker.pt' })
+    body: JSON.stringify({ from, to: [to], subject, ...(brand === 'ticketbunker' ? ticketBunkerEmailContent(text) : studioEmailContent(text)), reply_to: brand === 'ticketbunker' ? ticketBunkerReplyTo : 'bookings@soundbunker.pt' })
   });
   if (!result.ok) throw new Error(`Resend rejected confirmation (${result.status})`);
 }
@@ -67,7 +68,7 @@ export async function notifyClient(admin, userId, title, body, url = '/client') 
 
 const emailEscape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export async function sendTicketBunkerConfirmation({to,key,subject,show,date,venue,tier,attendee,quantity,links,organiserLogo=null,poster=null}){
- const from=process.env.NOTIFICATION_FROM_EMAIL||process.env.RESEND_FROM_EMAIL;
+ const from=ticketBunkerFrom;
  if(!process.env.RESEND_API_KEY||!from)throw Error('TicketBunker confirmation email is not configured');
  const page='https://www.soundbunker.pt';
  const safeLogo=typeof organiserLogo==='string'&&/^https:\/\/[^\s"<>]+$/i.test(organiserLogo)?organiserLogo:null;
@@ -82,14 +83,14 @@ export async function sendTicketBunkerConfirmation({to,key,subject,show,date,ven
  '<div style="padding:27px"><p style="color:#398363;font-weight:900;letter-spacing:1px">✓ BOOKING CONFIRMED</p><h1 style="font-size:29px;line-height:1.15;margin:12px 0">'+emailEscape(show)+'</h1><p style="color:#5d5066">Your TicketBunker QR tickets are ready.</p><table style="width:100%;border-collapse:collapse;margin:20px 0">'+details+'</table>'+
  '<p style="background:#fff2d8;padding:14px;border-radius:10px;font-weight:750;font-size:12px;color:#604116">€0 SOFTWARE TEST ONLY. Not valid admission to a real event.</p>'+
  tickets+'<div style="margin-top:18px;padding:15px;background:#f5eef8;border-radius:11px"><strong style="color:#34233f">Need to change a name on your ticket?</strong><p style="font-size:13px;line-height:1.5;color:#57475f">Sign in to your client account, open My Tickets, then tap Change name. You can also securely transfer a ticket to another person there.</p><a href="'+page+'/client?next=%2Fclient%23my-tickets" style="display:inline-block;color:#542b6a;font-weight:800">Manage tickets and attendee names →</a></div>'+
- '<p style="font-size:12px;color:#72677c">No TicketBunker booking fees. The ticket price is the ticket price. Age verification and photo ID may be required at events. Each QR can be scanned only once.</p></div></main></body></html>';
+ '<p style="font-size:12px;color:#72677c">No TicketBunker booking fees. The ticket price is the ticket price. Age verification and photo ID may be required at events. Each QR can be scanned only once.</p></div>'+ticketBunkerFooterHtml+'</main></body></html>';
  const text='BOOKING CONFIRMED · TICKETBUNKER\n\n'+rows.map(([k,v])=>k+': '+v).join('\n')+
  '\n\n€0 SOFTWARE TEST ONLY — NOT VALID ADMISSION.\n\nYour QR tickets:\n'+links.join('\n')+
  '\n\nChange attendee names: sign into your client login, open My Tickets, then select Change name. You can also securely transfer a ticket there.\nManage tickets: '+page+'/client?next=%2Fclient%23my-tickets'+
  '\n\nNo TicketBunker booking fees. The ticket price is the ticket price. Age verification and photo ID may be required.\nTicketBunker';
  const response=await fetch('https://api.resend.com/emails',{
   method:'POST',headers:{authorization:'Bearer '+process.env.RESEND_API_KEY,'content-type':'application/json','Idempotency-Key':key},
-  body:JSON.stringify({from,to:[to],subject,html,text,reply_to:'bookings@soundbunker.pt'})
+  body:JSON.stringify({from,to:[to],subject,html,text,reply_to:ticketBunkerReplyTo})
  });
  if(!response.ok)throw Error('TicketBunker confirmation email failed ('+response.status+')');
 }

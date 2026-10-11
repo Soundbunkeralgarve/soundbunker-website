@@ -1,3 +1,4 @@
+import {ticketBunkerFrom, ticketBunkerReplyTo} from './ticketbunker-email-template.js';
 import {eventsDatabase} from './events.js';
 import {SOUNDBUNKER_PROMO_SEGMENT_ID} from './soundbunker-promo-list.js';
 import {premiumEventEmail} from './ticketbunker-premium-email.js';
@@ -68,7 +69,7 @@ export async function dispatchPremiumPlacementEmail(requestId,db){
     row.premium_email_status);
   if(!claimed)return {status:'already_processing'};
   try{
-   const from=process.env.NOTIFICATION_FROM_EMAIL||process.env.RESEND_FROM_EMAIL;
+   const from=ticketBunkerFrom;
    if(!from)throw Error('Email sender domain not configured');
    const when=new Intl.DateTimeFormat('en-GB',{dateStyle:'medium',timeStyle:'short',
     timeZone:e.venue_timezone||'Europe/Lisbon'}).format(new Date(e.starts_at));
@@ -77,7 +78,7 @@ export async function dispatchPremiumPlacementEmail(requestId,db){
    const broadcast=await api('/broadcasts',{method:'POST',body:{
     name:'TicketBunker Premium · '+e.title,
     segment_id:SOUNDBUNKER_PROMO_SEGMENT_ID,
-    from,subject:content.subject,text:content.text,html:content.html,
+    from,reply_to:ticketBunkerReplyTo,subject:content.subject,text:content.text,html:content.html,
     send:false
    }});
    if(!broadcast.id)throw Error('Resend did not return campaign ID');

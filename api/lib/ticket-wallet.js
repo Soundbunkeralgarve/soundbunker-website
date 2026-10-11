@@ -1,0 +1,87 @@
+import {createSign} from 'node:crypto';
+import {readFile} from 'node:fs/promises';
+const origin='https://theticketbunker.com';
+const localized=value=>({defaultValue:{language:'en-GB',value:String(value||'')}});
+const image=(uri,alt)=>({sourceUri:{uri},contentDescription:localized(alt)});
+const pem=value=>String(value||'').replace(/\\n/g,'\n');
+export function walletAvailability(env=process.env){return {
+ apple:env.APPLE_WALLET_ENABLED==='true'&&['APPLE_PASS_TYPE_ID','APPLE_TEAM_ID','APPLE_PASS_CERT_PEM','APPLE_PASS_KEY_PEM','APPLE_WWDR_CERT_PEM'].every(k=>!!env[k]),
+ google:env.GOOGLE_WALLET_ENABLED==='true'&&['GOOGLE_WALLET_ISSUER_ID','GOOGLE_WALLET_CLIENT_EMAIL','GOOGLE_WALLET_PRIVATE_KEY'].every(k=>!!env[k])
+};}
+export function walletTicketUrl(t,sig){return origin+'/event-ticket?id='+encodeURIComponent(t.id)+'&sig='+encodeURIComponent(sig);}
+export function assertWalletTicket(t){
+ if(!t||t.test||t.used)throw Error('This ticket cannot be added to a wallet.');
+ if(!t.date||!Number.isFinite(Date.parse(t.date)))throw Error('Event date is unavailable.');
+ if(t.endDate&&Date.parse(t.endDate)<Date.now())throw Error('This event has finished.');
+}
+export function applePassData(t,sig,env=process.env){
+ assertWalletTicket(t);
+ const when=new Intl.DateTimeFormat('en-GB',{dateStyle:'medium',timeStyle:'short',timeZone:t.timezone||'Europe/Lisbon'}).format(new Date(t.date));
+ return {formatVersion:1,passTypeIdentifier:env.APPLE_PASS_TYPE_ID,teamIdentifier:env.APPLE_TEAM_ID,
+ serialNumber:t.id+'-v'+(t.version||0),organizationName:'The TicketBunker',description:t.title+' — '+t.tier,
+ logoText:'',backgroundColor:'rgb(0,0,0)',foregroundColor:'rgb(255,255,255)',labelColor:'rgb(0,224,166)',
+ relevantDate:t.date,...(t.endDate?{expirationDate:t.endDate}:{}),
+ barcodes:[{format:'PKBarcodeFormatQR',message:walletTicketUrl(t,sig),messageEncoding:'iso-8859-1',altText:'Admission '+String(t.admissionNumber||'')}],
+ eventTicket:{headerFields:[{key:'ticketType',label:'ADMISSION',value:t.tier||'General admission'}],
+ primaryFields:[{key:'event',label:'EVENT',value:t.title}],
+ secondaryFields:[{key:'when',label:'DATE & TIME',value:when},{key:'venue',label:'VENUE',value:t.venue}],
+ auxiliaryFields:[{key:'holder',label:'ATTENDEE',value:t.holderName},{key:'number',label:'TICKET',value:String(t.admissionNumber||'')}],
+ backFields:[{key:'manage',label:'Manage your ticket',value:origin+'/my-tickets'},
+ {key:'organiser',label:'Presented by',value:t.organiserName||'Event organiser'},
+ {key:'conditions',label:'Entry conditions',value:'One admission only. Transferred, cancelled, refunded or previously scanned tickets are not valid. Reopen My tickets after changing a name or transferring a ticket.'},
+ {key:'support',label:'Customer Services',value:'bookings@theticketbunker.com'},
+ {key:'powered',label:'Powered by',value:'SoundBunker Algarve'}]}};
+}
+// Only fetch artwork from the project's public storage; never arbitrary organiser URLs.
+async function trustedArtwork(url,width,height){
+ if(!url)return null;let u;try{u=new URL(url)}catch{return null}
+ if(u.origin!=='https://mshjykmopgvvupmymgxb.supabase.co'||!u.pathname.startsWith('/storage/v1/object/public/'))return null;
+ try{
+ const response=await fetch(u,{redirect:'error',signal:AbortSignal.timeout(5000)});
+ if(!response.ok||!/^image\//i.test(response.headers.get('content-type')||''))return null;
+ const reader=response.body.getReader();const chunks=[];let size=0;
+ while(true){const {done,value}=await reader.read();if(done)break;size+=value.length;if(size>3_000_000){await reader.cancel();return null;}chunks.push(Buffer.from(value));}
+ const {default:sharp}=await import('sharp');
+ return await sharp(Buffer.concat(chunks),{limitInputPixels:16000000}).resize(width,height,{fit:'contain',background:{r:255,g:255,b:255,alpha:1}}).png().toBuffer();
+ }catch{return null;}
+}
+export async function createApplePass(t,sig,env=process.env){
+ if(!walletAvailability(env).apple)throw Error('Apple Wallet is not enabled.');
+ const {PKPass}=await import('passkit-generator');
+ const {default:sharp}=await import('sharp');
+ const [icon,logo]=await Promise.all([readFile(new URL('../../ticketbunker-site/brand-icon.png',import.meta.url)),readFile(new URL('../../ticketbunker-site/brand-compact.png',import.meta.url))]);
+ const files={};
+ for(const scale of [1,2,3]){const suffix=scale===1?'':'@'+scale+'x';
+  files['icon'+suffix+'.png']=await sharp(icon).resize(29*scale,29*scale,{fit:'contain',background:{r:0,g:0,b:0,alpha:0}}).png().toBuffer();
+  files['logo'+suffix+'.png']=await sharp(logo).resize(160*scale,50*scale,{fit:'contain',background:{r:0,g:0,b:0,alpha:0}}).png().toBuffer();
+ }
+ files['pass.json']=Buffer.from(JSON.stringify(applePassData(t,sig,env)));
+ const [organiserLogo,poster]=await Promise.all([trustedArtwork(t.eventLogo,270,270),trustedArtwork(t.poster,1125,294)]);
+ if(organiserLogo)files['thumbnail@3x.png']=organiserLogo;if(poster)files['strip@3x.png']=poster;
+ const pass=new PKPass(files,{wwdr:pem(env.APPLE_WWDR_CERT_PEM),signerCert:pem(env.APPLE_PASS_CERT_PEM),signerKey:pem(env.APPLE_PASS_KEY_PEM),...(env.APPLE_PASS_KEY_PASSPHRASE?{signerKeyPassphrase:env.APPLE_PASS_KEY_PASSPHRASE}:{})});
+ return pass.getAsBuffer();
+}
+export function googlePassPayload(t,sig,env=process.env){
+ assertWalletTicket(t);
+ const issuer=env.GOOGLE_WALLET_ISSUER_ID;
+ if(!/^\d+$/.test(issuer||''))throw Error('Google Wallet issuer is not configured.');
+ const classId=issuer+'.event_'+t.eventId;
+ const ticketClass={id:classId,issuerName:'The TicketBunker',reviewStatus:'UNDER_REVIEW',eventName:localized(t.title),
+ logo:image(origin+'/brand-icon.png','The TicketBunker'),venue:{name:localized(t.venue)},dateTime:{start:t.date,...(t.endDate?{end:t.endDate}:{})}};
+ const safeUrl=url=>typeof url==='string'&&/^https:\/\/[^\s<>"]+$/.test(url);
+ const ticketObject={id:issuer+'.ticket_'+t.id+'_v'+(t.version||0),classId,state:'ACTIVE',hexBackgroundColor:'#000000',
+ ticketHolderName:t.holderName,ticketNumber:String(t.admissionNumber||''),ticketType:localized(t.tier),
+ barcode:{type:'QR_CODE',value:walletTicketUrl(t,sig),alternateText:'Admission '+String(t.admissionNumber||'')},
+ ...(safeUrl(t.poster)?{heroImage:image(t.poster,'Event artwork')}:{}),
+ ...(safeUrl(t.eventLogo)?{imageModulesData:[{id:'organiser-logo',mainImage:image(t.eventLogo,'Event organiser')}]}:{}),
+ textModulesData:[{id:'organiser',header:'Presented by',body:t.organiserName||'Event organiser'},{id:'terms',header:'Entry conditions',body:'One admission only. Transferred, cancelled, refunded or used tickets are not valid. Reopen My tickets after attendee changes.'}],
+ linksModuleData:{uris:[{uri:origin+'/my-tickets',description:'Manage your ticket'},{uri:'mailto:bookings@theticketbunker.com',description:'Customer Services'}]}};
+ return {iss:env.GOOGLE_WALLET_CLIENT_EMAIL,aud:'google',typ:'savetowallet',iat:Math.floor(Date.now()/1000),origins:['https://theticketbunker.com','https://www.theticketbunker.com'],payload:{eventTicketClasses:[ticketClass],eventTicketObjects:[ticketObject]}};
+}
+export function createGoogleWalletLink(t,sig,env=process.env){
+ if(!walletAvailability(env).google)throw Error('Google Wallet is not enabled.');
+ const b64=value=>Buffer.from(JSON.stringify(value)).toString('base64url');
+ const content=b64({alg:'RS256',typ:'JWT'})+'.'+b64(googlePassPayload(t,sig,env));
+ const signature=createSign('RSA-SHA256').update(content).end().sign(pem(env.GOOGLE_WALLET_PRIVATE_KEY)).toString('base64url');
+ return 'https://pay.google.com/gp/v/save/'+content+'.'+signature;
+}

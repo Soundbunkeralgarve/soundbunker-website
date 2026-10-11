@@ -14,7 +14,14 @@
   if(typeof QRCode!=='function')throw Error('QR could not be generated. Refresh this page or ask the door team for help.');
   const ticketUrl=location.origin+'/event-ticket?id='+encodeURIComponent(id)+'&sig='+encodeURIComponent(sig);
   new QRCode($('qr'),{text:ticketUrl,width:180,height:180,correctLevel:QRCode.CorrectLevel.M});
-  $('ticketActions').hidden=false;$('printTicket').onclick=()=>window.print();
+  $('ticketActions').hidden=false;
+  const walletEndpoint='/api/event-wallet?id='+encodeURIComponent(id)+'&sig='+encodeURIComponent(sig);
+  if(t.wallet?.apple){$('appleWallet').href=walletEndpoint+'&provider=apple';$('appleWallet').hidden=false;}
+  if(t.wallet?.google){$('googleWallet').hidden=false;$('googleWallet').onclick=async()=>{
+   const button=$('googleWallet');button.disabled=true;
+   try{const response=await fetch(walletEndpoint+'&provider=google',{cache:'no-store'});const result=await response.json();if(!response.ok)throw Error(result.error||'Wallet unavailable');if(!result.url?.startsWith('https://pay.google.com/gp/v/save/'))throw Error('Invalid wallet link');location.assign(result.url);}catch(error){$('notice').textContent=error.message;}finally{button.disabled=false;}
+  };}
+$('printTicket').onclick=()=>window.print();
   $('saveDigitalTicket').onclick=async()=>{
    const button=$('saveDigitalTicket');button.disabled=true;
    try{

@@ -267,7 +267,7 @@ export default async function handler(req,res){
        +'\nTier: Event Plus · '+capacity+' tickets\nIndicative listing fee: '
        +(ev.data.currency==='gbp'?'£199':'€239')
        +'\nRequested terms: Deposit upfront plus capped recovery from eligible ticket sales, subject to written terms and Stripe Connect approval.'
-       +'\nNotes: '+notes);
+       +'\nNotes: '+notes, {brand:'ticketbunker'});
      if(email.status!=='sent')console.warn('Event Plus enquiry email notification not confirmed',{requestId:saved.data.id,status:email.status});
      return json(res,{request:saved.data,message:'Flexible payment terms request saved. We will contact you to agree deposit and revenue collection terms. No payment was taken or ticket sales enabled.'},201);
    }
@@ -306,7 +306,7 @@ export default async function handler(req,res){
        'New large-event quote enquiry\nEvent: '+event.data.title
        +'\nOrganiser: '+organisation.display_name
        +'\nExpected ticket volume: '+expected+'\nPayment preference: '+paymentPreference
-       +'\nDetails: '+notes+'\n\nCheck the TicketBunker admin quote records.');
+       +'\nDetails: '+notes+'\n\nCheck the TicketBunker admin quote records.', {brand:'ticketbunker'});
      if(email.status!=='sent')console.warn('Large-event quote email notification not confirmed',{quoteId:quote.data.id,status:email.status});
      return json(res,{quote:quote.data,message:'Your custom quote request has been saved. We will discuss pricing and payment terms before anything goes live. No payment was taken.'},201);
    }

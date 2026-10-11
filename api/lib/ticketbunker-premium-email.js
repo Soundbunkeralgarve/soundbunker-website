@@ -1,3 +1,4 @@
+import {ticketBunkerFooterHtml, ticketBunkerContactText} from './ticketbunker-email-template.js';
 // Shares the SoundBunker email layout: light-grey background, compact white
 // content table, deep-ink copy, purple CTA and the standard hosted email footer.
 export function escapePromoHtml(value){
@@ -27,13 +28,12 @@ export function premiumEventEmail({title,venue,when,poster,logo,bio,slug,organis
  '<p style="font-size:12px;color:#63576b;line-height:1.6;margin:14px 0">No TicketBunker booking fees. The ticket price is the ticket price.</p>'+
  '<p style="font-size:11px;color:#716579;line-height:1.55">You receive SoundBunker events and promotions because you subscribed. <a href="'+unsub+'" style="color:#285d39">Unsubscribe</a></p>'+
  '<p style="font-size:10px;color:#63576b;line-height:1.6">Powered by SOUNDBUNKER ALGARVE, SOCIEDADE UNIPESSOAL LDA · NIF 517757478<br>542 Dunas Douradas, 8135-188 Almancil, Portugal</p>'+
- '</td></tr><tr><td style="background:#100d14"><a href="https://www.soundbunker.pt/">'+
- '<img src="https://www.soundbunker.pt/assets/soundbunker-email-footer.png" width="520" alt="SoundBunker Algarve" style="display:block;width:100%;max-width:520px;height:auto;border:0"></a></td></tr>'+
+ '</td></tr><tr><td>'+ticketBunkerFooterHtml+'</td></tr>'+
  '</table></td></tr></table></body></html>';
  const text='FEATURED EVENT · TICKETBUNKER / SOUNDBUNKER\n\n'+name+'\n'+when+'\n'+venue+
  '\nPresented by '+(organiser||'Event organiser')+'\n\n'+summary+
  '\n\nBUY TICKETS: '+ticketLink+
  '\n\nNo TicketBunker booking fees. The ticket price is the ticket price.'+
- '\n\nYou subscribed to SoundBunker event and promotional emails. Unsubscribe: '+unsub;
+ '\n\nYou subscribed to SoundBunker event and promotional emails. Unsubscribe: '+unsub+ticketBunkerContactText;
  return {subject,html,text,ticketLink};
 }

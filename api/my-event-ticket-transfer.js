@@ -38,7 +38,7 @@ export default async function handler(req,res){
   const ticketUrl=base()+'/event-ticket.html?id='+encodeURIComponent(id)+'&sig='+signedTicket(id,item.transfer_version);
   let emailSent=false;
   try{
-   await sendTransactionalEmail({to:recipientEmail,key:'ticketbunker-transfer-'+id+'-'+item.transfer_version,
+   await sendTransactionalEmail({brand:'ticketbunker',to:recipientEmail,key:'ticketbunker-transfer-'+id+'-'+item.transfer_version,
     subject:'Your TicketBunker ticket is ready · '+(order.data?.sb_events?.title||'Event'),
     text:'Hi '+name+',\n\nA TicketBunker ticket has been transferred into your name and email address.\n\n'+
       (order.data?.sb_events?.title||'Event')+' · '+(order.data?.sb_event_tiers?.name||'Admission')+'\n\n'+

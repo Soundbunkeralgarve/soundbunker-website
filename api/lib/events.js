@@ -53,8 +53,8 @@ export async function fulfillEventCheckout(checkout, db=eventsDatabase(), connec
   const base=(process.env.SITE_URL||'https://www.soundbunker.pt').replace(/\/$/,'');
   const links=tickets.data.map(t=>base+'/event-ticket.html?id='+encodeURIComponent(t.id)+'&sig='+signedTicket(t.id));
   const date=new Intl.DateTimeFormat('en-GB',{dateStyle:'full',timeStyle:'short',timeZone:event.data.venue_timezone||'Europe/Lisbon'}).format(new Date(event.data.starts_at));
-  await sendTransactionalEmail({
-    to:order.customer_email, key:'event-order-'+id, subject:'Your SoundBunker event tickets · '+event.data.title,
+  await sendTransactionalEmail({brand:'ticketbunker',
+    to:order.customer_email, key:'event-order-'+id, subject:'Your TicketBunker event tickets · '+event.data.title,
     text:'Hi '+order.customer_name+',\n\nYour tickets are confirmed!\n\n'+event.data.title+'\n'+date+' (venue time)\n'+event.data.venue+'\n'+tier.data.name+' · '+order.quantity+' ticket(s)\n\nOpen each ticket on your phone to display its QR code:\n'+links.join('\n')+'\n\nShow each QR code at the door. Each ticket works for one entry only.\n\nSoundBunker Algarve'
   });
   return {status:'paid',tickets:tickets.data.length};
