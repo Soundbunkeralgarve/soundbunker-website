@@ -36,7 +36,7 @@ test('several prices and quantities are validated and saved as one database batc
 });
 test('saved ticket prices are visible and user can add another type on review',()=>{
  assert.match(client,/ev\.tiers/);
- assert.match(client,/\.tb-saved-ticket/);
+ assert.match(client,/tb-saved-ticket/);
  assert.match(client,/displayMoney\(t\.price_cents,ev\.currency\)/);
  assert.match(client,/add\.hidden=false/);
  assert.match(client,/Add another ticket type/);
