@@ -46,7 +46,7 @@ test('premium ticket includes official TicketBunker logo, attendee and ID policy
  assert.match(read('api/lib/notify.js'),/Change attendee names/);
  assert.match(staffApi,/source.data.status!=='published'/);
  assert.match(organiserJs,/staffEvents=list.filter\(ev=>ev.status==='published'/);
- assert.ok(organiser.indexOf('id="staffAccess"')<organiser.indexOf('id="wizardSteps"'),'scanner must be in dashboard before setup');
+ assert.ok(organiser.indexOf('id="staffAccess"')<organiser.indexOf('id="setup"'),'scanner must be in the reporting dashboard, not creation');
  assert.match(read('ticketbunker-sales-ops.css'),/\.tb-ticket-pass-top\{background:#23192e/);
 });
 test('buyer sees show-specific Booking Confirmed with QR tickets and fee clarity',()=>{
