@@ -15,16 +15,16 @@ test('Events landing keeps a clean ticketing experience',()=>{
  assert.match(events,/ticketbunker\.css/);
  assert.match(events,/Explore Event Tickets/);
  assert.match(events,/tb-feature-section/);
- assert.match(events,/Featured Showcase/);
- assert.match(events,/DEMO EVENT/);
+ assert.match(events,/Featured Event/);
+ assert.doesNotMatch(events,/DEMO EVENT/);
  assert.match(events,/BETA/);
 });
-test('Demo events are never presented as live bookable tickets',()=>{
- assert.match(js,/const conceptEvents=Object\.freeze/);
- assert.match(js,/demo:true/g);
- assert.match(js,/No tickets sold/);
- assert.doesNotMatch(js,/event-checkout|stripe\.com|Get Tickets|Buy Tickets/);
- assert.match(events,/No real event, ticket availability or payment offer/);
+test('Only real organiser listings display and pop-ups are gone',()=>{
+ assert.doesNotMatch(js,/conceptEvents|demo:true|showModal/);
+ assert.match(js,/\/api\/events/);
+ assert.match(js,/\/event\?slug=/);
+ assert.doesNotMatch(events,/id="tb-demo-dialog"/);
+ assert.doesNotMatch(js,/checkout\.stripe\.com/);
 });
 test('premium showcase request exists but cannot collect money',()=>{
  assert.match(organiser,/id="showcaseForm"/);
