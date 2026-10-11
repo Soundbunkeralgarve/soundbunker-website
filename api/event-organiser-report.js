@@ -15,11 +15,11 @@ export default async function handler(req,res){
  try{
   const db=ctx.admin;
   // Do not expose buyer data or scanner identities outside the owning organiser account.
-  const owner=await db.from('sb_event_organisers').select('id')
+  const owner=await db.from('sb_event_organisers') .select('id,logo_url,display_name')
    .eq('owner_user_id',ctx.user.id).maybeSingle();
   if(owner.error||!owner.data)return json(res,{error:'Organiser account required'},403);
   const event=await db.from('sb_events')
-   .select('id,title,slug,starts_at,ends_at,venue,currency,venue_timezone')
+   .select('id,title,slug,starts_at,ends_at,venue,currency,venue_timezone,image_url,event_logo_url')
    .eq('id',eventId).eq('organiser_profile_id',owner.data.id).maybeSingle();
   if(event.error||!event.data)return json(res,{error:'Event not found in your account'},403);
 
@@ -78,6 +78,8 @@ export default async function handler(req,res){
   const eventFinished=Number.isFinite(endedAt)&&endedAt<Date.now();
   const report={
    title:event.data.title,venue:event.data.venue,
+   organiserName:owner.data.display_name,organiserLogo:owner.data.logo_url||event.data.event_logo_url||null,
+   poster:event.data.image_url||null,
    currency:event.data.currency,startsAt:event.data.starts_at,endsAt:event.data.ends_at,
    venueTimezone:event.data.venue_timezone,eventFinished,
    capacity:(tiers.data||[]).reduce((total,tier)=>total+Number(tier.quantity_total||0),0),
