@@ -1,30 +1,8 @@
+import { syncSoundBunkerMarketing } from './lib/soundbunker-promo-list.js';
 import {requireUser} from './lib/supabase-auth.js';
 import {json,parseJson} from './lib/http.js';
 
 const consentSource='SoundBunker client account · events and promotions';
-async function syncResend(email,consent,name){
- const key=process.env.RESEND_API_KEY;
- if(!key)return {synced:false,reason:'Marketing email integration is not configured'};
- const headers={authorization:'Bearer '+key,'content-type':'application/json'};
- const target='https://api.resend.com/contacts/'+encodeURIComponent(email);
- if(!consent){
-  const r=await fetch(target,{method:'PATCH',headers,body:JSON.stringify({unsubscribed:true})});
-  if(r.status===404)return {synced:true};
-  if(!r.ok)throw Error('Email provider could not apply the unsubscribe request');
-  return {synced:true};
- }
- // This request is made only after an affirmative consent checkbox or save.
- // Existing contacts are updated only on new explicit consent, never just login.
- const r=await fetch('https://api.resend.com/contacts',{
-  method:'POST',headers,
-  body:JSON.stringify({email,first_name:String(name||'').trim().split(/\s+/)[0]||undefined,unsubscribed:false})
- });
- if(r.ok)return {synced:true};
- if(r.status!==409)throw Error('Email provider could not register the opt-in');
- const updated=await fetch(target,{method:'PATCH',headers,body:JSON.stringify({unsubscribed:false})});
- if(!updated.ok)throw Error('Email provider could not renew subscription');
- return {synced:true};
-}
 export default async function handler(req,res){
  if(!['GET','POST'].includes(req.method))return json(res,{error:'Method not allowed'},405);
  const ctx=await requireUser(req);
@@ -46,7 +24,7 @@ export default async function handler(req,res){
    if(typeof body.consent!=='boolean')return json(res,{error:'Choose whether to receive event and promotional emails'},400);
    consent=body.consent;
   }else return json(res,{error:'Invalid marketing consent action'},400);
-  if(consent===Boolean(profile.data?.marketing_opt_in)){
+  if(consent===Boolean(profile.data?.marketing_opt_in)&&source==='signup'){
    // No consent change; still clear the one-time pending signup flag.
    if(source==='signup')await db.auth.admin.updateUserById(user.id,{user_metadata:{ticketbunker_marketing_signup_pending:false}});
    return json(res,{optedIn:consent,unchanged:true});
@@ -58,7 +36,7 @@ export default async function handler(req,res){
   if(update.error)throw update.error;
   let providerSynced=false,providerWarning='';
   try{
-   const result=await syncResend(email,consent,profile.data?.full_name||user.user_metadata?.full_name);
+   const result=await syncSoundBunkerMarketing({apiKey:process.env.RESEND_API_KEY,email,consent,firstName:profile.data?.full_name||user.user_metadata?.full_name});
    providerSynced=result.synced;
    if(!result.synced)providerWarning=result.reason;
   }catch(error){
