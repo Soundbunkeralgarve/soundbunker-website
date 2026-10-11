@@ -31,7 +31,7 @@
   <div class="tb-event-body">
    <section class="tb-event-about"><p class="tb-event-eyebrow">ABOUT THE EVENT</p><h2>Event information</h2>
     <p id="eventDescription"></p><div class="tb-event-brand" id="eventBrand" hidden><img id="eventLogo" alt="Organiser logo"><span>Official organiser event artwork</span></div>
-    <p class="tb-event-safe">Every ticket has a unique signed QR. Once scanned, that QR cannot be used a second time. Attendee names and account transfers are available inside My Tickets.</p>
+    <p class="tb-event-safe"><strong>NO BOOKING FEES.</strong> The ticket price is the ticket price. Age verification and photo ID may be required at the venue.</p><p class="tb-event-safe">Every ticket has a unique signed QR. Once scanned, that QR cannot be used a second time. Attendee names and account transfers are available inside My Tickets.</p>
    </section>
    <section id="ticketTypes" class="tb-event-booking"><p class="tb-event-eyebrow">CHOOSE YOUR TICKETS</p><h2>Choose a ticket type <span id="ticketTypeCount" class="tb-ticket-type-count">Loading…</span></h2>
     <p>Every available ticket type is listed below. During the system test, all saved types cost €0/£0.</p>
@@ -46,11 +46,27 @@
      <label for="bookName">Your name<input id="bookName" name="name" type="text" minlength="2" maxlength="100" autocomplete="name" required placeholder="Name on the booking"></label>
      <label for="bookEmail">Email for tickets<input id="bookEmail" name="email" type="email" maxlength="254" autocomplete="email" required placeholder="Your SoundBunker account email"></label>
      <label for="bookQuantity">Quantity (up to 4 test tickets)<select id="bookQuantity" name="quantity" required><option value="1">1 ticket</option><option value="2">2 tickets</option><option value="3">3 tickets</option><option value="4">4 tickets</option></select></label>
-     <div class="tb-book-total"><span>Payment total</span><strong>€0.00 / £0.00</strong></div>
+     <div class="tb-book-total"><span>Payment total</span><strong>€0.00 / £0.00</strong></div><p class="tb-no-fees">No TicketBunker booking fees. The ticket price is the ticket price.</p>
      <button id="betaBookButton" type="submit">Confirm €0 test booking →</button>
      <p class="tb-book-fineprint">No payment method required. Maximum four test tickets per email per event; test capacity may be limited. Each ticket is valid for scanner testing only.</p>
     </form>
-    <div id="bookingResponse" role="status" aria-live="polite"></div>
+    <section id="bookingConfirmation" class="tb-booking-confirmation" hidden aria-labelledby="bookingConfirmedTitle">
+ <div class="tb-confirm-brand"><img src="/assets/ticketbunker/ticketbunker-logo.svg" alt="TicketBunker" width="174" height="30"><span>CONFIRMED</span></div>
+ <div class="tb-confirm-check" aria-hidden="true">✓</div>
+ <h2 id="bookingConfirmedTitle">Booking confirmed</h2>
+ <h3 id="confirmedEventName">Event name</h3>
+ <div class="tb-confirm-data">
+  <p><span>WHEN</span><strong id="confirmedEventDate"></strong></p>
+  <p><span>VENUE</span><strong id="confirmedVenue"></strong></p>
+  <p><span>ADMISSION</span><strong id="confirmedTicketType"></strong></p>
+  <p><span>ATTENDEE</span><strong id="confirmedAttendee"></strong></p>
+  <p><span>QUANTITY</span><strong id="confirmedQuantity"></strong></p>
+  <p><span>PAID</span><strong>€0 / £0</strong></p>
+ </div>
+ <p class="tb-confirm-email" id="confirmedEmailState">Your individual QR tickets are ready below.</p>
+ <p class="tb-confirm-test">€0 SOFTWARE TEST ONLY — NOT VALID ADMISSION TO A REAL EVENT.</p>
+ <p class="tb-no-fees">No TicketBunker booking fees. The ticket price is the ticket price.</p>
+</section><div id="bookingResponse" role="status" aria-live="polite"></div>
     <div id="bookedLinks" class="tb-booked-ticket-links" aria-live="polite"></div>
    </section>
   </div>
