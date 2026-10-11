@@ -8,7 +8,7 @@ test('Events storefront has branded commercial controls and demo-only checkout',
  for(const marker of ['class="tb-discover-panel"','id="tb-event-search"','id="tb-location-filter"',
   'id="tb-event-count"','id="featured"','id="upcoming"','id="plans"'])
   assert.ok(events.includes(marker),'Missing '+marker);
- assert.match(events,/BETA · NOT LIVE YET/);
+ assert.match(events,/LIVE €0 TESTING · PAID SALES OFF/);
  assert.doesNotMatch(events,/DEMO EVENT/);
  assert.doesNotMatch(siteJs,/\/api\/event-checkout|checkout\.stripe\.com/);
 });
@@ -43,7 +43,7 @@ test('Commercial organiser setup keeps all existing forms and country prices',()
  assert.match(orgJs,/max="2000"/);
  assert.match(orgJs,/data-price-gbp/);
  assert.match(orgJs,/tb-owned-event/);
- assert.match(org,/BETA · NOT LIVE YET/);
+ assert.match(org,/LIVE €0 TESTING · PAID SALES OFF/);
 });
 test('Purple black white styling with responsive grids',()=>{
  assert.match(css,/\.tb-card-grid\{display:grid;grid-template-columns:repeat\(4/);
