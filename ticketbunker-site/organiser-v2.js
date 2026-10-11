@@ -19,7 +19,7 @@ function renderOverview(){let visible=safeEvents();$('#greeting').textContent='W
 function renderEvents(){const visible=safeEvents(),el=$('#all-events');el.innerHTML=visible.length?visible.map(drawEvent).join(''):empty('You have no new events. Start by creating your first event.');wireRows(el);}
 async function refresh(){const d=await api('/api/organiser');profile=d.organiser;events=d.events||[];if(!profile){showOnboarding();return;}$('#sidebar-name').textContent=profile.display_name;$('#sidebar-country').textContent=profile.country_code==='GB'?'United Kingdom':'Portugal';$('#account-status').textContent=profile.status==='approved'?'Verified':'Verification pending';await loadBilling();if(!profile.logo_url||!billingComplete){showOnboarding();return;}$('#page-app').hidden=false;$('#loading').hidden=true;page(currentPage||'overview');}
 function showOnboarding(){
- $('#page-app').hidden=false;$('#loading').hidden=true;$('.page').forEach(x=>x.hidden=true);
+ $('#page-app').hidden=false;$('#loading').hidden=true;$$('.page').forEach(x=>x.hidden=true);
  $('#onboarding').hidden=false;
  $('#register-form').hidden=!!profile;
  $('#onboarding-logo').hidden=!profile||!!profile.logo_url;
