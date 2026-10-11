@@ -46,8 +46,8 @@ test('organiser has real upload bytes progress and indeterminate status for data
  assert.match(launch,/\.tb-operation-track\.indeterminate/);
  assert.match(read('event-free-test.js'),/claimProgress/);
 });
-test('Review & Pay replaces publication request and clearly shows flat fee and BETA limitations',()=>{
- assert.match(organiser,/Review &amp; Pay/);
+test('Review & publish replaces publication request and clearly shows flat fee and BETA limitations',()=>{
+ assert.match(organiser,/Review &amp; publish/);
  assert.match(organiser,/id="listingPlan"/);
  assert.match(organiser,/id="listingTotal"/);
  assert.match(organiser,/Continue to secure payment/);
