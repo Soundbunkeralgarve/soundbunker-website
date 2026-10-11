@@ -44,8 +44,11 @@ test('premium ticket includes official TicketBunker logo, attendee and ID policy
  assert.match(tickets,/A SoundBunker Algarve service/);
  assert.match(read('ticketbunker-sales-ops.css'),/@page\{size:A4 portrait/);
  assert.match(read('api/lib/notify.js'),/Change attendee names/);
- assert.match(staffApi,/source.data.status!=='published'/);
- assert.match(organiserJs,/staffEvents=list.filter\(ev=>ev.status==='published'/);
+ assert.match(staffApi,/const liveBeta=source.data.status==='draft'/);
+ assert.match(staffApi,/const published=source.data.status==='published'/);
+ assert.match(staffApi,/if\(\(!published&&!liveBeta\)/);
+ assert.match(organiserJs,/const staffEvents=list.filter\(scannerCrewEventIsLive\)/);
+ assert.match(organiserJs,/event.public_beta_test===true&&Date.parse\(event.beta_test_expires_at\)>now/);
  assert.ok(organiser.indexOf('id="staffAccess"')<organiser.indexOf('id="setup"'),'scanner must be in the reporting dashboard, not creation');
  assert.match(read('ticketbunker-sales-ops.css'),/\.tb-ticket-pass-top\{background:#23192e/);
 });
