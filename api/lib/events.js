@@ -6,13 +6,18 @@ export function eventsDatabase() {
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SECRET_KEY) throw new Error('Events database not configured');
   return createClient(process.env.SUPABASE_URL,process.env.SUPABASE_SECRET_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
 }
-export function signedTicket(id) {
+export function signedTicket(id,version=0) {
   if (!process.env.EVENT_TICKET_SECRET || process.env.EVENT_TICKET_SECRET.length < 32) throw new Error('Ticket signing secret not configured');
-  return createHmac('sha256',process.env.EVENT_TICKET_SECRET).update('sb-event-ticket-v1:'+id).digest('hex');
+  if(!Number.isInteger(version)||version<0||version>5)throw Error('Invalid ticket generation');
+  // Version zero is intentionally identical to existing tickets and printed QRs.
+  // A change of holder rotates the signature so previous links become invalid.
+  const material=version===0?'sb-event-ticket-v1:'+id:'sb-event-ticket-v2:'+id+':'+version;
+  return createHmac('sha256',process.env.EVENT_TICKET_SECRET).update(material).digest('hex');
 }
-export function validTicket(id,sig) {
+export function validTicket(id,sig,version=0) {
   if (!/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(String(id||'')) || !/^[0-9a-f]{64}$/i.test(String(sig||''))) return false;
-  const a=Buffer.from(signedTicket(id),'hex'),b=Buffer.from(sig,'hex');
+  if(!Number.isInteger(version)||version<0||version>5)return false;
+  const a=Buffer.from(signedTicket(id,version),'hex'),b=Buffer.from(sig,'hex');
   return a.length===b.length && timingSafeEqual(a,b);
 }
 export function verifyEventPayment(order,checkout,connectedAccount=null) {
