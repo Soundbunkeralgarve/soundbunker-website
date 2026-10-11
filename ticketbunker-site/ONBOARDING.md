@@ -15,3 +15,9 @@ Before enabling ticket sales or automated releases: configure a dedicated signed
 Business details save fix: normalize public website formats (including http and pasted slash mistakes) to HTTPS, keep errors alongside the form, clear stale publication notices on navigation, and update the account name without invoking a full dashboard/payment refresh. Saving company details never calls event publication.
 
 Validation: 15 focused backend tests and 12 frontend/service tests pass. No fake account or financial transaction was created. Owner completion of the hosted Stripe journey remains necessary.
+
+Live incident follow-up: the owner’s first attempt returned Stripe `non_connect_platform_accounts_v2_access_blocked`. Connect platform access is therefore not yet confirmed. The portal now checks access with a read-only Accounts list request before offering onboarding, displays a blocked state instead of repeating “Not started”, and shows Connect setup/platform-profile links only to authenticated platform admins. Owner completion in the live Stripe Dashboard remains required if access is still rejected. Never work around a rejected platform by changing liability or creating fake accounts.
+
+Account creation and reads use `2026-09-30.endive`, the current stable version verified at https://docs.stripe.com/api/versioning. Account Links retain `2026-09-30.preview` as documented at https://docs.stripe.com/api/v2/core/account-links/create?api-version=preview. Other payment pins and webhooks are unchanged.
+
+The heading is “Set up your account.” Existing accounts with a saved logo and billing details return to Overview, with an explicit verification status and navigation option. New organisers continue from saved billing details to business and bank verification. Empty setup panels and the duplicate validation step have been removed. No completed account is forced through the account-creation wizard again solely because Stripe is unavailable.
