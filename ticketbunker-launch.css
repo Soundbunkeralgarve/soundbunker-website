@@ -157,3 +157,13 @@
  .tb-organiser-app .tb-large-quote{scroll-margin-top:145px}
  .tb-organiser-app #largeEventForm .tb-form-grid{grid-template-columns:1fr}
 }
+
+/* Event Plus flexible payment choices */
+.tb-event-plus-payment{display:grid;gap:10px;padding:17px;border:1px solid #bda9c9;border-radius:14px;background:#faf7fb;color:#302339}
+.tb-event-plus-payment[hidden]{display:none!important}
+.tb-event-plus-payment>strong{font:800 17px 'Space Grotesk',sans-serif}
+.tb-event-plus-payment>p{margin:0;font-size:12px;line-height:1.55;color:#72617e}
+.tb-event-plus-payment label{display:flex;align-items:flex-start;gap:12px;padding:13px;border:1px solid #e1d7e6;border-radius:11px;background:#fff;font-size:13px;font-weight:700;cursor:pointer}
+.tb-event-plus-payment input[type=radio]{flex:0 0 19px;width:19px;height:19px;margin:1px 0;accent-color:#503462;cursor:pointer}
+.tb-event-plus-payment label:has(input:checked){border-color:#654974;background:#f1eaf6}
+@media(max-width:760px){.tb-event-plus-payment{padding:14px 12px}.tb-event-plus-payment label{padding:11px;font-size:12px}}
