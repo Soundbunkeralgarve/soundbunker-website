@@ -6,7 +6,7 @@ const UUID=/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i;
 const SENDABLE=new Set(['paid','scheduled','live']);
 export const premiumEmailAutoEnabled=()=>process.env.EVENTS_MARKETPLACE_PAYMENTS_ENABLED==='true' &&
  process.env.EVENT_PREMIUM_PAYMENTS_ENABLED==='true' && process.env.EVENT_PREMIUM_MAIL_AUTOSEND_ENABLED==='true';
-function sessionValid(row,checkout){
+export function verifyPremiumPaymentSession(row,checkout){
  if(!row||checkout?.metadata?.purchase_type!=='event_featured_promotion'||
     checkout.metadata?.premium_request_id!==row.id||
     checkout.metadata?.event_id!==row.event_id||
@@ -130,7 +130,7 @@ export async function fulfilPremiumPlacementCheckout(checkout,db=eventsDatabase(
  if(!UUID.test(id))throw Error('Premium payment reference missing');
  const result=await db.from('sb_event_showcase_requests').select('*').eq('id',id).single();
  if(result.error||!result.data)throw Error('Premium placement record missing');
- sessionValid(result.data,checkout);
+ verifyPremiumPaymentSession(result.data,checkout);
  const request=result.data;
  if(!SENDABLE.has(request.status)){
   if(request.status!=='payment_pending')throw Error('Premium placement not awaiting payment');
