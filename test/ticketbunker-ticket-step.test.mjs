@@ -29,6 +29,6 @@ test('successfully saving several paid types advances to review and retains even
 test('ticket missing prevents publication, no payment bypass',()=>{
  assert.match(api,/Add at least one ticket type first/);
  assert.match(api,/EVENTS_MARKETPLACE_PAYMENTS_ENABLED/);
- assert.match(page,/Paid tickets start at €1 \/ £1/);
+ assert.match(js,/name="typePrice"/);
  assert.doesNotMatch(js,/stripe\.com\/checkout/);
 });
