@@ -77,11 +77,11 @@ export async function sendTicketBunkerConfirmation({to,key,subject,show,date,ven
  '<div style="background:#241a30;padding:25px"><img src="'+page+'/assets/ticketbunker/ticketbunker-logo.svg" alt="TicketBunker" width="235" style="max-width:90%;height:auto"><p style="color:#e9ddee;font-size:11px;letter-spacing:2px">OFFICIAL EVENT TICKETS</p></div>'+
  '<div style="padding:27px"><p style="color:#398363;font-weight:900;letter-spacing:1px">✓ BOOKING CONFIRMED</p><h1 style="font-size:29px;line-height:1.15;margin:12px 0">'+emailEscape(show)+'</h1><p style="color:#5d5066">Your TicketBunker QR tickets are ready.</p><table style="width:100%;border-collapse:collapse;margin:20px 0">'+details+'</table>'+
  '<p style="background:#fff2d8;padding:14px;border-radius:10px;font-weight:750;font-size:12px;color:#604116">€0 SOFTWARE TEST ONLY. Not valid admission to a real event.</p>'+
- tickets+'<p style="margin-top:22px"><a href="'+page+'/client?next=%2Fclient%23my-tickets">View My Tickets →</a></p>'+
+ tickets+'<div style="margin-top:18px;padding:15px;background:#f5eef8;border-radius:11px"><strong style="color:#34233f">Need to change a name on your ticket?</strong><p style="font-size:13px;line-height:1.5;color:#57475f">Sign in to your client account, open My Tickets, then tap Change name. You can also securely transfer a ticket to another person there.</p><a href="'+page+'/client?next=%2Fclient%23my-tickets" style="display:inline-block;color:#542b6a;font-weight:800">Manage tickets and attendee names →</a></div>'+
  '<p style="font-size:12px;color:#72677c">No TicketBunker booking fees. The ticket price is the ticket price. Age verification and photo ID may be required at events. Each QR can be scanned only once.</p></div></main></body></html>';
  const text='BOOKING CONFIRMED · TICKETBUNKER\n\n'+rows.map(([k,v])=>k+': '+v).join('\n')+
  '\n\n€0 SOFTWARE TEST ONLY — NOT VALID ADMISSION.\n\nYour QR tickets:\n'+links.join('\n')+
- '\n\nYour tickets: '+page+'/client?next=%2Fclient%23my-tickets'+
+ '\n\nChange attendee names: sign into your client login, open My Tickets, then select Change name. You can also securely transfer a ticket there.\nManage tickets: '+page+'/client?next=%2Fclient%23my-tickets'+
  '\n\nNo TicketBunker booking fees. The ticket price is the ticket price. Age verification and photo ID may be required.\nTicketBunker';
  const response=await fetch('https://api.resend.com/emails',{
   method:'POST',headers:{authorization:'Bearer '+process.env.RESEND_API_KEY,'content-type':'application/json','Idempotency-Key':key},

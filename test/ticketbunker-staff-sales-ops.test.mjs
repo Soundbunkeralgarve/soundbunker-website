@@ -37,9 +37,16 @@ test('scanner is a dedicated mobile app screen with restricted event and sign-in
 test('premium ticket includes official TicketBunker logo, attendee and ID policy',()=>{
  assert.match(tickets,/class="tb-ticket-official-logo"/);
  assert.match(tickets,/ticketbunker-logo\.svg/);
- assert.match(tickets,/Age verification and photographic ID may be required/);
+ assert.match(tickets,/Age verification and photo ID may be required/);
  assert.match(tickets,/id="ticketHolder"/);
  assert.match(tickets,/id="qr"/);
+ assert.match(tickets,/tb-ticket-promo/);
+ assert.match(tickets,/A SoundBunker Algarve service/);
+ assert.match(read('ticketbunker-sales-ops.css'),/@page\{size:A4 portrait/);
+ assert.match(read('api/lib/notify.js'),/Change attendee names/);
+ assert.match(staffApi,/source.data.status!=='published'/);
+ assert.match(organiserJs,/staffEvents=list.filter\(ev=>ev.status==='published'/);
+ assert.ok(organiser.indexOf('id="staffAccess"')<organiser.indexOf('id="setup"'),'scanner must be in the reporting dashboard, not creation');
  assert.match(read('ticketbunker-sales-ops.css'),/\.tb-ticket-pass-top\{background:#23192e/);
 });
 test('buyer sees show-specific Booking Confirmed with QR tickets and fee clarity',()=>{

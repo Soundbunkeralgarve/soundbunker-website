@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="/ticketbunker-sales-ops.css">
 </head>
 <body class="tb-organiser-app">
-<div class="beta-banner" role="status"><strong>LIVE €0 TESTING · PAID SALES OFF</strong> — Create your event drafts and invite staff. Checkout, ticket sales and payouts are not live.</div>
+<div class="beta-banner" role="status"><strong>LIVE €0 TESTING · PAID SALES OFF</strong> — Create your event drafts. Scanner crew invites open after publishing. Checkout, ticket sales and payouts are not live.</div>
 <header class="topbar tb-workspace-header"><a class="brand" href="/events"><img src="/assets/ticketbunker/ticketbunker-logo.svg" alt="ticketBunker" width="1273" height="125"></a><nav aria-label="Workspace navigation"><a href="/" class="tb-return-link">← Return to SoundBunker</a><a href="/events">Explore event tickets</a><a href="/client?next=%2Fclient%23my-tickets">Buyer / My Tickets</a><a href="/client">My account</a><a href="/">SoundBunker Studio</a></nav></header>
 <main class="tb-workspace-shell"><div class="tb-return-mobile"><a href="/">← Return to SoundBunker</a></div>
  <div class="tb-workspace-intro"><div><p class="eyebrow">TICKETBUNKER / SELL EVENT TICKETS</p><h1>Sell tickets for your next event.</h1><p>Add your event details and artwork, choose ticket types and prices, then review everything in one place. Drafts save as you go.</p></div><div class="tb-intro-side"><span>PUBLIC BETA</span><strong>Independent &amp; large events</strong><small>UK &amp; Portugal pilot</small></div></div>
@@ -33,8 +33,8 @@
   </form>
  </section>
  <section id="workspace" hidden>
-  <div class="tb-wizard-heading"><h2>Create your event in three easy steps</h2><p>Review your event, activate a real €0 test listing, or pay to publish once checkout is enabled. Paid prices stay saved.</p></div>
-  <nav id="wizardSteps" class="tb-wizard-steps" aria-label="Event setup progress"><button type="button" data-wizard="details" class="active" aria-current="step"><b>01</b><span>Event &amp; artwork</span></button><button type="button" data-wizard="tickets"><b>02</b><span>Ticket options</span></button><button type="button" data-wizard="review"><b>03</b><span>Review &amp; Pay</span></button></nav>
+  <div class="tb-wizard-heading"><h2>Create your event in three steps</h2><p>Add event details, set ticket prices, then review. Once published, manage staff and sales from your dashboard.</p></div>
+  <nav id="wizardSteps" class="tb-wizard-steps" aria-label="Event setup progress"><button type="button" data-wizard="details" class="active" aria-current="step"><b>01</b><span>Event &amp; artwork</span></button><button type="button" data-wizard="tickets"><b>02</b><span>Ticket options</span></button><button type="button" data-wizard="review"><b>03</b><span>Review &amp; publish</span></button></nav>
   <div class="tb-account-strip"><div><span class="tb-strip-caption">YOUR ORGANISER ACCOUNT</span><strong id="orgName">Organiser</strong><p id="orgState"></p></div><div><span class="tb-strip-caption">EVENT SALES</span><strong>BETA · Not active</strong><p>Stripe onboarding, publishing and payments come after testing.</p></div><div><span class="tb-strip-caption">YOUR BUSINESS MODEL</span><strong>0% ticketBunker commission</strong><p>Stripe handles card-processing fees separately.</p></div></div>
   <section id="organiserReports" class="tb-panel tb-reports" aria-labelledby="reportsTitle">
  <div class="tb-panel-head"><div><span class="tb-step-number">ORGANISER · PROGRESS &amp; REPORTS</span><h2 id="reportsTitle">Your event performance</h2><p>Real ticket sales, test QR activity and door check-ins — no confusing fake revenue.</p></div></div>
@@ -47,8 +47,15 @@
  </div>
  <p id="reportStatus" role="status">Select an event to see your figures.</p>
  <div id="reportByType" class="tb-report-tiers"></div>
+<section id="staffAccess" class="tb-panel tb-scanner-dashboard" hidden aria-labelledby="staffHeading">
+    <div class="tb-panel-head"><div><span class="tb-step-number">STAFF ACCESS</span><h2 id="staffHeading">Your door scanner team</h2><p>Choose an event and enter a staff member's email. We'll create their private access link. They sign into that event scanner with the same verified email.</p></div></div>
+    <form id="staffInviteForm" class="organiser-form tb-form-grid"><label class="tb-span-full">Choose event<select id="inviteStaffEvent" name="eventId" required></select></label><label class="tb-span-full">Staff email<input type="email" name="email" autocomplete="email" maxlength="254" required placeholder="colleague@example.com"></label><div class="tb-form-actions tb-span-full"><button class="solid" id="sendStaffInvite" type="submit">Invite to scan tickets →</button></div></form>
+    <div id="staffInviteResult" class="tb-invite-result" hidden><strong id="staffInviteStatus">Invitation created</strong><p>Staff sign into their assigned event only, using the same verified email. You can revoke access any time.</p><input id="staffInviteLink" type="text" readonly aria-label="Scanner invitation link"><button id="copyStaffInvite" type="button" class="solid">Copy secure link</button><a id="shareStaffSms" href="#" class="solid">Share by SMS ↗</a><a id="shareStaffWhatsApp" href="https://wa.me/" class="solid" target="_blank" rel="noopener noreferrer">Share privately on WhatsApp ↗</a></div>
+    <label class="tb-roster-label" for="manageStaffEvent">Manage staff for event<select id="manageStaffEvent"></select></label><div id="staffRoster" class="tb-staff-roster"></div>
+    <p class="tb-field-help">Staff access is limited to assigned events while QR entry is open. Invitations expire after 72 hours, but accepted access lasts until revoked or the event closes. WhatsApp/SMS buttons open share messages; they do not auto-send.</p>
+   </section>
 </section>
-<nav class="tb-workspace-jumps" aria-label="Organiser shortcuts"><a href="#organiserReports">Sales &amp; reports</a><a href="#staffAccess">Door scanner team</a><a href="#streetTeam">Street Team</a><a href="#featured-placement">Premium placement</a><a href="#payoutOptions">Payouts</a><a href="#largeEventQuote">Large events</a><a href="#listing-plans">Pricing</a></nav>
+<nav class="tb-workspace-jumps" aria-label="Organiser shortcuts"><a href="#organiserReports">Sales &amp; reports</a><a href="#staffAccess" hidden>Scanner crew</a><a href="#streetTeam">Street Team</a><a href="#featured-placement">Premium placement</a><a href="#payoutOptions">Payouts</a><a href="#largeEventQuote">Large events</a><a href="#listing-plans">Pricing</a></nav>
   <div id="setup" class="tb-setup-grid">
    <section class="tb-panel" id="eventBasics" aria-labelledby="create-event-heading">
     <div class="tb-panel-head"><div><span class="tb-step-number">STEP 01</span><h2 id="create-event-heading">Create an event</h2><p>Keep it simple. You can edit your event before it goes on sale.</p></div></div>
@@ -169,13 +176,7 @@
  <p class="tb-field-help"><strong>Your ticket price is the ticket price.</strong> Your only TicketBunker charge for standard sales is the agreed upfront flat listing fee. Stripe deducts its standard card-processing fees. Optional premium placement and faster payouts are separate, clearly priced services chosen by the organiser.</p>
 </section>
   <div class="tb-bottom-grid">
-   <section id="staffAccess" class="tb-panel" aria-labelledby="staffHeading">
-    <div class="tb-panel-head"><div><span class="tb-step-number">STAFF ACCESS</span><h2 id="staffHeading">Your door scanner team</h2><p>Choose an event and enter a staff member's email. We'll create their private access link. They sign into that event scanner with the same verified email.</p></div></div>
-    <form id="staffInviteForm" class="organiser-form tb-form-grid"><label class="tb-span-full">Choose event<select id="inviteStaffEvent" name="eventId" required></select></label><label class="tb-span-full">Staff email<input type="email" name="email" autocomplete="email" maxlength="254" required placeholder="colleague@example.com"></label><div class="tb-form-actions tb-span-full"><button class="solid" id="sendStaffInvite" type="submit">Invite to scan tickets →</button></div></form>
-    <div id="staffInviteResult" class="tb-invite-result" hidden><strong id="staffInviteStatus">Invitation created</strong><p>Staff sign into their assigned event only, using the same verified email. You can revoke access any time.</p><input id="staffInviteLink" type="text" readonly aria-label="Scanner invitation link"><button id="copyStaffInvite" type="button" class="solid">Copy secure link</button><a id="shareStaffSms" href="#" class="solid">Share by SMS ↗</a><a id="shareStaffWhatsApp" href="https://wa.me/" class="solid" target="_blank" rel="noopener noreferrer">Share privately on WhatsApp ↗</a></div>
-    <label class="tb-roster-label" for="manageStaffEvent">Manage staff for event<select id="manageStaffEvent"></select></label><div id="staffRoster" class="tb-staff-roster"></div>
-    <p class="tb-field-help">Staff access is limited to assigned events while QR entry is open. Invitations expire after 72 hours, but accepted access lasts until revoked or the event closes. WhatsApp/SMS buttons open share messages; they do not auto-send.</p>
-   </section>
+   
 <section id="streetTeam" class="tb-panel tb-street-team" aria-labelledby="streetTeamTitle">
  <div class="tb-panel-head"><div><span class="tb-step-number">STREET TEAM · PROMOTERS</span>
   <h2 id="streetTeamTitle">Give promoters their own ticket links</h2>
@@ -208,7 +209,7 @@
 <nav class="tb-mobile-nav" aria-label="Organiser mobile navigation">
  <a href="#organiserReports" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><span>Reports</span></a>
  <a href="#wizardSteps" data-open-wizard="details"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 5v14M5 12h14"/><circle cx="12" cy="12" r="10"/></svg><span>Create</span></a>
- <a href="#staffAccess"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8V5h4M19 8V5h-4M5 16v3h4M19 16v3h-4M8 12h8"/></svg><span>Scanner crew</span></a>
+ <a href="#staffAccess" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8V5h4M19 8V5h-4M5 16v3h4M19 16v3h-4M8 12h8"/></svg><span>Scanner crew</span></a>
  <a href="#streetTeam"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h18v4a2 2 0 0 0 0 4v4H3v-4a2 2 0 0 0 0-4zM14 7v12" stroke-dasharray="2 2"/></svg><span>Street Team</span></a>
 </nav>
 </body></html>

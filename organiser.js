@@ -2,6 +2,23 @@
 const $=q=>document.querySelector(q);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let supabase,token,account,currentDraftId=null,latestEvents=[];
+let savedEventSignature='',uploadedArtwork={poster:false,logo:false};
+const checkpointKey='ticketbunker-confirmed-event-v1';
+function savedCheckpoint(signature){
+ try{
+  const record=JSON.parse(sessionStorage.getItem(checkpointKey)||'null');
+  return record?.signature===signature&&Date.now()-record.time<7200000?record:null;
+ }catch{return null;}
+}
+function rememberEvent(signature,id){
+ try{sessionStorage.setItem(checkpointKey,JSON.stringify({signature,id,time:Date.now()}));}catch{}
+}
+function saveError(error){
+ console.error('TicketBunker event flow error',error);
+ return /firstChild|Cannot read properties/i.test(String(error?.message||''))
+  ?'The page could not update. Check My Events to see if it was saved.'
+  :String(error?.message||'Unexpected error');
+}
 let activeOperation=false,activeButton=null,originalButtonText='';
 function startOperation(title,detail,button){
  if(activeOperation)return false;
@@ -208,7 +225,7 @@ function setWizard(stage){
  if(stage!=='review')$('#setup').hidden=false;
  else $('#setup').hidden=true;
  if(!activeOperation&&$('#operationStatus').dataset.state==='error')$('#operationStatus').hidden=true;
- $('#wizardSteps').scrollIntoView({behavior:'smooth',block:'start'});
+ $('#wizardSteps')?.scrollIntoView?.({behavior:'smooth',block:'start'});
 }
 document.querySelectorAll('#wizardSteps [data-wizard]').forEach(b=>b.addEventListener('click',()=>setWizard(b.dataset.wizard)));
 document.querySelector('[data-open-wizard]')?.addEventListener('click',()=>setWizard('details'));
@@ -269,11 +286,19 @@ async function refresh(){
  const streetTeamEvent=$('#streetTeamEvent').value;
  if(streetTeamEvent)await loadStreetTeam().catch(error=>{$('#streetTeamStatus').textContent=error.message;});
  if($('#reportEvent').value)await loadReport().catch(error=>{$('#reportStatus').textContent=error.message;});
- const staffOptions=list.map(e=>'<option value="'+esc(e.id)+'">'+esc(e.title)+'</option>').join('');
+ // Door-scanner invites belong to the dashboard after the event has been published.
+ const staffEvents=list.filter(ev=>ev.status==='published'&&Date.parse(ev.starts_at)>Date.now()-36*60*60*1000);
+ const staffOptions=staffEvents.map(ev=>'<option value="'+esc(ev.id)+'">'+esc(ev.title)+'</option>').join('');
  const previous=$('#manageStaffEvent').value;
+ $('#staffAccess').hidden=staffEvents.length===0;
+ document.querySelectorAll('a[href="#staffAccess"]').forEach(link=>link.hidden=staffEvents.length===0);
  $('#inviteStaffEvent').innerHTML=staffOptions;
  $('#manageStaffEvent').innerHTML=staffOptions;
- if(list.some(e=>e.id===previous))$('#manageStaffEvent').value=previous;
+ if(staffEvents.some(ev=>ev.id===previous)){
+  $('#manageStaffEvent').value=previous;
+  $('#inviteStaffEvent').value=previous;
+ }
+ $('#staffInviteResult').hidden=true;
  $('#myEvents').innerHTML=list.length?list.map(e=>{
   const types=e.tiers.length?e.tiers.map(t=>esc(t.name)+' · '+esc(String(t.quantity_total))+' tickets').join(' · '):'⚠ Ticket types not added yet';
   return '<article class="tb-owned-event"><div>'+(e.image_url?'<img src="'+esc(e.image_url)+'" alt="Event cover" style="width:95px;aspect-ratio:4/3;object-fit:cover;border-radius:7px;margin-bottom:9px">':'')+'<strong>'+esc(e.title)+'</strong><p>'+esc(e.venue)+' · '+esc(e.event_kind)+'</p></div>'+
@@ -281,8 +306,8 @@ async function refresh(){
    '<div><span class="tb-owned-status">'+esc(e.status==='draft'?'DRAFT · NOT PUBLISHED':e.status.toUpperCase())+'</span>'+
    (e.status==='draft'&&!e.tiers.length?'<button type="button" class="outline tb-add-tickets" data-add-tickets="'+esc(e.id)+'">+ Add tickets to this event →</button>':'')+(e.public_beta_test&&Date.parse(e.beta_test_expires_at)>Date.now()?'<a class="tb-event-live-link" href="/event?slug='+encodeURIComponent(e.slug)+'" target="_blank" rel="noopener noreferrer">LIVE €0 TEST — VIEW EVENT ↗</a>':'')+(e.publish_requested_at?'<small class="tb-owned-charity">PUBLICATION REVIEW REQUESTED</small>':'')+(e.charity?'<small class="tb-owned-charity">'+(e.charity.status==='verified'?'Charity verified · Free listing':e.charity.status==='rejected'?'Charity claim not approved':'Charity number received · Review pending')+'</small>':'')+'</div></article>';
  }).join(''):'<div class="tb-no-events"><strong>Nothing here yet</strong><p>Create an event above to see your drafts in this workspace.</p></div>';
- if(list.length)await loadStaff().catch(error=>{$('#staffRoster').textContent=error.message;});
- else $('#staffRoster').textContent='Create an event draft to invite staff.';
+ if(staffEvents.length)await loadStaff().catch(error=>{$('#staffRoster').textContent=error.message;});
+ else $('#staffRoster').textContent='Publish an event to invite staff.';
  notify('Organiser dashboard loaded. Events remain private until verification and publishing.');
 }
 function updateShowcasePrice(event){
@@ -411,31 +436,60 @@ async function uploadMedia(file,eventId,kind){
  return uploadWithProgress(eventId,kind,dataUrl);
 }
 $('#eventForm').addEventListener('submit',async e=>{
- e.preventDefault();const form=e.currentTarget;
- const data=Object.fromEntries(new FormData(form));
- const button=form.querySelector('[type=submit]');
- if(!startOperation('Saving event','Sending event details securely…',button))return;
+ e.preventDefault();
+ const form=e.currentTarget,data=Object.fromEntries(new FormData(form));
+ const signature=JSON.stringify(data),button=form.querySelector('[type=submit]');
+ if(!startOperation('Saving event','Checking event details…',button))return;
  try{
-  const created=await request({action:'event',...data});
-  currentDraftId=created.event.id;
-  let uploadError=null;
-  try{
-   await uploadMedia($('#eventPoster').files?.[0],currentDraftId,'poster');
-   await uploadMedia($('#eventLogo').files?.[0],currentDraftId,'logo');
-  }catch(err){uploadError=err;}
-  updateOperation('Finishing event setup','Checking the saved draft and preparing ticket options…');
+  if(!(currentDraftId&&savedEventSignature===signature)){
+   const checkpoint=savedCheckpoint(signature);
+   let found=null;
+   if(checkpoint){
+    updateOperation('Checking your draft','Looking for the event saved earlier…');
+    const response=await request();
+    found=(response.events||[]).find(ev=>ev.id===checkpoint.id)||null;
+   }
+   if(found){
+    currentDraftId=found.id;
+    uploadedArtwork={poster:!!found.image_url,logo:!!found.event_logo_url};
+   }else{
+    updateOperation('Saving event','Creating your event draft…');
+    const response=await request({action:'event',...data});
+    if(!response?.event?.id)throw Error('The save was not confirmed by the server');
+    currentDraftId=response.event.id;
+    uploadedArtwork={poster:false,logo:false};
+   }
+   savedEventSignature=signature;
+   rememberEvent(signature,currentDraftId);
+  }
+ }catch(error){
+  const message='Save not confirmed. Check My Events before trying again to avoid duplicates. '+saveError(error);
+  finishOperation(message,true);notify(message,true);
+  return;
+ }
+ // The event is already saved; never treat a later image/UI failure as a failed creation.
+ let artworkError=null;
+ for(const [kind,id] of [['poster','eventPoster'],['logo','eventLogo']]){
+  const file=$('#'+id).files?.[0];
+  if(!file||uploadedArtwork[kind])continue;
+  try{await uploadMedia(file,currentDraftId,kind);uploadedArtwork[kind]=true;}
+  catch(error){artworkError=artworkError||error;console.error('Artwork upload issue',kind,error);}
+ }
+ let dashboardError=null;
+ try{
+  updateOperation('Event saved','Loading ticket options…');
   await refresh();
   setWizard('tickets');
-  if(uploadError){
-   finishOperation('Event saved, but artwork needs attention: '+uploadError.message,true);
-   notify('Your event draft was saved. Fix artwork using "Update event artwork" — do not create the event again.',true);
-  }else{
-   finishOperation('Event and artwork saved. Continue by adding tickets.');
-   notify('Event saved. Add ticket types to continue.');
-  }
- }catch(err){
-  finishOperation('Event could not be saved. Your form has not been cleared: '+err.message,true);
-  notify('Event not saved: '+err.message+'. Your details are still here.',true);
+ }catch(error){dashboardError=error;console.error('Dashboard error after event creation',error);}
+ if(dashboardError){
+  const message='Your event is saved, but the dashboard could not update. Reload to find it in My Events — do not create it again.';
+  finishOperation(message,true);notify(message,true);
+ }else if(artworkError){
+  finishOperation('Event saved but artwork needs attention: '+saveError(artworkError),true);
+  notify('Your draft is safe. Use Update event artwork in Ticket options to retry the image.',true);
+ }else{
+  finishOperation('Event and artwork saved. Continue by adding tickets.');
+  notify('Event saved. Add ticket types to continue.');
  }
 });
 $('#tierForm').addEventListener('submit',async event=>{
@@ -675,7 +729,7 @@ $('#streetTeamRoster').addEventListener('click',async e=>{
 });
 async function loadStaff(){
  const eventId=$('#manageStaffEvent').value;
- if(!eventId){$('#staffRoster').textContent='No events yet';return;}
+ if(!eventId){$('#staffRoster').textContent='Publish an event to invite crew.';return;}
  const result=await staffRequest(undefined,eventId);
  const roster=$('#staffRoster');
  const staff=result.staff||[],invites=result.invites||[];
@@ -690,7 +744,9 @@ $('#staffInviteForm').addEventListener('submit',async e=>{
  const submit=$('#sendStaffInvite');submit.disabled=true;submit.textContent='Sending secure staff invite…';
  const data=new FormData(e.target);
  try{
-  notify('Generating secure invitation…');
+  if(eventFor(data.get('eventId'))?.status!=='published')
+    throw Error('Publish the event before inviting scanner crew.');
+   notify('Generating secure invitation…');
   const invited=await staffRequest({action:'invite',eventId:data.get('eventId'),email:data.get('email')});
   $('#staffInviteResult').hidden=false;
   $('#staffInviteLink').value=invited.invitationUrl;
