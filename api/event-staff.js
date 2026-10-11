@@ -15,31 +15,44 @@ async function eventManager(db,ctx,id) {
   .eq('id',ev.data.organiser_profile_id).maybeSingle();
  return !org.error && org.data?.owner_user_id===ctx.user.id;
 }
-async function myEvents(db,ctx){
- let ids=[];
+export function scannerEventIsOpen(event,now=Date.now()){
+ const starts=Date.parse(event?.starts_at||'');
+ const ends=Date.parse(event?.beta_test_expires_at||'');
+ if(event?.public_beta_test===true&&event.status==='draft')
+   return Number.isFinite(ends)&&ends>now;
+ if(event?.status!=='published'||!Number.isFinite(starts))return false;
+ return now>=starts-18*60*60*1000 && now<=starts+36*60*60*1000;
+}
+async function myEvents(db,ctx,requestedId=''){
  const grants=await db.from('sb_event_staff_access').select('event_id')
   .eq('user_id',ctx.user.id).is('revoked_at',null).limit(500);
  if(grants.error)throw grants.error;
- ids.push(...grants.data.map(x=>x.event_id));
  const org=await db.from('sb_event_organisers').select('id').eq('owner_user_id',ctx.user.id).maybeSingle();
  if(org.error)throw org.error;
+ let ids=grants.data.map(x=>x.event_id);
  if(org.data){
   const owned=await db.from('sb_events').select('id').eq('organiser_profile_id',org.data.id).limit(200);
   if(owned.error)throw owned.error;
   ids.push(...owned.data.map(x=>x.id));
  }
- if(ctx.profile?.role==='admin'){
-  const site=await db.from('sb_events').select('id,title,starts_at,status,venue,venue_timezone')
-    .order('starts_at',{ascending:false}).limit(200);
-  if(site.error)throw site.error;
-  return site.data;
- }
  ids=[...new Set(ids)];
- if(!ids.length)return [];
- const ev=await db.from('sb_events').select('id,title,starts_at,status,venue,venue_timezone')
-  .in('id',ids).order('starts_at',{ascending:false}).limit(300);
- if(ev.error)throw ev.error;
- return ev.data;
+ // Admins may service active events across organisers, but never see drafts
+ // that do not accept ticket scans. Invited staff only get assigned events.
+ const q=db.from('sb_events')
+  .select('id,title,starts_at,status,venue,venue_timezone,public_beta_test,beta_test_expires_at')
+  .order('starts_at',{ascending:false}).limit(300);
+ let events;
+ if(requestedId){
+  if(!UUID.test(requestedId))return [];
+  if(ctx.profile?.role!=='admin'&&!ids.includes(requestedId))return [];
+  events=await q.eq('id',requestedId);
+ }else if(ctx.profile?.role==='admin') events=await q;
+ else{
+  if(!ids.length)return [];
+  events=await q.in('id',ids);
+ }
+ if(events.error)throw events.error;
+ return (events.data||[]).filter(event=>scannerEventIsOpen(event));
 }
 export default async function handler(req,res){
  if(!['GET','POST'].includes(req.method))return json(res,{error:'Method not allowed'},405);
@@ -49,7 +62,7 @@ export default async function handler(req,res){
  const db=ctx.admin;
  try{
   if(req.method==='GET'){
-   if(req.query?.mode==='my')return json(res,{events:await myEvents(db,ctx)});
+   if(req.query?.mode==='my')return json(res,{events:await myEvents(db,ctx,String(req.query?.eventId||''))});
    const eventId=String(req.query?.eventId||'');
    if(!await eventManager(db,ctx,eventId))return json(res,{error:'Not authorised to manage this event'},403);
    const [invites,staff]=await Promise.all([
@@ -84,6 +97,13 @@ export default async function handler(req,res){
     .gt('expires_at',new Date().toISOString());
    if(remaining.error)throw remaining.error;
    if((remaining.count||0)>=30)return json(res,{error:'Too many pending invitations; revoke some before inviting more'},409);
+   const source=await db.from('sb_events')
+    .select('title,starts_at,status,public_beta_test,beta_test_expires_at')
+    .eq('id',eventId).single();
+   if(source.error||!source.data||source.data.status==='cancelled'||
+       (source.data.status!=='published'&&source.data.status!=='draft')||
+       (Date.parse(source.data.starts_at)<Date.now() && !scannerEventIsOpen(source.data)))
+    return json(res,{error:'Choose an upcoming event or an active €0 test event before inviting door staff'},409);
    const token=randomBytes(32).toString('hex');
    const result=await db.from('sb_event_staff_invites').insert({
     event_id:eventId,invited_email:email,token_digest:digest(token),invited_by:ctx.user.id
@@ -93,8 +113,8 @@ export default async function handler(req,res){
    const invitationUrl=base+'/event-scanner?invite='+token;
    let emailSent=false;
    try{await sendTransactionalEmail({to:email,key:'ticketbunker-scanner-'+result.data.id,
-     subject:'Your secure ticketBunker door-scanner invitation',
-     text:'You have been invited to scan tickets for a ticketBunker event.\n\nOpen this private invitation:\n'+invitationUrl+'\n\nSign in with your existing SoundBunker account using this email address. If you do not have an account yet, create one with this email before accepting. The link expires in 72 hours.\n\nDo not forward this invitation to anybody else.\n\nSoundBunker Algarve'});emailSent=true;}
+     subject:'TicketBunker Door Crew · '+source.data.title,
+     text:'TICKETBUNKER · DOOR SCANNER INVITATION\n\nEvent: '+source.data.title+'\n\nYou have been invited to the door crew for this event only.\n\n1. Open your private invite: '+invitationUrl+'\n2. Sign in or create a SoundBunker account using THIS exact email address ('+email+').\n3. Accept the invitation and start scanning.\n\nThe invitation expires in 72 hours. Access is event-specific and the organiser can revoke it. Do not forward this link.\n\nTicketBunker'});emailSent=true;}
    catch(error){console.error('Unable to email scanner invitation',error);}
    return json(res,{inviteId:result.data.id,expiresAt:result.data.expires_at,invitationUrl,emailSent});
   }

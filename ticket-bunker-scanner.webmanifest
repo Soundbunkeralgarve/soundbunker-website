@@ -7,9 +7,10 @@
   "theme_color": "#100b16",
   "icons": [
     {
-      "src": "/favicon.ico",
+      "src": "/assets/ticketbunker/ticketbunker-scanner-icon.svg",
       "sizes": "any",
-      "type": "image/x-icon"
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ]
 }

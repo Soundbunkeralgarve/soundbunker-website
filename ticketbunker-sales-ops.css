@@ -1,0 +1,109 @@
+/* TicketBunker sales, organiser insights and door-staff mobile workflow. */
+.tb-organiser-ad{width:min(1190px,calc(100% - 28px));margin:26px auto 40px;display:grid;grid-template-columns:1.2fr .8fr;
+ background:#20182b;color:#fff;border-radius:23px;overflow:hidden;box-shadow:0 16px 45px #24102e27}
+.tb-organiser-ad-copy{padding:clamp(26px,4vw,57px)}
+.tb-organiser-ad .tb-eyebrow{color:#d6bdde;font-weight:900;font-size:11px;letter-spacing:.18em}
+.tb-organiser-ad h2{font:900 clamp(34px,4.9vw,65px)/.98 'Space Grotesk',sans-serif;letter-spacing:-.06em;margin:14px 0 23px;color:#fff}
+.tb-organiser-ad h2 em{font-style:normal;color:#d9b9e8}
+.tb-organiser-ad-copy p:not(.tb-eyebrow){font-size:14px;line-height:1.6;color:#e2d8e8;max-width:610px;margin:12px 0}
+.tb-organiser-ad-copy>strong{display:block;font-size:17px;color:#fff;margin:24px 0 19px}
+.tb-organiser-ad-action{display:inline-flex;justify-content:center;align-items:center;gap:12px;padding:15px 23px;background:#f8f5ed;
+ color:#24172f;text-decoration:none;border-radius:12px;font-weight:900;font-size:14px;min-height:52px;box-sizing:border-box}
+.tb-organiser-ad-art{position:relative;background:linear-gradient(135deg,#4f2e69,#2e2437);display:grid;place-items:center;overflow:hidden}
+.tb-organiser-ad-ticket{width:min(330px,75%);aspect-ratio:.78;transform:rotate(11deg);box-shadow:13px 20px 42px #150a2138;border-radius:18px;
+ padding:28px;background:#faf5ec;color:#271d30;display:flex;flex-direction:column;justify-content:space-between;box-sizing:border-box}
+.tb-organiser-ad-ticket>div{font-size:13px;letter-spacing:.13em;font-weight:900}
+.tb-organiser-ad-ticket>strong{font:900 clamp(34px,3.3vw,48px)/.94 'Space Grotesk',sans-serif;letter-spacing:-.075em}
+.tb-organiser-ad-ticket>small{font-size:10px;letter-spacing:.12em;font-weight:800;border-top:2px dashed #c9b6d0;padding-top:18px}
+.tb-organiser-app .tb-reports{margin:22px 0}
+.tb-report-top{display:flex;align-items:end;gap:12px;flex-wrap:wrap;margin:19px 0}
+.tb-report-top label{display:grid;gap:7px;font-size:12px;font-weight:800;min-width:240px;flex:1}
+.tb-report-top select{width:100%;padding:13px;border:1px solid #cfbfda;background:#fff;color:#292033;border-radius:11px;min-height:48px;font-size:15px}
+.tb-report-top button{min-height:48px;border-radius:11px}
+.tb-report-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:16px 0}
+.tb-report-metrics article{padding:19px 14px;background:#23192f;border:1px solid #594267;border-radius:13px;min-width:0;display:grid;gap:12px;color:#fff}
+.tb-report-metrics span{font-size:9px;font-weight:900;letter-spacing:.11em;color:#cbb3d6}
+.tb-report-metrics strong{font:900 clamp(18px,2.5vw,29px)/1.05 'Space Grotesk',sans-serif;word-break:break-word;color:#fff}
+.tb-reports #reportStatus{font-size:12px;color:#77667f}
+.tb-report-tiers{display:grid;gap:6px}
+.tb-report-tiers>div{padding:12px 14px;border:1px solid #e7deeb;background:#faf8fa;border-radius:9px;display:flex;justify-content:space-between;gap:10px;font-size:12px;flex-wrap:wrap}
+.tb-report-tiers>div strong{color:#392747}.tb-report-tiers>div span{color:#685b73}
+.tb-street-entry{border:1px solid #ded2e5;border-radius:14px;padding:15px;margin:11px 0;background:#faf8fc;display:grid;gap:12px}
+.tb-street-entry>div:first-child strong{display:block;font-size:16px;color:#36223f}
+.tb-street-entry small{display:block;color:#87708c;overflow-wrap:anywhere}
+.tb-street-entry p{font-size:12px;color:#61536a;line-height:1.5;margin:8px 0 0}
+.tb-street-numbers{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:12px;color:#5f486b}
+.tb-street-numbers>*{padding:7px 9px;background:#eee5f2;border-radius:8px}
+.tb-street-actions{display:flex;flex-wrap:wrap;gap:9px}
+.tb-street-actions button{border-radius:10px;padding:10px 14px;min-height:44px;background:#2c2037;color:#fff;border:0;font-weight:800;font-size:12px;cursor:pointer}
+.tb-street-actions button+button{background:#fff;border:1px solid #c9bcd2;color:#51345f}
+.tb-street-team #streetTeamStatus{font-size:12px;color:#563e62;line-height:1.5;margin:12px 0}
+.tb-premium-note{margin:16px 0!important;background:#f5eff8!important}
+.tb-premium-note h2{font:850 27px 'Space Grotesk',sans-serif;letter-spacing:-.035em;color:#2e2238}
+.tb-premium-note p{font-size:13px;line-height:1.6;color:#655472;max-width:790px}
+.tb-premium-note>a{display:inline-flex;margin:13px 0;padding:12px 19px;text-decoration:none;font-weight:900;border-radius:11px;min-height:45px;align-items:center}
+.tb-premium-note>small{display:block;font-size:11px;color:#786782}
+.tb-payout-options{margin:16px 0!important}
+.tb-payout-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:18px 0}
+.tb-payout-grid article{padding:22px 19px;border-radius:14px;border:1px solid #dfd3e5;background:#faf9fb;min-width:0}
+.tb-payout-grid article:first-child{background:#f5f8f5;border-color:#c9dbcc}
+.tb-payout-grid article>span{font-size:10px;letter-spacing:.13em;color:#6e5478;font-weight:900}
+.tb-payout-grid h3{margin:12px 0;font:800 20px 'Space Grotesk',sans-serif;letter-spacing:-.03em;color:#30233b}
+.tb-payout-grid p{line-height:1.6;color:#655b6b;font-size:12px}
+.tb-payout-grid strong{display:block;font-size:12px;color:#462b53;margin:16px 0 8px}
+.tb-payout-grid small{display:block;font-size:11px;color:#76697b}
+.tb-scanner-app{background:#110c19!important;min-height:100dvh}
+.tb-scanner-app .events-content{width:min(650px,calc(100% - 26px));padding:18px 0 48px!important}
+.tb-scanner-app .events-content>h1{font:900 clamp(29px,7vw,43px)/1.05 'Space Grotesk',sans-serif!important;letter-spacing:-.05em}
+.tb-scanner-app .tb-assigned-heading{border:1px solid #674b78;background:#281c38;border-radius:15px;padding:17px;display:flex;flex-direction:column;gap:8px;color:#fff}
+.tb-scanner-app .tb-assigned-heading strong{font:900 clamp(19px,5vw,29px) 'Space Grotesk',sans-serif;color:#fff}
+.tb-scanner-app .tb-assigned-heading span{color:#d1bbdf;letter-spacing:.13em;font-weight:900;font-size:10px}
+.tb-scanner-app #scanEvent[hidden],.tb-scanner-app #scanEventLabel[hidden]{display:none!important}
+.tb-scanner-app .tb-scanner-signin,.tb-scanner-app .tb-scanner-invite{border:1px solid #79578f;background:#2d203b;border-radius:15px;padding:23px 18px;display:grid;gap:11px}
+.tb-scanner-app .tb-scanner-signin[hidden],.tb-scanner-app .tb-scanner-invite[hidden]{display:none!important}
+.tb-scanner-signin strong,.tb-scanner-invite strong{font-size:20px;color:#fff}
+.tb-scanner-signin p,.tb-scanner-invite p{color:#e6d8ef;font-size:13px;line-height:1.6;margin:0}
+.tb-scanner-signin>a,.tb-scanner-invite>button{min-height:51px;border-radius:11px;display:grid;place-items:center;text-decoration:none;font-weight:900;text-align:center}
+.tb-scanner-app #reader{border:2px solid #74588d!important;border-radius:17px;overflow:hidden;background:#20172b}
+.tb-scanner-app #result{padding:18px 15px;border-radius:14px;border:1px solid #ffffff4a;min-height:75px;display:grid;place-items:center;line-height:1.4}
+.tb-scanner-app #manual{padding:19px!important;border-radius:13px;background:#21172c}
+.tb-scanner-app .tb-mobile-nav{box-shadow:0 -8px 30px #12091a68}
+.tb-ticket-pass-top{background:#23192e!important;color:#fff!important}
+.tb-ticket-pass-top>span{color:#ebe1f1}
+.tb-ticket-official-logo{display:block;object-fit:contain;width:clamp(110px,38%,190px);height:auto}
+.tb-ticket-entry-terms{padding:16px 22px;border-top:1px solid #e4dae9;background:#f9f7fa}
+.tb-ticket-entry-terms strong{display:block;font-size:13px;color:#332440;font-weight:900}
+.tb-ticket-entry-terms p{font-size:11px;line-height:1.55;color:#6e6275;margin:6px 0 0}
+.tb-no-fees{font-size:12px!important;font-weight:850;color:#443152!important;line-height:1.5}
+.tb-booking-confirmation{border:1px solid #c8d9cc;background:#fff;border-radius:17px;overflow:hidden;box-shadow:0 12px 32px #14102112;margin:18px 0;padding-bottom:19px}
+.tb-booking-confirmation[hidden]{display:none!important}
+.tb-confirm-brand{padding:16px 19px;background:#23192e;display:flex;align-items:center;justify-content:space-between;gap:13px}
+.tb-confirm-brand img{height:auto;max-width:55%}
+.tb-confirm-brand span{font-size:10px;font-weight:900;letter-spacing:.13em;color:#d5e8db}
+.tb-confirm-check{width:45px;height:45px;border-radius:50%;display:grid;place-items:center;background:#e3f5e8;color:#20724d;font-weight:900;font-size:25px;margin:21px auto 10px}
+.tb-booking-confirmation h2{font-size:29px;text-align:center;color:#2d2436;margin:0 10px 7px}
+.tb-booking-confirmation h3{font-size:21px;text-align:center;margin:0 10px 22px;color:#443053}
+.tb-confirm-data{display:grid;gap:0;margin:0 17px;border:1px solid #e9e2ec;border-radius:12px;overflow:hidden}
+.tb-confirm-data p{padding:11px 13px;margin:0;display:flex;align-items:center;justify-content:space-between;gap:15px;font-size:13px}
+.tb-confirm-data p+ p{border-top:1px solid #ece5ee}
+.tb-confirm-data span{font-size:10px;letter-spacing:.11em;color:#807086;font-weight:850}
+.tb-confirm-data strong{color:#2f2239;font-size:13px;max-width:65%;text-align:right;overflow-wrap:anywhere}
+.tb-booking-confirmation>p{margin:15px 18px 0;font-size:12px;line-height:1.5;color:#61546e}
+.tb-booking-confirmation>.tb-confirm-test{padding:12px;background:#fff1d5;border-radius:9px;color:#704819;font-weight:900;font-size:11px}
+@media(max-width:850px){.tb-organiser-ad{grid-template-columns:1fr}.tb-organiser-ad-art{display:none}}
+@media(max-width:760px){
+ .tb-organiser-ad{margin:18px auto 24px;border-radius:16px;width:calc(100% - 26px)}
+ .tb-organiser-ad-copy{padding:26px 21px}.tb-organiser-ad h2{font-size:clamp(32px,9vw,47px)}
+ .tb-organiser-ad-copy>strong{font-size:15px}.tb-organiser-ad-action{width:100%}
+ .tb-report-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .tb-report-metrics article{padding:14px 11px;min-height:90px}
+ .tb-report-metrics strong{font-size:23px}
+ .tb-payout-grid{grid-template-columns:1fr}
+ .tb-scanner-app .events-content{padding:18px 0 40px!important}
+ .tb-scanner-app #reader{min-height:270px!important}
+ .tb-scanner-app #manual{padding:16px!important}
+}
+@media print{.tb-scanner-app .tb-mobile-nav{display:none!important}.tb-ticket-official-logo{width:150px!important}}
+
+.tb-organiser-app #streetCashAmount[hidden]{display:none!important}
+@media print{.tb-ticket-pass-top{-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#23192e!important}.tb-ticket-official-logo{filter:none!important}}

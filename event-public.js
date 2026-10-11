@@ -4,6 +4,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const slug=new URLSearchParams(location.search).get('slug')||'';
 const safeURL=url=>typeof url==='string'&&/^https:\/\//i.test(url)?url:'/assets/ticketbunker/posters/featured.svg';
 let activeEvent=null;
+const streetReferral=(()=>{const ref=new URLSearchParams(location.search).get('ref')||'';return /^[0-9a-f]{16}$/.test(ref)?ref:null})();
 async function init(){
  try{
   if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))throw Error('Invalid event link');
@@ -67,14 +68,22 @@ $('betaBookingForm').addEventListener('submit',async event=>{
  try{
   const response=await fetch('/api/event-beta-book',{
    method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({
-    tierId:data.tierId,name:data.name,email:data.email,quantity:Number(data.quantity)
+    tierId:data.tierId,name:data.name,email:data.email,quantity:Number(data.quantity),ref:streetReferral
    })
   });
   const result=await response.json();
   if(!response.ok)throw Error(result.error||'Test booking unavailable');
-  $('bookingResponse').textContent=result.quantity+' real €0 test QR ticket(s) issued. '+
-    (result.emailSent?'Check your email too.':'Email delivery not confirmed; open your links below.')+
-    ' Not valid for actual event admission.';
+  $('bookingConfirmation').hidden=false;
+  $('confirmedEventName').textContent=result.show||activeEvent?.title||'Event';
+  $('confirmedEventDate').textContent=result.date||'Date to be confirmed';
+  $('confirmedVenue').textContent=result.venue||activeEvent?.venue||'Venue';
+  $('confirmedTicketType').textContent=result.ticketType||$('selectedTicketLabel').textContent;
+  $('confirmedAttendee').textContent=result.attendee||data.name;
+  $('confirmedQuantity').textContent=result.quantity+' ticket'+(result.quantity===1?'':'s');
+  $('confirmedEmailState').textContent=result.emailSent
+    ?'Confirmation email sent to '+data.email+'. Your unique QR links are below.'
+    :'Booking saved! Email delivery could not be confirmed. Open your QR tickets below or visit My Tickets.';
+  $('bookingResponse').textContent='Booking confirmed — all tickets are ready. These €0 QRs are for software testing only.';
   for(const t of result.tickets){
    const link=document.createElement('a');link.href=t.url;link.target='_blank';link.rel='noopener noreferrer';
    link.textContent='Open ticket '+t.number+' · secure QR ↗';$('bookedLinks').appendChild(link);
@@ -82,6 +91,7 @@ $('betaBookingForm').addEventListener('submit',async event=>{
   const link=document.createElement('a');link.href='/client?next=%2Fclient%23my-tickets';
   link.textContent='View in My Tickets →';$('bookedLinks').appendChild(link);
   form.hidden=true;
+  $('bookingConfirmation').scrollIntoView({behavior:'smooth',block:'start'});
  }catch(error){$('bookingResponse').textContent='Not booked: '+error.message;}
  finally{button.disabled=false;button.textContent='Confirm €0 test booking →';}
 });

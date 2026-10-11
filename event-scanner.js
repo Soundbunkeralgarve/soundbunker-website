@@ -20,35 +20,46 @@ async function scan(code){
  busy=true;
  try{
   const d=await request('/api/event-scan',{code,eventId:$('#scanEvent').value});
-  const message=d.status==='valid'?(d.test?'✓ REAL TEST ENTRY — ':'✓ VALID ENTRY — '):d.status==='used'?'⚠ ALREADY USED — ':'✕ '+(d.message||d.status).toUpperCase()+' — ';
-  show(message+(d.event||'')+(d.tier?' • '+d.tier:''),d.status);
+  const message=d.status==='valid'?(d.test?'✓ TEST QR VALID — ':'✓ ENTRY APPROVED — '):d.status==='used'?'⚠ ALREADY USED — ':'✕ '+(d.message||d.status).toUpperCase()+' — ';
+  show(message+(d.event||'')+(d.tier?' · '+d.tier:'')+(d.status==='valid'?' · CHECK AGE/PHOTO ID IF REQUIRED':''),d.status);
  }catch(err){show(err.message,'error');}
  finally{setTimeout(()=>{busy=false;},1700);}
 }
 async function events(){
- const result=await request('/api/event-staff?mode=my');
+ const params=new URLSearchParams(location.search),requested=params.get('eventId')||'';
+ const qs=new URLSearchParams({mode:'my'});if(requested)qs.set('eventId',requested);
+ const result=await request('/api/event-staff?'+qs);
  const list=result.events||[];
- const select=$('#scanEvent');
- select.replaceChildren();
- for(const e of list){
-  const option=document.createElement('option');
-  option.value=e.id;option.textContent=e.title+' · '+e.venue+(e.status==='draft'?' (draft)':'');
-  select.appendChild(option);
+ const select=$('#scanEvent');select.replaceChildren();
+ for(const event of list){
+  const option=document.createElement('option');option.value=event.id;
+  option.textContent=event.title+' · '+event.venue;select.appendChild(option);
  }
- const params=new URLSearchParams(location.search);
- const id=params.get('eventId');
- if(id&&list.some(e=>e.id===id))select.value=id;
+ const assigned=!!requested&&list.some(event=>event.id===requested);
+ if(assigned)select.value=requested;
  $('#scannerPanel').hidden=!list.length;
- if(!list.length)status('No events are assigned to you yet. Ask the organiser for a staff invitation.');
- else status('Access verified for '+list.length+' event(s). Allow camera access to scan.');
- if(list.length&&window.Html5Qrcode){
+ $('#scanEvent').hidden=list.length===1;
+ $('#scanEventLabel').hidden=list.length===1;
+ $('#assignedEventName').textContent=list.find(e=>e.id===select.value)?.title||'Your event';
+ if(!list.length){
+  status('No active assigned event. Ask the organiser to invite you or reopen your private event scanner link.');
+  return;
+ }
+ status(list.length===1?'Ready: this scanner is assigned to '+list[0].title+'.':
+  'Choose one of your '+list.length+' authorised, currently open events.');
+ if(scanner)return;
+ if(window.Html5Qrcode){
   try{
    scanner=new Html5Qrcode('reader');
-   await scanner.start({facingMode:'environment'}, {fps:10,qrbox:{width:240,height:240}},scan,()=>{});
-  }catch(err){status('Camera could not start. Check browser permission or use manual ticket entry below.');}
- }
- else if(list.length)status('Camera library unavailable; manual ticket entry still works.');
+   await scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:240,height:240}},scan,()=>{});
+  }catch(error){status('Camera unavailable. Allow camera access in browser settings or use manual ticket entry.');}
+ }else status('Camera library unavailable. You can use manual ticket entry.');
 }
+$('#scanEvent').addEventListener('change',()=>{
+ const option=$('#scanEvent').selectedOptions[0];
+ $('#assignedEventName').textContent=option?.textContent||'Your event';
+ show('Ready to scan '+(option?.textContent||'the selected event')+'.','neutral');
+});
 async function start(){
  try{
   const cfg=await fetch('/api/supabase-config').then(r=>r.json());
@@ -56,9 +67,13 @@ async function start(){
   sb=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true}});
   const {data:{session}}=await sb.auth.getSession();
   if(!session){
-   status('Please sign in at /client with the email address your invitation was sent to, then reopen this scanner link.');
+   $('#scannerSignIn').hidden=false;
+   const next=location.pathname+location.search;
+   $('#scannerSignInLink').href='/client?next='+encodeURIComponent(next);
+   status('Sign in with the invited email address to activate your scanner.');
    return;
   }
+  $('#scannerSignIn').hidden=true;
   access=session.access_token;
   const invite=new URLSearchParams(location.search).get('invite');
   if(invite){

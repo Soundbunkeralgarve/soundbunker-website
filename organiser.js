@@ -229,7 +229,7 @@ async function refresh(){
  $('#orgName').textContent=account.display_name;
  $('#orgState').textContent='Country '+account.country_code+' · Review status: '+account.status+' · Stripe: '+(account.stripe_connected?'Connected':'Not connected');
  const currency=account.country_code==='GB'?'GBP':'EUR';
- $('#priceLabel').firstChild.textContent='Ticket price ('+currency+')';
+ // Ticket types are now priced individually in the multi-ticket builder.
  document.querySelectorAll('[data-price-gbp]').forEach(e=>{e.textContent=currency==='GBP'?e.dataset.priceGbp:e.dataset.priceEur;});
  const list=data.events||[];
  latestEvents=list;
@@ -261,6 +261,14 @@ async function refresh(){
  const selected=list.find(e=>e.id===$('#showcaseEvent').value);
  updateShowcasePrice(selected);
 
+ const reportOptions=list.map(e=>'<option value="'+esc(e.id)+'">'+esc(e.title)+'</option>').join('');
+ for(const selector of ['#reportEvent','#streetTeamEvent','#streetReportEvent']){
+  const el=$(selector),old=el.value;el.innerHTML=reportOptions;
+  if(list.some(e=>e.id===old))el.value=old;
+ }
+ const streetTeamEvent=$('#streetTeamEvent').value;
+ if(streetTeamEvent)await loadStreetTeam().catch(error=>{$('#streetTeamStatus').textContent=error.message;});
+ if($('#reportEvent').value)await loadReport().catch(error=>{$('#reportStatus').textContent=error.message;});
  const staffOptions=list.map(e=>'<option value="'+esc(e.id)+'">'+esc(e.title)+'</option>').join('');
  const previous=$('#manageStaffEvent').value;
  $('#inviteStaffEvent').innerHTML=staffOptions;
@@ -584,6 +592,87 @@ async function staffRequest(body, eventId){
  const d=await r.json();if(!r.ok)throw Error(d.error||'Could not manage staff');
  return d;
 }
+function money(cents,currency){
+ return new Intl.NumberFormat('en-GB',{style:'currency',currency:currency==='gbp'?'GBP':'EUR'}).format(Number(cents||0)/100);
+}
+async function loadReport(){
+ const id=$('#reportEvent').value;
+ if(!id)return;
+ $('#reportStatus').textContent='Loading event progress and sales…';
+ const response=await fetch('/api/event-organiser-report?eventId='+encodeURIComponent(id),{
+  headers:{authorization:'Bearer '+token},cache:'no-store'});
+ const payload=await response.json();if(!response.ok)throw Error(payload.error||'Cannot load report');
+ const d=payload.report;
+ $('#metricPaidTickets').textContent=d.paidTickets.toLocaleString('en-GB');
+ $('#metricRevenue').textContent=money(d.revenueCents,d.currency);
+ $('#metricTestTickets').textContent=d.testTickets.toLocaleString('en-GB');
+ $('#metricCheckedIn').textContent=d.checkedIn.toLocaleString('en-GB');
+ $('#reportStatus').textContent='Current figures for '+d.title+'. €0 test bookings are never counted as paid revenue.';
+ $('#reportByType').innerHTML=d.ticketsByType.map(t=>
+  '<div><strong>'+esc(t.name)+'</strong><span>'+t.paidTickets+' paid · '+t.testTickets+' test · '+t.capacity+' capacity</span></div>'
+ ).join('')||'<p>Set up ticket types to see admission breakdowns.</p>';
+}
+$('#reportEvent').addEventListener('change',()=>loadReport().catch(e=>{$('#reportStatus').textContent=e.message;}));
+$('#refreshReport').addEventListener('click',()=>loadReport().catch(e=>{$('#reportStatus').textContent=e.message;}));
+async function streetAPI(body,eventId){
+ const url=body?'/api/event-street-team':'/api/event-street-team?eventId='+encodeURIComponent(eventId);
+ const response=await fetch(url,{method:body?'POST':'GET',headers:{
+  authorization:'Bearer '+token,...(body?{'content-type':'application/json'}:{})},
+  body:body?JSON.stringify(body):undefined,cache:'no-store'});
+ const data=await response.json();if(!response.ok)throw Error(data.error||'Street Team unavailable');
+ return data;
+}
+async function loadStreetTeam(){
+ const id=$('#streetReportEvent').value;
+ if(!id){$('#streetTeamRoster').textContent='Create an event to start a Street Team.';return;}
+ const data=await streetAPI(null,id);
+ $('#streetTeamRoster').innerHTML=data.team.length?data.team.map(p=>
+  '<article class="tb-street-entry"><div><strong>'+esc(p.name)+'</strong><small>'+esc(p.email)+'</small>'+
+  '<p>'+esc(p.rewardType.replaceAll('_',' '))+' · '+p.rewardGoal+' confirmed paid tickets to qualify'+
+  (p.rewardDescription?' · '+esc(p.rewardDescription):'')+'</p></div><div class="tb-street-numbers"><b>'+p.paidTickets+' paid</b>'+
+  '<span>'+p.testTickets+' €0 tests</span><span>'+money(p.revenueCents,eventFor(id)?.currency)+'</span></div>'+
+  '<div class="tb-street-actions"><button type="button" data-copy-street="'+esc(p.id)+'">Copy promoter link</button>'+
+  (p.active?'<button type="button" data-deactivate-street="'+esc(p.id)+'">Disable</button>':'<span>Link disabled</span>')+
+  '</div></article>').join(''):'<p>No promoters yet. Add a name, reward and target above.</p>';
+ window.streetTeamLinks=new Map(data.team.map(person=>[person.id,person.link]));
+ $('#streetTeamStatus').textContent=data.team.length+' promoters. Only verified paid ticket sales count toward rewards. Tests are separate.';
+}
+$('#streetReportEvent').addEventListener('change',()=>loadStreetTeam().catch(e=>{$('#streetTeamStatus').textContent=e.message;}));
+$('#streetRewardType').addEventListener('change',()=>{
+ $('#streetCashAmount').hidden=$('#streetRewardType').value!=='cash_per_sale';
+});
+$('#streetTeamForm').addEventListener('submit',async e=>{
+ e.preventDefault();const button=$('#createStreetLink'),form=e.currentTarget,d=new FormData(form);
+ button.disabled=true;button.textContent='Creating secure promoter link…';
+ try{
+  const created=await streetAPI({action:'create',eventId:d.get('eventId'),name:d.get('name'),
+   email:d.get('email'),rewardType:d.get('rewardType'),rewardGoal:Number(d.get('rewardGoal')),
+   rewardDescription:d.get('rewardDescription'),rewardValueCents:Math.round(Number(d.get('rewardMoney')||0)*100)},null);
+  $('#streetReportEvent').value=d.get('eventId');
+  await loadStreetTeam();
+  $('#streetTeamStatus').textContent='Promoter link created. Copy it below and send it directly to your promoter.';
+  if(navigator.clipboard?.writeText){
+   try{await navigator.clipboard.writeText(created.link);$('#streetTeamStatus').textContent+=' Link copied.';}catch{}
+  }
+  form.querySelector('[name="name"]').value='';form.querySelector('[name="email"]').value='';
+ }catch(error){$('#streetTeamStatus').textContent=error.message;}
+ finally{button.disabled=false;button.textContent='Create promoter sales link →';}
+});
+$('#streetTeamRoster').addEventListener('click',async e=>{
+ const copy=e.target.closest('[data-copy-street]')?.dataset.copyStreet;
+ const deactivate=e.target.closest('[data-deactivate-street]')?.dataset.deactivateStreet;
+ if(copy){
+  const link=window.streetTeamLinks?.get(copy);if(!link)return;
+  try{await navigator.clipboard.writeText(link);$('#streetTeamStatus').textContent='Promoter link copied.';}
+  catch{$('#streetTeamStatus').textContent='Copy is unavailable in this browser. Open the event page and share its promoter link manually.';}
+ }
+ if(deactivate){
+  if(!confirm('Disable this promoter link? Existing bookings and reports remain recorded.'))return;
+  try{await streetAPI({action:'deactivate',eventId:$('#streetReportEvent').value,personId:deactivate});
+   await loadStreetTeam();$('#streetTeamStatus').textContent='Promoter link disabled.';}
+  catch(err){$('#streetTeamStatus').textContent=err.message;}
+ }
+});
 async function loadStaff(){
  const eventId=$('#manageStaffEvent').value;
  if(!eventId){$('#staffRoster').textContent='No events yet';return;}
@@ -598,6 +687,7 @@ async function loadStaff(){
 }
 $('#staffInviteForm').addEventListener('submit',async e=>{
  e.preventDefault();
+ const submit=$('#sendStaffInvite');submit.disabled=true;submit.textContent='Sending secure staff invite…';
  const data=new FormData(e.target);
  try{
   notify('Generating secure invitation…');
@@ -608,8 +698,11 @@ $('#staffInviteForm').addEventListener('submit',async e=>{
   $('#shareStaffWhatsApp').href='https://wa.me/?text='+encodeURIComponent('Your ticketBunker door scanner invitation:\n'+invited.invitationUrl+'\n\nThis invite is for your verified email only. Sign in before accepting.');
   $('#manageStaffEvent').value=data.get('eventId');
   await loadStaff();
-  notify(invited.emailSent?'Staff invitation sent by email. You can also share via WhatsApp or SMS.':'Secure invitation created. Email delivery was not confirmed; share the link directly via WhatsApp or SMS.');
+  $('#staffInviteStatus').textContent=invited.emailSent?'Invitation email sent ✓':'Private scanner link created';
+  notify(invited.emailSent?'Door crew invitation email sent. Staff can now sign in with their invited email.':
+   'Private scanner invite created. Email delivery was not confirmed — share by WhatsApp or copy the link.');
  }catch(error){notify(error.message,true);}
+ finally{submit.disabled=false;submit.textContent='Invite to scan tickets →';}
 });
 $('#copyStaffInvite').addEventListener('click',async()=>{
  const input=$('#staffInviteLink');

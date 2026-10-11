@@ -64,3 +64,28 @@ export async function notifyClient(admin, userId, title, body, url = '/client') 
     `${body}\n\nSign in: ${process.env.SITE_URL || 'https://www.soundbunker.pt'}/client`)).status;
   return { inApp: true, email };
 }
+
+const emailEscape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+export async function sendTicketBunkerConfirmation({to,key,subject,show,date,venue,tier,attendee,quantity,links}){
+ const from=process.env.NOTIFICATION_FROM_EMAIL||process.env.RESEND_FROM_EMAIL;
+ if(!process.env.RESEND_API_KEY||!from)throw Error('TicketBunker confirmation email is not configured');
+ const page='https://www.soundbunker.pt';
+ const rows=[['Event',show],['When',date],['Venue',venue],['Ticket type',tier],['Attendee',attendee],['Tickets',quantity+''],['Paid','€0 / £0 · TEST']];
+ const details=rows.map(([label,value])=>'<tr><td style="color:#756780;padding:11px;border-bottom:1px solid #ece4ee;font-size:12px">'+emailEscape(label)+'</td><td style="padding:11px;border-bottom:1px solid #ece4ee;font-size:13px;font-weight:700">'+emailEscape(value)+'</td></tr>').join('');
+ const tickets=links.map((url,i)=>'<a href="'+emailEscape(url)+'" style="display:block;margin:9px 0;background:#292037;color:#fff;text-decoration:none;padding:15px;border-radius:10px;font-weight:700">Open QR ticket '+(i+1)+' →</a>').join('');
+ const html='<!doctype html><html lang="en"><head><meta charset="utf-8"></head><body style="background:#f3f0f5;padding:30px 12px;font-family:Arial,sans-serif;color:#261e30"><main style="margin:auto;max-width:570px;background:white;border-radius:20px;overflow:hidden">'+
+ '<div style="background:#241a30;padding:25px"><img src="'+page+'/assets/ticketbunker/ticketbunker-logo.svg" alt="TicketBunker" width="235" style="max-width:90%;height:auto"><p style="color:#e9ddee;font-size:11px;letter-spacing:2px">OFFICIAL EVENT TICKETS</p></div>'+
+ '<div style="padding:27px"><p style="color:#398363;font-weight:900;letter-spacing:1px">✓ BOOKING CONFIRMED</p><h1 style="font-size:29px;line-height:1.15;margin:12px 0">'+emailEscape(show)+'</h1><p style="color:#5d5066">Your TicketBunker QR tickets are ready.</p><table style="width:100%;border-collapse:collapse;margin:20px 0">'+details+'</table>'+
+ '<p style="background:#fff2d8;padding:14px;border-radius:10px;font-weight:750;font-size:12px;color:#604116">€0 SOFTWARE TEST ONLY. Not valid admission to a real event.</p>'+
+ tickets+'<p style="margin-top:22px"><a href="'+page+'/client?next=%2Fclient%23my-tickets">View My Tickets →</a></p>'+
+ '<p style="font-size:12px;color:#72677c">No TicketBunker booking fees. The ticket price is the ticket price. Age verification and photo ID may be required at events. Each QR can be scanned only once.</p></div></main></body></html>';
+ const text='BOOKING CONFIRMED · TICKETBUNKER\n\n'+rows.map(([k,v])=>k+': '+v).join('\n')+
+ '\n\n€0 SOFTWARE TEST ONLY — NOT VALID ADMISSION.\n\nYour QR tickets:\n'+links.join('\n')+
+ '\n\nYour tickets: '+page+'/client?next=%2Fclient%23my-tickets'+
+ '\n\nNo TicketBunker booking fees. The ticket price is the ticket price. Age verification and photo ID may be required.\nTicketBunker';
+ const response=await fetch('https://api.resend.com/emails',{
+  method:'POST',headers:{authorization:'Bearer '+process.env.RESEND_API_KEY,'content-type':'application/json','Idempotency-Key':key},
+  body:JSON.stringify({from,to:[to],subject,html,text,reply_to:'bookings@soundbunker.pt'})
+ });
+ if(!response.ok)throw Error('TicketBunker confirmation email failed ('+response.status+')');
+}
