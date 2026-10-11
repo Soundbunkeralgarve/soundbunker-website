@@ -3,21 +3,92 @@
 const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s)),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const LEGACY_CUTOFF='2026-10-11T16:00:00Z';
 let sb,session,token,profile,events=[],currentDraft=null,currentPage='overview',reportCache={},latestReport=null;
+let billingComplete=false,billingRecord=null;
 function notice(msg,bad=false){const el=$('#notice');el.hidden=false;el.classList.toggle('error',bad);el.textContent=msg;el.scrollIntoView({behavior:'smooth',block:'nearest'});}
 async function api(url,body){const liveSession=await sb.auth.getSession();if(!liveSession.data.session)throw Error('Your session expired. Please sign in again.');token=liveSession.data.session.access_token;const r=await fetch(url,{method:body?'POST':'GET',cache:'no-store',headers:{authorization:'Bearer '+token,...body?{'content-type':'application/json'}:{}},body:body?JSON.stringify(body):undefined});let d;try{d=await r.json()}catch{throw Error('The service returned an unreadable response. Please retry.')}if(!r.ok)throw Error(d.error||'Request failed ('+r.status+')');return d;}
-function page(name){if(!profile&&name!=='branding'){return showOnboarding();}currentPage=name;$$('.page').forEach(x=>x.hidden=x.id!=='page-'+name);$('#onboarding').hidden=true;$$('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.page===name));$('#sidebar').classList.remove('open');window.scrollTo(0,0);if(name==='create')renderBranding();if(name==='overview')renderOverview();if(name==='events')renderEvents();if(name==='branding')renderBranding();if(name==='reports')loadReportPage();if(name==='staff')loadStaffPage();if(name==='street')loadStreetPage();window.dispatchEvent(new CustomEvent('ticketbunker:page',{detail:name}));}
+function page(name){if(!profile&&name!=='branding'){return showOnboarding();}currentPage=name;$$('.page').forEach(x=>x.hidden=x.id!=='page-'+name);$('#onboarding').hidden=true;$$('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.page===name));$('#sidebar').classList.remove('open');window.scrollTo(0,0);if(name==='create')renderBranding();if(name==='overview')renderOverview();if(name==='events')renderEvents();if(name==='branding')renderBranding();if(name==='profile')renderBillingForms();if(name==='reports')loadReportPage();if(name==='staff')loadStaffPage();if(name==='street')loadStreetPage();window.dispatchEvent(new CustomEvent('ticketbunker:page',{detail:name}));}
 $$('[data-page]').forEach(x=>x.onclick=()=>{if(x.dataset.page==='create')startNewEvent();page(x.dataset.page)});$$('[data-go]').forEach(x=>x.onclick=()=>{if(x.dataset.go==='create')startNewEvent();page(x.dataset.go)});$('#menu-btn').onclick=()=>{const yes=$('#sidebar').classList.toggle('open');$('#menu-btn').setAttribute('aria-expanded',String(yes))};
 function money(n,c='eur'){return new Intl.NumberFormat('en-GB',{style:'currency',currency:c==='gbp'?'GBP':'EUR'}).format(Number(n||0)/100);}
 function safeEvents(){return events.filter(e=>e.internal_free_test!==true&&(!e.created_at||Date.parse(e.created_at)>=Date.parse(LEGACY_CUTOFF)));}
 function isLive(e){return e.status==='published'&&Date.parse(e.starts_at)>Date.now()-36*3600000}
 function options(arr,selected=''){return arr.map(e=>'<option value="'+esc(e.id)+'"'+(e.id===selected?' selected':'')+'>'+esc(e.title)+'</option>').join('')}
 function empty(msg){return '<div class="empty">'+esc(msg)+'</div>'}
-function drawEvent(e){return '<div class="event-row">'+(e.image_url?'<img class="thumb" src="'+esc(e.image_url)+'" alt="Event poster">':'<img class="thumb" src="/brand-icon.png" alt="">')+'<div class="event-detail"><span class="eyebrow">'+esc(e.status==='published'?'Published':e.publish_requested_at?'Review requested':'Draft')+'</span><h3>'+esc(e.title)+'</h3><p>'+esc(e.venue)+' · '+new Date(e.starts_at).toLocaleString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})+'</p></div><div class="event-actions"><button class="ghost" data-report="'+esc(e.id)+'" type="button">Reports ↗</button>'+(e.status==='draft'?'<button class="ghost" type="button" data-tickets="'+esc(e.id)+'">Tickets ↗</button>':'')+'</div></div>';}
+function drawEvent(e){return '<div class="event-row">'+(e.image_url?'<img class="thumb" src="'+esc(e.image_url)+'" alt="Event poster">':'<img class="thumb" src="/brand-icon.png" alt="">')+'<div class="event-detail"><span class="eyebrow">'+esc(e.status==='published'?'Published':e.publish_requested_at?'Publication pending':'Draft')+'</span><h3>'+esc(e.title)+'</h3><p>'+esc(e.venue)+' · '+new Date(e.starts_at).toLocaleString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})+'</p></div><div class="event-actions"><button class="ghost" data-report="'+esc(e.id)+'" type="button">Reports ↗</button>'+(e.status==='draft'?'<button class="ghost" type="button" data-tickets="'+esc(e.id)+'">Tickets ↗</button>':'')+'</div></div>';}
 function wireRows(root){root.querySelectorAll('[data-report]').forEach(b=>b.onclick=()=>{page('reports');$('#report-event').value=b.dataset.report;fetchReport(b.dataset.report)});root.querySelectorAll('[data-tickets]').forEach(b=>b.onclick=()=>{currentDraft=events.find(e=>e.id===b.dataset.tickets);page('create');nextStep(2);$('#tier-event-name').textContent=currentDraft?.title||'';});}
 function renderOverview(){let visible=safeEvents();$('#greeting').textContent='Welcome, '+(profile?.display_name||'organiser')+'. Real records, clear numbers and tools in one place.';$('#metric-events').textContent=visible.length;$('#metric-paid').textContent='—';$('#metric-scanned').textContent='—';$('#metric-money').textContent='—';let root=$('#overview-events');root.innerHTML=visible.length?visible.slice(0,4).map(drawEvent).join(''):empty('No events yet. Choose Create Event to build your first show.');wireRows(root);if(visible.length){fetchReport(visible[0].id,true).then(()=>{}).catch(()=>{});}else{$('#metric-paid').textContent='0';$('#metric-scanned').textContent='0';$('#metric-money').textContent=money(0,profile.country_code==='GB'?'gbp':'eur');}}
 function renderEvents(){const visible=safeEvents(),el=$('#all-events');el.innerHTML=visible.length?visible.map(drawEvent).join(''):empty('You have no new events. Start by creating your first event.');wireRows(el);}
-async function refresh(){const d=await api('/api/organiser');profile=d.organiser;events=d.events||[];if(!profile){showOnboarding();return;}$('#sidebar-name').textContent=profile.display_name;$('#sidebar-country').textContent=profile.country_code==='GB'?'United Kingdom':'Portugal';$('#account-status').textContent=profile.status==='approved'?'Verified':'Verification pending';if(!profile.logo_url){showOnboarding();return;}$('#page-app').hidden=false;$('#loading').hidden=true;page(currentPage||'overview');}
-function showOnboarding(){$('#page-app').hidden=false;$('#loading').hidden=true;$$('.page').forEach(x=>x.hidden=true);$('#onboarding').hidden=false;$('#register-form').hidden=!!profile;$('#onboarding-logo').hidden=!profile;$('#sidebar-name').textContent=profile?.display_name||'New organiser';}
+async function refresh(){const d=await api('/api/organiser');profile=d.organiser;events=d.events||[];if(!profile){showOnboarding();return;}$('#sidebar-name').textContent=profile.display_name;$('#sidebar-country').textContent=profile.country_code==='GB'?'United Kingdom':'Portugal';$('#account-status').textContent=profile.status==='approved'?'Verified':'Verification pending';await loadBilling();if(!profile.logo_url||!billingComplete){showOnboarding();return;}$('#page-app').hidden=false;$('#loading').hidden=true;page(currentPage||'overview');}
+function showOnboarding(){
+ $('#page-app').hidden=false;$('#loading').hidden=true;$('.page').forEach(x=>x.hidden=true);
+ $('#onboarding').hidden=false;
+ $('#register-form').hidden=!!profile;
+ $('#onboarding-logo').hidden=!profile||!!profile.logo_url;
+ $('#onboarding-billing').hidden=!profile||!profile.logo_url||billingComplete;
+ $('#sidebar-name').textContent=profile?.display_name||'New organiser';
+ renderBillingForms();
+}
+
+const billFields=['entity_type','legal_name','contact_name','billing_email','phone','address_line_1','address_line_2','city','postal_code','vat_number'];
+async function loadBilling(){
+ if(!sb||!profile?.id){billingComplete=false;billingRecord=null;return;}
+ const result=await sb.from('tb_organiser_billing').select('*').eq('organiser_profile_id',profile.id).maybeSingle();
+ if(result.error)throw Error('Cannot load your billing details: '+result.error.message);
+ billingRecord=result.data||null;billingComplete=!!result.data;
+ renderBillingForms();
+}
+function renderBillingForms(){
+ for(const form of [$('#billing-form'),$('#billing-edit-form')]){
+  if(!form)continue;
+  if(form.id==='billing-edit-form'){
+    const clone=$('#billing-form .form-grid').cloneNode(true);
+    clone.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));
+    $('#billing-edit-fields').replaceChildren(clone);
+  }
+  for(const field of billFields){
+   const el=form.elements.namedItem(field);
+   if(!el)continue;
+   el.value=(billingRecord?.[field]??(field==='billing_email'?session?.user?.email:field==='legal_name'?profile?.display_name:''))||'';
+  }
+ }
+ const status=$('#stripe-account-status');
+ if(status){
+  const ready=profile?.stripe_connected===true&&profile?.stripe_capabilities_ready===true&&profile?.tax_review_complete===true&&profile?.status==='approved';
+  status.textContent=ready?'Stripe connected-account checks are complete. Event publication also requires the agreed listing fee.':'Billing details can be saved now. Live Stripe Connect onboarding is not yet enabled on TicketBunker. No bank details or charges are collected here; you can create event drafts meanwhile.';
+ }
+}
+async function saveBilling(event){
+ event.preventDefault();
+ if(!profile?.id||!session?.user?.id){notice('Sign in and create your organiser profile first.',true);return;}
+ const form=event.target,btn=event.submitter||form.querySelector('button[type="submit"]');
+ if(btn)btn.disabled=true;
+ try{
+  const values=Object.fromEntries(new FormData(form));
+  const names=['legal_name','contact_name','billing_email','address_line_1','city','postal_code'];
+  for(const key of names){if(String(values[key]||'').trim().length<(key==='address_line_1'?3:2))throw Error('Complete all required billing fields.');}
+  const record={
+   organiser_profile_id:profile.id,owner_user_id:session.user.id,country_code:profile.country_code,
+   entity_type:values.entity_type,legal_name:String(values.legal_name||'').trim(),
+   contact_name:String(values.contact_name||'').trim(),billing_email:String(values.billing_email||'').trim(),
+   phone:String(values.phone||'').trim(),address_line_1:String(values.address_line_1||'').trim(),
+   address_line_2:String(values.address_line_2||'').trim(),city:String(values.city||'').trim(),
+   postal_code:String(values.postal_code||'').trim(),vat_number:String(values.vat_number||'').trim(),
+   updated_at:new Date().toISOString()
+  };
+  const saved=await sb.from('tb_organiser_billing').upsert(record,{onConflict:'organiser_profile_id'}).select('organiser_profile_id').single();
+  if(saved.error)throw Error('Unable to save billing details: '+saved.error.message);
+  billingRecord=record;billingComplete=true;renderBillingForms();
+  notice('Company and billing details saved. No registration or membership charge.');
+  if(form.id==='billing-form'){await refresh();page('overview')}
+  else $('#billing-edit-status').textContent='Billing details updated successfully.';
+ }catch(err){
+  const node=form.id==='billing-form'?$('#billing-status'):$('#billing-edit-status');
+  if(node)node.textContent=err.message;
+  notice(err.message,true);
+ }finally{if(btn)btn.disabled=false;}
+}
+$('#billing-form').addEventListener('submit',saveBilling);
+$('#billing-edit-form').addEventListener('submit',saveBilling);
+
 async function selectPNG(file,preview){if(!file)throw Error('Choose your organiser logo first.');if(file.type!=='image/png')throw Error('Upload a transparent PNG. JPEG and solid backgrounds are not suitable.');if(file.size>2000000)throw Error('The organiser logo must be under 2 MB.');const uri=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('Logo could not be read'));reader.readAsDataURL(file)});
 const img=await new Promise((resolve,reject)=>{const el=new Image();el.onload=()=>resolve(el);el.onerror=()=>reject(Error('Logo is not a valid PNG image'));el.src=uri});const can=document.createElement('canvas');const scale=Math.min(1,450/Math.max(img.width,img.height));can.width=Math.max(1,Math.floor(img.width*scale));can.height=Math.max(1,Math.floor(img.height*scale));const context=can.getContext('2d',{willReadFrequently:true});context.drawImage(img,0,0,can.width,can.height);const bytes=context.getImageData(0,0,can.width,can.height).data;let transparent=0,dark=0,drawn=0;for(let i=0;i<bytes.length;i+=4){let a=bytes[i+3];if(a<200)transparent++;if(a>120){drawn++;if(bytes[i]<105&&bytes[i+1]<105&&bytes[i+2]<105)dark++;}}
 if(transparent<bytes.length/4*.02)throw Error('The logo appears to have a solid background. A transparent PNG is required.');
@@ -41,8 +112,8 @@ $('#add-tier').onclick=()=>{if($$('#tier-rows .tier-row').length>=10)return noti
 $$('.remove-tier').forEach(x=>x.onclick=()=>{if($$('#tier-rows .tier-row').length>1)x.closest('.tier-row').remove()});
 $('#tier-form').onsubmit=async e=>{e.preventDefault();const btn=e.submitter;btn.disabled=true;try{if(!currentDraft?.id)throw Error('Save event details first.');const list=$$('#tier-rows .tier-row').map(row=>({name:row.querySelector('[name=name]').value.trim(),priceCents:Math.round(Number(row.querySelector('[name=price]').value)*100),capacity:Number(row.querySelector('[name=capacity]').value)}));const r=await api('/api/organiser',{action:'tiers',eventId:currentDraft.id,tiers:list});currentDraft.tiers=r.tiers||[];notice('Ticket options saved. Your event is still private.');await reloadEvents();drawReview();nextStep(3);}catch(err){notice(err.message,true)}finally{btn.disabled=false;}};
 $('#skip-tier').onclick=()=>{drawReview();nextStep(3)};
-function drawReview(){if(!currentDraft)return;$('#review-summary').innerHTML='<div class="event-row">'+(currentDraft.image_url?'<img class="thumb" src="'+esc(currentDraft.image_url)+'" alt="Event poster">':'')+'<div class="event-detail"><h3>'+esc(currentDraft.title)+'</h3><p>'+esc(currentDraft.venue)+'</p><p>'+esc((currentDraft.tiers||[]).length)+' ticket types saved</p></div></div>';$('#review-message').textContent='Your event draft has been saved. You can add more ticket types or request a publication review.';}
-$('#request-review').onclick=async()=>{const btn=$('#request-review');btn.disabled=true;try{if(!currentDraft?.id)throw Error('Save an event first.');const r=await api('/api/organiser',{action:'requestPublish',eventId:currentDraft.id});notice(r.message||'Review requested.');await reloadEvents();page('events');}catch(err){notice(err.message,true)}finally{btn.disabled=false;}};
+function drawReview(){if(!currentDraft)return;$('#review-summary').innerHTML='<div class="event-row">'+(currentDraft.image_url?'<img class="thumb" src="'+esc(currentDraft.image_url)+'" alt="Event poster">':'')+'<div class="event-detail"><h3>'+esc(currentDraft.title)+'</h3><p>'+esc(currentDraft.venue)+'</p><p>'+esc((currentDraft.tiers||[]).length)+' ticket types saved</p></div></div>';$('#review-message').textContent='Your event draft has been saved. You can add more ticket types or publish directly once payment setup is ready.';}
+$('#request-review').onclick=async()=>{const btn=$('#request-review');btn.disabled=true;try{if(!currentDraft?.id)throw Error('Save an event first.');const r=await api('/api/organiser',{action:'publish',eventId:currentDraft.id});notice(r.message||'Event published successfully.');await reloadEvents();page('events');}catch(err){notice(err.message,true)}finally{btn.disabled=false;}};
 async function reloadEvents(){const r=await api('/api/organiser');events=r.events||[];profile=r.organiser||profile;const item=events.find(e=>e.id===currentDraft?.id);if(item)currentDraft=item;return r;}
 async function fetchReport(id,overview=false){if(!id)return;try{const {report}=await api('/api/event-organiser-report?eventId='+encodeURIComponent(id));reportCache[id]=report;if(overview){const reports=await Promise.allSettled(safeEvents().slice(0,50).map(ev=>reportCache[ev.id]?Promise.resolve(reportCache[ev.id]):api('/api/event-organiser-report?eventId='+encodeURIComponent(ev.id)).then(z=>z.report)));let paid=0,checked=0,revenue=0;reports.forEach(z=>{if(z.status==='fulfilled'){paid+=z.value.paidTickets||0;checked+=z.value.paidCheckedIn||0;revenue+=z.value.revenueCents||0;}});$('#metric-paid').textContent=paid;$('#metric-scanned').textContent=checked;$('#metric-money').textContent=money(revenue,profile.country_code==='GB'?'gbp':'eur');return;}
 if($('#report-event').value!==id)return;latestReport=report;renderReport(report);
