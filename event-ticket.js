@@ -26,7 +26,7 @@
    const a=document.createElement('a');a.href=href;a.download='ticketbunker-'+id.slice(0,8)+'-qr.png';a.click();
   };
   if(t.test){
-    const banner=document.createElement('p');banner.textContent='QR SYSTEM TEST — €0 PAID · NOT VALID FOR REAL EVENT ADMISSION';
+    const banner=document.createElement('p');banner.textContent='REAL QR SYSTEM TEST — €0 ONLY · NOT VALID FOR REAL EVENT ADMISSION';
     banner.style.cssText='padding:12px;background:#ffe8b8;color:#452709;font-weight:850;border-radius:8px;margin:15px 0;';
     title.before(banner);
   }
