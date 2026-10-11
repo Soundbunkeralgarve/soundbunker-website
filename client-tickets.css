@@ -21,3 +21,26 @@
 #ticketMessage{font-size:12px;color:#f3dfff}
 @media(max-width:1000px){.client-account-categories{grid-template-columns:repeat(2,1fr)}.client-ticket-grid{grid-template-columns:1fr}}
 @media(max-width:560px){.client-account-categories{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.client-account-categories>a{padding:14px;min-height:142px}.client-ticket-card{grid-template-columns:1fr}.client-ticket-card img{height:120px;width:100%;object-position:center 25%}.client-tickets-heading{align-items:stretch;flex-direction:column}}
+
+/* Named admission tickets and account transfers */
+.client-ticket-person{display:flex;flex-direction:column;gap:4px;border-top:1px solid #5e466e;padding:11px 0 0;margin-top:11px}
+.client-ticket-person span{font-size:9px;letter-spacing:.16em;color:#caa9e2;font-weight:900}
+.client-ticket-person strong{font:800 16px/1.3 'Space Grotesk',sans-serif;color:#fff;overflow-wrap:anywhere}
+.client-ticket-links .client-ticket-transfer{background:#f7f3fb;color:#26182e;border:1px solid #f7f3fb;font-weight:900}
+.client-ticket-dialog{width:min(460px,calc(100vw - 30px));max-height:min(86dvh,690px);overflow:auto;
+  border:1px solid #ddd0e6;border-radius:20px;padding:0;background:#fcfbfd;color:#2d1e35;box-shadow:0 28px 85px #0805129c}
+.client-ticket-dialog::backdrop{background:#120a20bd;backdrop-filter:blur(3px)}
+.client-ticket-dialog form{display:grid;gap:14px;padding:23px}
+.client-ticket-dialog-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.client-ticket-dialog-top h3{font:800 24px/1.15 'Space Grotesk',sans-serif;color:#251831;margin:0}
+.client-ticket-dialog-top button{background:transparent;border:0;color:#665470;font-size:27px;line-height:1;cursor:pointer}
+.client-ticket-dialog p{font-size:13px;line-height:1.55;color:#685b70;margin:0}
+.client-ticket-dialog label{font-size:12px;color:#4c3e55;font-weight:800;display:grid;gap:7px}
+.client-ticket-dialog label[hidden],.client-ticket-dialog [hidden]{display:none!important}
+.client-ticket-dialog input:not([type=hidden]){display:block;width:100%;box-sizing:border-box;padding:13px 14px;min-height:49px;border:1px solid #cfc2db;border-radius:11px;font-size:16px;background:#fff;color:#24192d}
+.client-ticket-dialog .client-ticket-dialog-warning{padding:13px 14px;background:#f8edf8;border:1px solid #e3d4eb;border-radius:10px;color:#53385a}
+.client-ticket-dialog #submitTicketManage{background:#2a1e35;color:white;border:0;border-radius:11px;min-height:50px;padding:13px 16px;font-size:14px;font-weight:800;cursor:pointer}
+.client-ticket-dialog #submitTicketManage:disabled{opacity:.5}
+.client-ticket-dialog #ticketManageStatus{font-size:12px;color:#673b59;min-height:0}
+.client-page .client-ticket-card{overflow:hidden}
+@media(max-width:560px){.client-ticket-dialog form{padding:19px}.client-ticket-dialog-top h3{font-size:21px}.client-ticket-person strong{font-size:15px}}
