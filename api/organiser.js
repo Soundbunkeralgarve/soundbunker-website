@@ -43,6 +43,10 @@ export default async function handler(req,res){
        ?await db.from('sb_event_charity_claims').select('event_id,registration_number,status,country_code,created_at').in('event_id',ids)
        :{data:[],error:null};
      if(charities.error)throw charities.error;
+     const checkoutPrefs=ids.length
+       ?await db.from('sb_event_checkout_preferences').select('event_id,premium_placement,payout_choice,updated_at').in('event_id',ids)
+       :{data:[],error:null};
+     if(checkoutPrefs.error)throw checkoutPrefs.error;
      const paymentTerms=ids.length
        ?await db.from('sb_event_payment_terms_requests').select('event_id,status,payment_preference,ticket_capacity').in('event_id',ids)
        :{data:[],error:null};
@@ -52,7 +56,7 @@ export default async function handler(req,res){
        status:organisation.status,stripe_connected:!!organisation.stripe_account_id,
        stripe_capabilities_ready:organisation.stripe_capabilities_ready,tax_review_complete:organisation.tax_review_complete
      },events:ev.data.map(e=>({...e,tiers:tiers.data.filter(t=>t.event_id===e.id),fees:fees.data.filter(f=>f.event_id===e.id),showcase:showcases.data.find(f=>f.event_id===e.id)||null,festivalQuote:festivalQuotes.data.find(f=>f.event_id===e.id)||null,
-       flexibleTerms:paymentTerms.data.find(f=>f.event_id===e.id)||null,charity:charities.data.find(f=>f.event_id===e.id)||null}))});
+       flexibleTerms:paymentTerms.data.find(f=>f.event_id===e.id)||null,charity:charities.data.find(f=>f.event_id===e.id)||null,checkoutPreferences:checkoutPrefs.data.find(f=>f.event_id===e.id)||null}))});
    }
    if(req.method!=='POST')return json(res,{error:'Method not allowed'},405);
    const body=await parseJson(req);
@@ -308,6 +312,22 @@ export default async function handler(req,res){
        +'\nDetails: '+notes+'\n\nCheck the TicketBunker admin quote records.');
      if(email.status!=='sent')console.warn('Large-event quote email notification not confirmed',{quoteId:quote.data.id,status:email.status});
      return json(res,{quote:quote.data,message:'Your custom quote request has been saved. We will discuss pricing and payment terms before anything goes live. No payment was taken.'},201);
+   }
+   if(action==='checkoutOptions'){
+     if(!uuid(body.eventId))return json(res,{error:'Select your event to save checkout options'},400);
+     if(typeof body.premiumPlacement!=='boolean'||!['standard','priority'].includes(body.payoutChoice))
+       return json(res,{error:'Choose a valid promotional package and payout preference'},400);
+     const event=await db.from('sb_events').select('id,status').eq('id',body.eventId)
+       .eq('organiser_profile_id',organisation.id).maybeSingle();
+     if(event.error||!event.data||event.data.status!=='draft')
+       return json(res,{error:'Checkout options can only be saved for your own draft event'},403);
+     const recorded=await db.from('sb_event_checkout_preferences').upsert({
+       event_id:event.data.id,organiser_profile_id:organisation.id,
+       premium_placement:body.premiumPlacement,payout_choice:body.payoutChoice
+     },{onConflict:'event_id'}).select('event_id,premium_placement,payout_choice').single();
+     if(recorded.error)throw recorded.error;
+     return json(res,{options:recorded.data,
+      message:'Preferences saved. No upgrade, payout charge or payment has been made.'});
    }
    if(action==='featureRequest'){
      if(!uuid(body.eventId))return json(res,{error:'Choose your event first'},400);
