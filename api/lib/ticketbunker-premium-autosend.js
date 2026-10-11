@@ -38,8 +38,9 @@ async function statusUpdate(db,id,fields,expected){
  return !!saved.data;
 }
 const ageMinutes=timestamp=>timestamp?(Date.now()-Date.parse(timestamp))/60000:Infinity;
-export async function dispatchPremiumPlacementEmail(requestId,db=eventsDatabase()){
+export async function dispatchPremiumPlacementEmail(requestId,db){
  if(!premiumEmailAutoEnabled())return {status:'disabled'};
+ db ||= eventsDatabase();
  if(!UUID.test(String(requestId||'')))throw Error('Invalid premium request');
  const current=await db.from('sb_event_showcase_requests')
   .select('id,event_id,status,paid_at,stripe_session_id,premium_broadcast_id,premium_email_status,premium_email_claimed_at')
@@ -124,8 +125,9 @@ export async function dispatchPremiumPlacementEmail(requestId,db=eventsDatabase(
   throw error;
  }
 }
-export async function fulfilPremiumPlacementCheckout(checkout,db=eventsDatabase()){
+export async function fulfilPremiumPlacementCheckout(checkout,db){
  if(!premiumEmailAutoEnabled())return {status:'disabled'};
+ db ||= eventsDatabase();
  const id=String(checkout?.metadata?.premium_request_id||'');
  if(!UUID.test(id))throw Error('Premium payment reference missing');
  const result=await db.from('sb_event_showcase_requests').select('*').eq('id',id).single();
