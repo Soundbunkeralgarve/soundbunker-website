@@ -23,7 +23,12 @@ test('paid booking and gift purchase send distinct customer and studio emails wi
 
 test('marketing signup requires explicit consent and never resets an existing unsubscribe', async () => {
   let calls = 0;
-  global.fetch = async () => { calls++; return { ok: false, status: 409 }; };
+  global.fetch = async (_url,options) => {
+    calls++;
+    if(options.method==='GET')return {ok:true,status:200,json:async()=>({unsubscribed:false})};
+    if(_url.includes('/segments/'))return {ok:true,status:200};
+    return {ok:false,status:409};
+  };
   process.env.RESEND_API_KEY = 'test';
   const response = () => ({ setHeader() {}, end(value) { this.data = JSON.parse(value); } });
   try {
@@ -34,6 +39,6 @@ test('marketing signup requires explicit consent and never resets an existing un
     const existing = response();
     await newsletter({ method: 'POST', body: { email: 'person@example.com', consent: true } }, existing);
     assert.equal(existing.data.existing, true);
-    assert.equal(calls, 1);
+    assert.equal(calls, 3);
   } finally { global.fetch = originalFetch; process.env = originalEnv; }
 });

@@ -206,3 +206,29 @@
 .tb-event-live-link{display:inline-flex;padding:9px 12px;border:1px solid #673f78;border-radius:9px;background:#30243e;color:#fff!important;text-decoration:none;font-size:12px;font-weight:900;margin:10px 0}
 .tb-event-detail .tb-header{position:sticky;top:0;z-index:40}
 @media(max-width:760px){.tb-activate-panel{padding:16px;border-radius:14px}.tb-activate-actions{display:grid;grid-template-columns:1fr}.tb-activate-actions>*{width:100%;box-sizing:border-box}.tb-event-detail .tb-header .tb-nav{display:none}}
+
+/* Featured placement includes an email to the existing SoundBunker opted-in segment. */
+.tb-premium-benefits{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin:15px 0}
+.tb-premium-benefits>div{border:1px solid #e3d8e8;background:#faf8fb;border-radius:13px;padding:16px;display:grid;gap:7px}
+.tb-premium-benefits strong{color:#362340;font-weight:900;font-size:13px}
+.tb-premium-benefits span{color:#6e6277;font-size:12px;line-height:1.5}
+.tb-premium-mail-preview{margin:17px 0 12px;border:1px solid #d8c9df;border-radius:17px;background:#fff;overflow:hidden}
+.tb-premium-preview-head{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:14px 19px;background:#271b32;color:#f8f3fb;font-size:10px;font-weight:900;letter-spacing:.07em}
+.tb-premium-preview-head strong{font-size:10px;color:#d6c5e0;letter-spacing:0;font-weight:650}
+.tb-premium-preview-body{max-width:470px;margin:0 auto;padding:23px}
+.tb-premium-preview-body img{display:block;max-width:100%;width:100%;height:155px;object-fit:cover;border-radius:11px;background:#2a2033;margin-bottom:19px}
+.tb-premium-preview-body h3{color:#2c1d38;font-family:'Space Grotesk',sans-serif;font-size:clamp(23px,3vw,31px);font-weight:900;letter-spacing:-.04em;line-height:1.08;margin:6px 0 10px}
+.tb-premium-preview-body>p{font-size:13px;color:#64586e;line-height:1.55;margin:7px 0 16px}
+.tb-premium-preview-body .tb-premium-eyebrow{color:#75568a;font-size:10px;letter-spacing:.1em;font-weight:900}
+.tb-premium-preview-link{display:block;background:#271b32;color:#fff;padding:15px;text-align:center;border-radius:11px;font-size:13px;font-weight:900}
+.tb-premium-preview-body small{display:block;margin-top:13px;font-size:11px;color:#756780;text-align:center}
+@media(max-width:760px){.tb-premium-benefits{grid-template-columns:1fr}.tb-premium-preview-head{display:grid;gap:5px;padding:13px}.tb-premium-preview-body{padding:15px}}
+
+.tb-premium-offer{margin:23px 0;display:flex;align-items:center;justify-content:space-between;gap:25px;padding:25px 27px;background:#271b32;border:1px solid #76568a;border-radius:18px;color:#f9f4fd}
+.tb-premium-offer>div{max-width:710px}
+.tb-premium-offer span{font-size:10px;font-weight:900;letter-spacing:.16em;color:#d9b8ef}
+.tb-premium-offer h3{font:900 clamp(21px,3vw,30px)/1.1 'Space Grotesk',sans-serif;color:#fff;letter-spacing:-.04em;margin:10px 0 12px}
+.tb-premium-offer p{font-size:13px;color:#e8daed;line-height:1.6;margin:0 0 10px}
+.tb-premium-offer small{font-size:11px;color:#d4c0df;line-height:1.6}
+.tb-premium-offer a{white-space:nowrap;text-align:center;flex:0 0 auto;padding:14px 18px;min-height:44px;background:#faf5ff;color:#26182f;border-radius:12px;text-decoration:none;font-weight:900;font-size:12px}
+@media(max-width:760px){.tb-premium-offer{padding:21px 17px;display:grid;gap:18px}.tb-premium-offer a{width:100%;box-sizing:border-box}}
