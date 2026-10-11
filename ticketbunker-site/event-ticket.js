@@ -15,6 +15,34 @@
   const ticketUrl=location.origin+'/event-ticket?id='+encodeURIComponent(id)+'&sig='+encodeURIComponent(sig);
   new QRCode($('qr'),{text:ticketUrl,width:180,height:180,correctLevel:QRCode.CorrectLevel.M});
   $('ticketActions').hidden=false;$('printTicket').onclick=()=>window.print();
+  $('saveDigitalTicket').onclick=async()=>{
+   const button=$('saveDigitalTicket');button.disabled=true;
+   try{
+    const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=4000;const c=canvas.getContext('2d');
+    c.fillStyle='#fff';c.fillRect(0,0,1080,4000);c.fillStyle='#08130c';c.fillRect(0,0,1080,165);
+    const image=async src=>new Promise(resolve=>{if(!src){resolve(null);return;}const img=new Image();img.crossOrigin='anonymous';const timer=setTimeout(()=>resolve(null),5000);img.onload=()=>{clearTimeout(timer);resolve(img)};img.onerror=()=>{clearTimeout(timer);resolve(null)};img.src=src;});
+    const [logo,poster,promoter]=await Promise.all([image('/brand-compact.png'),image(/^https:\/\//i.test(t.poster||'')?t.poster:null),image(/^https:\/\//i.test(t.eventLogo||'')?t.eventLogo:null)]);
+    const contain=(img,x,y,w,h)=>{const scale=Math.min(w/img.width,h/img.height);const iw=img.width*scale,ih=img.height*scale;c.drawImage(img,x+(w-iw)/2,y+(h-ih)/2,iw,ih);};
+    if(logo)contain(logo,65,35,440,90);
+    c.fillStyle='#00e0a6';c.font='bold 22px sans-serif';c.fillText('DIGITAL EVENT TICKET',65,205);
+    let y=240;
+    if(poster){c.fillStyle='#edf1e9';c.fillRect(65,y,950,320);contain(poster,65,y,950,320);y+=350;}
+    if(promoter){contain(promoter,65,y,300,110);y+=135;}
+    function line(text,font,size,color){c.font=font+' '+size+'px sans-serif';c.fillStyle=color;let row='';for(const char of String(text)){if(c.measureText(row+char).width>940){c.fillText(row,65,y);y+=size*1.35;row=char;}else row+=char;}if(row){c.fillText(row,65,y);y+=size*1.35;}}
+    y+=45;line(t.title,'bold',48,'#14291c');y+=12;line(date,'normal',27,'#4b5d4d');line(t.venue,'normal',27,'#4b5d4d');y+=20;
+    line(t.holderName||'Ticket holder','bold',34,'#14291c');line(t.tier||'General admission','normal',26,'#4b5d4d');
+    const qr=document.querySelector('#qr canvas')||document.querySelector('#qr img');if(!qr)throw Error('Your QR is not ready yet. Please retry.');
+    y+=30;c.imageSmoothingEnabled=false;c.drawImage(qr,300,y,480,480);c.imageSmoothingEnabled=true;y+=530;
+    c.fillStyle='#245231';c.font='bold 24px sans-serif';c.textAlign='center';c.fillText('SHOW THIS QR AT THE DOOR',540,y);c.textAlign='left';y+=55;
+    line('Ticket reference: '+id,'normal',20,'#4b5d4d');line('One valid ticket · One admission · Keep your QR private','normal',20,'#4b5d4d');y+=15;
+    line('Transferred, refunded or cancelled tickets are not valid for entry.','normal',18,'#4b5d4d');line('Full entry conditions: theticketbunker.com/terms','normal',18,'#4b5d4d');y+=25;
+    c.fillStyle='#11251a';c.fillRect(0,y,1080,105);c.fillStyle='#fff';c.font='bold 21px sans-serif';c.fillText('TICKETBUNKER · POWERED BY SOUNDBUNKER ALGARVE',65,y+42);c.font='17px sans-serif';c.fillText('Manage names and transfers in My tickets · theticketbunker.com',65,y+76);
+    const finished=document.createElement('canvas');finished.width=1080;finished.height=y+105;finished.getContext('2d').drawImage(canvas,0,0);
+    const blob=await new Promise(resolve=>finished.toBlob(resolve,'image/png'));if(!blob)throw Error('Could not save the ticket image. Use Print / save PDF instead.');
+    const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='ticketbunker-'+id.slice(0,8)+'.png';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+    $('notice').textContent='Digital ticket downloaded. Keep it private; this and any printed copy use the same one-admission QR.';
+   }catch(error){$('notice').textContent=error.message;}finally{button.disabled=false;}
+  };
   $('saveTicket').onclick=()=>{const image=document.querySelector('#qr img'),canvas=document.querySelector('#qr canvas'),href=image?.src||canvas?.toDataURL('image/png');if(!href)return;$('notice').textContent='Keep your saved QR private.';const a=document.createElement('a');a.href=href;a.download='ticketbunker-'+id.slice(0,8)+'.png';a.click();};
  }catch(error){$('name').textContent='Ticket unavailable';$('ticketTierMark').textContent='UNAVAILABLE';$('details').textContent='';$('notice').textContent=error.message;}
 })();
