@@ -50,6 +50,7 @@ function finishOperation(message,error=false){
  if(activeButton){activeButton.disabled=false;activeButton.textContent=originalButtonText;}
  activeButton=null;
  originalButtonText='';
+ updateTicketSaveButton();
 }
 async function uploadWithProgress(eventId,kind,dataUrl){
  return await new Promise((resolve,reject)=>{
