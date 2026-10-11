@@ -1,23 +1,38 @@
+// Shares the SoundBunker email layout: light-grey background, compact white
+// content table, deep-ink copy, purple CTA and the standard hosted email footer.
 export function escapePromoHtml(value){
  return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 }
-export function premiumEventEmail({title,venue,when,poster,slug,organiser}){
+const validArtwork=url=>typeof url==='string'&&/^https:\/\/[^\s"<>]+$/i.test(url)?url:'';
+export function premiumEventEmail({title,venue,when,poster,logo,bio,slug,organiser}){
  const ticketLink='https://www.soundbunker.pt/event?slug='+encodeURIComponent(slug);
- const safePoster=typeof poster==='string'&&/^https:\/\/[^\s"<>]+$/i.test(poster)?poster:'';
- const image=safePoster?'<img src="'+escapePromoHtml(safePoster)+'" alt="Event poster" width="550" style="display:block;width:100%;max-width:550px;max-height:340px;object-fit:cover;border-radius:14px;margin:0 0 19px">':'';
- const subject='Featured TicketBunker event: '+title;
- const text='FEATURED ON TICKETBUNKER\n\n'+title+'\n'+venue+'\n'+when+
-  '\n\nEvent by '+organiser+'\nView event & ticket options: '+ticketLink+
-  '\n\nNo TicketBunker buyer booking fees. The ticket price is the ticket price.\n'+
-  '\nYou are receiving this because you subscribed to SoundBunker event updates and promotions.\n'+
-  'Unsubscribe: {{{RESEND_UNSUBSCRIBE_URL}}}';
- const template='<!doctype html><html><head><meta charset="utf-8"></head><body style="font-family:Arial,sans-serif;background:#f4f0f6;padding:26px 12px;color:#211629"><main style="max-width:590px;margin:auto;background:#fff;border-radius:18px;overflow:hidden">'+
-  '<header style="background:#21182e;padding:28px 25px;color:#fff"><img src="https://www.soundbunker.pt/assets/ticketbunker/ticketbunker-logo.svg" alt="TicketBunker" width="230" style="display:block;max-width:90%;height:auto"><p style="font-size:11px;letter-spacing:2px;margin:18px 0 0;color:#e4d5ed">FEATURED EVENT · TICKETS</p></header>'+
-  '<section style="padding:27px">'+image+'<h1 style="font-size:34px;line-height:1.12;margin:5px 0 16px;color:#241932">'+escapePromoHtml(title)+'</h1>'+
-  '<p style="font-size:14px;color:#66576d"><strong>'+escapePromoHtml(venue)+'</strong> · '+escapePromoHtml(when)+'</p>'+
-  '<p style="font-size:13px;color:#766981">Presented by '+escapePromoHtml(organiser)+'</p>'+
-  '<a href="'+escapePromoHtml(ticketLink)+'" style="display:block;text-align:center;text-decoration:none;padding:17px;background:#261933;border-radius:12px;color:#fff;font-weight:800;margin:24px 0">View Event &amp; Tickets →</a>'+
-  '<p style="font-size:13px;font-weight:bold">No TicketBunker buyer booking fees. Your ticket price is your ticket price.</p>'+
-  '</section><footer style="background:#f9f6fa;padding:20px 25px;font-size:11px;color:#6c5b75">SoundBunker Algarve &amp; TicketBunker events and promotions. <a href="{{{RESEND_UNSUBSCRIBE_URL}}}">Unsubscribe</a>.</footer></main></body></html>';
- return {subject,text,html:template,ticketLink};
+ const safePoster=validArtwork(poster),safeLogo=validArtwork(logo);
+ const name=String(title||'Event').slice(0,160);
+ const summary=String(bio||'').trim().slice(0,850);
+ const subject='Tickets: '+name+' · Featured on TicketBunker';
+ const htmlBio=escapePromoHtml(summary).replace(/\n/g,'<br>');
+ const image=safePoster?'<img src="'+escapePromoHtml(safePoster)+'" width="480" alt="Official event poster for '+escapePromoHtml(name)+'" style="display:block;width:100%;height:auto;max-width:480px;border-radius:11px;margin:0 0 19px">':'';
+ const promoter=safeLogo?'<img src="'+escapePromoHtml(safeLogo)+'" alt="Official event organiser logo" width="115" style="max-width:115px;max-height:75px;object-fit:contain;margin-right:12px;vertical-align:middle">':'';
+ const unsub='{{{RESEND_UNSUBSCRIBE_URL}}}';
+ const html='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background-color:#f3f1f5;font-family:Arial,Helvetica,sans-serif;color:#231b2a">'+
+ '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td align="center" style="padding:24px 12px;background-color:#f3f1f5">'+
+ '<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="520" style="max-width:520px;width:100%"><tr><td style="padding:23px 20px;background:#ffffff">'+
+ '<img src="https://www.soundbunker.pt/assets/ticketbunker/ticketbunker-logo.svg" alt="TicketBunker" width="235" style="display:block;height:auto;max-width:85%;margin-bottom:12px">'+
+ '<p style="margin:0 0 20px;color:#8642a8;font-size:11px;font-weight:bold;letter-spacing:2px">FEATURED EVENT · SOUNDBUNKER COMMUNITY</p>'+image+
+ '<h1 style="font-size:30px;line-height:1.15;color:#231b2a;margin:4px 0 16px">'+escapePromoHtml(name)+'</h1>'+
+ '<p style="color:#55445d;font-size:15px;font-weight:bold;margin:6px 0">'+escapePromoHtml(when)+' · '+escapePromoHtml(venue)+'</p>'+
+ '<p style="font-size:13px;color:#66546f;line-height:1.6;margin:16px 0">'+promoter+'Presented by '+escapePromoHtml(organiser||'Event organiser')+'</p>'+
+ (summary?'<p style="font-size:15px;line-height:1.65;white-space:normal;color:#302637;margin:15px 0">'+htmlBio+'</p>':'')+
+ '<a href="'+escapePromoHtml(ticketLink)+'" style="display:block;background:#8642a8;border-radius:9px;padding:16px;text-align:center;text-decoration:none;color:#ffffff;font-size:16px;font-weight:bold;margin:22px 0">Buy Tickets →</a>'+
+ '<p style="font-size:12px;color:#63576b;line-height:1.6;margin:14px 0">No TicketBunker booking fees. The ticket price is the ticket price.</p>'+
+ '<p style="font-size:11px;color:#716579;line-height:1.55">You receive SoundBunker events and promotions because you subscribed. <a href="'+unsub+'" style="color:#8642a8">Unsubscribe</a></p>'+
+ '</td></tr><tr><td style="background:#100d14"><a href="https://www.soundbunker.pt/">'+
+ '<img src="https://www.soundbunker.pt/assets/soundbunker-email-footer.png" width="520" alt="SoundBunker Algarve" style="display:block;width:100%;max-width:520px;height:auto;border:0"></a></td></tr>'+
+ '</table></td></tr></table></body></html>';
+ const text='FEATURED EVENT · TICKETBUNKER / SOUNDBUNKER\n\n'+name+'\n'+when+'\n'+venue+
+ '\nPresented by '+(organiser||'Event organiser')+'\n\n'+summary+
+ '\n\nBUY TICKETS: '+ticketLink+
+ '\n\nNo TicketBunker booking fees. The ticket price is the ticket price.'+
+ '\n\nYou subscribed to SoundBunker event and promotional emails. Unsubscribe: '+unsub;
+ return {subject,html,text,ticketLink};
 }
