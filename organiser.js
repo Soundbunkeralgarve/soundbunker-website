@@ -89,7 +89,7 @@ function updateTicketSaveButton(){
 function renderSavedTickets(){
  const ev=eventFor($('#tierEvent').value),root=$('#savedTicketList');
  const tiers=ev?.tiers||[],used=tiers.reduce((sum,t)=>sum+Number(t.quantity_total||0),0);
- $('#ticketCapacitySummary').textContent=used.toLocaleString('en-GB')+' of 2,000 allocated';
+ $('#ticketCapacitySummary').textContent=used.toLocaleString('en-GB')+' tickets allocated · standard event';
  root.innerHTML=tiers.length?tiers.map(t=>
   '<div class="tb-saved-ticket"><div><strong>✓ '+esc(t.name)+'</strong><small>'+
   esc(Number(t.quantity_total).toLocaleString('en-GB'))+' tickets</small></div><b>'+
