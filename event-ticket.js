@@ -6,6 +6,9 @@
   const r=await fetch('/api/event-ticket?id='+encodeURIComponent(id)+'&sig='+encodeURIComponent(sig),{cache:'no-store'});
   const data=await r.json();if(!r.ok)throw Error(data.error||'Ticket unavailable');
   const t=data.ticket;title.textContent=t.title;
+  document.getElementById('ticketTierMark').textContent=t.tier||'GENERAL ADMISSION';
+  document.getElementById('ticketHolder').textContent=t.holderName||'Ticket holder';
+  document.getElementById('ticketNumber').textContent=String(t.admissionNumber||1).padStart(2,'0');
   const date=new Intl.DateTimeFormat('en-GB',{dateStyle:'full',timeStyle:'short',timeZone:t.timezone||'Europe/Lisbon'}).format(new Date(t.date));
   details.textContent=date+' (venue time) • '+t.venue+' • '+t.tier+(t.priceCents===0?' • FREE €0/£0':'');
   const art=document.getElementById('ticketArtwork');
