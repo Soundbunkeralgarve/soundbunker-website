@@ -8,6 +8,14 @@ ALTER TABLE public.sb_events ADD CONSTRAINT sb_public_beta_event_scope
  CHECK (NOT public_beta_test OR (
    NOT internal_free_test AND status='draft' AND
    beta_test_expires_at IS NOT NULL));
+ALTER TABLE public.sb_event_orders
+ ADD COLUMN IF NOT EXISTS beta_test_order boolean NOT NULL DEFAULT false;
+ALTER TABLE public.sb_event_orders DROP CONSTRAINT IF EXISTS sb_order_beta_zero_value;
+ALTER TABLE public.sb_event_orders ADD CONSTRAINT sb_order_beta_zero_value
+ CHECK (NOT beta_test_order OR total_cents=0);
+CREATE INDEX IF NOT EXISTS sb_beta_test_order_idx
+ ON public.sb_event_orders(event_id) WHERE beta_test_order;
+
 CREATE INDEX IF NOT EXISTS sb_active_public_beta_idx
  ON public.sb_events(beta_test_expires_at) WHERE public_beta_test;
 
@@ -68,8 +76,8 @@ BEGIN
   AND total_cents=0;
  IF existing+p_quantity>4 THEN RAISE EXCEPTION 'Maximum four test tickets per email per event'; END IF;
  INSERT INTO public.sb_event_orders
-  (event_id,tier_id,customer_name,customer_email,quantity,total_cents,status,reserved_until,currency,paid_at)
- VALUES(ev.id,tier.id,trim(p_name),lower(trim(p_email)),p_quantity,0,'paid',now(),ev.currency,now())
+  (event_id,tier_id,customer_name,customer_email,quantity,total_cents,status,reserved_until,currency,paid_at,beta_test_order)
+ VALUES(ev.id,tier.id,trim(p_name),lower(trim(p_email)),p_quantity,0,'paid',now(),ev.currency,now(),true)
  RETURNING id INTO created;
  INSERT INTO public.sb_event_tickets(order_id,event_id,tier_id,sequence_number)
  SELECT created,ev.id,tier.id,n FROM generate_series(1,p_quantity) n;
@@ -86,10 +94,11 @@ DECLARE t record;
 BEGIN
  IF p_actor IS NULL THEN RAISE EXCEPTION 'Scanner identity required'; END IF;
  SELECT tk.id,tk.event_id,tk.checked_in_at,e.title,e.starts_at,e.status,
-        e.public_beta_test,e.beta_test_expires_at,tt.name tier_name
+        e.public_beta_test,e.beta_test_expires_at,o.beta_test_order,tt.name tier_name
  INTO t FROM public.sb_event_tickets tk
  JOIN public.sb_events e ON e.id=tk.event_id
  JOIN public.sb_event_tiers tt ON tt.id=tk.tier_id
+ JOIN public.sb_event_orders o ON o.id=tk.order_id
  WHERE tk.id=p_ticket FOR UPDATE OF tk;
  IF NOT FOUND THEN RETURN jsonb_build_object('status','invalid'); END IF;
  IF NOT EXISTS(SELECT 1 FROM public.profiles p WHERE p.id=p_actor AND p.role='admin')
@@ -100,6 +109,9 @@ BEGIN
  THEN RAISE EXCEPTION 'Staff access denied for this event'; END IF;
  IF t.checked_in_at IS NOT NULL
  THEN RETURN jsonb_build_object('status','used','checked_in_at',t.checked_in_at,'event',t.title); END IF;
+ IF t.beta_test_order AND NOT (t.public_beta_test AND t.status='draft'
+   AND t.beta_test_expires_at>now())
+ THEN RETURN jsonb_build_object('status','not_open','event',t.title,'message','Software test is no longer active'); END IF;
  IF NOT ((t.status='published' AND now()>=t.starts_at-interval '18 hours'
        AND now()<=t.starts_at+interval '36 hours')
        OR (t.public_beta_test AND t.status='draft' AND t.beta_test_expires_at>now()))
@@ -111,3 +123,19 @@ BEGIN
 END $$;
 REVOKE ALL ON FUNCTION public.sb_checkin_event_ticket(uuid,uuid) FROM PUBLIC,anon,authenticated;
 GRANT EXECUTE ON FUNCTION public.sb_checkin_event_ticket(uuid,uuid) TO service_role;
+
+-- Test bookings do not reduce paid-sale inventory when test mode is switched off.
+-- During an active test session, the zero-value orders count toward test limits.
+CREATE OR REPLACE FUNCTION public.sb_event_inventory()
+RETURNS TABLE(tier_id uuid,used_count bigint)
+LANGUAGE sql STABLE SET search_path='' AS $$
+ SELECT o.tier_id,coalesce(sum(o.quantity),0)::bigint
+ FROM public.sb_event_orders o JOIN public.sb_events e ON e.id=o.event_id
+ WHERE (o.status IN ('paid','needs_attention') OR
+        (o.status='reserved' AND o.reserved_until>now()))
+   AND (NOT o.beta_test_order OR
+        (e.public_beta_test AND e.beta_test_expires_at>now()))
+ GROUP BY o.tier_id
+$$;
+REVOKE ALL ON FUNCTION public.sb_event_inventory() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.sb_event_inventory() TO service_role;
