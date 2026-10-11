@@ -16,13 +16,13 @@ test('promotional email uses SoundBunker email design, event poster, organiser l
   logo:'https://example.com/promoter-logo.png',bio:'Artist lineup &\nMore details',slug:'night-special',
   organiser:'The Promoter'});
  assert.match(e.html,/assets\/soundbunker-email-footer\.png/);
- assert.match(e.html,/ticketbunker-logo\.svg/);
+ assert.match(e.html,/ticketbunker-email-logo\.png/);
  assert.match(e.html,/event-poster\.jpg/);
  assert.match(e.html,/promoter-logo\.png/);
  assert.match(e.html,/Artist lineup &amp;/);
  assert.match(e.html,/More details/);
  assert.match(e.html,/Buy Tickets/);
- assert.match(e.ticketLink,/\/event\?slug=night-special/);
+ assert.match(e.ticketLink,/theticketbunker\.com\/event\/night-special/);
  assert.match(e.html,/RESEND_UNSUBSCRIBE_URL/);
  assert.doesNotMatch(e.html,/The Night <Special>/);
 });
