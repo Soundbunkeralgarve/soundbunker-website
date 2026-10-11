@@ -21,6 +21,6 @@ test('homepage and organiser use the same clear event-ticket positioning',()=>{
 test('the BETA sales restriction remains prominently visible',()=>{
  assert.match(site,/LIVE €0 TESTING · PAID SALES OFF/);
  assert.match(site,/No real admission or paid sales/);
- assert.match(home,/Payments and ticket sales are not active yet/);
+ assert.match(home,/Paid ticket sales are not active yet/);
  assert.match(organiser,/Checkout, ticket sales and payouts are not live/);
 });
