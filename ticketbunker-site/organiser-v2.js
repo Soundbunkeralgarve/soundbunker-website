@@ -142,7 +142,7 @@ async function checkSelectedLogo(which){
  }
 }
 async function uploadCheckedLogo(which){
- const checked=checkedLogo.get(which),input=$('#'+which+'-file');
+ const checked=checkedLogo.get(which),input=$(which==='initial'?'#initial-logo-file':'#brand-file');
  if(!checked||input.files?.[0]!==checked.file)throw Error('Choose a logo and wait for the green checks before uploading.');
  const result=await api('/api/organiser-brand',{dataUrl:checked.uri});
  if(!result.logoUrl)throw Error('Logo was not saved. Please try again.');
