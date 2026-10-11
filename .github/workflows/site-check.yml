@@ -89,3 +89,7 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f SUPABASE_TICKETBUNKER_ORGANISER_JOURNEY.sql
       - name: Check new event categories and safe draft review
         run: psql -v ON_ERROR_STOP=1 -f test/ticketbunker-organiser-journey.sql
+      - name: Apply private Event Plus flexible payment enquiry schema
+        run: psql -v ON_ERROR_STOP=1 -f SUPABASE_TICKETBUNKER_EVENT_PLUS_TERMS.sql
+      - name: Test Event Plus tier gate and ensure no automatic payment
+        run: psql -v ON_ERROR_STOP=1 -f test/ticketbunker-event-plus-terms-schema.sql

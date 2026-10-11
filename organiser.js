@@ -89,7 +89,7 @@ function updateTicketSaveButton(){
 function renderSavedTickets(){
  const ev=eventFor($('#tierEvent').value),root=$('#savedTicketList');
  const tiers=ev?.tiers||[],used=tiers.reduce((sum,t)=>sum+Number(t.quantity_total||0),0);
- $('#ticketCapacitySummary').textContent=used.toLocaleString('en-GB')+' of 2,000 allocated';
+ $('#ticketCapacitySummary').textContent=used.toLocaleString('en-GB')+' tickets allocated · standard event';
  root.innerHTML=tiers.length?tiers.map(t=>
   '<div class="tb-saved-ticket"><div><strong>✓ '+esc(t.name)+'</strong><small>'+
   esc(Number(t.quantity_total).toLocaleString('en-GB'))+' tickets</small></div><b>'+
@@ -153,7 +153,7 @@ function goToTicketSetup(id){
 function renderReviewReadiness(){
  const ev=eventFor($('#reviewEvent').value);
  const message=$('#reviewReadiness'),add=$('#reviewAddTickets'),publish=$('#requestPublish');
- if(!ev){message.textContent='Choose an event draft first.';add.hidden=true;publish.disabled=true;return;}
+ if(!ev){message.textContent='Choose an event draft first.';add.hidden=true;publish.disabled=true;$('#eventPlusPaymentOptions').hidden=true;return;}
  const hasTickets=Array.isArray(ev.tiers)&&ev.tiers.length>0;
  const hasPoster=Boolean(ev.image_url);
  const hasBio=Boolean(ev.description?.trim()?.length>=20);
@@ -175,8 +175,18 @@ function renderReviewReadiness(){
  $('#listingPlan').textContent=verifiedCharity?'Verified charity listing':names[tier]+' listing';
  $('#listingTotal').textContent=capacity>2000?'Check capacity':verifiedCharity?sign+'0':sign+prices[tier];
  $('#listingBreakdown').textContent=(capacity||0)+' total tickets · '+(verifiedCharity?'Verified charity exemption':'one flat fee, plus applicable tax')+'. No per-ticket ticketBunker commission.';
+ const eligible=capacity>=501&&capacity<=2000&&!verifiedCharity;
+ $('#eventPlusPaymentOptions').hidden=!eligible;
+ const pending=Boolean(ev.flexibleTerms);
+ const deposit=$('#eventPlusPaymentOptions input[value="deposit_sales"]');
+ deposit.disabled=pending;
+ if(pending&&deposit.checked)$('#eventPlusPaymentOptions input[value="upfront"]').checked=true;
+ $('#eventPlusTermsStatus').textContent=pending
+  ?'Flexible terms '+ev.flexibleTerms.status.replaceAll('_',' ')+'. No deposit or deductions are active. We will contact you.'
+  :'Deposit terms are by request only, subject to a written agreement and verified Stripe Connect setup. No payment or deductions occur now.';
  publish.disabled=issues.length>0||capacity>2000;
- publish.textContent='Continue to secure payment →';
+ const option=eligible?document.querySelector('input[name="eventPlusPayment"]:checked')?.value:'upfront';
+ publish.textContent=option==='deposit_sales'?'Request deposit terms →':'Continue to secure payment →';
 }
 
 function setWizard(stage){
@@ -221,6 +231,9 @@ async function refresh(){
  $('#tierEvent').innerHTML=list.filter(e=>e.status==='draft').map(e=>'<option value="'+esc(e.id)+'">'+esc(e.title)+(e.tiers.length?' · '+e.tiers.length+' ticket type(s)':' · NO TICKETS YET')+'</option>').join('');
  $('#showcaseEvent').innerHTML=list.filter(e=>e.status==='draft').map(e=>'<option value="'+esc(e.id)+'">'+esc(e.title)+(e.showcase?' (requested)':'')+'</option>').join('');
  $('#reviewEvent').innerHTML=list.filter(e=>e.status==='draft'&&!e.internal_free_test).map(e=>'<option value="'+esc(e.id)+'">'+esc(e.title)+(e.publish_requested_at?' · Review requested':'')+'</option>').join('');
+ const quoteEventPrevious=$('#largeEventId').value;
+ $('#largeEventId').innerHTML=list.filter(e=>e.status==='draft'&&!e.internal_free_test).map(e=>'<option value="'+esc(e.id)+'">'+esc(e.title)+(e.festivalQuote?' · Quote '+e.festivalQuote.status:'')+'</option>').join('');
+ if(list.some(e=>e.id===quoteEventPrevious))$('#largeEventId').value=quoteEventPrevious;
  if(currentDraftId){$('#tierEvent').value=currentDraftId;$('#reviewEvent').value=currentDraftId;}
  else{
   if(list.some(e=>e.id===previousTicket))$('#tierEvent').value=previousTicket;
@@ -231,6 +244,12 @@ async function refresh(){
   $('#newTicketRows').replaceChildren();ticketEditorEvent=$('#tierEvent').value;
  }
  renderSavedTickets();
+ const quoteSelected=eventFor($('#largeEventId').value);
+ if(quoteSelected?.festivalQuote){
+  $('#largeEventMessage').textContent='Custom quote '+quoteSelected.festivalQuote.status.replaceAll('_',' ')+': '+Number(quoteSelected.festivalQuote.expected_tickets).toLocaleString('en-GB')+' tickets. No payment has been taken.';
+ }else if(quoteSelected){
+  $('#largeEventMessage').textContent='No quote requested yet for '+quoteSelected.title+'.';
+ }
 
  const selected=list.find(e=>e.id===$('#showcaseEvent').value);
  updateShowcasePrice(selected);
@@ -257,6 +276,44 @@ function updateShowcasePrice(event){
  const fee=event.currency==='gbp'?'£49':'€59';
  element.textContent=event.showcase?'Request status: '+event.showcase.status.toUpperCase()+'. No payment required in BETA.':'Proposed Featured Showcase add-on: '+fee+' for this event. No payment during BETA.';
 }
+function openLargeEventQuoteFromLink(){
+ if(location.hash!=='#largeEventQuote')return;
+ const section=$('#largeEventQuote');
+ section.open=true;
+ if(!$('#workspace').hidden)section.scrollIntoView({behavior:'smooth',block:'start'});
+}
+window.addEventListener('hashchange',openLargeEventQuoteFromLink);
+document.querySelectorAll('a[href="#largeEventQuote"]').forEach(link=>
+ link.addEventListener('click',()=>{$('#largeEventQuote').open=true;})
+);
+$('#largeEventId').addEventListener('change',()=>{
+ const ev=eventFor($('#largeEventId').value);
+ $('#largeEventMessage').textContent=ev?.festivalQuote
+  ?'Custom quote '+ev.festivalQuote.status.replaceAll('_',' ')+'. Our team will contact you. No payment is collected here.'
+  :'This request is free and creates no payment obligation.';
+});
+$('#largeEventForm').addEventListener('submit',async e=>{
+ e.preventDefault();const form=e.currentTarget;
+ const data=new FormData(form),eventId=String(data.get('eventId')||'');
+ const tickets=Number(data.get('expectedTickets'));
+ if(!eventId||!Number.isSafeInteger(tickets)||tickets<2001){
+  $('#largeEventMessage').textContent='Choose your draft event and enter 2,001 or more expected tickets.';return;
+ }
+ if(!startOperation('Requesting custom quote','Saving your large-event details and preferred payment arrangement…',form.querySelector('[type=submit]')))return;
+ try{
+  const result=await request({action:'festivalQuote',eventId,expectedTickets:tickets,
+    paymentPreference:data.get('paymentPreference'),notes:data.get('notes')});
+  updateOperation('Custom quote saved','Confirming your enquiry…');
+  const message=result.message||'Your bespoke enquiry was saved. No payment taken.';
+  try{await refresh();}catch(error){console.warn('Could not refresh quote status',error);}
+  $('#largeEventMessage').textContent=message;
+  finishOperation(message);notify(message);
+ }catch(error){
+  const message='Quote request not saved: '+error.message;
+  $('#largeEventMessage').textContent=message;
+  finishOperation(message,true);notify(message,true);
+ }
+});
 $('#showcaseEvent').addEventListener('change',()=>{
  const selected=$('#showcaseEvent').value;
  request().then(data=>updateShowcasePrice(data.events.find(e=>e.id===selected))).catch(e=>notify(e.message,true));
@@ -411,6 +468,7 @@ $('#myEvents').addEventListener('click',e=>{
  const id=e.target.closest('[data-add-tickets]')?.dataset.addTickets;
  if(id)goToTicketSetup(id);
 });
+document.querySelectorAll('input[name="eventPlusPayment"]').forEach(input=>input.addEventListener('change',renderReviewReadiness));
 $('#requestPublish').addEventListener('click',async()=>{
  const eventId=$('#reviewEvent').value;
  if(!eventId)return $('#publishMessage').textContent='Choose an event first.';
@@ -418,6 +476,23 @@ $('#requestPublish').addEventListener('click',async()=>{
  if(!ev?.tiers?.length){goToTicketSetup(eventId);return;}
  const capacity=ev.tiers.reduce((n,t)=>n+Number(t.quantity_total||0),0);
  const plan=capacity<=100?'starter':capacity<=500?'standard':'event_plus';
+ const choice=document.querySelector('input[name="eventPlusPayment"]:checked')?.value;
+ if(choice==='deposit_sales'&&capacity>=501&&capacity<=2000&&ev.charity?.status!=='verified'){
+  if(ev.flexibleTerms){$('#publishMessage').textContent='Flexible payment terms already requested for this event.';return;}
+  if(!startOperation('Requesting deposit terms','Saving your Event Plus flexible payment enquiry…',$('#requestPublish')))return;
+  try{
+   const response=await request({action:'eventPlusTerms',eventId,paymentPreference:'deposit_sales'});
+   const message=response.message||'Deposit terms request saved. No payment taken.';
+   try{await refresh();}catch(error){console.warn('Could not refresh Event Plus terms status',error);}
+   $('#publishMessage').textContent=message;
+   finishOperation(message);notify(message);
+  }catch(error){
+   const message='Deposit terms request not saved: '+error.message;
+   $('#publishMessage').textContent=message;
+   finishOperation(message,true);notify(message,true);
+  }
+  return;
+ }
  if(!startOperation('Preparing secure payment','Checking listing eligibility and secure checkout availability…',$('#requestPublish')))return;
  try{
   const r=await fetch('/api/organiser-listing',{method:'POST',
@@ -510,7 +585,7 @@ async function boot(){
  supabase=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true}});
  const {data:{session}}=await supabase.auth.getSession();
  if(!session){$('#guest').hidden=false;notify('Sign in to get started.');return;}
- token=session.access_token;await refresh();
+ token=session.access_token;await refresh();openLargeEventQuoteFromLink();
  }catch(e){notify(e.message,true);}
 }
 window.addEventListener('load',boot);

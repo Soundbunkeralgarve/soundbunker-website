@@ -98,9 +98,14 @@ function setCurrency(value){
 function calculatePlan(){
  const input=$('#tb-ticket-estimate');
  const count=Number(input.value);
- if(!Number.isInteger(count)||count<1||count>2000){
-  $('#tb-estimate-plan').textContent='Enter 1–2,000';
+ if(!Number.isSafeInteger(count)||count<1){
+  $('#tb-estimate-plan').textContent='Enter ticket quantity';
   $('#tb-estimate-price').textContent='No charge during BETA';
+  return;
+ }
+ if(count>2000){
+  $('#tb-estimate-plan').textContent='Custom event · 2,000+';
+  $('#tb-estimate-price').textContent='Request a tailored quote';
   return;
  }
  const plan=quotePlans[currency].find(x=>count<=x.max);

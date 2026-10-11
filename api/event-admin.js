@@ -13,13 +13,15 @@ export default async function handler(req,res){
         db.from('sb_event_tickets').select('event_id,checked_in_at').limit(10000)
       ]);
       if([events,tiers,orders,tickets].some(x=>x.error))throw Error('Events database is not ready');
-      const [charities,organisers]=await Promise.all([
+      const [charities,organisers,largeQuotes,paymentTermsRequests]=await Promise.all([
         db.from('sb_event_charity_claims').select('id,event_id,organiser_profile_id,country_code,registration_number,status,created_at,reviewed_at,reviewer_notes').order('created_at',{ascending:false}).limit(200),
-        db.from('sb_event_organisers').select('id,display_name,country_code').limit(300)
+        db.from('sb_event_organisers').select('id,display_name,country_code').limit(300),
+        db.from('sb_event_festival_quotes').select('id,event_id,organiser_profile_id,expected_tickets,tier_code,currency,event_details,status,quoted_amount_cents,created_at').order('created_at',{ascending:false}).limit(150),
+        db.from('sb_event_payment_terms_requests').select('id,event_id,organiser_profile_id,ticket_capacity,currency,payment_preference,status,proposed_listing_fee_cents,notes,created_at').order('created_at',{ascending:false}).limit(150)
       ]);
-      if(charities.error||organisers.error)throw Error('Charity review service is not configured');
+      if(charities.error||organisers.error||largeQuotes.error||paymentTermsRequests.error)throw Error('Event review service is not configured');
       return json(res,{events:events.data,tiers:tiers.data,orders:orders.data,tickets:tickets.data,
-        charities:charities.data,organisers:organisers.data});
+        charities:charities.data,organisers:organisers.data,largeQuotes:largeQuotes.data,paymentTermsRequests:paymentTermsRequests.data});
     }
     if(req.method!=='POST')return json(res,{error:'Method not allowed'},405);
     const input=await parseJson(req),action=safeText(input.action,24);

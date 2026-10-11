@@ -3,6 +3,7 @@ import { json,parseJson,safeText } from './lib/http.js';
 import { localEventInstant } from './lib/events-time.js';
 import { eventSlugCandidate } from './lib/event-slug.js';
 import { randomBytes } from 'node:crypto';
+import { sendStudioEmail } from './lib/notify.js';
 
 const uuid=value=>/^[a-f0-9]{8}-[a-f0-9-]{27,}$/i.test(String(value||''));
 export const organiserCountries=Object.freeze({
@@ -42,11 +43,16 @@ export default async function handler(req,res){
        ?await db.from('sb_event_charity_claims').select('event_id,registration_number,status,country_code,created_at').in('event_id',ids)
        :{data:[],error:null};
      if(charities.error)throw charities.error;
+     const paymentTerms=ids.length
+       ?await db.from('sb_event_payment_terms_requests').select('event_id,status,payment_preference,ticket_capacity').in('event_id',ids)
+       :{data:[],error:null};
+     if(paymentTerms.error)throw paymentTerms.error;
      return json(res,{organiser:{
        id:organisation.id,display_name:organisation.display_name,country_code:organisation.country_code,
        status:organisation.status,stripe_connected:!!organisation.stripe_account_id,
        stripe_capabilities_ready:organisation.stripe_capabilities_ready,tax_review_complete:organisation.tax_review_complete
-     },events:ev.data.map(e=>({...e,tiers:tiers.data.filter(t=>t.event_id===e.id),fees:fees.data.filter(f=>f.event_id===e.id),showcase:showcases.data.find(f=>f.event_id===e.id)||null,festivalQuote:festivalQuotes.data.find(f=>f.event_id===e.id)||null,charity:charities.data.find(f=>f.event_id===e.id)||null}))});
+     },events:ev.data.map(e=>({...e,tiers:tiers.data.filter(t=>t.event_id===e.id),fees:fees.data.filter(f=>f.event_id===e.id),showcase:showcases.data.find(f=>f.event_id===e.id)||null,festivalQuote:festivalQuotes.data.find(f=>f.event_id===e.id)||null,
+       flexibleTerms:paymentTerms.data.find(f=>f.event_id===e.id)||null,charity:charities.data.find(f=>f.event_id===e.id)||null}))});
    }
    if(req.method!=='POST')return json(res,{error:'Method not allowed'},405);
    const body=await parseJson(req);
@@ -191,7 +197,86 @@ export default async function handler(req,res){
      if(saved.error)throw saved.error;
      return json(res,{tier:saved.data});
    }
-   if(action==='festivalQuote')return json(res,{error:'We are focusing this BETA on events up to 2,000 tickets. Festival enquiries will open in a later phase.'},503);
+   if(action==='eventPlusTerms'){
+     const id=String(body.eventId||'');
+     if(!uuid(id)||body.paymentPreference!=='deposit_sales')
+       return json(res,{error:'Choose an Event Plus draft and an approved payment preference'},400);
+     const ev=await db.from('sb_events').select('id,title,status,currency,internal_free_test,starts_at')
+       .eq('id',id).eq('organiser_profile_id',organisation.id).maybeSingle();
+     if(ev.error||!ev.data||ev.data.status!=='draft'||ev.data.internal_free_test
+        ||Date.parse(ev.data.starts_at)<=Date.now())
+       return json(res,{error:'Choose one of your future ordinary draft events'},403);
+     const tiers=await db.from('sb_event_tiers').select('quantity_total').eq('event_id',id);
+     if(tiers.error)throw tiers.error;
+     const capacity=tiers.data.reduce((n,t)=>n+Number(t.quantity_total||0),0);
+     if(capacity<501||capacity>2000)
+       return json(res,{error:'Deposit terms are available only for Event Plus (501–2,000) and separately quoted larger events.'},400);
+     const existing=await db.from('sb_event_payment_terms_requests').select('id,status')
+       .eq('event_id',id).maybeSingle();
+     if(existing.error)throw existing.error;
+     if(existing.data)return json(res,{error:'Flexible payment terms have already been requested for this event.'},409);
+     const amount=ev.data.currency==='gbp'?19900:23900;
+     const notes=safeText(body.notes,1200);
+     const saved=await db.from('sb_event_payment_terms_requests').insert({
+       event_id:id,organiser_profile_id:organisation.id,
+       ticket_capacity:capacity,currency:ev.data.currency,
+       proposed_listing_fee_cents:amount,payment_preference:'deposit_sales',
+       notes,status:'requested'
+     }).select('id,status,ticket_capacity').single();
+     if(saved.error){
+       if(saved.error.code==='23505')return json(res,{error:'Flexible terms already requested for this event.'},409);
+       throw saved.error;
+     }
+     const email=await sendStudioEmail(process.env.BOOKING_NOTIFICATION_EMAIL||'bookings@soundbunker.pt',
+       'TicketBunker Event Plus flexible payment request · '+ev.data.title,
+       'Flexible listing payment enquiry (no authorisation to charge)\nEvent: '+ev.data.title
+       +'\nOrganiser: '+organisation.display_name
+       +'\nTier: Event Plus · '+capacity+' tickets\nIndicative listing fee: '
+       +(ev.data.currency==='gbp'?'£199':'€239')
+       +'\nRequested terms: Deposit upfront plus capped recovery from eligible ticket sales, subject to written terms and Stripe Connect approval.'
+       +'\nNotes: '+notes);
+     if(email.status!=='sent')console.warn('Event Plus enquiry email notification not confirmed',{requestId:saved.data.id,status:email.status});
+     return json(res,{request:saved.data,message:'Flexible payment terms request saved. We will contact you to agree deposit and revenue collection terms. No payment was taken or ticket sales enabled.'},201);
+   }
+   if(action==='festivalQuote'){
+     const id=String(body.eventId||''),expected=Number(body.expectedTickets);
+     const paymentPreference=safeText(body.paymentPreference,30);
+     const notes=safeText(body.notes,1200);
+     if(!uuid(id)||!Number.isSafeInteger(expected)||expected<2001||expected>1000000)
+       return json(res,{error:'Choose a saved event and enter at least 2,001 expected tickets'},400);
+     if(!['upfront','deposit_sales','discuss'].includes(paymentPreference))
+       return json(res,{error:'Select your preferred payment arrangement'},400);
+     const event=await db.from('sb_events').select('id,title,starts_at,status,currency,internal_free_test')
+       .eq('id',id).eq('organiser_profile_id',organisation.id).maybeSingle();
+     if(event.error||!event.data||event.data.status!=='draft'||event.data.internal_free_test
+       ||Date.parse(event.data.starts_at)<=Date.now())
+       return json(res,{error:'Choose one of your upcoming draft events'},403);
+     const existing=await db.from('sb_event_festival_quotes').select('id,status')
+       .eq('event_id',event.data.id).maybeSingle();
+     if(existing.error)throw existing.error;
+     if(existing.data)return json(res,{error:'A custom quote is already requested for this event. We will contact you to discuss the details.'},409);
+     const tier=expected<=5000?'festival':'festival_pro';
+     const details='Preferred payment arrangement: '+paymentPreference
+       +'\nExpected tickets: '+expected
+       +'\nNotes: '+notes;
+     const quote=await db.from('sb_event_festival_quotes').insert({
+       event_id:event.data.id,organiser_profile_id:organisation.id,
+       tier_code:tier,expected_tickets:expected,currency:event.data.currency,
+       event_details:details,status:'requested'
+     }).select('id,status,expected_tickets,tier_code').single();
+     if(quote.error){
+       if(quote.error.code==='23505')return json(res,{error:'A custom quote for this event has already been requested.'},409);
+       throw quote.error;
+     }
+     const email=await sendStudioEmail(process.env.BOOKING_NOTIFICATION_EMAIL||'bookings@soundbunker.pt',
+       'TicketBunker large-event quote · '+event.data.title,
+       'New large-event quote enquiry\nEvent: '+event.data.title
+       +'\nOrganiser: '+organisation.display_name
+       +'\nExpected ticket volume: '+expected+'\nPayment preference: '+paymentPreference
+       +'\nDetails: '+notes+'\n\nCheck the TicketBunker admin quote records.');
+     if(email.status!=='sent')console.warn('Large-event quote email notification not confirmed',{quoteId:quote.data.id,status:email.status});
+     return json(res,{quote:quote.data,message:'Your custom quote request has been saved. We will discuss pricing and payment terms before anything goes live. No payment was taken.'},201);
+   }
    if(action==='featureRequest'){
      if(!uuid(body.eventId))return json(res,{error:'Choose your event first'},400);
      const event=await db.from('sb_events').select('id,status,currency,organiser_profile_id,starts_at')
