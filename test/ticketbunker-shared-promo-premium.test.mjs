@@ -56,7 +56,7 @@ test('premium email is branded, show specific, safe and includes unsubscribe',()
  assert.ok(!campaign.html.includes('A Night <Special>'));
  assert.match(campaign.html,/RESEND_UNSUBSCRIBE_URL/);
  assert.match(campaign.html,/ticketbunker-email-logo\.png/);
- assert.match(campaign.ticketLink,/\/event\?slug=a-night/);
+ assert.match(campaign.ticketLink,/\/event\/a-night$/);
  assert.match(campaign.text,/No TicketBunker booking fees/);
 });
 test('automatic subscriber mail only follows paid live featured placement, with protected recovery',async()=>{
