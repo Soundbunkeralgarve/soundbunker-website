@@ -1,0 +1,60 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#21182b"><meta name="robots" content="noindex,follow">
+<title>Event Tickets | TicketBunker</title>
+<link rel="stylesheet" href="/ticketbunker.css">
+<link rel="stylesheet" href="/ticketbunker-app.css">
+<link rel="stylesheet" href="/ticketbunker-launch.css">
+<link rel="stylesheet" href="/event-public.css">
+<script src="/event-public.js" defer></script>
+</head>
+<body class="tb-event-detail">
+<header class="tb-header"><a class="tb-brand" href="/events" aria-label="TicketBunker events"><img src="/assets/ticketbunker/ticketbunker-logo.svg" alt="TicketBunker" width="1273" height="125"></a>
+<nav class="tb-nav"><a href="/events">Explore events</a><a href="/">Return to SoundBunker</a><a href="/client?next=%2Fclient%23my-tickets">My Tickets</a></nav>
+<a class="tb-head-action" href="/events">All events ↗</a></header>
+<div class="tb-return-mobile"><a href="/events">← All events</a> · <a href="/">Return to SoundBunker</a></div>
+<main id="eventPublicMain" class="tb-public-shell">
+ <a href="/events" class="tb-back-to-events">← Back to all event tickets</a>
+ <div id="eventLoading" class="tb-public-loading" role="status"><span class="tb-inline-spinner"></span> Loading real event and available tickets…</div>
+ <div id="eventError" class="tb-public-error" role="alert" hidden><h2>Event unavailable</h2><p>We couldn't find an active listing for that event.</p><a href="/events">Browse all real events →</a></div>
+ <div id="eventContent" hidden>
+  <section class="tb-event-hero">
+   <div class="tb-event-art"><img id="eventPoster" alt="Official organiser event poster"><span id="eventHeroBadge" class="tb-event-pill">TEST ONLY · NO REAL ADMISSION</span></div>
+   <div class="tb-event-intro"><p class="tb-event-eyebrow">TICKETBUNKER / EVENT TICKETS</p>
+    <h1 id="eventTitle">Event tickets</h1><p class="tb-event-by">Presented by <strong id="eventOrganiser">Organiser</strong></p>
+    <div class="tb-event-meta"><div><span>DATE & TIME</span><strong id="eventWhen"></strong></div><div><span>VENUE</span><strong id="eventVenue"></strong></div>
+    <div><span>TICKETS</span><strong id="eventPrice">€0 Test tickets</strong></div></div>
+    <a class="tb-event-main-cta" href="#ticketTypes">See all tickets ↓</a>
+    <p class="tb-test-disclosure">This is a real software test booking at €0. No card is charged. QR codes are valid only for TicketBunker scanner testing, <strong>not admission to an actual event</strong>.</p>
+   </div>
+  </section>
+  <div class="tb-event-body">
+   <section class="tb-event-about"><p class="tb-event-eyebrow">ABOUT THE EVENT</p><h2>Event information</h2>
+    <p id="eventDescription"></p><div class="tb-event-brand" id="eventBrand" hidden><img id="eventLogo" alt="Organiser logo"><span>Official organiser event artwork</span></div>
+    <p class="tb-event-safe">Every ticket has a unique signed QR. Once scanned, that QR cannot be used a second time. Attendee names and account transfers are available inside My Tickets.</p>
+   </section>
+   <section id="ticketTypes" class="tb-event-booking"><p class="tb-event-eyebrow">CHOOSE YOUR TICKETS</p><h2>Available ticket types</h2>
+    <p>All the ticket options created by the organiser. For this beta test, each available type costs €0/£0.</p>
+    <div id="ticketOptions" class="tb-ticket-type-list" aria-label="Choose ticket type"></div>
+    <form id="betaBookingForm" class="tb-test-book-form" hidden>
+     <div class="tb-book-heading"><strong id="selectedTicketLabel">Selected ticket</strong><span>€0 TEST BOOKING</span></div>
+     <input id="selectedTier" name="tierId" type="hidden">
+     <label for="bookName">Your name<input id="bookName" name="name" type="text" minlength="2" maxlength="100" autocomplete="name" required placeholder="Name on the booking"></label>
+     <label for="bookEmail">Email for tickets<input id="bookEmail" name="email" type="email" maxlength="254" autocomplete="email" required placeholder="Your SoundBunker account email"></label>
+     <label for="bookQuantity">Quantity (up to 4 test tickets)<select id="bookQuantity" name="quantity" required><option value="1">1 ticket</option><option value="2">2 tickets</option><option value="3">3 tickets</option><option value="4">4 tickets</option></select></label>
+     <div class="tb-book-total"><span>Payment total</span><strong>€0.00 / £0.00</strong></div>
+     <button id="betaBookButton" type="submit">Confirm €0 test booking →</button>
+     <p class="tb-book-fineprint">No payment method required. Maximum four test tickets per email per event; test capacity may be limited. Each ticket is valid for scanner testing only.</p>
+    </form>
+    <div id="bookingResponse" role="status" aria-live="polite"></div>
+    <div id="bookedLinks" class="tb-booked-ticket-links" aria-live="polite"></div>
+   </section>
+  </div>
+ </div>
+</main>
+<nav class="tb-mobile-nav" aria-label="TicketBunker mobile navigation">
+<a href="/events"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><span>Explore</span></a>
+<a href="#ticketTypes" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h18v4a2 2 0 0 0 0 4v4H3v-4a2 2 0 0 0 0-4zM14 7v12" stroke-dasharray="2 2"/></svg><span>Tickets</span></a>
+<a href="/organiser"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/><circle cx="12" cy="12" r="10"/></svg><span>Create</span></a>
+<a href="/client?next=%2Fclient%23my-tickets"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h18v4a2 2 0 0 0 0 4v4H3v-4a2 2 0 0 0 0-4zM14 7v12" stroke-dasharray="2 2"/></svg><span>My Tickets</span></a>
+</nav></body></html>

@@ -23,7 +23,7 @@ export default async function handler(req,res){
    const organisation=await organiserForUser(db,ctx.user.id);
    if(req.method==='GET') {
      if(!organisation)return json(res,{organiser:null,events:[]});
-     const ev=await db.from('sb_events').select('id,slug,title,description,venue,starts_at,ends_at,status,country_code,currency,venue_timezone,event_kind,image_url,event_logo_url,headline_artist,venue_city,publish_requested_at')
+     const ev=await db.from('sb_events').select('id,slug,title,description,venue,starts_at,ends_at,status,country_code,currency,venue_timezone,event_kind,image_url,event_logo_url,headline_artist,venue_city,publish_requested_at,public_beta_test,beta_test_expires_at')
        .eq('organiser_profile_id',organisation.id).order('starts_at',{ascending:false}).limit(200);
      if(ev.error)throw ev.error;
      const ids=ev.data.map(v=>v.id);
@@ -125,6 +125,38 @@ export default async function handler(req,res){
        return json(res,{event:saved.data,charity:claim.data});
      }
      return json(res,{event:saved.data});
+   }
+   if(action==='activateBetaTest'||action==='stopBetaTest'){
+     if(!uuid(body.eventId))return json(res,{error:'Choose your event first'},400);
+     const ev=await db.from('sb_events')
+      .select('id,slug,status,starts_at,description,image_url,public_beta_test,internal_free_test')
+      .eq('id',body.eventId).eq('organiser_profile_id',organisation.id).maybeSingle();
+     if(ev.error||!ev.data||ev.data.internal_free_test||ev.data.status!=='draft')
+      return json(res,{error:'Choose your own draft event'},403);
+     if(action==='stopBetaTest'){
+      const result=await db.from('sb_events')
+       .update({public_beta_test:false,beta_test_expires_at:null})
+       .eq('id',ev.data.id).eq('organiser_profile_id',organisation.id)
+       .select('id').single();
+      if(result.error)throw result.error;
+      return json(res,{stopped:true,message:'The public €0 test listing is now hidden. Paid prices are unchanged.'});
+     }
+     if(Date.parse(ev.data.starts_at)<=Date.now()||!ev.data.image_url||
+         (ev.data.description||'').trim().length<20)
+      return json(res,{error:'Add a poster and description and choose a future event date before testing'},409);
+     const tiers=await db.from('sb_event_tiers').select('id')
+       .eq('event_id',ev.data.id).gte('price_cents',100).limit(1);
+     if(tiers.error||!tiers.data?.length)
+      return json(res,{error:'Add at least one priced ticket type first. Actual prices stay saved; test bookings are €0.'},409);
+     const until=new Date(Date.now()+72*60*60*1000).toISOString();
+     const result=await db.from('sb_events')
+      .update({public_beta_test:true,beta_test_expires_at:until})
+      .eq('id',ev.data.id).eq('organiser_profile_id',organisation.id)
+      .eq('status','draft').select('id,slug,beta_test_expires_at').single();
+     if(result.error)throw result.error;
+     return json(res,{active:true,
+      url:(process.env.SITE_URL||'https://www.soundbunker.pt').replace(/\/$/,'')+'/event?slug='+encodeURIComponent(ev.data.slug),
+      expiresAt:until,message:'Event is publicly visible in €0 TEST MODE for 72 hours. No payment or real admission.'});
    }
    if(action==='requestPublish'){
      if(!uuid(body.eventId))return json(res,{error:'Choose your event first'},400);

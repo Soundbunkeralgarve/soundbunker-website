@@ -189,3 +189,19 @@
 @media(max-width:760px){
  .ticketbunker-site .tb-hero-standalone h1{font-size:clamp(34px,9.1vw,57px);line-height:1.01;letter-spacing:-.055em}
 }
+
+/* Make a genuine event visible for safe, zero-payment TicketBunker beta testing. */
+.tb-activate-panel{background:#21172d;color:#fff;border:1px solid #594268;border-radius:17px;padding:21px;margin:18px 0;display:grid;gap:15px}
+.tb-activate-panel h3{font:850 21px/1.2 'Space Grotesk',sans-serif;margin:7px 0 8px;color:#fff}
+.tb-activate-panel p{font-size:12px;line-height:1.6;color:#e0d3e7;margin:0}
+.tb-activate-panel .tb-pilot-tag{font-size:10px;font-weight:900;letter-spacing:.13em;color:#d3bde0}
+.tb-activate-actions{display:flex;gap:10px;flex-wrap:wrap}
+.tb-activate-actions button,.tb-activate-actions a{display:inline-flex;align-items:center;justify-content:center;padding:13px 17px;min-height:48px;font-weight:900;font-size:12px;border-radius:11px;text-decoration:none}
+.tb-activate-actions .solid{background:#f7f3ed;color:#2e1b3a}
+.tb-activate-actions .outline{background:transparent;border:1px solid #f7f3ed;color:#f7f3ed}
+.tb-activate-actions a{background:#e7dced;color:#33213b}
+.tb-activate-actions [hidden]{display:none!important}
+.tb-activate-panel #betaTestMessage{font-size:12px;color:#dfcfe4}
+.tb-event-live-link{display:inline-flex;padding:9px 12px;border:1px solid #673f78;border-radius:9px;background:#30243e;color:#fff!important;text-decoration:none;font-size:12px;font-weight:900;margin:10px 0}
+.tb-event-detail .tb-header{position:sticky;top:0;z-index:40}
+@media(max-width:760px){.tb-activate-panel{padding:16px;border-radius:14px}.tb-activate-actions{display:grid;grid-template-columns:1fr}.tb-activate-actions>*{width:100%;box-sizing:border-box}.tb-event-detail .tb-header .tb-nav{display:none}}

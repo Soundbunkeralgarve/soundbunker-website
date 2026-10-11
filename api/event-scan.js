@@ -36,8 +36,8 @@ export default async function handler(req,res){
    p_ticket:id,p_actor:ctx.user.id,p_version:ticket.data.transfer_version||0
   });
   if(scanned.error)throw scanned.error;
-  const eventMeta=await ctx.admin.from('sb_events').select('internal_free_test').eq('id',ticket.data.event_id).single();
+  const eventMeta=await ctx.admin.from('sb_events').select('internal_free_test,public_beta_test').eq('id',ticket.data.event_id).single();
   if(eventMeta.error)throw eventMeta.error;
-  return json(res,{...scanned.data,test:eventMeta.data.internal_free_test===true});
+  return json(res,{...scanned.data,test:eventMeta.data.internal_free_test===true||eventMeta.data.public_beta_test===true});
  }catch(err){console.error('Ticket scanner error',err);return json(res,{error:'Scanner is temporarily unavailable'},503);}
 }

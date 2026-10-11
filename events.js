@@ -1,27 +1,17 @@
 'use strict';
 const $=selector=>document.querySelector(selector);
 const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-// Original TicketBunker editorial SVG posters; all concept events are clearly marked as unbookable demos.
-const conceptEvents=Object.freeze([
- {id:'demo-shoreline',title:'Shoreline Sessions',type:'Clubs',date:'2026-11-07T20:00:00Z',timezone:'Europe/Lisbon',venue:'Algarve coast · Portugal',subtitle:'House · Electronic · Club Night',image:'/assets/ticketbunker/posters/shoreline.svg',demo:true},
- {id:'demo-bassline',title:'Bassline Social',type:'Clubs',date:'2026-11-14T21:00:00Z',timezone:'Europe/London',venue:'Bristol · UK',subtitle:'Drum & Bass · Jungle · Nightlife',image:'/assets/ticketbunker/posters/bassline.svg',demo:true},
- {id:'demo-algorithm',title:'The Algorithm Live',type:'Live',date:'2026-11-28T19:30:00Z',timezone:'Europe/Lisbon',venue:'Loulé · Portugal',subtitle:'Indie · Live Band · Alternative',image:'/assets/ticketbunker/posters/algorithm.svg',demo:true},
- {id:'demo-sunset',title:'Sunset Rooftop Sessions',type:'Clubs',date:'2026-12-05T16:00:00Z',timezone:'Europe/Lisbon',venue:'Algarve coast · Portugal',subtitle:'Rooftop · House · Sunset Sessions',image:'/assets/ticketbunker/posters/sunset.svg',demo:true},
- {id:'demo-openmic',title:'Comedy After Hours',type:'Comedy',date:'2026-12-12T20:00:00Z',timezone:'Europe/London',venue:'London · UK',subtitle:'Stand-up · Comedy · Live',image:'/assets/ticketbunker/posters/comedy.svg',demo:true},
- {id:'demo-afterdark',title:'After Dark Sessions',type:'Clubs',date:'2027-01-23T18:00:00Z',timezone:'Europe/London',venue:'Manchester · UK',subtitle:'Electronic · Live Nightlife',image:'/assets/ticketbunker/posters/afterdark.svg',demo:true},
- {id:'demo-creative',title:'Culture Collective',type:'Arts',date:'2027-02-06T15:00:00Z',timezone:'Europe/Lisbon',venue:'Loulé · Portugal',subtitle:'Arts · Community · Live',image:'/assets/ticketbunker/posters/culture.svg',demo:true}
-]);
-let listedEvents=[...conceptEvents],activeCategory='All',activeLocation='All',term='',currency='gbp';
+let listedEvents=[],activeCategory='All',activeLocation='All',term='',currency='gbp';
 const quotePlans={
  gbp:[{name:'Starter',max:100,price:49},{name:'Standard',max:500,price:99},{name:'Event Plus',max:2000,price:199}],
  eur:[{name:'Starter',max:100,price:59},{name:'Standard',max:500,price:119},{name:'Event Plus',max:2000,price:239}]
 };
+const linkFor=e=>'/event?slug='+encodeURIComponent(e.slug);
 function formatEventDate(event){
- const parts=new Intl.DateTimeFormat('en-GB',{timeZone:event.timezone,month:'short',day:'2-digit'}).formatToParts(new Date(event.date));
+ const parts=new Intl.DateTimeFormat('en-GB',{timeZone:event.venue_timezone||'Europe/Lisbon',month:'short',day:'2-digit'}).formatToParts(new Date(event.starts_at));
  const part=name=>parts.find(p=>p.type===name)?.value||'';
  return {day:part('day'),month:part('month').toUpperCase()};
 }
-function money(n,c){try{return new Intl.NumberFormat('en-GB',{style:'currency',currency:(c||'eur').toUpperCase(),maximumFractionDigits:0}).format(n/100)}catch{return ''}}
 function tagType(kind){
  if(kind==='festival'||kind==='club')return 'Clubs';
  if(kind==='comedy')return 'Comedy';
@@ -30,84 +20,57 @@ function tagType(kind){
 }
 function render(){
  const shown=listedEvents.filter(e=>{
-  const country=activeLocation==='All'||(activeLocation==='UK'&&e.venue.includes('UK'))||(activeLocation==='Portugal'&&e.venue.includes('Portugal'));
-  return country&&(activeCategory==='All'||e.type===activeCategory)&&
-   (!term||(e.title+' '+e.venue+' '+e.subtitle+' '+e.type).toLocaleLowerCase().includes(term));
- }).sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const country=activeLocation==='All'||(activeLocation==='UK'&&e.country_code==='GB')||
+      (activeLocation==='Portugal'&&e.country_code==='PT');
+  return country&&(activeCategory==='All'||tagType(e.event_kind)===activeCategory)&&
+   (!term||(e.title+' '+e.venue+' '+e.description+' '+e.event_kind).toLocaleLowerCase().includes(term));
+ }).sort((a,b)=>new Date(a.starts_at)-new Date(b.starts_at));
+ $('#tb-event-count').textContent=shown.length+' real event'+(shown.length===1?'':'s');
  const root=$('#eventCards');
- $('#tb-event-count').textContent=shown.length+' event preview'+(shown.length===1?'':'s');
  if(!shown.length){
-  root.innerHTML='<div class="tb-no-events"><strong>No events found</strong><p>Try another keyword, location or category.</p><button type="button" id="tb-reset-filters">Clear filters</button></div>';
-  $('#tb-reset-filters').addEventListener('click',()=>{
-   term='';activeLocation='All';$('#tb-event-search').value='';$('#tb-location-filter').value='All';setCategory('All');
-  });return;
+  root.innerHTML='<div class="tb-no-events"><strong>'+(!listedEvents.length?'No events live yet':'No events match your search')+
+   '</strong><p>Only real organiser listings appear here. Create an event and activate €0 TEST MODE to try a genuine ticket booking.</p>'+
+   '<a class="tb-button primary" href="/organiser">Create / test an event →</a></div>';
+  return;
  }
  root.innerHTML=shown.map(e=>{
-  const day=formatEventDate(e),status=e.demo?'DEMO EVENT':'BETA PREVIEW';
+  const date=formatEventDate(e),types=(e.tiers||[]).length,available=(e.tiers||[]).some(t=>t.remaining>0);
+  const title=escapeHTML(e.title),url=linkFor(e);
   return '<article class="tb-event-card">'+
-   '<div class="tb-card-media"><img src="'+escapeHTML(e.image)+'" alt="TicketBunker editorial poster for '+escapeHTML(e.title)+'" loading="lazy" decoding="async" width="700" height="465">'+
-   '<span class="tb-card-demo">'+status+'</span></div>'+
-   '<div class="tb-card-content"><div class="tb-card-topline"><span class="tb-card-category">'+escapeHTML(e.type)+'</span><span class="tb-card-day">'+escapeHTML(day.day)+' '+escapeHTML(day.month)+'</span></div>'+
-   '<h3>'+escapeHTML(e.title)+'</h3><p class="tb-card-place">⌖ '+escapeHTML(e.venue)+'</p>'+
-   '<p class="tb-card-description">'+escapeHTML(e.subtitle)+'</p>'+
-   '<div class="tb-card-footer"><span class="tb-ticket-status">'+(e.demo?'Illustrative event · No tickets sold':'Checkout disabled · BETA')+'</span>'+
-   '<button type="button" data-preview="'+escapeHTML(e.id)+'" aria-label="Preview '+escapeHTML(e.title)+'">'+(e.demo?'Preview event':'View preview')+' <span aria-hidden="true">↗</span></button></div></div></article>';
+   '<a class="tb-card-media" href="'+url+'"><img src="'+escapeHTML(e.image_url||'/assets/ticketbunker/posters/featured.svg')+
+   '" alt="Official organiser poster for '+title+'" loading="lazy" width="700" height="465">'+
+   '<span class="tb-card-demo">'+(e.public_beta_test?'LIVE €0 TEST · NOT REAL ADMISSION':'EVENT LISTING')+'</span></a>'+
+   '<div class="tb-card-content"><div class="tb-card-topline"><span class="tb-card-category">'+
+   escapeHTML(tagType(e.event_kind))+'</span><span class="tb-card-day">'+date.day+' '+date.month+'</span></div>'+
+   '<h3><a href="'+url+'">'+title+'</a></h3><p class="tb-card-place">⌖ '+escapeHTML(e.venue)+'</p>'+
+   '<p class="tb-card-description">'+(types+' ticket type'+(types===1?'':'s')+' · '+(e.public_beta_test?'€0 test booking':'Event information'))+'</p>'+
+   '<div class="tb-card-footer"><span class="tb-ticket-status">'+(e.public_beta_test?'No payment · test only':available?'View ticket options':'Tickets unavailable')+'</span>'+
+   '<a href="'+url+'" class="tb-card-visit">View event & tickets →</a></div></div></article>';
  }).join('');
 }
 function setCategory(value){
  activeCategory=value;
  document.querySelectorAll('[data-filter]').forEach(node=>{
-  const on=node.dataset.filter===value;
-  node.classList.toggle('selected',on);node.classList.toggle('active',on);
+  const on=node.dataset.filter===value;node.classList.toggle('selected',on);node.classList.toggle('active',on);
   if(node.tagName==='BUTTON')node.setAttribute('aria-pressed',String(on));
- });
- render();
+ });render();
 }
 document.querySelectorAll('[data-filter]').forEach(node=>node.addEventListener('click',()=>setCategory(node.dataset.filter)));
-$('#tb-event-search').addEventListener('input',e=>{term=e.target.value.trim().toLocaleLowerCase();render()});
+$('#tb-event-search').addEventListener('input',e=>{term=e.target.value.trim().toLowerCase();render()});
 $('#tb-location-filter').addEventListener('change',e=>{activeLocation=e.target.value;render()});
-function showEvent(id){
- let item=listedEvents.find(e=>e.id===id);
- if(id==='sunset')item={title:'Midnight Sessions Live',venue:'Demo club venue · Algarve Coast',type:'Clubs',subtitle:'Featured Showcase demonstration',image:'/assets/ticketbunker/posters/featured.svg',demo:true};
- if(!item)return;
- $('#tb-demo-title').textContent=item.title;
- $('#tb-demo-image').src=item.image;
- $('#tb-demo-image').alt='Original TicketBunker '+item.type+' concept event poster';
- $('#tb-demo-detail').textContent=item.venue+' · '+item.subtitle;
- $('#tb-demo-dialog').showModal();
-}
-$('#eventCards').addEventListener('click',event=>{const id=event.target.closest('[data-preview]')?.dataset.preview;if(id)showEvent(id)});
-document.querySelector('[data-demo="sunset"]').addEventListener('click',()=>showEvent('sunset'));
-$('#tb-demo-close').addEventListener('click',()=>$('#tb-demo-dialog').close());
-$('#tb-demo-back').addEventListener('click',()=>$('#tb-demo-dialog').close());
-$('#tb-demo-dialog').addEventListener('click',e=>{if(e.target===$('#tb-demo-dialog'))$('#tb-demo-dialog').close()});
-$('#eventCards').addEventListener('error',e=>{
- const target=e.target;if(target.tagName==='IMG'&&!target.dataset.fallback){target.dataset.fallback='1';target.src='/assets/ticketbunker/posters/featured.svg'}
-},true);
 function setCurrency(value){
- if(!quotePlans[value])return;
- currency=value;
+ if(!quotePlans[value])return;currency=value;
  document.querySelectorAll('[data-currency]').forEach(button=>{
-  const selected=button.dataset.currency===currency;
-  button.classList.toggle('selected',selected);
+  const selected=button.dataset.currency===currency;button.classList.toggle('selected',selected);
   button.setAttribute('aria-pressed',String(selected));
  });
  document.querySelectorAll('[data-price-gbp]').forEach(label=>{label.textContent=label.dataset['price'+(currency==='gbp'?'Gbp':'Eur')]});
  calculatePlan();
 }
 function calculatePlan(){
- const input=$('#tb-ticket-estimate');
- const count=Number(input.value);
- if(!Number.isSafeInteger(count)||count<1){
-  $('#tb-estimate-plan').textContent='Enter ticket quantity';
-  $('#tb-estimate-price').textContent='No charge during BETA';
-  return;
- }
- if(count>2000){
-  $('#tb-estimate-plan').textContent='Custom event · 2,000+';
-  $('#tb-estimate-price').textContent='Request a tailored quote';
-  return;
- }
+ const count=Number($('#tb-ticket-estimate').value);
+ if(!Number.isSafeInteger(count)||count<1){$('#tb-estimate-plan').textContent='Enter ticket quantity';$('#tb-estimate-price').textContent='No charge during BETA';return;}
+ if(count>2000){$('#tb-estimate-plan').textContent='Custom event · 2,000+';$('#tb-estimate-price').textContent='Request a tailored quote';return;}
  const plan=quotePlans[currency].find(x=>count<=x.max);
  $('#tb-estimate-plan').textContent=plan.name;
  $('#tb-estimate-price').textContent=(currency==='gbp'?'£':'€')+plan.price+' flat listing fee';
@@ -116,19 +79,25 @@ document.querySelectorAll('[data-currency]').forEach(button=>button.addEventList
 $('#tb-ticket-estimate').addEventListener('input',calculatePlan);
 async function loadReal(){
  try{
-  const response=await fetch('/api/events',{cache:'no-store'});
-  if(!response.ok)throw Error('Events service unavailable');
-  const body=await response.json();
-  if(!Array.isArray(body.events))throw Error('Unexpected event feed');
-  const real=body.events.filter(e=>e.id&&e.title&&e.starts_at).map(e=>{
-   const prices=(e.tiers||[]).map(t=>Number(t.price_cents)).filter(Number.isFinite);
-   const lowest=prices.length?Math.min(...prices):0;
-   return {id:e.id,title:e.title,type:tagType(e.event_kind),date:e.starts_at,timezone:e.venue_timezone||'Europe/Lisbon',
-    venue:e.venue||'',subtitle:lowest?'Tickets planned from '+money(lowest,e.currency)+' · Checkout disabled':'Preview · Checkout disabled',
-    image:e.image_url&&/^https:\/\//.test(e.image_url)?e.image_url:'/assets/ticketbunker/posters/featured.svg',demo:false};
-  });
-  listedEvents=real.concat(conceptEvents);
+  const r=await fetch('/api/events',{cache:'no-store'});
+  if(!r.ok)throw Error('Events service unavailable');
+  const data=await r.json();if(!Array.isArray(data.events))throw Error('Unexpected event feed');
+  listedEvents=data.events;
+  const feature=$('#featured'),first=listedEvents[0];
+  feature.hidden=!first;
+  if(first){
+   $('#feature-title').textContent=first.title;
+   $('#tb-feature-image').src=first.image_url||'/assets/ticketbunker/posters/featured.svg';
+   $('#tb-feature-image').alt='Event poster for '+first.title;
+   $('#featureVenue').textContent=first.venue;
+   $('#featureDescription').textContent=first.description||'View all ticket types and event information.';
+   $('#featureLink').href=linkFor(first);
+   $('#featureStatus').textContent=first.public_beta_test?'LIVE €0 SYSTEM TEST · NO ADMISSION':'REAL EVENT';
+  }
   render();
- }catch(error){console.warn('Events feed unavailable; showing demo events only');render();}
+ }catch(error){console.error('Unable to load genuine events',error);
+  $('#eventCards').innerHTML='<div class="tb-no-events"><strong>Unable to load events</strong><p>Please refresh and try again.</p></div>';
+  $('#tb-event-count').textContent='Event list unavailable';
+ }
 }
 setCurrency('gbp');render();loadReal();

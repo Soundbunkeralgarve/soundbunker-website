@@ -109,6 +109,10 @@
       "destination": "/event-ticket.html"
     },
     {
+      "source": "/event",
+      "destination": "/event-public.html"
+    },
+    {
       "source": "/organiser",
       "destination": "/organiser.html"
     },
