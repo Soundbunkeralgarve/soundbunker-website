@@ -104,3 +104,6 @@
  .tb-scanner-app #manual{padding:16px!important}
 }
 @media print{.tb-scanner-app .tb-mobile-nav{display:none!important}.tb-ticket-official-logo{width:150px!important}}
+
+.tb-organiser-app #streetCashAmount[hidden]{display:none!important}
+@media print{.tb-ticket-pass-top{-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#23192e!important}.tb-ticket-official-logo{filter:none!important}}
