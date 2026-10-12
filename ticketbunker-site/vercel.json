@@ -4,6 +4,10 @@
   "functions": {
     "api/[endpoint].js": {
       "maxDuration": 60
+    },
+    "api/event-page.js": {
+      "maxDuration": 30,
+      "includeFiles": "event.html"
     }
   },
   "rewrites": [
@@ -29,7 +33,7 @@
     },
     {
       "source": "/event/:slug",
-      "destination": "/event"
+      "destination": "/api/event-page?slug=:slug"
     }
   ],
   "redirects": [
