@@ -8,7 +8,8 @@ const VERSION='2026-09-30.endive';
 const LINK_VERSION='2026-09-30.preview';
 const platformSetupCodes=new Set(['accounts_v2_access_blocked','non_connect_platform_accounts_v2_access_blocked','platform_registration_required','connect_profile_not_submitted','connect_identity_not_verified','account_create_activation_required','account_creation_liability_unacknowledged','account_creation_liability_unacknowledged_and_identity_verification_incomplete','account_creation_requirement_collection_and_liability_unacknowledged','account_creation_requirement_collection_and_liability_unacknowledged_and_identity_verification_incomplete','account_creation_requirement_collection_unacknowledged','account_creation_requirement_collection_unacknowledged_and_identity_verification_incomplete','account_creation_identity_verification_incomplete']);
 const stripeId=s=>/^acct_[A-Za-z0-9]+$/.test(s||'');
-export const liveConnectKey=()=>/^(sk|rk)_live_/.test(process.env.STRIPE_SECRET_KEY||'');
+// TicketBunker is its own Stripe merchant; never fall back to studio payments.
+export const liveConnectKey=()=>/^(sk|rk)_live_/.test(process.env.TICKETBUNKER_STRIPE_SECRET_KEY||'');
 export function createConnectAccountBody(org,email){
  if(!['GB','PT'].includes(org.country_code))throw Error('Unsupported organiser country');
  return {contact_email:email,display_name:org.display_name,identity:{country:org.country_code},
@@ -33,7 +34,7 @@ export function connectAccountStatus(account,legacy){
 export function connectAccountReady(account,legacy){return connectAccountStatus(account,legacy).ready;}
 export async function stripeCall(path,{method='GET',body,idem,version=VERSION}={}){
  const response=await fetch(BASE+path,{method,redirect:'error',signal:AbortSignal.timeout(20000),headers:{
-  Authorization:'Bearer '+process.env.STRIPE_SECRET_KEY,'Stripe-Version':version,
+  Authorization:'Bearer '+process.env.TICKETBUNKER_STRIPE_SECRET_KEY,'Stripe-Version':version,
   ...(body?{'Content-Type':'application/json'}:{}),...(idem?{'Idempotency-Key':idem}:{})
  },body:body?JSON.stringify(body):undefined});
  const data=await response.json().catch(()=>({}));
