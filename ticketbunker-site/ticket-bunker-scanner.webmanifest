@@ -12,5 +12,13 @@
       "type": "image/svg+xml",
       "purpose": "any maskable"
     }
+  ],
+  "description": "TicketBunker scanner for authorised door crews: secure live QR ticket validation and staff check-in.",
+  "id": "/event-scanner",
+  "scope": "/",
+  "lang": "en-GB",
+  "categories": [
+    "business",
+    "productivity"
   ]
 }
