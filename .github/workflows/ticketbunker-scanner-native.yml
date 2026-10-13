@@ -1,0 +1,23 @@
+name: TicketBunker Native Scanner Checks
+on:
+  pull_request:
+    paths: ['ticketbunker-scanner-native/**', '.github/workflows/ticketbunker-scanner-native.yml']
+  push:
+    branches: [main, ticketbunker-native-scanner-20261013]
+    paths: ['ticketbunker-scanner-native/**', '.github/workflows/ticketbunker-scanner-native.yml']
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: ticketbunker-scanner-native
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm test
+      - run: npx expo export --platform android --output-dir dist-android
