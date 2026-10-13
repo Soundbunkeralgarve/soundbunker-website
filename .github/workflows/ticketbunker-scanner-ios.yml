@@ -1,0 +1,44 @@
+name: TicketBunker Scanner iOS Simulator Build
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'ticketbunker-scanner-native/**'
+      - '.github/workflows/ticketbunker-scanner-ios.yml'
+permissions:
+  contents: read
+jobs:
+  simulator:
+    runs-on: macos-latest
+    timeout-minutes: 50
+    defaults:
+      run:
+        working-directory: ticketbunker-scanner-native
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check Xcode
+        run: xcodebuild -version
+      - name: Install JS dependencies
+        run: npm install --no-audit --no-fund
+      - name: Verify scanner rules
+        run: npm test
+      - name: Generate native iOS project
+        run: npx expo prebuild --platform ios --non-interactive
+      - name: Build for iPhone Simulator (no store credentials required)
+        run: |
+          set -euo pipefail
+          WORKSPACE="$(find ios -maxdepth 1 -name '*.xcworkspace' -type d | head -n 1)"
+          test -n "$WORKSPACE"
+          SCHEME="$(xcodebuild -list -json -workspace "$WORKSPACE" | python3 -c 'import json,sys; print(next((s for s in json.load(sys.stdin).get("workspace",{}).get("schemes",[]) if "TicketBunker" in s), ""))')"
+          test -n "$SCHEME"
+          xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO -derivedDataPath build-cache build > ios-build.log 2>&1 || { tail -n 120 ios-build.log; exit 1; }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ticketbunker-scanner-ios-simulator
+          path: ticketbunker-scanner-native/build-cache/Build/Products/Debug-iphonesimulator/*.app
+          if-no-files-found: warn
+          retention-days: 14
