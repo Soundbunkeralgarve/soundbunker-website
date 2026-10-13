@@ -4,9 +4,13 @@ const origin='https://theticketbunker.com';
 const localized=value=>({defaultValue:{language:'en-GB',value:String(value||'')}});
 const image=(uri,alt)=>({sourceUri:{uri},contentDescription:localized(alt)});
 const pem=value=>String(value||'').replace(/\\n/g,'\n');
+const googleCredentials=env=>{
+ const dedicated=!!env.GOOGLE_WALLET_CLIENT_EMAIL||!!env.GOOGLE_WALLET_PRIVATE_KEY;
+ return dedicated?{email:env.GOOGLE_WALLET_CLIENT_EMAIL,key:env.GOOGLE_WALLET_PRIVATE_KEY}:{email:env.GOOGLE_SERVICE_ACCOUNT_EMAIL,key:env.GOOGLE_PRIVATE_KEY};
+};
 export function walletAvailability(env=process.env){return {
  apple:env.APPLE_WALLET_ENABLED==='true'&&['APPLE_PASS_TYPE_ID','APPLE_TEAM_ID','APPLE_PASS_CERT_PEM','APPLE_PASS_KEY_PEM','APPLE_WWDR_CERT_PEM'].every(k=>!!env[k]),
- google:env.GOOGLE_WALLET_ENABLED==='true'&&['GOOGLE_WALLET_ISSUER_ID','GOOGLE_WALLET_CLIENT_EMAIL','GOOGLE_WALLET_PRIVATE_KEY'].every(k=>!!env[k])
+ google:env.GOOGLE_WALLET_ENABLED==='true'&&/^\d+$/.test(String(env.GOOGLE_WALLET_ISSUER_ID||''))&&!!googleCredentials(env).email&&!!googleCredentials(env).key
 };}
 export function walletTicketUrl(t,sig){return origin+'/event-ticket?id='+encodeURIComponent(t.id)+'&sig='+encodeURIComponent(sig);}
 export function assertWalletTicket(t){
@@ -76,12 +80,12 @@ export function googlePassPayload(t,sig,env=process.env){
  ...(safeUrl(t.eventLogo)?{imageModulesData:[{id:'organiser-logo',mainImage:image(t.eventLogo,'Event organiser')}]}:{}),
  textModulesData:[{id:'organiser',header:'Presented by',body:t.organiserName||'Event organiser'},{id:'terms',header:'Entry conditions',body:'One admission only. Transferred, cancelled, refunded or used tickets are not valid. Reopen My tickets after attendee changes.'}],
  linksModuleData:{uris:[{uri:origin+'/my-tickets',description:'Manage your ticket'},{uri:'mailto:bookings@theticketbunker.com',description:'Customer Services'}]}};
- return {iss:env.GOOGLE_WALLET_CLIENT_EMAIL,aud:'google',typ:'savetowallet',iat:Math.floor(Date.now()/1000),origins:['https://theticketbunker.com','https://www.theticketbunker.com'],payload:{eventTicketClasses:[ticketClass],eventTicketObjects:[ticketObject]}};
+ return {iss:googleCredentials(env).email,aud:'google',typ:'savetowallet',iat:Math.floor(Date.now()/1000),origins:['https://theticketbunker.com','https://www.theticketbunker.com'],payload:{eventTicketClasses:[ticketClass],eventTicketObjects:[ticketObject]}};
 }
 export function createGoogleWalletLink(t,sig,env=process.env){
  if(!walletAvailability(env).google)throw Error('Google Wallet is not enabled.');
  const b64=value=>Buffer.from(JSON.stringify(value)).toString('base64url');
  const content=b64({alg:'RS256',typ:'JWT'})+'.'+b64(googlePassPayload(t,sig,env));
- const signature=createSign('RSA-SHA256').update(content).end().sign(pem(env.GOOGLE_WALLET_PRIVATE_KEY)).toString('base64url');
+ const signature=createSign('RSA-SHA256').update(content).end().sign(pem(googleCredentials(env).key)).toString('base64url');
  return 'https://pay.google.com/gp/v/save/'+content+'.'+signature;
 }
