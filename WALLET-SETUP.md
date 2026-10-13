@@ -19,3 +19,5 @@ Both providers reuse the existing signed QR and transfer generation. The API rej
 Apple organiser thumbnails and event strips are embedded only from the project's public Supabase storage, with size, timeout and decoding limits. External artwork is omitted rather than fetched unsafely. Google passes retain artwork and organiser logos as provider-rendered image modules. Native device layouts vary; provided previews are illustrative, not screenshots of an installed pass.
 
 Validation before activation: save one genuine test-owned paid ticket on iPhone and Android; check offline QR display; scan once and reject a repeat scan; transfer and reject the old QR; verify cancellation/refund rejection. Do not email customers or run promotional sends for testing.
+
+Google Wallet can use the existing backend Google service-account identity once that identity has issuer Developer access. Keep the live-save switch disabled until a real device save and scan has passed.
