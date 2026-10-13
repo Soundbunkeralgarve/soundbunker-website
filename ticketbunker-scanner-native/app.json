@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "TicketBunker Scanner",
+    "slug": "ticketbunker-scanner",
+    "scheme": "ticketbunkerscanner",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#20162d",
+    "icon": "./assets/icon.png",
+    "ios": {
+      "bundleIdentifier": "pt.soundbunker.ticketbunkerscanner",
+      "supportsTablet": true,
+      "buildNumber": "1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "pt.soundbunker.ticketbunkerscanner",
+      "versionCode": 1,
+      "permissions": [
+        "android.permission.CAMERA"
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#20162d"
+      }
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow TicketBunker Scanner to use your camera to scan event tickets.",
+          "recordAudioAndroid": false,
+          "barcodeScannerEnabled": true
+        }
+      ],
+      "expo-secure-store"
+    ],
+    "extra": {
+      "apiBase": "https://theticketbunker.com"
+    }
+  }
+}

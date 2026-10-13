@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {ticketUrl,inviteToken,admissionResult} from '../lib/scanLogic.js';
+const id='11111111-1111-4111-8111-111111111111';
+const sig='a'.repeat(64);
+const valid='https://theticketbunker.com/event-ticket?id='+id+'&sig='+sig;
+test('accepts the TicketBunker signed QR without replacing its identity',()=>{assert.equal(ticketUrl(valid),valid);assert.equal(ticketUrl(valid.replace('theticketbunker.com','www.soundbunker.pt')),valid.replace('theticketbunker.com','www.soundbunker.pt'));});
+test('rejects forged, HTTP, off-domain and malformed ticket URLs',()=>{for(const url of ['http://'+valid.slice(8),valid.replace('theticketbunker.com','evil.example.com'),valid.replace('sig='+sig,'sig=wrong'),'hello',valid.replace('/event-ticket','/refund')])assert.throws(()=>ticketUrl(url));});
+test('accepts only signed scanner invite tokens on trusted domains',()=>{const token='b'.repeat(64);assert.equal(inviteToken('https://www.soundbunker.pt/event-scanner?invite='+token),token);assert.equal(inviteToken(token),token);assert.equal(inviteToken('https://evil.example.com/event-scanner?invite='+token),null);});
+test('test tickets cannot be presented as real admission',()=>{assert.equal(admissionResult({status:'valid',test:true}).kind,'warning');assert.equal(admissionResult({status:'valid',test:false}).kind,'approved');assert.equal(admissionResult({status:'used'}).heading,'ALREADY SCANNED');assert.equal(admissionResult({status:'wrong_event'}).kind,'rejected');});
