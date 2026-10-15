@@ -126,6 +126,12 @@
     }
   ],
   "functions": {
+    "api/event-scan.js": {
+      "regions": [
+        "dub1"
+      ],
+      "maxDuration": 30
+    },
     "api/admin-prize-voucher.js": {
       "includeFiles": "api/_prize_templates/**"
     },
@@ -137,12 +143,6 @@
     },
     "api/*.js": {
       "includeFiles": "assets/soundbunker-email-footer.png"
-    },
-    "api/event-scan.js": {
-      "regions": [
-        "dub1"
-      ],
-      "maxDuration": 30
     }
   },
   "crons": [
