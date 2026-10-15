@@ -16,6 +16,7 @@
   const ticketUrl=location.origin+'/event-ticket?id='+encodeURIComponent(id)+'&sig='+encodeURIComponent(sig);
   new QRCode($('qr'),{text:ticketUrl,width:180,height:180,correctLevel:QRCode.CorrectLevel.M});
   $('ticketActions').hidden=false;
+  $('walletActions').hidden=!(t.wallet?.apple||t.wallet?.google);
   const walletEndpoint='/api/event-wallet?id='+encodeURIComponent(id)+'&sig='+encodeURIComponent(sig);
   if(t.wallet?.apple){$('appleWallet').href=walletEndpoint+'&provider=apple';$('appleWallet').hidden=false;}
   if(t.wallet?.google){$('googleWallet').hidden=false;$('googleWallet').onclick=async()=>{
@@ -54,3 +55,4 @@ $('printTicket').onclick=()=>window.print();
   $('saveTicket').onclick=()=>{const image=document.querySelector('#qr img'),canvas=document.querySelector('#qr canvas'),href=image?.src||canvas?.toDataURL('image/png');if(!href)return;$('notice').textContent='Keep your saved QR private.';const a=document.createElement('a');a.href=href;a.download='ticketbunker-'+id.slice(0,8)+'.png';a.click();};
  }catch(error){$('name').textContent='Ticket unavailable';$('ticketTierMark').textContent='UNAVAILABLE';$('details').textContent='';$('notice').textContent=error.message;}
 })();
+

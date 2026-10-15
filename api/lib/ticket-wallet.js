@@ -102,14 +102,14 @@ export function googlePassPayload(t,sig,env=process.env){
  if(!/^\d+$/.test(issuer||''))throw Error('Google Wallet issuer is not configured.');
  const classId=issuer+'.event_'+t.eventId;
  const ticketClass={id:classId,issuerName:'The TicketBunker',reviewStatus:'UNDER_REVIEW',eventName:localized(t.title),
- logo:image(origin+'/brand-icon.png','The TicketBunker'),venue:{name:localized(t.venue)},dateTime:{start:t.date,...(t.endDate?{end:t.endDate}:{})}};
+ logo:image(origin+'/brand-icon.png','The TicketBunker'),...(t.venue&&t.venueAddress?{venue:{name:localized(t.venue),address:localized(t.venueAddress)}}:{}),dateTime:{start:t.date,...(t.endDate?{end:t.endDate}:{})}};
  const safeUrl=url=>typeof url==='string'&&/^https:\/\/[^\s<>"]+$/.test(url);
  const ticketObject={id:issuer+'.ticket_'+t.id+'_v'+(t.version||0),classId,state:'ACTIVE',hexBackgroundColor:'#000000',
  ticketHolderName:t.holderName,ticketNumber:String(t.admissionNumber||''),ticketType:localized((t.test?'TEST ONLY — ':'')+t.tier),
  barcode:{type:'QR_CODE',value:walletTicketUrl(t,sig),alternateText:'Admission '+String(t.admissionNumber||'')},
  ...(safeUrl(t.poster)?{heroImage:image(t.poster,'Event artwork')}:{}),
  ...(safeUrl(t.eventLogo)?{imageModulesData:[{id:'organiser-logo',mainImage:image(t.eventLogo,'Event organiser')}]}:{}),
- textModulesData:[{id:'organiser',header:'Presented by',body:t.organiserName||'Event organiser'},{id:'terms',header:'Entry conditions',body:(t.test?'Private wallet/scanner rehearsal only. Not valid for admission to a public event. ':'')+'One admission only. Transferred, cancelled, refunded or used tickets are not valid. Reopen My tickets after attendee changes.'}],
+ textModulesData:[...(!t.venueAddress&&t.venue?[{id:'venue',header:'Venue',body:t.venue}]:[]),{id:'organiser',header:'Presented by',body:t.organiserName||'Event organiser'},{id:'terms',header:'Entry conditions',body:(t.test?'Private wallet/scanner rehearsal only. Not valid for admission to a public event. ':'')+'One admission only. Transferred, cancelled, refunded or used tickets are not valid. Reopen My tickets after attendee changes.'}],
  linksModuleData:{uris:[{uri:origin+'/my-tickets',description:'Manage your ticket'},{uri:'mailto:bookings@theticketbunker.com',description:'Customer Services'}]}};
  return {iss:googleCredentials(env).email,aud:'google',typ:'savetowallet',iat:Math.floor(Date.now()/1000),origins:['https://theticketbunker.com','https://www.theticketbunker.com'],payload:{eventTicketClasses:[ticketClass],eventTicketObjects:[ticketObject]}};
 }

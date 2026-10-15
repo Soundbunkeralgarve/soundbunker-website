@@ -43,3 +43,12 @@ test('Google save links carry an authentic RS256 signature and no private key',(
  const payload=JSON.parse(Buffer.from(p,'base64url'));assert.equal(payload.aud,'google');assert.equal(payload.payload.eventTicketObjects[0].ticketHolderName,'Alex Taylor');assert.ok(!jwt.includes('PRIVATE'));
 });
 
+
+test('Google venue is complete or preserved as text without an invalid address',()=>{
+ const env={GOOGLE_WALLET_ISSUER_ID:'123456',GOOGLE_SERVICE_ACCOUNT_EMAIL:'test@example.com'};
+ const withoutAddress=googlePassPayload(ticket,'signature',env).payload;
+ assert.equal(withoutAddress.eventTicketClasses[0].venue,undefined);
+ assert.equal(withoutAddress.eventTicketObjects[0].textModulesData.find(item=>item.id==='venue').body,ticket.venue);
+ const withAddress=googlePassPayload({...ticket,venueAddress:'1 Example Street, London'},'signature',env).payload;
+ assert.equal(withAddress.eventTicketClasses[0].venue.address.defaultValue.value,'1 Example Street, London');
+});
