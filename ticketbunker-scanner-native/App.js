@@ -7,6 +7,7 @@ import {withDeadline} from './lib/request';
 import {admissionResult,inviteToken,ticketUrl} from './lib/scanLogic';
 
 const C={bg:'#080d10',panel:'#121c20',panel2:'#19272c',edge:'#293a3e',text:'#f3f7f6',muted:'#99adb0',mint:'#20deb0',amber:'#ffd17b',red:'#ff8e9e'};
+const QR_SETTINGS={barcodeTypes:['qr']};
 const Button=({title,onPress,variant='primary',disabled=false,style})=><Pressable disabled={disabled} onPress={onPress} style={({pressed})=>[s.button,variant==='secondary'&&s.secondary,disabled&&s.disabled,pressed&&s.pressed,style]} accessibilityRole="button" accessibilityState={{disabled}}><Text style={[s.buttonText,variant==='secondary'&&s.secondaryText]}>{title}</Text></Pressable>;
 const Input=(props)=><TextInput placeholderTextColor="#71868b" style={s.input} {...props}/>;
 const Footer=()=> <View style={s.footer}><Text style={s.powered}>POWERED BY</Text><Image source={require('./assets/soundbunker-wordmark.png')} style={s.partnerLogo} resizeMode="contain" accessibilityLabel="SoundBunker Algarve"/><Pressable onPress={()=>Linking.openURL('https://theticketbunker.com/terms#privacy')} accessibilityRole="link" style={s.privacy}><Text style={s.small}>Privacy</Text></Pressable></View>;
@@ -118,11 +119,11 @@ export default function App(){
   }catch(e){setMessage(e.message||'Unable to accept the invitation.');}
   finally{setWorking(false);}
  }
- function dismissFeedback(){
+ const dismissFeedback=useCallback(()=>{
   if(lock.current)return;
   clearTimeout(feedbackTimer.current);feedbackVisible.current=false;setFeedbackOpen(false);
- }
- async function handleScan(raw,source='camera'){
+ },[]);
+ const handleScan=useCallback(async(raw,source='camera')=>{
   if(!eventId.current||lock.current||feedbackVisible.current)return;
   const now=Date.now();
   if(source==='camera'&&raw===last.current.code&&now-last.current.at<1800){last.current.at=now;return;}
@@ -145,14 +146,17 @@ export default function App(){
    setManual('');setWorking(false);lock.current=false;
    if(next?.kind==='approved')feedbackTimer.current=setTimeout(dismissFeedback,900);
   }
- }
+ },[client,dismissFeedback]);
+ const onBarcodeScanned=useCallback(({data})=>handleScan(data),[handleScan]);
  const myEvent=events.find(e=>e.id===selected);
  const ready=!!myEvent&&!loadingEvents&&!working&&!startupError&&!loading;
+ const cameraActive=foreground&&!toolsOpen&&!manualOpen;
+ const statusLabel=!ready?'DOOR CREW':manualOpen?'MANUAL':!cameraActive?'PAUSED':permission?.granted?'READY':'CAMERA OFF';
  const resultColor=result?.kind==='approved'?C.mint:result?.kind==='warning'?C.amber:C.red;
  return <SafeAreaView style={s.root}><StatusBar barStyle="light-content" backgroundColor="#000"/><KeyboardAvoidingView style={s.flex} behavior={Platform.OS==='ios'?'padding':undefined}>
   <View style={s.header}>
    <View style={s.brandLockup}><Image source={require('./assets/brand-icon.png')} style={s.brandIcon} resizeMode="contain" accessibilityLabel="TicketBunker"/><View><Image source={require('./assets/wordmark.png')} style={s.wordmark} resizeMode="contain" accessibilityLabel="TicketBunker"/><Text style={s.subbrand}>SCANNER</Text></View></View>
-   <View style={s.statusPill}><View style={[s.dot,{backgroundColor:ready?C.mint:C.muted}]}/><Text style={s.statusText}>{ready?'READY':'DOOR CREW'}</Text></View>
+   <View style={s.statusPill}><View style={[s.dot,{backgroundColor:statusLabel==='READY'?C.mint:C.muted}]}/><Text style={s.statusText}>{statusLabel}</Text></View>
   </View>
   {loading||startupError?<View style={s.welcome}>
    <View style={s.startupMark}><Image source={require('./assets/brand-icon.png')} style={s.startupIcon} resizeMode="contain"/></View>
@@ -189,7 +193,7 @@ export default function App(){
    {!loadingEvents&&!myEvent&&<View style={s.empty}><Text style={s.panelHeading}>{message?'Couldn’t load events':'No event open yet'}</Text><Text style={s.bodyCenter}>{message?'Check your connection and try again.':'Accept your crew invitation in event settings. Your event appears when check-in opens.'}</Text><Button title="Try again" variant="secondary" onPress={refresh}/></View>}
    {myEvent&&!loadingEvents&&<>
     <View style={s.scanHeading}><Text style={s.panelHeading}>Scan ticket</Text><Text style={s.small}>One ticket. One entry.</Text></View>
-    {permission?.granted?<View style={s.cameraFrame}><CameraView style={s.camera} facing="back" enableTorch={torch&&foreground&&!toolsOpen} active={foreground&&!toolsOpen} barcodeScannerSettings={{barcodeTypes:['qr']}} onBarcodeScanned={foreground&&!toolsOpen&&!feedbackOpen?({data})=>handleScan(data):undefined}/><View pointerEvents="none" style={s.scanOverlay}><View style={s.target}><View style={[s.corner,s.topLeft]}/><View style={[s.corner,s.topRight]}/><View style={[s.corner,s.bottomLeft]}/><View style={[s.corner,s.bottomRight]}/></View><Text style={s.scanHint}>Hold the QR code inside the frame</Text></View></View>:
+    {permission?.granted?<View style={s.cameraFrame}><CameraView style={s.camera} facing="back" enableTorch={torch&&cameraActive} active={cameraActive} barcodeScannerSettings={QR_SETTINGS} onBarcodeScanned={cameraActive&&!feedbackOpen?onBarcodeScanned:undefined}/><View pointerEvents="none" style={s.scanOverlay}><View style={s.target}><View style={[s.corner,s.topLeft]}/><View style={[s.corner,s.topRight]}/><View style={[s.corner,s.bottomLeft]}/><View style={[s.corner,s.bottomRight]}/></View><Text style={s.scanHint}>{manualOpen?'Camera paused for manual entry':toolsOpen?'Camera paused in settings':'Hold the QR code inside the frame'}</Text></View></View>:
     <View style={s.cameraMissing}><Text style={s.panelHeading}>Enable your camera</Text><Text style={s.bodyCenter}>Point your camera at a ticket QR code to check it in.</Text><Button title={permission?.canAskAgain===false?'Open camera settings':'Allow camera access'} onPress={()=>permission?.canAskAgain===false?Linking.openSettings():requestPermission()}/></View>}
     <View style={s.controls}><Button title={torch?'Torch on':'Torch off'} variant="secondary" onPress={()=>setTorch(x=>!x)} disabled={!permission?.granted} style={s.flex}/><Button title={manualOpen?'Close entry':'Enter manually'} variant="secondary" onPress={()=>setManualOpen(x=>!x)} style={s.flex}/></View>
     {manualOpen&&<View style={s.panel}><Text style={s.label}>Ticket link</Text><Input autoCapitalize="none" autoCorrect={false} value={manual} onChangeText={setManual} placeholder="Paste ticket URL"/><Button title={working?'Checking…':'Check ticket'} disabled={working||!manual.trim()} onPress={()=>handleScan(manual.trim(),'manual')}/></View>}
