@@ -9,8 +9,8 @@ export const secureSessionStorage={
   if(!meta)return null;
   const n=Number(meta);
   if(!Number.isInteger(n)||n<1||n>LIMIT)return null;
-  const values=[];
-  for(let i=0;i<n;i++){const part=await SecureStore.getItemAsync(base+'.'+i);if(part===null)return null;values.push(part);}
+  const values=await Promise.all(Array.from({length:n},(_,i)=>SecureStore.getItemAsync(base+'.'+i)));
+  if(values.some(part=>part===null))return null;
   return values.join('');
  },
  async setItem(key,value){
