@@ -79,7 +79,7 @@ async function trustedArtwork(url,width,height,{fit='contain',background='#fffff
  const reader=response.body.getReader();const chunks=[];let size=0;
  while(true){const {done,value}=await reader.read();if(done)break;size+=value.length;if(size>3_000_000){await reader.cancel();return null;}chunks.push(Buffer.from(value));}
  const {default:sharp}=await import('sharp');
- return await sharp(Buffer.concat(chunks),{limitInputPixels:16000000}).resize(width,height,{fit,background}).png().toBuffer();
+ return await sharp(Buffer.concat(chunks),{limitInputPixels:16000000}).resize(width,height,{fit,background}).flatten({background}).png().toBuffer();
  }catch{return null;}
 }
 export async function createApplePass(t,sig,env=process.env){
