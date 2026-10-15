@@ -1,5 +1,5 @@
 import React,{useCallback,useEffect,useRef,useState} from 'react';
-import {ActivityIndicator,AppState,KeyboardAvoidingView,Linking,Modal,Platform,Pressable,SafeAreaView,ScrollView,StatusBar,StyleSheet,Text,TextInput,View} from 'react-native';
+import {ActivityIndicator,AppState,Image,KeyboardAvoidingView,Linking,Modal,Platform,Pressable,SafeAreaView,ScrollView,StatusBar,StyleSheet,Text,TextInput,View} from 'react-native';
 import {CameraView,useCameraPermissions} from 'expo-camera';
 import * as Haptics from 'expo-haptics';
 import {createScannerClient,scannerApi} from './lib/backend';
@@ -132,7 +132,7 @@ export default function App(){
  const myEvent=events.find(e=>e.id===selected);
  const resultColor=result?.kind==='approved'?C.mint:result?.kind==='warning'?C.amber:C.red;
  return <SafeAreaView style={s.root}><StatusBar barStyle="light-content" backgroundColor={C.bg}/><KeyboardAvoidingView style={s.flex} behavior={Platform.OS==='ios'?'padding':undefined}>
-  <View style={s.header}><View><Text style={s.brand}>TICKET<Text style={{color:C.mint}}>BUNKER</Text></Text><Text style={s.subbrand}>SCANNER · DOOR CREW</Text></View><View style={s.dot}/></View>
+   <View style={s.header}><View style={{flex:1}}><Image source={require('./assets/brand-logo.png')} style={{width:260,maxWidth:'100%',height:54}} resizeMode="contain" accessibilityLabel="The TicketBunker"/><Text style={s.subbrand}>SCANNER · DOOR CREW</Text></View><View style={s.dot}/></View>
   {loading?<View style={s.center}><ActivityIndicator size="large" color={C.mint}/><Text style={s.muted}>Connecting securely…</Text></View>:
    !client?<View style={s.center}><Text style={s.headline}>Service unavailable</Text><Text style={s.muted}>{message}</Text><Button title="Retry connection" onPress={()=>{setLoading(true);createScannerClient().then(c=>{setClient(c);return c.auth.getUser().then(({data})=>setUser(data.user||null));}).catch(e=>setMessage(e.message)).finally(()=>setLoading(false));}}/></View>:
    !user?<ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.container}>

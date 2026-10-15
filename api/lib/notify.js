@@ -14,7 +14,7 @@ export async function sendStudioEmail(to, subject, body, { brand } = {}) {
 
 // Stripe can deliver the same event repeatedly. A stable key for each recipient
 // lets Resend acknowledge retries without sending a second confirmation.
-export async function sendTransactionalEmail({ to, subject, text, key, brand, attachments }) {
+export async function sendTransactionalEmail({ to, subject, text, key, brand, attachments, artwork }) {
   const from = brand === 'ticketbunker' ? ticketBunkerFrom : (process.env.NOTIFICATION_FROM_EMAIL || process.env.RESEND_FROM_EMAIL);
   if (!process.env.RESEND_API_KEY || !from) throw new Error('Resend email is not configured');
   if (!to) throw new Error('Confirmation recipient is missing');
@@ -25,7 +25,7 @@ export async function sendTransactionalEmail({ to, subject, text, key, brand, at
       'content-type': 'application/json',
       'Idempotency-Key': key
     },
-    body: JSON.stringify({ from, to: [to], subject, ...(attachments?.length?{attachments}:{}), ...(brand === 'ticketbunker' ? ticketBunkerEmailContent(text) : studioEmailContent(text)), reply_to: brand === 'ticketbunker' ? ticketBunkerReplyTo : 'bookings@soundbunker.pt' })
+    body: JSON.stringify({ from, to: [to], subject, ...(attachments?.length?{attachments}:{}), ...(brand === 'ticketbunker' ? ticketBunkerEmailContent(text,artwork) : studioEmailContent(text)), reply_to: brand === 'ticketbunker' ? ticketBunkerReplyTo : 'bookings@soundbunker.pt' })
   });
   if (!result.ok) throw new Error(`Resend rejected confirmation (${result.status})`);
 }

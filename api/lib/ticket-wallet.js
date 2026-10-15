@@ -67,32 +67,39 @@ export function applePassData(t,sig,env=process.env){
  {key:'support',label:'Customer Services',value:'bookings@theticketbunker.com'},
  {key:'powered',label:'Powered by',value:'SoundBunker Algarve'}]}};
 }
-// Only fetch artwork from the project's public storage; never arbitrary organiser URLs.
-async function trustedArtwork(url,width,height){
+// Only fetch artwork from the project's public storage or its own static event assets.
+async function trustedArtwork(url,width,height,{fit='contain',background='#ffffff'}={}){
  if(!url)return null;let u;try{u=new URL(url)}catch{return null}
- if(u.origin!=='https://mshjykmopgvvupmymgxb.supabase.co'||!u.pathname.startsWith('/storage/v1/object/public/'))return null;
+ const storage=u.origin==='https://mshjykmopgvvupmymgxb.supabase.co'&&u.pathname.startsWith('/storage/v1/object/public/');
+ const ownAsset=u.origin==='https://www.soundbunker.pt'&&u.pathname.startsWith('/assets/ticketbunker/events/');
+ if(!storage&&!ownAsset)return null;
  try{
  const response=await fetch(u,{redirect:'error',signal:AbortSignal.timeout(5000)});
  if(!response.ok||!/^image\//i.test(response.headers.get('content-type')||''))return null;
  const reader=response.body.getReader();const chunks=[];let size=0;
  while(true){const {done,value}=await reader.read();if(done)break;size+=value.length;if(size>3_000_000){await reader.cancel();return null;}chunks.push(Buffer.from(value));}
  const {default:sharp}=await import('sharp');
- return await sharp(Buffer.concat(chunks),{limitInputPixels:16000000}).resize(width,height,{fit:'contain',background:{r:255,g:255,b:255,alpha:1}}).png().toBuffer();
+ return await sharp(Buffer.concat(chunks),{limitInputPixels:16000000}).resize(width,height,{fit,background}).png().toBuffer();
  }catch{return null;}
 }
 export async function createApplePass(t,sig,env=process.env){
  if(!walletAvailability(env).apple)throw Error('Apple Wallet is not enabled.');
  const {PKPass}=await import('passkit-generator');
  const {default:sharp}=await import('sharp');
- const [icon,logo]=await Promise.all([readFile(new URL('../../ticketbunker-site/brand-icon.png',import.meta.url)),readFile(new URL('../../ticketbunker-site/brand-compact.png',import.meta.url))]);
+ const [icon,logo]=await Promise.all([readFile(new URL('../../ticketbunker-site/brand-icon.png',import.meta.url)),readFile(new URL('../../assets/ticketbunker/wallet-brand-lockup.png',import.meta.url))]);
  const files={};
  for(const scale of [1,2,3]){const suffix=scale===1?'':'@'+scale+'x';
   files['icon'+suffix+'.png']=await sharp(icon).resize(29*scale,29*scale,{fit:'contain',background:{r:0,g:0,b:0,alpha:0}}).png().toBuffer();
   files['logo'+suffix+'.png']=await sharp(logo).resize(160*scale,50*scale,{fit:'contain',background:{r:0,g:0,b:0,alpha:0}}).png().toBuffer();
  }
  files['pass.json']=Buffer.from(JSON.stringify(applePassData(t,sig,env)));
- const [organiserLogo,poster]=await Promise.all([trustedArtwork(t.eventLogo,270,270),trustedArtwork(t.poster,1125,294)]);
- if(organiserLogo)files['thumbnail@3x.png']=organiserLogo;if(poster)files['strip@3x.png']=poster;
+ const [organiserLogo,poster]=await Promise.all([trustedArtwork(t.eventLogo,270,270),trustedArtwork(t.poster,540,660,{fit:'cover',background:'#000000'})]);
+ // Apple ignores thumbnails when a strip is present. Background + thumbnail
+ // keeps the event organiser visible alongside the two platform brand logos.
+ for(const scale of [1,2,3]){const suffix=scale===1?'':'@'+scale+'x';
+  if(organiserLogo)files['thumbnail'+suffix+'.png']=await sharp(organiserLogo).resize(90*scale,90*scale).png().toBuffer();
+  if(poster)files['background'+suffix+'.png']=await sharp(poster).resize(180*scale,220*scale).modulate({brightness:0.28}).png().toBuffer();
+ }
  const pass=new PKPass(files,{wwdr:pem(env.APPLE_WWDR_CERT_PEM),signerCert:pem(env.APPLE_PASS_CERT_PEM),signerKey:pem(env.APPLE_PASS_KEY_PEM),...(env.APPLE_PASS_KEY_PASSPHRASE?{signerKeyPassphrase:env.APPLE_PASS_KEY_PASSPHRASE}:{})});
  return pass.getAsBuffer();
 }
@@ -102,7 +109,7 @@ export function googlePassPayload(t,sig,env=process.env){
  if(!/^\d+$/.test(issuer||''))throw Error('Google Wallet issuer is not configured.');
  const classId=issuer+'.event_'+t.eventId;
  const ticketClass={id:classId,issuerName:'The TicketBunker',reviewStatus:'UNDER_REVIEW',eventName:localized(t.title),
- logo:image(origin+'/brand-icon.png','The TicketBunker'),...(t.venue&&t.venueAddress?{venue:{name:localized(t.venue),address:localized(t.venueAddress)}}:{}),dateTime:{start:t.date,...(t.endDate?{end:t.endDate}:{})}};
+ logo:image(origin+'/brand-icon.png','The TicketBunker'),wideLogo:image('https://www.soundbunker.pt/assets/ticketbunker/wallet-brand-lockup.png','The TicketBunker · Powered by SoundBunker'),...(t.venue&&t.venueAddress?{venue:{name:localized(t.venue),address:localized(t.venueAddress)}}:{}),dateTime:{start:t.date,...(t.endDate?{end:t.endDate}:{})}};
  const safeUrl=url=>typeof url==='string'&&/^https:\/\/[^\s<>"]+$/.test(url);
  const ticketObject={id:issuer+'.ticket_'+t.id+'_v'+(t.version||0),classId,state:'ACTIVE',hexBackgroundColor:'#000000',
  ticketHolderName:t.holderName,ticketNumber:String(t.admissionNumber||''),ticketType:localized((t.test?'TEST ONLY — ':'')+t.tier),
