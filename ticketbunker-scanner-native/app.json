@@ -39,7 +39,11 @@
       "expo-secure-store"
     ],
     "extra": {
-      "apiBase": "https://theticketbunker.com"
-    }
+      "apiBase": "https://theticketbunker.com",
+      "eas": {
+        "projectId": "332de5bb-6286-4dc1-b12c-a9ad88025624"
+      }
+    },
+    "owner": "soundbunker"
   }
 }
