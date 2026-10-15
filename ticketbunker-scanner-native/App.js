@@ -110,13 +110,13 @@ export default function App(){
   const now=Date.now();
   if(source==='camera'&&raw===last.current.code&&now-last.current.at<1800){last.current.at=now;return;}
   if(lock.current)return;
-  lock.current=true;setWorking(true);setResult(null);setFeedbackOpen(true);clearTimeout(feedbackTimer.current);
-  if(source==='camera')last.current={code:raw,at:now};
+  lock.current=true;Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(()=>{});setWorking(true);setResult(null);setFeedbackOpen(true);clearTimeout(feedbackTimer.current);
+  last.current={code:raw,at:now};
   try{
    const code=ticketUrl(raw);
    const response=await scannerApi(client,'/api/event-scan',{code,eventId:eventId.current});
    const next=admissionResult(response);setResult(next);
-   if(next.kind==='approved')setAdmissions(n=>n+1);
+   if(response.status==='valid')setAdmissions(n=>n+1);
    const tone=next.kind==='approved'?Haptics.NotificationFeedbackType.Success:next.kind==='warning'?Haptics.NotificationFeedbackType.Warning:Haptics.NotificationFeedbackType.Error;
    Haptics.notificationAsync(tone).catch(()=>{});
   }catch(e){

@@ -1,4 +1,5 @@
-export const API_BASE = 'https://theticketbunker.com';
+// Native requests go straight to the existing authenticated ticket service.
+export const API_BASE = 'https://www.soundbunker.pt';
 export const TICKET_HOSTS = new Set(['theticketbunker.com','www.theticketbunker.com','soundbunker.pt','www.soundbunker.pt']);
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 export function ticketUrl(raw) {
@@ -23,7 +24,7 @@ export function inviteToken(raw) {
 }
 export function admissionResult(result) {
   if (!result || typeof result !== 'object') return {kind:'rejected',heading:'SCAN ERROR',detail:'Unknown admission response'};
-  if (result.status==='valid' && result.test===true) return {kind:'warning',heading:'TEST TICKET — NOT ADMISSION',detail:'This test code does not admit a paying customer.'};
+  if (result.status==='valid' && result.test===true) return {kind:'warning',heading:'TEST CHECK-IN ACCEPTED',detail:'Test successful. This ticket is now checked in. Private rehearsal only — not public admission.'};
   if (result.status==='valid')return {kind:'approved',heading:'ENTRY APPROVED',detail:[result.event,result.tier].filter(Boolean).join(' · ')};
   if (result.status==='used')return {kind:'warning',heading:'ALREADY SCANNED',detail:result.message||'This ticket has already been admitted.'};
   if (result.status==='wrong_event')return {kind:'rejected',heading:'WRONG EVENT',detail:result.message||'Not valid for this event.'};

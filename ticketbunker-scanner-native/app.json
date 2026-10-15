@@ -11,7 +11,7 @@
     "ios": {
       "bundleIdentifier": "pt.soundbunker.ticketbunkerscanner",
       "supportsTablet": true,
-      "buildNumber": "4",
+      "buildNumber": "5",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -39,7 +39,7 @@
       "expo-secure-store"
     ],
     "extra": {
-      "apiBase": "https://theticketbunker.com",
+      "apiBase": "https://www.soundbunker.pt",
       "eas": {
         "projectId": "332de5bb-6286-4dc1-b12c-a9ad88025624"
       }
