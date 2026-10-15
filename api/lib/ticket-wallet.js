@@ -12,27 +12,35 @@ export function walletAvailability(env=process.env){return {
  apple:env.APPLE_WALLET_ENABLED==='true'&&['APPLE_PASS_TYPE_ID','APPLE_TEAM_ID','APPLE_PASS_CERT_PEM','APPLE_PASS_KEY_PEM','APPLE_WWDR_CERT_PEM'].every(k=>!!env[k]),
  google:env.GOOGLE_WALLET_ENABLED==='true'&&/^\d+$/.test(String(env.GOOGLE_WALLET_ISSUER_ID||''))&&!!googleCredentials(env).email&&!!googleCredentials(env).key
 };}
+// A short-lived, explicitly selected internal event can rehearse the real wallet flow.
+// This never converts a test order into commercial admission or changes scan authorisation.
+export function walletTestEvent(event,env=process.env){
+ const allowed=String(env.WALLET_TEST_EVENT_IDS||'').split(',').map(s=>s.trim()).filter(Boolean);
+ return event?.internal_free_test===true&&event.status==='published'&&allowed.includes(event.id)&&
+  Number.isFinite(Date.parse(event.test_expires_at))&&Date.parse(event.test_expires_at)>Date.now();
+}
 export function walletTicketUrl(t,sig){return origin+'/event-ticket?id='+encodeURIComponent(t.id)+'&sig='+encodeURIComponent(sig);}
-export function assertWalletTicket(t){
- if(!t||t.test||t.used)throw Error('This ticket cannot be added to a wallet.');
+export function assertWalletTicket(t,env=process.env){
+ const rehearsal=t?.walletTest===true&&walletTestEvent({id:t.eventId,internal_free_test:t.test,status:'published',test_expires_at:t.testExpiresAt},env);
+ if(!t||(t.test&&!rehearsal)||t.used)throw Error('This ticket cannot be added to a wallet.');
  if(!t.date||!Number.isFinite(Date.parse(t.date)))throw Error('Event date is unavailable.');
  if(t.endDate&&Date.parse(t.endDate)<Date.now())throw Error('This event has finished.');
 }
 export function applePassData(t,sig,env=process.env){
- assertWalletTicket(t);
+ assertWalletTicket(t,env);
  const when=new Intl.DateTimeFormat('en-GB',{dateStyle:'medium',timeStyle:'short',timeZone:t.timezone||'Europe/Lisbon'}).format(new Date(t.date));
  return {formatVersion:1,passTypeIdentifier:env.APPLE_PASS_TYPE_ID,teamIdentifier:env.APPLE_TEAM_ID,
- serialNumber:t.id+'-v'+(t.version||0),organizationName:'The TicketBunker',description:t.title+' — '+t.tier,
+ serialNumber:t.id+'-v'+(t.version||0),organizationName:'The TicketBunker',description:(t.test?'TEST ONLY — ':'')+t.title+' — '+t.tier,
  backgroundColor:'rgb(0,0,0)',foregroundColor:'rgb(255,255,255)',labelColor:'rgb(0,224,166)',
  relevantDate:t.date,...(t.endDate?{expirationDate:t.endDate}:{}),
  barcodes:[{format:'PKBarcodeFormatQR',message:walletTicketUrl(t,sig),messageEncoding:'iso-8859-1',altText:'Admission '+String(t.admissionNumber||'')}],
- eventTicket:{headerFields:[{key:'ticketType',label:'ADMISSION',value:t.tier||'General admission'}],
+ eventTicket:{headerFields:[{key:'ticketType',label:t.test?'TEST ONLY':'ADMISSION',value:t.tier||'General admission'}],
  primaryFields:[{key:'event',label:'EVENT',value:t.title}],
  secondaryFields:[{key:'when',label:'DATE & TIME',value:when},{key:'venue',label:'VENUE',value:t.venue}],
  auxiliaryFields:[{key:'holder',label:'ATTENDEE',value:t.holderName},{key:'number',label:'TICKET',value:String(t.admissionNumber||'')}],
  backFields:[{key:'manage',label:'Manage your ticket',value:origin+'/my-tickets'},
  {key:'organiser',label:'Presented by',value:t.organiserName||'Event organiser'},
- {key:'conditions',label:'Entry conditions',value:'One admission only. Transferred, cancelled, refunded or previously scanned tickets are not valid. Reopen My tickets after changing a name or transferring a ticket.'},
+ {key:'conditions',label:'Entry conditions',value:(t.test?'Private wallet/scanner rehearsal only. Not valid for admission to a public event. ':'')+'One admission only. Transferred, cancelled, refunded or previously scanned tickets are not valid. Reopen My tickets after changing a name or transferring a ticket.'},
  {key:'support',label:'Customer Services',value:'bookings@theticketbunker.com'},
  {key:'powered',label:'Powered by',value:'SoundBunker Algarve'}]}};
 }
@@ -66,7 +74,7 @@ export async function createApplePass(t,sig,env=process.env){
  return pass.getAsBuffer();
 }
 export function googlePassPayload(t,sig,env=process.env){
- assertWalletTicket(t);
+ assertWalletTicket(t,env);
  const issuer=env.GOOGLE_WALLET_ISSUER_ID;
  if(!/^\d+$/.test(issuer||''))throw Error('Google Wallet issuer is not configured.');
  const classId=issuer+'.event_'+t.eventId;

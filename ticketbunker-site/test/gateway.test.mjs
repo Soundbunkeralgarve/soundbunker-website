@@ -18,6 +18,12 @@ test('public catalogue excludes drafts, test entries and ended events',()=>{
 test('buyer tickets hide test admissions and retain only local trusted ticket links',()=>{
  const data=cleanResponse('my-event-tickets',{tickets:[{id:'test',test:true},{id:'real',url:'https://www.soundbunker.pt/event-ticket.html?id=123&sig=abc'}]});assert.equal(data.tickets.length,1);assert.equal(new URL(data.tickets[0].url).hostname,'theticketbunker.com');
 });
+test('an approved private wallet rehearsal is visible only to its owner or ticket holder',()=>{
+ const testEvent={id:'rehearsal',status:'published',internal_free_test:true,wallet_test:true,starts_at:'2030-01-01'};
+ assert.equal(cleanResponse('events',{events:[testEvent]}).events.length,0);
+ assert.equal(cleanResponse('organiser',{events:[testEvent,{...testEvent,id:'ordinary-test',wallet_test:false}]}).events.length,1);
+ assert.deepEqual(cleanResponse('my-event-tickets',{tickets:[{id:'approved',test:true,walletTest:true},{id:'blocked',test:true}]}).tickets.map(t=>t.id),['approved']);
+});
 test('organiser draft requires finish time for scheduled reports',async()=>{
  const res=response();await handler({query:{endpoint:'organiser'},method:'POST',headers:{authorization:'Bearer x'},body:{action:'event',startsAt:'2027-01-01T19:00'}},res);assert.equal(res.code,400);
 });

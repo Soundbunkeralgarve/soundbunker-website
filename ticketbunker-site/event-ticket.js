@@ -4,10 +4,11 @@
  try{
   const response=await fetch('/api/event-ticket?id='+encodeURIComponent(id)+'&sig='+encodeURIComponent(sig),{cache:'no-store'});
   const data=await response.json();if(!response.ok)throw Error(data.error||'Ticket unavailable');const t=data.ticket;
-  if(t.test)throw Error('This ticket is not valid for admission.');
+  if(t.test&&!t.walletTest)throw Error('This ticket is not valid for admission.');
   $('name').textContent=t.title;$('ticketTierMark').textContent=t.tier||'GENERAL ADMISSION';$('ticketHolder').textContent=t.holderName||'Ticket holder';$('ticketNumber').textContent=t.admissionNumber?String(t.admissionNumber).padStart(2,'0'):'—';$('ticketReference').textContent='Ticket reference · '+id;
   const date=new Intl.DateTimeFormat('en-GB',{dateStyle:'full',timeStyle:'short',timeZone:t.timezone||'Europe/Lisbon'}).format(new Date(t.date));
   $('details').textContent=date+' · venue local time · '+t.venue;
+  if(t.test)$('notice').textContent='PRIVATE WALLET & SCANNER TEST · €0 · Not valid for admission to a public event.';
   if(t.poster&&/^https:\/\//i.test(t.poster)){const img=document.createElement('img');img.src=t.poster;img.alt='Official event artwork';$('ticketArtwork').append(img);}
   if(t.eventLogo&&/^https:\/\//i.test(t.eventLogo)){const img=document.createElement('img');img.src=t.eventLogo;img.alt='Promoter logo';img.className='event-brand-mark';$('ticketArtwork').append(img);}
   if(t.used){$('ticketTierMark').textContent='ALREADY CHECKED IN';$('notice').textContent='This ticket has already been used for admission.';return;}
@@ -31,7 +32,7 @@ $('printTicket').onclick=()=>window.print();
     const [logo,poster,promoter]=await Promise.all([image('/brand-compact.png'),image(/^https:\/\//i.test(t.poster||'')?t.poster:null),image(/^https:\/\//i.test(t.eventLogo||'')?t.eventLogo:null)]);
     const contain=(img,x,y,w,h)=>{const scale=Math.min(w/img.width,h/img.height);const iw=img.width*scale,ih=img.height*scale;c.drawImage(img,x+(w-iw)/2,y+(h-ih)/2,iw,ih);};
     if(logo)contain(logo,65,35,440,90);
-    c.fillStyle='#00e0a6';c.font='bold 22px sans-serif';c.fillText('DIGITAL EVENT TICKET',65,205);
+    c.fillStyle='#00e0a6';c.font='bold 22px sans-serif';c.fillText(t.test?'PRIVATE TEST TICKET — NOT PUBLIC ADMISSION':'DIGITAL EVENT TICKET',65,205);
     let y=240;
     if(poster){c.fillStyle='#edf1e9';c.fillRect(65,y,950,320);contain(poster,65,y,950,320);y+=350;}
     if(promoter){contain(promoter,65,y,300,110);y+=135;}
@@ -41,7 +42,7 @@ $('printTicket').onclick=()=>window.print();
     const qr=document.querySelector('#qr canvas')||document.querySelector('#qr img');if(!qr)throw Error('Your QR is not ready yet. Please retry.');
     y+=30;c.imageSmoothingEnabled=false;c.drawImage(qr,300,y,480,480);c.imageSmoothingEnabled=true;y+=530;
     c.fillStyle='#245231';c.font='bold 24px sans-serif';c.textAlign='center';c.fillText('SHOW THIS QR AT THE DOOR',540,y);c.textAlign='left';y+=55;
-    line('Ticket reference: '+id,'normal',20,'#4b5d4d');line('One valid ticket · One admission · Keep your QR private','normal',20,'#4b5d4d');y+=15;
+    line('Ticket reference: '+id,'normal',20,'#4b5d4d');line(t.test?'Private scanner rehearsal only · Keep your QR private':'One valid ticket · One admission · Keep your QR private','normal',20,'#4b5d4d');y+=15;
     line('Transferred, refunded or cancelled tickets are not valid for entry.','normal',18,'#4b5d4d');line('Full entry conditions: theticketbunker.com/terms','normal',18,'#4b5d4d');y+=25;
     c.fillStyle='#11251a';c.fillRect(0,y,1080,105);c.fillStyle='#fff';c.font='bold 21px sans-serif';c.fillText('TICKETBUNKER · POWERED BY SOUNDBUNKER ALGARVE',65,y+42);c.font='17px sans-serif';c.fillText('Manage names and transfers in My tickets · theticketbunker.com',65,y+76);
     const finished=document.createElement('canvas');finished.width=1080;finished.height=y+105;finished.getContext('2d').drawImage(canvas,0,0);

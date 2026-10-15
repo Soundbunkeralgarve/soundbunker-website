@@ -1,4 +1,4 @@
-import {walletAvailability} from './lib/ticket-wallet.js';
+import {walletAvailability,walletTestEvent} from './lib/ticket-wallet.js';
 import { json } from './lib/http.js';
 import { eventsDatabase,validTicket } from './lib/events.js';
 export default async function handler(req,res) {
@@ -7,7 +7,7 @@ export default async function handler(req,res) {
     const id=String(req.query?.id||''),sig=String(req.query?.sig||'');
     const db=eventsDatabase();
     const found=await db.from('sb_event_tickets')
-       .select('id,event_id,checked_in_at,transfer_version,holder_name,sequence_number,sb_event_orders(customer_name,beta_test_order,status,guest_allocation_id),sb_events(status,title,starts_at,ends_at,venue,venue_timezone,internal_free_test,public_beta_test,image_url,event_logo_url,organiser_profile_id),sb_event_tiers(name,price_cents)')
+       .select('id,event_id,checked_in_at,transfer_version,holder_name,sequence_number,sb_event_orders(customer_name,beta_test_order,status,guest_allocation_id),sb_events(status,title,starts_at,ends_at,venue,venue_timezone,internal_free_test,test_expires_at,public_beta_test,image_url,event_logo_url,organiser_profile_id),sb_event_tiers(name,price_cents)')
        .eq('id',id).single();
     if(found.error||!found.data)return json(res,{error:'Ticket not found'},404);
     if(!validTicket(id,sig,found.data.transfer_version||0))return json(res,{error:'This QR is no longer valid. Open your current ticket in My Tickets.'},403);
@@ -18,7 +18,7 @@ export default async function handler(req,res) {
       if(!org.error){organiserLogo=organiserLogo||org.data?.logo_url||null;organiserName=org.data?.display_name||null;}
     }
     return json(res,{ticket:{
-      id,eventId:found.data.event_id,version:found.data.transfer_version||0,endDate:found.data.sb_events?.ends_at,wallet:walletAvailability(),used:!!found.data.checked_in_at,
+      id,eventId:found.data.event_id,walletTest:walletTestEvent({...found.data.sb_events,id:found.data.event_id}),testExpiresAt:found.data.sb_events?.test_expires_at,version:found.data.transfer_version||0,endDate:found.data.sb_events?.ends_at,wallet:walletAvailability(),used:!!found.data.checked_in_at,
       holderName:found.data.holder_name||found.data.sb_event_orders?.customer_name||'Ticket holder',
       admissionNumber:found.data.sequence_number,
       title:found.data.sb_events?.title,date:found.data.sb_events?.starts_at,

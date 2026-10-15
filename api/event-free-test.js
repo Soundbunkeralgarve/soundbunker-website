@@ -2,6 +2,8 @@ import {randomBytes,createHash} from 'node:crypto';
 import {requireAdmin} from './lib/supabase-auth.js';
 import {json,parseJson,safeText,validEmail} from './lib/http.js';
 import {eventsDatabase,signedTicket} from './lib/events.js';
+import ticketHandler from './event-ticket.js';
+import {walletTestEvent,walletAvailability,createApplePass} from './lib/ticket-wallet.js';
 import {sendTransactionalEmail} from './lib/notify.js';
 
 const TEST=/^[a-f0-9]{48}$/;
@@ -11,7 +13,7 @@ const ticketUrl=id=>origin()+'/event-ticket.html?id='+encodeURIComponent(id)+'&s
 async function testEventForCode(db,code){
  if(!TEST.test(code))return null;
  const result=await db.from('sb_events')
-  .select('id,title,venue,starts_at,venue_timezone,currency,event_logo_url,image_url,test_expires_at,internal_free_test,status')
+  .select('id,title,venue,starts_at,ends_at,venue_timezone,currency,event_logo_url,image_url,test_expires_at,internal_free_test,status')
   .eq('internal_free_test',true).eq('status','published')
   .eq('test_code_hash',digest(code)).gt('test_expires_at',new Date().toISOString()).maybeSingle();
  if(result.error)throw result.error;
@@ -89,12 +91,25 @@ export default async function handler(req,res){
   const tickets=await db.from('sb_event_tickets').select('id,sequence_number')
    .eq('order_id',issued.data).order('sequence_number');
   if(tickets.error||tickets.data?.length!==quantity)throw Error('Issued tickets could not be retrieved');
-  const links=tickets.data.map(t=>ticketUrl(t.id));
+  const rehearsal=walletTestEvent(event);
+  const links=tickets.data.map(t=>rehearsal?'https://theticketbunker.com/event-ticket?id='+t.id+'&sig='+signedTicket(t.id):ticketUrl(t.id));
   let emailSent=false;
   try{
+   const attachments=[];
+   if(rehearsal&&walletAvailability().apple){
+    for(const t of tickets.data){
+     let result,status;const capture={statusCode:200,setHeader(){},end(body){status=this.statusCode;result=JSON.parse(body)}};
+     const sig=signedTicket(t.id);
+     await ticketHandler({method:'GET',query:{id:t.id,sig}},capture);
+     if(status!==200)throw Error('Unable to prepare the wallet test ticket');
+     const bytes=await createApplePass(result.ticket,sig);
+     attachments.push({filename:'TicketBunker-Apple-Wallet-'+t.sequence_number+'.pkpass',content:bytes.toString('base64'),content_type:'application/vnd.apple.pkpass'});
+    }
+   }
    await sendTransactionalEmail({brand:'ticketbunker',to:email,key:'ticketbunker-free-real-test-'+issued.data,
-    subject:'Your FREE ticketBunker QR test tickets (not for a real event)',
-    text:'Hi '+name+',\n\nThese are REAL test-system QR tickets with a price of €0/£0. No payment has been made and this is NOT a real public event.\n\n'+event.title+'\n'+event.venue+'\n\nOpen each unique test QR link:\n'+links.join('\n')+'\n\nEach ticket can be checked in once using the ticketBunker door scanner.\n\nSoundBunker Algarve'});
+    attachments,
+    subject:rehearsal?'Booking confirmed · '+event.title:'Your FREE ticketBunker QR test tickets (not for a real event)',
+    text:rehearsal?'BOOKING CONFIRMED · THE TICKETBUNKER\n\nHi '+name+',\n\nYour complimentary SoundBunker test booking is confirmed.\n\nEvent: '+event.title+'\nWhen: '+new Intl.DateTimeFormat('en-GB',{dateStyle:'full',timeStyle:'short',timeZone:event.venue_timezone||'Europe/Lisbon'}).format(new Date(event.starts_at))+' (Portugal time)\nWhere: '+event.venue+'\nAttendee: '+name+'\nTickets: '+quantity+'\nTotal: €0.00 — no payment required\n\nOPEN YOUR TICKET\n'+links.join('\n')+'\n\nADD TO APPLE WALLET\nOpen the attached Apple Wallet pass on your iPhone and tap Add, or open your ticket above and choose Add to Apple Wallet. Then show its QR to the organiser for the scanner test.\n\nPRIVATE SOFTWARE TEST ONLY. This booking does not grant admission to a public event. Each QR can be checked in once; a repeat scan should be rejected.\n\nSoundBunker Algarve':'Hi '+name+',\n\nThese are REAL test-system QR tickets with a price of €0/£0. No payment has been made and this is NOT a real public event.\n\n'+event.title+'\n'+event.venue+'\n\nOpen each unique test QR link:\n'+links.join('\n')+'\n\nEach ticket can be checked in once using the ticketBunker door scanner.\n\nSoundBunker Algarve'});
    emailSent=true;
   }catch(err){console.error('Test ticket email delivery failed',err);}
   return json(res,{quantity,tickets:links.map((url,i)=>({url,number:i+1})),emailSent,test:true,totalCents:0});

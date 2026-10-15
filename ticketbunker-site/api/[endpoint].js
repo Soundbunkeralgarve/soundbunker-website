@@ -35,8 +35,8 @@ function localLink(value) {
 }
 export function cleanResponse(endpoint, data) {
   if (endpoint === 'events') data.events = (data.events || []).filter(e => e.status === 'published' && !e.public_beta_test && !e.internal_free_test && Date.parse(e.starts_at) > Date.now());
-  if (endpoint === 'my-event-tickets') data.tickets = (data.tickets || []).filter(t => !t.test).map(t => ({...t, url:localLink(t.url)}));
-  if (endpoint === 'organiser') data.events = (data.events || []).filter(e => e.status !== 'cancelled' && !e.internal_free_test && !/^ticketBunker REAL TEST/.test(e.title || ''));
+  if (endpoint === 'my-event-tickets') data.tickets = (data.tickets || []).filter(t => !t.test || t.walletTest === true).map(t => ({...t, url:localLink(t.url)}));
+  if (endpoint === 'organiser') data.events = (data.events || []).filter(e => e.status !== 'cancelled' && ((!e.internal_free_test && !/^ticketBunker REAL TEST/.test(e.title || '')) || e.wallet_test === true));
   if (endpoint === 'event-staff' && data.events) data.events = data.events.filter(e => e.status === 'published' && !e.public_beta_test);
   if (data.invitationUrl) data.invitationUrl = localLink(data.invitationUrl);
   if (data.link) data.link = localLink(data.link);
@@ -74,7 +74,7 @@ export default async function handler(req, res) {
     const upstream = await fetch(url,{method:req.method,headers:{accept:'application/json',...(token?{authorization:token}:{}),...(body?{'content-type':'application/json'}:{})},body:body?JSON.stringify(body):undefined,redirect:'error',signal:AbortSignal.timeout(45000)});
     if(endpoint==='event-wallet'&&upstream.ok&&upstream.headers.get('content-type')?.includes('application/vnd.apple.pkpass')){res.setHeader('Content-Type','application/vnd.apple.pkpass');res.setHeader('Content-Disposition','attachment; filename="ticketbunker.pkpass"');return res.status(200).send(Buffer.from(await upstream.arrayBuffer()));}
     const data = await upstream.json();
-    if (endpoint === 'event-ticket' && data.ticket?.test) return reply(404,{error:'This is a test ticket and is not valid for admission.'});
+    if (endpoint === 'event-ticket' && data.ticket?.test && data.ticket?.walletTest !== true) return reply(404,{error:'This is a test ticket and is not valid for admission.'});
     return reply(upstream.status,upstream.ok?cleanResponse(endpoint,data):data);
   } catch {return reply(502,{error:'We could not reach the ticket service. Your saved data is safe. Please try again.'});}
 }
