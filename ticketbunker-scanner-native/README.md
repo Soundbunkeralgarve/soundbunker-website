@@ -33,7 +33,12 @@ eas submit --platform ios --profile production
 ```
 Apple Developer Program organisation enrollment must become active before signing and App Store Connect submission. Google Play Console organisation registration is distinct from Google Wallet. EAS needs Expo authentication and per-platform signing setup; **there are no accounts, keys or EAS project IDs in this repository**.
 
-Create official branded square PNG icons and 1024px App Store artwork from the existing `assets/ticketbunker/ticketbunker-scanner-icon.svg`. Add `icon`, `android.adaptiveIcon` and screenshots in `app.json` before building for stores. Reserve application ID `pt.soundbunker.ticketbunkerscanner` after checking availability; package/bundle IDs cannot readily be changed after release.
+The approved scanner icon is generated as `assets/icon.png` at 1024px by `npm install` and is already configured for iOS and Android in `app.json`. Store screenshots are still required. Reserve application ID `pt.soundbunker.ticketbunkerscanner` after checking availability; package/bundle IDs cannot readily be changed after release.
+
+## GitHub simulator build
+The **TicketBunker Scanner iOS Simulator Build** workflow builds the exact `TicketBunkerScanner` app scheme and verifies its bundle ID and executable before uploading it. A missing app fails the job. The artifact contains `ticketbunker-scanner-ios-simulator.tar.gz`; extract it to preserve the `.app` bundle's executable permissions and symlinks.
+
+This is an unsigned Debug build for a Mac's iOS Simulator, with Metro required for JavaScript. It is not an iPhone-installable IPA or a TestFlight upload. Physical iPhone distribution still requires Apple signing and the production build steps above.
 
 ## Pre-release checklist
 1. Google Play developer account / Apple Developer Program membership approved
