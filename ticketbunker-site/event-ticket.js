@@ -29,7 +29,7 @@ $('printTicket').onclick=()=>window.print();
    const button=$('saveDigitalTicket');button.disabled=true;
    try{
     const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=4000;const c=canvas.getContext('2d');
-    c.fillStyle='#fff';c.fillRect(0,0,1080,4000);c.fillStyle='#080e12';c.fillRect(0,0,1080,165);
+    c.fillStyle='#fff';c.fillRect(0,0,1080,4000);c.fillStyle='#000';c.fillRect(0,0,1080,165);
     const image=async src=>new Promise(resolve=>{if(!src){resolve(null);return;}const img=new Image();img.crossOrigin='anonymous';const timer=setTimeout(()=>resolve(null),5000);img.onload=()=>{clearTimeout(timer);resolve(img)};img.onerror=()=>{clearTimeout(timer);resolve(null)};img.src=src;});
     const [logo,poster,promoter,poweredBy]=await Promise.all([image('/brand-compact.png'),image(/^https:\/\//i.test(t.poster||'')?t.poster:null),image(/^https:\/\//i.test(t.eventLogo||'')?t.eventLogo:null),image('/soundbunker-logo-white.png')]);
     const contain=(img,x,y,w,h)=>{const scale=Math.min(w/img.width,h/img.height);const iw=img.width*scale,ih=img.height*scale;c.drawImage(img,x+(w-iw)/2,y+(h-ih)/2,iw,ih);};

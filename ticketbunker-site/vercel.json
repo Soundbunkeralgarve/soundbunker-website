@@ -8,6 +8,12 @@
     "api/event-page.js": {
       "maxDuration": 30,
       "includeFiles": "event.html"
+    },
+    "api/event-scan.js": {
+      "regions": [
+        "dub1"
+      ],
+      "maxDuration": 30
     }
   },
   "rewrites": [

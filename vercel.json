@@ -137,6 +137,12 @@
     },
     "api/*.js": {
       "includeFiles": "assets/soundbunker-email-footer.png"
+    },
+    "api/event-scan.js": {
+      "regions": [
+        "dub1"
+      ],
+      "maxDuration": 30
     }
   },
   "crons": [
