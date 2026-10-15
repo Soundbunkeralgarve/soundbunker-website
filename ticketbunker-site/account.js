@@ -1,4 +1,6 @@
 import {$,api,authClient,escapeHtml as esc,date,safeUrl,safeNext} from './shared.js';
+import {preferenceFields,readPreferences} from './promo-options.js';
+preferenceFields(document.querySelector('#weekly-fields'));
 const params=new URLSearchParams(location.search);
 const oldRole=location.hash==='#organisers'?'organiser':'';
 const next=safeNext(params.get('next'));
@@ -38,7 +40,7 @@ async function enter(s){
  $('#boot-status').hidden=true;$('#auth').hidden=true;$('#account').hidden=false;
  $('#account-email').textContent=user.data.user.email;
  document.title='My tickets | TicketBunker';
- await Promise.allSettled([loadTickets(),loadPreferences()]);
+ await Promise.allSettled([loadTickets(),loadPreferences(),loadWeekly()]);
 }
 async function currentToken(){const {data,error}=await sb.auth.getSession();if(error||!data.session){showAuth();throw Error('Your session expired. Please sign in.');}session=data.session;return session.access_token;}
 async function loadTickets(){
@@ -51,6 +53,8 @@ async function loadTickets(){
  finally{$('#refresh-tickets').disabled=false;}
 }
 async function loadPreferences(){try{const d=await api('client-marketing-consent',null,await currentToken());$('#marketing-consent').checked=d.optedIn===true;}catch(e){$('#preferences-status').textContent=e.message;}}
+async function loadWeekly(){try{const {preferences:p}=await api('promo-preferences',null,await currentToken());if(p){preferenceFields($('#weekly-fields'),p);$('#weekly-consent').checked=p.opted_in;}if(location.hash==='#weekly-picks')$('#weekly-picks').scrollIntoView();}catch(e){$('#weekly-status').textContent=e.message;}}
+$('#weekly-form').onsubmit=async e=>{e.preventDefault();const b=e.submitter;b.disabled=true;try{const optedIn=$('#weekly-consent').checked;await api('promo-preferences',{...(optedIn?readPreferences($('#weekly-fields')):{}),optedIn},await currentToken());$('#weekly-status').textContent=optedIn?'Saved. Weekly picks will match your locations and interests. You can unsubscribe in every email.':'Weekly TicketBunker picks are switched off.';}catch(err){$('#weekly-status').textContent=err.message;}finally{b.disabled=false;}};
 $('#login-tab').onclick=()=>setMode('login');$('#signup-tab').onclick=()=>setMode('signup');$('#forgot').onclick=()=>setMode('reset');
 $('#show-password').onclick=()=>{const visible=$('#password').type==='password';$('#password').type=visible?'text':'password';$('#show-password').textContent=visible?'Hide':'Show';$('#show-password').setAttribute('aria-label',visible?'Hide password':'Show password');};
 $('#auth-form').addEventListener('submit',async e=>{

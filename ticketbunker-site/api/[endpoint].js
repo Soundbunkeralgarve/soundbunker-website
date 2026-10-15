@@ -3,6 +3,7 @@
 const UPSTREAM = 'https://www.soundbunker.pt';
 const PUBLIC = new Set(['supabase-config', 'events', 'event-ticket', 'event-wallet']);
 const METHODS = {
+  'promo-preferences':['GET','POST'], 'event-promotion':['GET','POST'],
   'event-guest-list':['GET','POST'], 'event-capacity':['GET','POST'],
   'supabase-config': ['GET'], events: ['GET'], 'event-ticket': ['GET'], 'event-wallet': ['GET'],
   organiser: ['GET', 'POST'], 'organiser-brand':['GET','POST'], 'event-media': ['POST'],
@@ -62,11 +63,13 @@ export default async function handler(req, res) {
     if(endpoint==='organiser'&&body.action==='event'&&(!body.endsAt||Date.parse(body.endsAt)<=Date.parse(body.startsAt)))return reply(400,{error:'Set an event finish time after the start time for automatic reporting.'});
     if (endpoint === 'organiser' && ['activateBetaTest','stopBetaTest'].includes(body.action)) return reply(403,{error:'Test events cannot be published on TicketBunker.'});
   }
+  const promotion=['promo-preferences','event-promotion'].includes(endpoint);
   const reporting=['settlement','refund-request','organiser-profile'].includes(endpoint);
-  const url = reporting ? new URL('https://mshjykmopgvvupmymgxb.supabase.co/functions/v1/ticketbunker-reporting') : new URL('/api/'+endpoint,UPSTREAM);
+  const url = promotion ? new URL('https://mshjykmopgvvupmymgxb.supabase.co/functions/v1/ticketbunker-promotion') : reporting ? new URL('https://mshjykmopgvvupmymgxb.supabase.co/functions/v1/ticketbunker-reporting') : new URL('/api/'+endpoint,UPSTREAM);
   for (const [key,value] of Object.entries(req.query || {})) {
     if (key !== 'endpoint' && typeof value === 'string') url.searchParams.set(key,value);
   }
+  if(promotion)url.searchParams.set('action',endpoint==='promo-preferences'?'preferences':'promotion');
   if(endpoint==='organiser-profile')url.searchParams.set('action','profile');
   if(endpoint==='refund-request')url.searchParams.set('action',req.method==='POST'?'refund':'my-refunds');
   try {

@@ -1,0 +1,30 @@
+begin;
+do $$
+declare u uuid:=gen_random_uuid(); e uuid:=gen_random_uuid(); n integer;
+begin
+ insert into auth.users(id,email,email_confirmed_at) values(u,'weekly-test-'||u||'@example.invalid',now());
+ insert into public.sb_events(id,slug,title,starts_at,ends_at,status,country_code) values(e,'weekly-test-'||e,'Weekly matching test',now()+interval '10 days',now()+interval '10 days 3 hours','published','PT');
+ insert into public.sb_event_tiers(event_id,name,price_cents,quantity_total) values(e,'Test tier',1000,10);
+ insert into public.tb_event_targeting values(e,'PT','algarve',array['house'],now());
+ insert into public.tb_promo_preferences(user_id,opted_in,country,regions,genres,consent_at) values(u,true,'PT',array['algarve'],array['house'],now());
+ if (select count(*) from public.tb_weekly_matches() m where m.user_id=u)<>1 then raise exception 'Expected location AND genre match';end if;
+ update public.tb_promo_preferences set regions=array['lisbon'] where user_id=u;
+ if exists(select 1 from public.tb_weekly_matches() m where m.user_id=u) then raise exception 'Wrong region must not match';end if;
+ update public.tb_promo_preferences set regions=array['algarve'],genres=array['rock'] where user_id=u;
+ if exists(select 1 from public.tb_weekly_matches() m where m.user_id=u) then raise exception 'Wrong genre must not match';end if;
+ update public.tb_promo_preferences set genres=array['house'],opted_in=false where user_id=u;
+ if exists(select 1 from public.tb_weekly_matches() m where m.user_id=u) then raise exception 'Opt-out must not match';end if;
+ update public.tb_promo_preferences set opted_in=true where user_id=u;
+ update public.sb_events set status='cancelled' where id=e;
+ if exists(select 1 from public.tb_weekly_matches() m where m.user_id=u) then raise exception 'Cancelled must not match';end if;
+ update public.sb_events set status='published' where id=e;
+ delete from public.sb_event_tiers where event_id=e;
+ if exists(select 1 from public.tb_weekly_matches() m where m.user_id=u) then raise exception 'Unavailable tickets must not match';end if;
+ insert into public.sb_event_tiers(event_id,name,price_cents,quantity_total) values(e,'Test tier',1000,10);
+ perform public.tb_prepare_weekly_campaigns();perform public.tb_prepare_weekly_campaigns();
+ select count(*) into n from public.tb_weekly_recipients where user_id=u;
+ if n<>1 then raise exception 'Duplicate weekly reservation: %',n;end if;
+ if has_table_privilege('anon','public.tb_promo_preferences','SELECT') or has_table_privilege('authenticated','public.tb_promo_preferences','UPDATE') or has_function_privilege('anon','public.tb_weekly_matches()','EXECUTE') then raise exception 'Private subscriber access leaked';end if;
+end $$;
+rollback;
+select 'Matching, opt-out, cancellation, stock, duplicate-run and private-access tests passed; fixtures rolled back' as verification;
