@@ -1,6 +1,10 @@
 name: TicketBunker Scanner iOS Simulator Build
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - 'ticketbunker-scanner-native/**'
+      - '.github/workflows/ticketbunker-scanner-ios.yml'
   push:
     branches: [main]
     paths:
@@ -33,12 +37,32 @@ jobs:
           set -euo pipefail
           WORKSPACE="$(find ios -maxdepth 1 -name '*.xcworkspace' -type d | head -n 1)"
           test -n "$WORKSPACE"
-          SCHEME="$(xcodebuild -list -json -workspace "$WORKSPACE" | python3 -c 'import json,sys; print(next((s for s in json.load(sys.stdin).get("workspace",{}).get("schemes",[]) if "TicketBunker" in s), ""))')"
-          test -n "$SCHEME"
-          xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO -derivedDataPath build-cache build > ios-build.log 2>&1 || { tail -n 120 ios-build.log; exit 1; }
+          # Match the app scheme exactly: Pods-TicketBunkerScanner also contains
+          # "TicketBunker" but builds dependencies without producing an app.
+          SCHEME="TicketBunkerScanner"
+          xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO -derivedDataPath "$PWD/build-cache" build > ios-build.log 2>&1 || { tail -n 120 ios-build.log; exit 1; }
+      - name: Verify and package the simulator app
+        run: |
+          set -euo pipefail
+          APP_PATH="$PWD/build-cache/Build/Products/Debug-iphonesimulator/TicketBunkerScanner.app"
+          test -d "$APP_PATH"
+          APP_ID="$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$APP_PATH/Info.plist")"
+          test "$APP_ID" = "pt.soundbunker.ticketbunkerscanner"
+          APP_EXECUTABLE="$(/usr/libexec/PlistBuddy -c 'Print CFBundleExecutable' "$APP_PATH/Info.plist")"
+          test -x "$APP_PATH/$APP_EXECUTABLE"
+          mkdir -p dist
+          tar -czf dist/ticketbunker-scanner-ios-simulator.tar.gz -C "$(dirname "$APP_PATH")" "$(basename "$APP_PATH")"
       - uses: actions/upload-artifact@v4
         with:
           name: ticketbunker-scanner-ios-simulator
-          path: ticketbunker-scanner-native/build-cache/Build/Products/Debug-iphonesimulator/*.app
-          if-no-files-found: warn
+          path: ticketbunker-scanner-native/dist/ticketbunker-scanner-ios-simulator.tar.gz
+          if-no-files-found: error
           retention-days: 14
+      - name: Upload build diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ticketbunker-scanner-ios-build-log
+          path: ticketbunker-scanner-native/ios-build.log
+          if-no-files-found: ignore
+          retention-days: 7
