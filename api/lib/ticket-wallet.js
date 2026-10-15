@@ -23,7 +23,7 @@ export function applePassData(t,sig,env=process.env){
  const when=new Intl.DateTimeFormat('en-GB',{dateStyle:'medium',timeStyle:'short',timeZone:t.timezone||'Europe/Lisbon'}).format(new Date(t.date));
  return {formatVersion:1,passTypeIdentifier:env.APPLE_PASS_TYPE_ID,teamIdentifier:env.APPLE_TEAM_ID,
  serialNumber:t.id+'-v'+(t.version||0),organizationName:'The TicketBunker',description:t.title+' — '+t.tier,
- logoText:'',backgroundColor:'rgb(0,0,0)',foregroundColor:'rgb(255,255,255)',labelColor:'rgb(0,224,166)',
+ backgroundColor:'rgb(0,0,0)',foregroundColor:'rgb(255,255,255)',labelColor:'rgb(0,224,166)',
  relevantDate:t.date,...(t.endDate?{expirationDate:t.endDate}:{}),
  barcodes:[{format:'PKBarcodeFormatQR',message:walletTicketUrl(t,sig),messageEncoding:'iso-8859-1',altText:'Admission '+String(t.admissionNumber||'')}],
  eventTicket:{headerFields:[{key:'ticketType',label:'ADMISSION',value:t.tier||'General admission'}],
