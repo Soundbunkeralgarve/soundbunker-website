@@ -1,9 +1,23 @@
-let sb,access,scanner,busy=false;
+let sb,access,scanner,busy=false,feedbackTimer,lastCameraCode='',lastCameraSeen=0;
 const $=s=>document.querySelector(s);
 function status(message){$('#authMessage').textContent=message;}
-function show(message,kind){
- const e=$('#result');e.textContent=message;
- e.style.background=kind==='valid'?'#12533f':kind==='used'?'#603d16':'#6a233b';
+function dismissFeedback(){
+ clearTimeout(feedbackTimer);$('#scanFeedback').hidden=true;
+}
+function show(message,kind,heading){
+ const summary=$('#result');summary.textContent=message;summary.dataset.kind=kind;
+ if(kind==='neutral'){dismissFeedback();return;}
+ clearTimeout(feedbackTimer);
+ const pending=kind==='pending',feedback=$('#scanFeedback');
+ feedback.dataset.kind=kind;feedback.hidden=false;
+ $('#feedbackIcon').textContent=pending?'…':kind==='valid'?'✓':kind==='used'?'!':'✕';
+ $('#feedbackHeading').textContent=heading|| (pending?'CHECKING…':kind==='valid'?'ENTRY APPROVED':kind==='used'?'ALREADY USED':'NO ADMISSION');
+ $('#feedbackDetail').textContent=message;
+ $('#feedbackNext').hidden=pending;
+ if(!pending){
+  try{navigator.vibrate?.(kind==='valid'?100:[140,80,140]);}catch{}
+  feedbackTimer=setTimeout(dismissFeedback,kind==='valid'?1400:2600);
+ }
 }
 async function request(path,body){
  const r=await fetch(path,{
@@ -15,15 +29,22 @@ async function request(path,body){
  if(!r.ok)throw Error(d.error||'Request failed');
  return d;
 }
-async function scan(code){
+async function scan(code,source='camera'){
+ const now=Date.now();
+ // Holding one QR in frame must not immediately turn a successful scan into a duplicate warning.
+ if(source==='camera'&&code===lastCameraCode&&now-lastCameraSeen<1800){lastCameraSeen=now;return;}
  if(busy||!$('#scanEvent').value)return;
+ if(source==='camera'){lastCameraCode=code;lastCameraSeen=now;}
  busy=true;
+ const selectedEvent=$('#scanEvent').value;
+ show('Please wait for the ticket check.','pending','CHECKING…');
  try{
-  const d=await request('/api/event-scan',{code,eventId:$('#scanEvent').value});
-  const message=d.status==='valid'?(d.test?'✓ TEST QR VALID — ':'✓ ENTRY APPROVED — '):d.status==='used'?'⚠ ALREADY USED — ':'✕ '+(d.message||d.status).toUpperCase()+' — ';
-  show(message+(d.event||'')+(d.tier?' · '+d.tier:'')+(d.status==='valid'?' · CHECK AGE/PHOTO ID IF REQUIRED':''),d.status);
- }catch(err){show(err.message,'error');}
- finally{setTimeout(()=>{busy=false;},1700);}
+  const d=await request('/api/event-scan',{code,eventId:selectedEvent});
+  const heading=d.status==='valid'?(d.test?'TEST QR VALID':'ENTRY APPROVED'):d.status==='used'?'ALREADY USED':d.status==='wrong_event'?'WRONG EVENT':'NO ADMISSION';
+  const detail=[d.event,d.tier,d.status==='valid'?(d.test?'Private test only — no public admission.':'One ticket checked in. Check age / photo ID if required.'):(d.message||'Do not admit this ticket.')].filter(Boolean).join(' · ');
+  show(detail,d.status,heading);
+ }catch(err){show(err.message||'Connection lost. Do not admit without confirmation.','error','NOT VERIFIED');}
+ finally{setTimeout(()=>{busy=false;},700);}
 }
 function showOrganiserLogo(event){
  const img=$('#scannerOrganiserLogo');
@@ -69,6 +90,7 @@ $('#scanEvent').addEventListener('change',()=>{
  $('#assignedEventName').textContent=option?.textContent||'Your event';
  const all=window.__ticketbunkerScannerEvents||[];
  showOrganiserLogo(all.find(e=>e.id===$('#scanEvent').value));
+ lastCameraCode='';lastCameraSeen=0;
  show('Ready to scan '+(option?.textContent||'the selected event')+'.','neutral');
 });
 async function start(){
@@ -104,7 +126,8 @@ async function start(){
  }catch(err){status(err.message);}
 }
 $('#manual').addEventListener('submit',e=>{
- e.preventDefault();const code=$('#code').value.trim();if(code)scan(code);
+ e.preventDefault();const code=$('#code').value.trim();if(code)scan(code,'manual');
 });
-window.addEventListener('pagehide',()=>scanner?.stop().catch(()=>{}));
+$('#feedbackNext').addEventListener('click',dismissFeedback);
+window.addEventListener('pagehide',()=>{clearTimeout(feedbackTimer);scanner?.stop().catch(()=>{});});
 window.addEventListener('load',start);

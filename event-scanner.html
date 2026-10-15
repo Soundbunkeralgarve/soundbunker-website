@@ -1,5 +1,21 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer"><meta name="theme-color" content="#100b16"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Bunker Scanner"><link rel="manifest" href="/ticket-bunker-scanner.webmanifest"><link rel="icon" type="image/svg+xml" href="/assets/ticketbunker/ticketbunker-scanner-icon.svg"><title>Door Scanner | Ticket Bunker BETA</title><link rel="stylesheet" href="/events.css"><link rel="stylesheet" href="/ticketbunker-app.css"><script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script defer src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script><script defer src="/event-scanner.js"></script><link rel="stylesheet" href="/ticketbunker-launch.css">
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer"><meta name="theme-color" content="#100b16"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Bunker Scanner"><link rel="manifest" href="/ticket-bunker-scanner.webmanifest"><link rel="icon" type="image/svg+xml" href="/assets/ticketbunker/ticketbunker-scanner-icon.svg"><title>Door Scanner | Ticket Bunker BETA</title><link rel="stylesheet" href="/events.css"><link rel="stylesheet" href="/ticketbunker-app.css"><script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script defer src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script><script defer src="/event-scanner.js?v=20261015-visible-result"></script><link rel="stylesheet" href="/ticketbunker-launch.css">
 <link rel="stylesheet" href="/ticketbunker-sales-ops.css">
+<style>
+.tb-scan-feedback[hidden]{display:none!important}
+.tb-scan-feedback{position:fixed;inset:0;z-index:2147483000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:max(24px,env(safe-area-inset-top)) 24px max(24px,env(safe-area-inset-bottom));box-sizing:border-box;text-align:center;background:#ef3054;color:#fff;overflow:auto;font-family:Arial,Helvetica,sans-serif}
+.tb-scan-feedback[data-kind="valid"]{background:#19ef9b;color:#042b20}
+.tb-scan-feedback[data-kind="used"]{background:#ffd040;color:#362400}
+.tb-scan-feedback[data-kind="pending"]{background:#162239;color:#fff}
+.tb-scan-feedback .tb-feedback-icon{font-size:clamp(80px,20vh,150px);line-height:1;font-weight:900}
+.tb-scan-feedback h2{margin:0;max-width:100%;font-size:clamp(38px,11vw,84px);line-height:1.02;font-weight:900;letter-spacing:-.04em;overflow-wrap:anywhere;color:inherit}
+.tb-scan-feedback p{margin:0;max-width:640px;font-size:clamp(17px,4vw,23px);line-height:1.35;font-weight:700;color:inherit}
+.tb-scan-feedback button{margin-top:12px;min-height:52px;padding:14px 24px;border:2px solid currentColor;border-radius:12px;background:transparent;color:inherit;font-size:18px;font-weight:900}
+.tb-scanner-app #result{border:2px solid #718278;border-radius:12px;padding:16px;min-height:70px;font-size:19px;line-height:1.3;background:#15251e;color:#fff}
+.tb-scanner-app #result[data-kind="valid"]{background:#19ef9b;color:#042b20}
+.tb-scanner-app #result[data-kind="used"]{background:#ffd040;color:#362400}
+.tb-scanner-app #result[data-kind="error"],.tb-scanner-app #result[data-kind="invalid"],.tb-scanner-app #result[data-kind="wrong_event"]{background:#b5092a;color:#fff}
+@media(max-height:520px){.tb-scan-feedback{gap:10px}.tb-scan-feedback .tb-feedback-icon{font-size:60px}.tb-scan-feedback h2{font-size:38px}.tb-scan-feedback p{font-size:16px}}
+</style>
 </head>
 <body class="tb-scanner-app"><div class="beta-banner" role="status"><strong>TICKETBUNKER · DOOR CREW</strong> — Event-specific access, tracked one-time QR entry.</div>
 <header class="topbar"><a class="brand" href="/"><img src="/assets/ticketbunker/ticketbunker-logo.svg" alt="ticketBunker"></a><nav><a href="/">Return to SoundBunker</a><a href="/events">Events</a><a href="/organiser">Organiser dashboard</a></nav></header>
@@ -20,4 +36,7 @@
  <a href="/organiser"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/><circle cx="12" cy="12" r="10"/></svg><span>Create</span></a>
  <a href="/event-scanner" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8V5h4M19 8V5h-4M5 16v3h4M19 16v3h-4M8 12h8"/></svg><span>Scan</span></a>
  <a href="/client?next=%2Fclient%23my-tickets"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h18v4a2 2 0 0 0 0 4v4H3v-4a2 2 0 0 0 0-4zM14 7v12" stroke-dasharray="2 2"/></svg><span>My Tickets</span></a>
-</nav></body></html>
+</nav><section class="tb-scan-feedback" id="scanFeedback" hidden role="status" aria-live="assertive" aria-atomic="true">
+<span class="tb-feedback-icon" id="feedbackIcon" aria-hidden="true"></span><h2 id="feedbackHeading"></h2><p id="feedbackDetail"></p><button type="button" id="feedbackNext">Scan next ticket</button>
+</section>
+</body></html>

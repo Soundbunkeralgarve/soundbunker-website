@@ -1,5 +1,5 @@
 import React,{useCallback,useEffect,useRef,useState} from 'react';
-import {ActivityIndicator,AppState,KeyboardAvoidingView,Linking,Platform,Pressable,SafeAreaView,ScrollView,StatusBar,StyleSheet,Text,TextInput,View} from 'react-native';
+import {ActivityIndicator,AppState,KeyboardAvoidingView,Linking,Modal,Platform,Pressable,SafeAreaView,ScrollView,StatusBar,StyleSheet,Text,TextInput,View} from 'react-native';
 import {CameraView,useCameraPermissions} from 'expo-camera';
 import * as Haptics from 'expo-haptics';
 import {createScannerClient,scannerApi} from './lib/backend';
@@ -21,6 +21,8 @@ export default function App(){
  const [selected,setSelected]=useState('');
  const [working,setWorking]=useState(false);
  const [result,setResult]=useState(null);
+ const [feedbackOpen,setFeedbackOpen]=useState(false);
+ const feedbackTimer=useRef(null);
  const [manual,setManual]=useState('');
  const [invite,setInvite]=useState('');
  const [torch,setTorch]=useState(false);
@@ -29,6 +31,7 @@ export default function App(){
  const [admissions,setAdmissions]=useState(0);
  const lock=useRef(false);
  const last=useRef({code:'',at:0});
+ useEffect(()=>()=>clearTimeout(feedbackTimer.current),[]);
  const eventId=useRef('');
  eventId.current=selected;
 
@@ -100,12 +103,13 @@ export default function App(){
   }catch(e){setMessage(e.message||'Unable to accept the invitation.');}
   finally{setWorking(false);}
  }
- async function handleScan(raw){
-  if(lock.current||!eventId.current||!client)return;
+ async function handleScan(raw,source='camera'){
+  if(!eventId.current||!client)return;
   const now=Date.now();
-  if(raw===last.current.code&&now-last.current.at<2500)return;
-  lock.current=true;setWorking(true);setResult(null);
-  last.current={code:raw,at:now};
+  if(source==='camera'&&raw===last.current.code&&now-last.current.at<1800){last.current.at=now;return;}
+  if(lock.current)return;
+  lock.current=true;setWorking(true);setResult(null);setFeedbackOpen(true);clearTimeout(feedbackTimer.current);
+  if(source==='camera')last.current={code:raw,at:now};
   try{
    const code=ticketUrl(raw);
    const response=await scannerApi(client,'/api/event-scan',{code,eventId:eventId.current});
@@ -119,7 +123,8 @@ export default function App(){
   }finally{
    setManual('');
    setWorking(false);
-   setTimeout(()=>{lock.current=false;},1700);
+   setTimeout(()=>{lock.current=false;},700);
+   feedbackTimer.current=setTimeout(()=>setFeedbackOpen(false),1800);
   }
  }
  const myEvent=events.find(e=>e.id===selected);
@@ -149,20 +154,34 @@ export default function App(){
     {!!message&&<Text style={s.note}>{message}</Text>}
     {myEvent&&<>
      <View style={s.scanTop}><Text style={s.panelHeading}>SCAN TICKET · {myEvent.title}</Text><Text style={s.small}>Session approvals on this device: {admissions}</Text></View>
-     {permission?.granted?<View style={s.cameraFrame}><CameraView style={s.camera} facing="back" enableTorch={torch} active={foreground&&!working} barcodeScannerSettings={{barcodeTypes:['qr']}} onBarcodeScanned={({data})=>handleScan(data)}/><View pointerEvents="none" style={s.scanOverlay}><Text style={s.scanHint}>ALIGN QR IN FRAME</Text></View></View>:
+     {permission?.granted?<View style={s.cameraFrame}><CameraView style={s.camera} facing="back" enableTorch={torch} active={foreground} barcodeScannerSettings={{barcodeTypes:['qr']}} onBarcodeScanned={({data})=>handleScan(data)}/><View pointerEvents="none" style={s.scanOverlay}><Text style={s.scanHint}>ALIGN QR IN FRAME</Text></View></View>:
      <View style={s.cameraMissing}><Text style={s.body}>Camera access is required to scan tickets.</Text><Button title="Allow camera" onPress={requestPermission}/></View>}
      <Button title={torch?'Turn torch off':'Turn torch on'} variant="secondary" onPress={()=>setTorch(x=>!x)}/>
      {result&&<View accessibilityRole="alert" style={[s.result,{borderColor:resultColor}]}><Text style={[s.resultHeading,{color:resultColor}]}>{result.heading}</Text><Text style={s.resultDetail}>{result.detail}</Text><Text style={s.small}>Check photo ID or age restrictions if required.</Text></View>}
      <Text style={s.panelHeading}>MANUAL BACKUP</Text><Text style={s.small}>Paste the full TicketBunker ticket URL. The server still validates entry.</Text>
      <Input autoCapitalize="none" value={manual} onChangeText={setManual} placeholder="Ticket URL"/>
-     <Button title={working?'Verifying…':'Verify ticket'} disabled={working||!manual.trim()} onPress={()=>handleScan(manual.trim())}/>
+     <Button title={working?'Verifying…':'Verify ticket'} disabled={working||!manual.trim()} onPress={()=>handleScan(manual.trim(),'manual')}/>
      <Text style={s.foot}>Internet required. Do not admit a ticket if verification fails or the connection is lost. An old QR becomes invalid when a ticket is transferred or refunded.</Text>
     </>}
     <Text style={s.foot}>TicketBunker · Powered by SoundBunker Algarve · <Text style={s.link} onPress={()=>Linking.openURL('https://theticketbunker.com/terms#privacy')}>Privacy</Text></Text>
    </ScrollView>}
- </KeyboardAvoidingView></SafeAreaView>;
+ </KeyboardAvoidingView>
+ <Modal visible={feedbackOpen} animationType="none" statusBarTranslucent onRequestClose={()=>{if(result)setFeedbackOpen(false);}}>
+  <View accessibilityRole="alert" accessibilityLiveRegion="assertive" style={[s.feedback,{backgroundColor:!result?'#162239':result.kind==='approved'?'#19ef9b':result.kind==='warning'?'#ffd040':'#ef3054'}]}>
+   {!result?<ActivityIndicator size="large" color="#fff"/>:<Text style={[s.feedbackIcon,{color:result.kind==='approved'?'#042b20':result.kind==='warning'?'#362400':'#fff'}]}>{result.kind==='approved'?'✓':result.kind==='warning'?'!':'✕'}</Text>}
+   <Text style={[s.feedbackHeading,{color:!result||result.kind==='rejected'?'#fff':result.kind==='approved'?'#042b20':'#362400'}]}>{result?.heading||'CHECKING…'}</Text>
+   <Text style={[s.feedbackDetail,{color:!result||result.kind==='rejected'?'#fff':result.kind==='approved'?'#042b20':'#362400'}]}>{result?.detail||'Wait for live ticket verification.'}</Text>
+   {result&&<Pressable accessibilityRole="button" onPress={()=>setFeedbackOpen(false)} style={s.feedbackNext}><Text style={s.feedbackNextText}>Scan next ticket</Text></Pressable>}
+  </View>
+ </Modal></SafeAreaView>;
 }
 const s=StyleSheet.create({
+ feedback:{flex:1,justifyContent:'center',alignItems:'center',padding:24,gap:20},
+ feedbackIcon:{fontSize:110,fontWeight:'900',lineHeight:120},
+ feedbackHeading:{fontSize:48,lineHeight:52,fontWeight:'900',textAlign:'center'},
+ feedbackDetail:{fontSize:20,lineHeight:27,fontWeight:'700',textAlign:'center'},
+ feedbackNext:{minHeight:52,padding:16,borderRadius:12,backgroundColor:'#ffffffdd',marginTop:10},
+ feedbackNextText:{fontSize:18,fontWeight:'900',color:'#162239'},
  root:{flex:1,backgroundColor:C.bg},flex:{flex:1},center:{flex:1,justifyContent:'center',alignItems:'center',padding:24,gap:16},
  header:{backgroundColor:C.panel,paddingHorizontal:20,paddingVertical:16,flexDirection:'row',justifyContent:'space-between',alignItems:'center',borderBottomWidth:1,borderBottomColor:C.edge},
  brand:{color:C.text,fontSize:24,fontWeight:'900',letterSpacing:-1},subbrand:{color:C.muted,fontSize:10,letterSpacing:3,marginTop:2,fontWeight:'700'},dot:{height:10,width:10,borderRadius:5,backgroundColor:C.mint},
