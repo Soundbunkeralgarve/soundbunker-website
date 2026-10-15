@@ -12,6 +12,29 @@ export function walletAvailability(env=process.env){return {
  apple:env.APPLE_WALLET_ENABLED==='true'&&['APPLE_PASS_TYPE_ID','APPLE_TEAM_ID','APPLE_PASS_CERT_PEM','APPLE_PASS_KEY_PEM','APPLE_WWDR_CERT_PEM'].every(k=>!!env[k]),
  google:env.GOOGLE_WALLET_ENABLED==='true'&&/^\d+$/.test(String(env.GOOGLE_WALLET_ISSUER_ID||''))&&!!googleCredentials(env).email&&!!googleCredentials(env).key
 };}
+// Check the issuer connection without returning credentials, tokens or Google's raw errors.
+// This is also usable before activation, so private rehearsals can check setup safely.
+export async function googleWalletReadiness(env=process.env,request=fetch){
+ const {email,key}=googleCredentials(env),issuer=String(env.GOOGLE_WALLET_ISSUER_ID||'');
+ if(!email||!key||!/^\d+$/.test(issuer))return {connected:false,reason:'credentials_missing'};
+ try{
+  const now=Math.floor(Date.now()/1000),b64=value=>Buffer.from(JSON.stringify(value)).toString('base64url');
+  const unsigned=b64({alg:'RS256',typ:'JWT'})+'.'+b64({iss:email,scope:'https://www.googleapis.com/auth/wallet_object.issuer',aud:'https://oauth2.googleapis.com/token',iat:now,exp:now+300});
+  const assertion=unsigned+'.'+createSign('RSA-SHA256').update(unsigned).end().sign(pem(key)).toString('base64url');
+  const auth=await request('https://oauth2.googleapis.com/token',{method:'POST',redirect:'error',signal:AbortSignal.timeout(5000),headers:{'content-type':'application/x-www-form-urlencoded'},body:new URLSearchParams({grant_type:'urn:ietf:params:oauth:grant-type:jwt-bearer',assertion})});
+  if(!auth.ok)return {connected:false,reason:auth.status>=500?'temporarily_unavailable':'authentication_failed'};
+  const token=(await auth.json()).access_token;
+  if(typeof token!=='string'||!token)return {connected:false,reason:'authentication_failed'};
+  const result=await request('https://walletobjects.googleapis.com/walletobjects/v1/eventTicketClass?issuerId='+issuer+'&maxResults=1',{redirect:'error',signal:AbortSignal.timeout(5000),headers:{authorization:'Bearer '+token}});
+  if(result.ok)return {connected:true,reason:null};
+  if(result.status===403){
+   const detail=await result.json().catch(()=>({}));
+   const disabled=detail.error?.details?.some(item=>item.reason==='SERVICE_DISABLED');
+   return {connected:false,reason:disabled?'api_disabled':'issuer_permission_missing'};
+  }
+  return {connected:false,reason:result.status===401?'authentication_failed':'temporarily_unavailable'};
+ }catch{return {connected:false,reason:'temporarily_unavailable'};}
+}
 // A short-lived, explicitly selected internal event can rehearse the real wallet flow.
 // This never converts a test order into commercial admission or changes scan authorisation.
 export function walletTestEvent(event,env=process.env){
@@ -82,11 +105,11 @@ export function googlePassPayload(t,sig,env=process.env){
  logo:image(origin+'/brand-icon.png','The TicketBunker'),venue:{name:localized(t.venue)},dateTime:{start:t.date,...(t.endDate?{end:t.endDate}:{})}};
  const safeUrl=url=>typeof url==='string'&&/^https:\/\/[^\s<>"]+$/.test(url);
  const ticketObject={id:issuer+'.ticket_'+t.id+'_v'+(t.version||0),classId,state:'ACTIVE',hexBackgroundColor:'#000000',
- ticketHolderName:t.holderName,ticketNumber:String(t.admissionNumber||''),ticketType:localized(t.tier),
+ ticketHolderName:t.holderName,ticketNumber:String(t.admissionNumber||''),ticketType:localized((t.test?'TEST ONLY — ':'')+t.tier),
  barcode:{type:'QR_CODE',value:walletTicketUrl(t,sig),alternateText:'Admission '+String(t.admissionNumber||'')},
  ...(safeUrl(t.poster)?{heroImage:image(t.poster,'Event artwork')}:{}),
  ...(safeUrl(t.eventLogo)?{imageModulesData:[{id:'organiser-logo',mainImage:image(t.eventLogo,'Event organiser')}]}:{}),
- textModulesData:[{id:'organiser',header:'Presented by',body:t.organiserName||'Event organiser'},{id:'terms',header:'Entry conditions',body:'One admission only. Transferred, cancelled, refunded or used tickets are not valid. Reopen My tickets after attendee changes.'}],
+ textModulesData:[{id:'organiser',header:'Presented by',body:t.organiserName||'Event organiser'},{id:'terms',header:'Entry conditions',body:(t.test?'Private wallet/scanner rehearsal only. Not valid for admission to a public event. ':'')+'One admission only. Transferred, cancelled, refunded or used tickets are not valid. Reopen My tickets after attendee changes.'}],
  linksModuleData:{uris:[{uri:origin+'/my-tickets',description:'Manage your ticket'},{uri:'mailto:bookings@theticketbunker.com',description:'Customer Services'}]}};
  return {iss:googleCredentials(env).email,aud:'google',typ:'savetowallet',iat:Math.floor(Date.now()/1000),origins:['https://theticketbunker.com','https://www.theticketbunker.com'],payload:{eventTicketClasses:[ticketClass],eventTicketObjects:[ticketObject]}};
 }
@@ -97,3 +120,4 @@ export function createGoogleWalletLink(t,sig,env=process.env){
  const signature=createSign('RSA-SHA256').update(content).end().sign(pem(googleCredentials(env).key)).toString('base64url');
  return 'https://pay.google.com/gp/v/save/'+content+'.'+signature;
 }
+

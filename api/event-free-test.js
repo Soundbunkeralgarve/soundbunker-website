@@ -3,7 +3,7 @@ import {requireAdmin} from './lib/supabase-auth.js';
 import {json,parseJson,safeText,validEmail} from './lib/http.js';
 import {eventsDatabase,signedTicket} from './lib/events.js';
 import ticketHandler from './event-ticket.js';
-import {walletTestEvent,walletAvailability,createApplePass} from './lib/ticket-wallet.js';
+import {walletTestEvent,walletAvailability,createApplePass,createGoogleWalletLink,googleWalletReadiness} from './lib/ticket-wallet.js';
 import {sendTransactionalEmail} from './lib/notify.js';
 
 const TEST=/^[a-f0-9]{48}$/;
@@ -70,16 +70,29 @@ export default async function handler(req,res){
   const code=String(action==='preview'?req.query?.code||'':body.code||'');
   const db=eventsDatabase(),event=await testEventForCode(db,code);
   if(!event)return json(res,{error:'This test invitation has expired or is invalid'},404);
-  if(action==='preview')return json(res,{event:{
+  const rehearsal=walletTestEvent(event);
+  if(action==='preview'){
+   const wallet=req.query?.walletProvider==='google'&&rehearsal
+    ?{provider:'google',enabled:walletAvailability().google,...await googleWalletReadiness()}:null;
+   return json(res,{...(wallet?{wallet}:{}),event:{
    title:event.title,venue:event.venue,date:event.starts_at,timezone:event.venue_timezone,
    currency:event.currency,logo:event.event_logo_url,poster:event.image_url,price:0,test:true
-  }});
+   }});
+  }
   if(action!=='claim')return json(res,{error:'Unknown action'},400);
   signedTicket('00000000-0000-4000-8000-000000000000');
   const name=safeText(body.name,100).trim(),email=safeText(body.email,254).toLowerCase().trim();
   const quantity=Number(body.quantity);
   if(name.length<2||!validEmail(email)||!Number.isInteger(quantity)||quantity<1||quantity>2)
    return json(res,{error:'Enter your name, email and 1–2 free test tickets'},400);
+  const walletProvider=String(body.walletProvider||'apple');
+  if(!['apple','google'].includes(walletProvider))return json(res,{error:'Choose Apple Wallet or Google Wallet.'},400);
+  if(walletProvider==='google'){
+   if(!rehearsal||!walletAvailability().google)
+    return json(res,{error:'Google Wallet is not ready. No test ticket has been issued.'},503);
+   const connection=await googleWalletReadiness();
+   if(!connection.connected)return json(res,{error:'Google Wallet is not connected. No test ticket has been issued.',reason:connection.reason},503);
+  }
   const issued=await db.rpc('sb_issue_internal_free_test',{
     p_event:event.id,p_name:name,p_email:email,p_quantity:quantity
   });
@@ -91,25 +104,32 @@ export default async function handler(req,res){
   const tickets=await db.from('sb_event_tickets').select('id,sequence_number')
    .eq('order_id',issued.data).order('sequence_number');
   if(tickets.error||tickets.data?.length!==quantity)throw Error('Issued tickets could not be retrieved');
-  const rehearsal=walletTestEvent(event);
   const links=tickets.data.map(t=>rehearsal?'https://theticketbunker.com/event-ticket?id='+t.id+'&sig='+signedTicket(t.id):ticketUrl(t.id));
   let emailSent=false;
   try{
    const attachments=[];
-   if(rehearsal&&walletAvailability().apple){
+   if(rehearsal&&(walletProvider==='google'||walletAvailability().apple)){
     for(const t of tickets.data){
      let result,status;const capture={statusCode:200,setHeader(){},end(body){status=this.statusCode;result=JSON.parse(body)}};
      const sig=signedTicket(t.id);
      await ticketHandler({method:'GET',query:{id:t.id,sig}},capture);
      if(status!==200)throw Error('Unable to prepare the wallet test ticket');
-     const bytes=await createApplePass(result.ticket,sig);
-     attachments.push({filename:'TicketBunker-Apple-Wallet-'+t.sequence_number+'.pkpass',content:bytes.toString('base64'),content_type:'application/vnd.apple.pkpass'});
+     if(walletProvider==='google'){
+      // Validate signing before sending; the ticket page offers the current Google save link.
+      createGoogleWalletLink(result.ticket,sig);
+     }else{
+      const bytes=await createApplePass(result.ticket,sig);
+      attachments.push({filename:'TicketBunker-Apple-Wallet-'+t.sequence_number+'.pkpass',content:bytes.toString('base64'),content_type:'application/vnd.apple.pkpass'});
+     }
     }
    }
+   const walletInstructions=walletProvider==='google'
+    ?'ADD TO GOOGLE WALLET\nOpen your ticket above on your Android phone, choose Add to Google Wallet, and save it to your Google account. Then open it in Google Wallet and show its QR to the organiser for the scanner test.'
+    :'ADD TO APPLE WALLET\nOpen the attached Apple Wallet pass on your iPhone and tap Add, or open your ticket above and choose Add to Apple Wallet. Then show its QR to the organiser for the scanner test.';
    await sendTransactionalEmail({brand:'ticketbunker',to:email,key:'ticketbunker-free-real-test-'+issued.data,
     attachments,
     subject:rehearsal?'Booking confirmed · '+event.title:'Your FREE ticketBunker QR test tickets (not for a real event)',
-    text:rehearsal?'BOOKING CONFIRMED · THE TICKETBUNKER\n\nHi '+name+',\n\nYour complimentary SoundBunker test booking is confirmed.\n\nEvent: '+event.title+'\nWhen: '+new Intl.DateTimeFormat('en-GB',{dateStyle:'full',timeStyle:'short',timeZone:event.venue_timezone||'Europe/Lisbon'}).format(new Date(event.starts_at))+' (Portugal time)\nWhere: '+event.venue+'\nAttendee: '+name+'\nTickets: '+quantity+'\nTotal: €0.00 — no payment required\n\nOPEN YOUR TICKET\n'+links.join('\n')+'\n\nADD TO APPLE WALLET\nOpen the attached Apple Wallet pass on your iPhone and tap Add, or open your ticket above and choose Add to Apple Wallet. Then show its QR to the organiser for the scanner test.\n\nPRIVATE SOFTWARE TEST ONLY. This booking does not grant admission to a public event. Each QR can be checked in once; a repeat scan should be rejected.\n\nSoundBunker Algarve':'Hi '+name+',\n\nThese are REAL test-system QR tickets with a price of €0/£0. No payment has been made and this is NOT a real public event.\n\n'+event.title+'\n'+event.venue+'\n\nOpen each unique test QR link:\n'+links.join('\n')+'\n\nEach ticket can be checked in once using the ticketBunker door scanner.\n\nSoundBunker Algarve'});
+    text:rehearsal?'BOOKING CONFIRMED · THE TICKETBUNKER\n\nHi '+name+',\n\nYour complimentary SoundBunker test booking is confirmed.\n\nEvent: '+event.title+'\nWhen: '+new Intl.DateTimeFormat('en-GB',{dateStyle:'full',timeStyle:'short',timeZone:event.venue_timezone||'Europe/Lisbon'}).format(new Date(event.starts_at))+' (Portugal time)\nWhere: '+event.venue+'\nAttendee: '+name+'\nTickets: '+quantity+'\nTotal: €0.00 — no payment required\n\nOPEN YOUR TICKET\n'+links.join('\n')+'\n\n'+walletInstructions+'\n\nPRIVATE SOFTWARE TEST ONLY. This booking does not grant admission to a public event. Each QR can be checked in once; a repeat scan should be rejected.\n\nSoundBunker Algarve':'Hi '+name+',\n\nThese are REAL test-system QR tickets with a price of €0/£0. No payment has been made and this is NOT a real public event.\n\n'+event.title+'\n'+event.venue+'\n\nOpen each unique test QR link:\n'+links.join('\n')+'\n\nEach ticket can be checked in once using the ticketBunker door scanner.\n\nSoundBunker Algarve'});
    emailSent=true;
   }catch(err){console.error('Test ticket email delivery failed',err);}
   return json(res,{quantity,tickets:links.map((url,i)=>({url,number:i+1})),emailSent,test:true,totalCents:0});
@@ -118,3 +138,4 @@ export default async function handler(req,res){
   return json(res,{error:'Real test is temporarily unavailable. No payment was taken.'},503);
  }
 }
+
