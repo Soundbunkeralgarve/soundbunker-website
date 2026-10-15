@@ -1,4 +1,4 @@
-let sb,access,scanner,busy=false,feedbackTimer,lastCameraCode='',lastCameraSeen=0;
+let sb,access,scanner,busy=false,feedbackTimer,lastCameraCode='',lastCameraSeen=0,admissions=0,torch=false;
 const $=s=>document.querySelector(s);
 function status(message){$('#authMessage').textContent=message;}
 function dismissFeedback(){
@@ -16,7 +16,7 @@ function show(message,kind,heading){
  $('#feedbackNext').hidden=pending;
  if(!pending){
   try{navigator.vibrate?.(kind==='valid'?100:[140,80,140]);}catch{}
-  feedbackTimer=setTimeout(dismissFeedback,kind==='valid'?1400:2600);
+  feedbackTimer=setTimeout(dismissFeedback,kind==='valid'?850:2200);
  }
 }
 async function request(path,body){
@@ -36,15 +36,17 @@ async function scan(code,source='camera'){
  if(busy||!$('#scanEvent').value)return;
  if(source==='camera'){lastCameraCode=code;lastCameraSeen=now;}
  busy=true;
- const selectedEvent=$('#scanEvent').value;
+ const selectedEvent=$('#scanEvent').value,started=Date.now();
  show('Please wait for the ticket check.','pending','CHECKING…');
  try{
   const d=await request('/api/event-scan',{code,eventId:selectedEvent});
   const heading=d.status==='valid'?(d.test?'TEST QR VALID':'ENTRY APPROVED'):d.status==='used'?'ALREADY USED':d.status==='wrong_event'?'WRONG EVENT':'NO ADMISSION';
   const detail=[d.event,d.tier,d.status==='valid'?(d.test?'Private test only — no public admission.':'One ticket checked in. Check age / photo ID if required.'):(d.message||'Do not admit this ticket.')].filter(Boolean).join(' · ');
   show(detail,d.status,heading);
+  if(d.status==='valid')$('#admissionCount').textContent=String(++admissions);
+  $('#scanSpeed').textContent=((Date.now()-started)/1000).toFixed(1)+'s last check';
  }catch(err){show(err.message||'Connection lost. Do not admit without confirmation.','error','NOT VERIFIED');}
- finally{setTimeout(()=>{busy=false;},700);}
+ finally{busy=false;$('#code').value='';}
 }
 function showOrganiserLogo(event){
  const img=$('#scannerOrganiserLogo');
@@ -81,7 +83,9 @@ async function events(){
  if(window.Html5Qrcode){
   try{
    scanner=new Html5Qrcode('reader');
-   await scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:240,height:240}},scan,()=>{});
+   await scanner.start({facingMode:'environment'},{fps:20,qrbox:(width,height)=>{const edge=Math.floor(Math.min(width,height)*.75);return {width:edge,height:edge};}},code=>scan(code,'camera'),()=>{});
+   status('Camera ready · hold a QR inside the frame');
+   const capabilities=scanner.getRunningTrackCapabilities?.();$('#torch').hidden=!capabilities?.torch;
   }catch(error){status('Camera unavailable. Allow camera access in browser settings or use manual ticket entry.');}
  }else status('Camera library unavailable. You can use manual ticket entry.');
 }
@@ -108,6 +112,7 @@ async function start(){
   }
   $('#scannerSignIn').hidden=true;
   access=session.access_token;
+  sb.auth.onAuthStateChange((_event,next)=>{access=next?.access_token||'';if(!next){$('#scannerPanel').hidden=true;$('#scannerSignIn').hidden=false;status('Sign in to continue scanning.');}});
   const invite=new URLSearchParams(location.search).get('invite');
   if(invite){
    $('#invitePanel').hidden=false;
@@ -128,6 +133,8 @@ async function start(){
 $('#manual').addEventListener('submit',e=>{
  e.preventDefault();const code=$('#code').value.trim();if(code)scan(code,'manual');
 });
+$('#torch').addEventListener('click',async()=>{try{await scanner.applyVideoConstraints({advanced:[{torch:!torch}]});torch=!torch;$('#torch').textContent=torch?'Torch on':'Torch off';$('#torch').setAttribute('aria-pressed',String(torch));}catch{status('Torch is unavailable on this camera.');}});
 $('#feedbackNext').addEventListener('click',dismissFeedback);
 window.addEventListener('pagehide',()=>{clearTimeout(feedbackTimer);scanner?.stop().catch(()=>{});});
 window.addEventListener('load',start);
+

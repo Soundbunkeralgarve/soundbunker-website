@@ -5,7 +5,7 @@ import * as Haptics from 'expo-haptics';
 import {createScannerClient,scannerApi} from './lib/backend';
 import {admissionResult,inviteToken,ticketUrl} from './lib/scanLogic';
 
-const C={bg:'#130d1c',panel:'#241a31',panel2:'#30223d',edge:'#554365',text:'#f9f5ef',muted:'#c3b5cf',mint:'#33e4b2',amber:'#ffc971',red:'#ff8b9f'};
+const C={bg:'#080e12',panel:'#132128',panel2:'#1b3036',edge:'#34504b',text:'#f9f5ef',muted:'#c3b5cf',mint:'#33e4b2',amber:'#ffc971',red:'#ff8b9f'};
 const Button=({title,onPress,variant='primary',disabled=false})=><Pressable disabled={disabled} onPress={onPress} style={[s.button,variant==='secondary'?s.secondary:null,disabled?s.disabled:null]} accessibilityRole="button"><Text style={[s.buttonText,variant==='secondary'?s.secondaryText:null]}>{title}</Text></Pressable>;
 const Input=(props)=><TextInput placeholderTextColor="#9988ab" style={s.input} {...props}/>;
 
@@ -23,6 +23,8 @@ export default function App(){
  const [result,setResult]=useState(null);
  const [feedbackOpen,setFeedbackOpen]=useState(false);
  const feedbackTimer=useRef(null);
+ const [toolsOpen,setToolsOpen]=useState(false);
+ const [manualOpen,setManualOpen]=useState(false);
  const [manual,setManual]=useState('');
  const [invite,setInvite]=useState('');
  const [torch,setTorch]=useState(false);
@@ -123,8 +125,8 @@ export default function App(){
   }finally{
    setManual('');
    setWorking(false);
-   setTimeout(()=>{lock.current=false;},700);
-   feedbackTimer.current=setTimeout(()=>setFeedbackOpen(false),1800);
+   lock.current=false;
+   feedbackTimer.current=setTimeout(()=>setFeedbackOpen(false),1000);
   }
  }
  const myEvent=events.find(e=>e.id===selected);
@@ -144,24 +146,24 @@ export default function App(){
    </ScrollView>:
    !user.email_confirmed_at?<View style={s.center}><Text style={s.headline}>Verify your email</Text><Text style={s.body}>Verify your email before scanning tickets.</Text><Button title="Sign out" onPress={signOut}/></View>:
    <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.container}>
-    <View style={s.line}><View style={s.flex}><Text style={s.kicker}>SIGNED IN</Text><Text style={s.email} numberOfLines={1}>{user.email}</Text></View><Pressable onPress={signOut} accessibilityRole="button"><Text style={s.link}>Sign out</Text></Pressable></View>
-    <Text style={s.headline}>Door scanner.</Text>
-    <Text style={s.body}>Authorised one-time admission. Every scan is checked live against TicketBunker.</Text>
-    <View style={s.panel}><View style={s.line}><Text style={s.panelHeading}>ASSIGNED EVENT</Text><Pressable onPress={()=>refresh()} accessibilityRole="button" disabled={working}><Text style={s.link}>Refresh ↻</Text></Pressable></View>
-     {events.length?events.map(e=><Pressable onPress={()=>{setSelected(e.id);setResult(null);setAdmissions(0);}} key={e.id} accessibilityRole="radio" accessibilityState={{checked:e.id===selected}} style={[s.event,e.id===selected?s.eventSelected:null]}><View style={s.radio}>{e.id===selected&&<View style={s.radioFill}/>}</View><View style={s.flex}><Text style={s.eventName}>{e.title}</Text><Text style={s.small}>{e.venue||'Event venue'}</Text></View></Pressable>):<Text style={s.small}>No active assigned events.</Text>}
-    </View>
-    <View style={s.panel}><Text style={s.panelHeading}>ACCEPT A DOOR CREW INVITE</Text><Text style={s.small}>First shift? Paste the private invite link sent by your organiser.</Text><Input autoCapitalize="none" value={invite} onChangeText={setInvite} placeholder="Paste invitation link"/><Button title={working?'Please wait…':'Accept invite'} variant="secondary" disabled={working||!invite.trim()} onPress={acceptInvite}/></View>
-    {!!message&&<Text style={s.note}>{message}</Text>}
+    <View style={s.line}><View style={s.flex}><Text style={s.kicker}>YOUR EVENT</Text><Text style={s.eventTitle}>{myEvent?.title||'Choose your event'}</Text></View><View><Text style={s.counter}>{admissions}</Text><Text style={s.small}>this session</Text></View></View>
+    <Button title={toolsOpen?'Close event settings':'Event & crew settings'} variant="secondary" onPress={()=>setToolsOpen(x=>!x)}/>
+    {toolsOpen&&<View style={s.panel}>
+     <View style={s.line}><Text style={s.small}>{user.email}</Text><Pressable onPress={signOut} accessibilityRole="button"><Text style={s.link}>Sign out</Text></Pressable></View>
+     <Button title="Refresh events" variant="secondary" disabled={working} onPress={()=>refresh()}/>
+     {events.map(e=><Pressable key={e.id} disabled={working} onPress={()=>{setSelected(e.id);setResult(null);setAdmissions(0);setToolsOpen(false);}} accessibilityRole="radio" accessibilityState={{checked:e.id===selected}} style={[s.event,e.id===selected?s.eventSelected:null]}><Text style={s.eventName}>{e.title}</Text></Pressable>)}
+     <Text style={s.panelHeading}>DOOR CREW INVITATION</Text><Input autoCapitalize="none" value={invite} onChangeText={setInvite} placeholder="Paste invitation link"/><Button title="Accept invite" disabled={working||!invite.trim()} onPress={acceptInvite}/>
+    </View>}
+    {!myEvent&&<Text style={s.note}>{message||'Open event settings to refresh your assigned events or accept an invitation.'}</Text>}
     {myEvent&&<>
-     <View style={s.scanTop}><Text style={s.panelHeading}>SCAN TICKET · {myEvent.title}</Text><Text style={s.small}>Session approvals on this device: {admissions}</Text></View>
+
      {permission?.granted?<View style={s.cameraFrame}><CameraView style={s.camera} facing="back" enableTorch={torch} active={foreground} barcodeScannerSettings={{barcodeTypes:['qr']}} onBarcodeScanned={({data})=>handleScan(data)}/><View pointerEvents="none" style={s.scanOverlay}><Text style={s.scanHint}>ALIGN QR IN FRAME</Text></View></View>:
      <View style={s.cameraMissing}><Text style={s.body}>Camera access is required to scan tickets.</Text><Button title="Allow camera" onPress={requestPermission}/></View>}
      <Button title={torch?'Turn torch off':'Turn torch on'} variant="secondary" onPress={()=>setTorch(x=>!x)}/>
      {result&&<View accessibilityRole="alert" style={[s.result,{borderColor:resultColor}]}><Text style={[s.resultHeading,{color:resultColor}]}>{result.heading}</Text><Text style={s.resultDetail}>{result.detail}</Text><Text style={s.small}>Check photo ID or age restrictions if required.</Text></View>}
-     <Text style={s.panelHeading}>MANUAL BACKUP</Text><Text style={s.small}>Paste the full TicketBunker ticket URL. The server still validates entry.</Text>
-     <Input autoCapitalize="none" value={manual} onChangeText={setManual} placeholder="Ticket URL"/>
-     <Button title={working?'Verifying…':'Verify ticket'} disabled={working||!manual.trim()} onPress={()=>handleScan(manual.trim(),'manual')}/>
-     <Text style={s.foot}>Internet required. Do not admit a ticket if verification fails or the connection is lost. An old QR becomes invalid when a ticket is transferred or refunded.</Text>
+     <Button title={manualOpen?'Close manual entry':'Manual ticket entry'} variant="secondary" onPress={()=>setManualOpen(x=>!x)}/>
+     {manualOpen&&<><Input autoCapitalize="none" value={manual} onChangeText={setManual} placeholder="Paste ticket URL"/><Button title={working?'Checking…':'Check ticket'} disabled={working||!manual.trim()} onPress={()=>handleScan(manual.trim(),'manual')}/></>}
+     <Text style={s.foot}>Internet required · One ticket, one entry · Check ID where required</Text>
     </>}
     <Text style={s.foot}>TicketBunker · Powered by SoundBunker Algarve · <Text style={s.link} onPress={()=>Linking.openURL('https://theticketbunker.com/terms#privacy')}>Privacy</Text></Text>
    </ScrollView>}
@@ -176,6 +178,7 @@ export default function App(){
  </Modal></SafeAreaView>;
 }
 const s=StyleSheet.create({
+ eventTitle:{fontSize:22,fontWeight:'800',color:C.text,marginTop:6},counter:{fontSize:30,fontWeight:'900',color:C.mint,textAlign:'right'},
  feedback:{flex:1,justifyContent:'center',alignItems:'center',padding:24,gap:20},
  feedbackIcon:{fontSize:110,fontWeight:'900',lineHeight:120},
  feedbackHeading:{fontSize:48,lineHeight:52,fontWeight:'900',textAlign:'center'},
@@ -196,8 +199,8 @@ const s=StyleSheet.create({
  panelHeading:{fontWeight:'900',color:C.text,fontSize:12,letterSpacing:1.3},
  event:{flexDirection:'row',alignItems:'center',gap:10,padding:12,borderRadius:11,backgroundColor:C.panel2,borderWidth:1,borderColor:'transparent'},
  eventSelected:{borderColor:C.mint},radio:{width:20,height:20,borderWidth:2,borderColor:C.mint,borderRadius:10,alignItems:'center',justifyContent:'center'},radioFill:{height:10,width:10,borderRadius:5,backgroundColor:C.mint},
- eventName:{color:C.text,fontSize:14,fontWeight:'800'},scanTop:{marginTop:16,gap:6},cameraFrame:{overflow:'hidden',borderRadius:16,height:310,borderWidth:2,borderColor:C.mint,backgroundColor:'#060608'},
+ eventName:{color:C.text,fontSize:14,fontWeight:'800'},scanTop:{marginTop:16,gap:6},cameraFrame:{overflow:'hidden',borderRadius:16,height:340,borderWidth:1,borderColor:C.mint,backgroundColor:'#060608'},
  camera:{width:'100%',height:'100%'},scanOverlay:{position:'absolute',bottom:0,left:0,right:0,padding:15,backgroundColor:'#120b18a8',alignItems:'center'},
  scanHint:{color:C.text,fontWeight:'900',letterSpacing:2,fontSize:11},cameraMissing:{padding:25,gap:12,backgroundColor:C.panel,borderRadius:12},
- result:{marginTop:12,borderRadius:16,borderWidth:2,padding:20,gap:12,backgroundColor:C.panel},resultHeading:{fontSize:25,fontWeight:'900'},resultDetail:{color:C.text,fontSize:16,fontWeight:'700'}
+ result:{marginTop:12,borderRadius:16,borderWidth:2,padding:20,gap:12,backgroundColor:C.panel},resultHeading:{fontSize:20,fontWeight:'900'},resultDetail:{color:C.text,fontSize:16,fontWeight:'700'}
 });
