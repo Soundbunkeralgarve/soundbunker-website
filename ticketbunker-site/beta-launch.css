@@ -1,0 +1,26 @@
+.hero-image{filter:contrast(1.08)}
+.hero-overlay{background:linear-gradient(90deg,#050505eb 0%,#070707bc 35%,#08080833 75%),linear-gradient(0deg,#000 0%,transparent 38%)}
+.hero-intro{max-width:470px}
+.category-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.category-card .image{filter:contrast(1.06)}
+.category-card h3{font-size:clamp(30px,3vw,44px)}
+.beta-offer{background:#07130f;color:#fff;scroll-margin-top:100px}
+.beta-layout{display:grid;grid-template-columns:1.05fr 1fr;gap:clamp(30px,5vw,75px);align-items:center}
+.beta-photos{position:relative;min-height:560px}
+.beta-photos img{display:block;object-fit:cover;width:88%;height:390px}
+.beta-photos img+img{position:absolute;width:67%;height:285px;right:0;bottom:0;border:8px solid #07130f;object-position:center}
+.beta-copy h2{font:800 clamp(54px,5.5vw,82px)/.98 var(--display);margin:22px 0}
+.beta-copy h2 em{color:var(--teal);font-style:normal}
+.beta-copy .eyebrow{color:var(--teal)}
+.beta-lead{font-size:22px;font-weight:800;max-width:360px}
+.beta-copy>p:not(.beta-lead){color:#c9d8d0}
+.beta-copy ul{padding-left:20px;margin:22px 0;line-height:1.9}
+.beta-copy .beta-note{font-size:12px;line-height:1.6;margin-top:20px;max-width:490px}
+.image-promotion{position:relative;isolation:isolate;background:#06110e;color:white}
+.image-promotion:before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#04110eeb,#04110e80),url('/assets/club.jpg') center/cover}
+.image-promotion .featured-price{background:#06110ee8;border:1px solid #5d8070}
+.category-card:last-child{grid-column:auto}
+.feature-photo-banner{margin:0 0 40px;background:#07130f;overflow:hidden}
+.feature-photo-banner img{display:block;width:100%;height:clamp(230px,35vw,430px);object-fit:cover;object-position:center 60%}
+@media(max-width:1000px){.category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.beta-layout{gap:30px}.beta-photos{min-height:480px}.beta-photos img{height:330px}.beta-photos img+img{height:245px}}
+@media(max-width:650px){.beta-layout{grid-template-columns:1fr}.beta-photos{min-height:325px}.beta-photos img{height:250px}.beta-photos img+img{height:185px;width:62%}.beta-copy h2{font-size:58px}.category-grid{grid-template-columns:1fr}.hero-overlay{background:linear-gradient(90deg,#000c,#0005),linear-gradient(0deg,#000 4%,transparent 65%)}.category-card{min-height:330px}}
