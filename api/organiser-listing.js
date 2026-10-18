@@ -1,3 +1,4 @@
+import {clientControl,activeClientDiscount} from './lib/ticketbunker-owner.js';
 import { requireUser } from './lib/supabase-auth.js';
 import { organiserForUser } from './organiser.js';
 import { quoteListing } from './lib/event-listings.js';
@@ -21,6 +22,9 @@ export default async function handler(req,res){
    const capacity=tiers.data.reduce((a,b)=>a+b.quantity_total,0);
    let plan;try{plan=quoteListing(event.data.currency,input.plan,capacity)}
    catch(e){return json(res,{error:e.message},400);}
+   const discount=activeClientDiscount(await clientControl(ctx.admin,org.id));
+   if(discount===100)return json(res,{waived:true,message:'Your approved account has free fixed-band listings. No listing payment is required.'});
+   plan={...plan,amount:plan.amount-Math.round(plan.amount*discount/100)};
    // Festival / Festival Pro cannot use an automatic published price.
    // A bespoke agreement and separate authorised fee flow must be implemented.
    if(!Number.isSafeInteger(plan.amount)||plan.amount<=0)

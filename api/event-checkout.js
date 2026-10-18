@@ -1,3 +1,4 @@
+import {clientControl,activeClientDiscount} from './lib/ticketbunker-owner.js';
 import { json,parseJson,safeText,validEmail } from './lib/http.js';
 import { eventsDatabase } from './lib/events.js';
 export default async function handler(req,res){
@@ -28,8 +29,9 @@ export default async function handler(req,res){
         .eq('id',product.data.organiser_profile_id).single();
       const paid=await db.from('sb_event_listing_fees').select('id').eq('event_id',order.event_id)
         .eq('organiser_profile_id',product.data.organiser_profile_id).eq('status','paid').limit(1);
+      const freeListing=activeClientDiscount(await clientControl(db,product.data.organiser_profile_id))===100;
       if(org.error||paid.error||org.data?.status!=='approved'||!org.data?.stripe_capabilities_ready||
-        !org.data?.tax_review_complete||!paid.data?.length||!/^acct_[A-Za-z0-9]+$/.test(org.data.stripe_account_id||''))
+        !org.data?.tax_review_complete||(!paid.data?.length&&!freeListing)||!/^acct_[A-Za-z0-9]+$/.test(org.data.stripe_account_id||''))
         return json(res,{error:'This event organiser is not approved for ticket sales'},403);
       merchant=org.data.stripe_account_id;
     }
