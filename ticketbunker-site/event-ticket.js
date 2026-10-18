@@ -24,6 +24,12 @@
    const button=$('googleWallet');button.disabled=true;
    try{const response=await fetch(walletEndpoint+'&provider=google',{cache:'no-store'});const result=await response.json();if(!response.ok)throw Error(result.error||'Wallet unavailable');if(!result.url?.startsWith('https://pay.google.com/gp/v/save/'))throw Error('Invalid wallet link');location.assign(result.url);}catch(error){$('notice').textContent=error.message;}finally{button.disabled=false;}
   };}
+  const requestedWallet=p.get('wallet');
+  if(['apple','google'].includes(requestedWallet)){
+   const clean=new URL(location.href);clean.searchParams.delete('wallet');history.replaceState(null,'',clean);
+   if(t.wallet?.[requestedWallet]){if(requestedWallet==='apple')location.assign($('appleWallet').href);else $('googleWallet').click();}
+   else $('notice').textContent='This wallet is currently unavailable for your ticket. Your admission QR is still valid.';
+  }
 $('printTicket').onclick=()=>window.print();
   $('saveDigitalTicket').onclick=async()=>{
    const button=$('saveDigitalTicket');button.disabled=true;
@@ -31,7 +37,7 @@ $('printTicket').onclick=()=>window.print();
     const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=4000;const c=canvas.getContext('2d');
     c.fillStyle='#fff';c.fillRect(0,0,1080,4000);c.fillStyle='#000';c.fillRect(0,0,1080,165);
     const image=async src=>new Promise(resolve=>{if(!src){resolve(null);return;}const img=new Image();img.crossOrigin='anonymous';const timer=setTimeout(()=>resolve(null),5000);img.onload=()=>{clearTimeout(timer);resolve(img)};img.onerror=()=>{clearTimeout(timer);resolve(null)};img.src=src;});
-    const [logo,poster,promoter,poweredBy]=await Promise.all([image('/brand-compact.png'),image(/^https:\/\//i.test(t.poster||'')?t.poster:null),image(/^https:\/\//i.test(t.eventLogo||'')?t.eventLogo:null),image('/soundbunker-logo-white.png')]);
+    const [logo,poster,promoter,poweredBy,appleBadge,googleBadge]=await Promise.all([image('/brand-compact.png'),image(/^https:\/\//i.test(t.poster||'')?t.poster:null),image(/^https:\/\//i.test(t.eventLogo||'')?t.eventLogo:null),image('/soundbunker-logo-white.png'),image(t.wallet?.apple?'/assets/wallet/add-to-apple-wallet.png':null),image(t.wallet?.google?'/assets/wallet/add-to-google-wallet.png':null)]);
     const contain=(img,x,y,w,h)=>{const scale=Math.min(w/img.width,h/img.height);const iw=img.width*scale,ih=img.height*scale;c.drawImage(img,x+(w-iw)/2,y+(h-ih)/2,iw,ih);};
     if(logo)contain(logo,65,35,440,90);
     c.fillStyle='#167355';c.font='bold 22px sans-serif';c.fillText(t.test?'PRIVATE TEST TICKET — NOT PUBLIC ADMISSION':'DIGITAL EVENT TICKET',65,205);
@@ -44,6 +50,7 @@ $('printTicket').onclick=()=>window.print();
     const qr=document.querySelector('#qr canvas')||document.querySelector('#qr img');if(!qr)throw Error('Your QR is not ready yet. Please retry.');
     y+=30;c.imageSmoothingEnabled=false;c.drawImage(qr,300,y,480,480);c.imageSmoothingEnabled=true;y+=530;
     c.fillStyle='#245231';c.font='bold 24px sans-serif';c.textAlign='center';c.fillText('SHOW THIS QR AT THE DOOR',540,y);c.textAlign='left';y+=55;
+    if(appleBadge||googleBadge){const badges=[appleBadge,googleBadge].filter(Boolean);for(const [i,badge] of badges.entries())contain(badge,180+i*390,y,330,100);y+=130;c.textAlign='center';c.fillStyle='#4b5d4d';c.font='20px sans-serif';c.fillText('Scan the QR above to open your ticket and add it to your wallet.',540,y);c.textAlign='left';y+=50;}
     line('Ticket reference: '+id,'normal',20,'#4b5d4d');line(t.test?'Private scanner rehearsal only · Keep your QR private':'One valid ticket · One admission · Keep your QR private','normal',20,'#4b5d4d');y+=15;
     line('Transferred, refunded or cancelled tickets are not valid for entry.','normal',18,'#4b5d4d');line('Full entry conditions: theticketbunker.com/terms','normal',18,'#4b5d4d');y+=25;
     c.fillStyle='#080e12';c.fillRect(0,y,1080,105);c.fillStyle='#fff';c.font='bold 18px sans-serif';c.fillText('POWERED BY',65,y+40);if(poweredBy)contain(poweredBy,225,y+12,300,44);c.font='17px sans-serif';c.fillText('Manage names and transfers in My tickets · theticketbunker.com',65,y+76);

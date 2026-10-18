@@ -1,4 +1,4 @@
-import { ticketBunkerFrom, ticketBunkerReplyTo, ticketBunkerEmailContent, ticketBunkerFooterHtml, ticketBunkerContactText } from './ticketbunker-email-template.js';
+import { ticketBunkerFrom, ticketBunkerReplyTo, ticketBunkerEmailContent, ticketBunkerFooterHtml, ticketBunkerContactText, ticketWalletBadgesHtml } from './ticketbunker-email-template.js';
 import { studioEmailContent } from './email-template.js';
 
 export async function sendStudioEmail(to, subject, body, { brand } = {}) {
@@ -75,7 +75,7 @@ export async function sendTicketBunkerConfirmation({to,key,subject,show,date,ven
  const safePoster=typeof poster==='string'&&/^https:\/\/[^\s"<>]+$/i.test(poster)?poster:null;
  const rows=[['Event',show],['When',date],['Venue',venue],['Ticket type',tier],['Attendee',attendee],['Tickets',quantity+''],['Paid','€0 / £0 · TEST']];
  const details=rows.map(([label,value])=>'<tr><td style="color:#756780;padding:11px;border-bottom:1px solid #ece4ee;font-size:12px">'+emailEscape(label)+'</td><td style="padding:11px;border-bottom:1px solid #ece4ee;font-size:13px;font-weight:700">'+emailEscape(value)+'</td></tr>').join('');
- const tickets=links.map((url,i)=>'<a href="'+emailEscape(url)+'" style="display:block;margin:9px 0;background:#292037;color:#fff;text-decoration:none;padding:15px;border-radius:10px;font-weight:700">Open QR ticket '+(i+1)+' →</a>').join('');
+ const tickets=links.map((url,i)=>'<a href="'+emailEscape(url)+'" style="display:block;margin:9px 0;background:#292037;color:#fff;text-decoration:none;padding:15px;border-radius:10px;font-weight:700">Open QR ticket '+(i+1)+' →</a>'+ticketWalletBadgesHtml(url)).join('');
  const html='<!doctype html><html lang="en"><head><meta charset="utf-8"></head><body style="background:#f3f0f5;padding:30px 12px;font-family:Arial,sans-serif;color:#261e30"><main style="margin:auto;max-width:570px;background:white;border-radius:20px;overflow:hidden">'+
  '<div style="background:#241a30;padding:25px"><img src="'+page+'/assets/ticketbunker/ticketbunker-logo.svg" alt="TicketBunker" width="235" style="max-width:90%;height:auto"><p style="color:#e9ddee;font-size:11px;letter-spacing:2px">OFFICIAL EVENT TICKETS</p></div>'+
  (safeLogo?'<div style="padding:19px;text-align:center;background:white;border-bottom:1px solid #dae8df"><img src="'+emailEscape(safeLogo)+'" alt="Organiser logo" width="220" style="max-height:95px;max-width:90%;object-fit:contain"></div>':'')+
