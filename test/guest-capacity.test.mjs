@@ -13,9 +13,9 @@ test('capacity payments reject wrong references, amount, currency, status and te
 });
 test('band upgrades credit the existing band in both currencies',()=>{
  assert.equal(quoteUpgrade('eur','starter',100).additionalAmount,0);
- assert.equal(quoteUpgrade('eur','starter',101).additionalAmount,6000);
- assert.equal(quoteUpgrade('eur','standard',501).additionalAmount,12000);
- assert.equal(quoteUpgrade('gbp','starter',101).additionalAmount,5000);
+ assert.equal(quoteUpgrade('eur','starter',101).additionalAmount,10000);
+ assert.equal(quoteUpgrade('eur','standard',501).additionalAmount,10000);
+ assert.equal(quoteUpgrade('gbp','starter',101).additionalAmount,10000);
  assert.equal(quoteUpgrade('gbp','standard',501).additionalAmount,10000);
  assert.throws(()=>quoteUpgrade('eur','event_plus',2001));
 });

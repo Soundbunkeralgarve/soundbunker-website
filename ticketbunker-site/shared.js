@@ -19,5 +19,5 @@ export function authClient() {
 }
 export function safeNext(value) {
   if(!value)return '';
-  try{const u=new URL(value,location.origin);u.pathname=u.pathname.replace(/\.html$/,'');return u.origin===location.origin&&['/organiser','/my-tickets','/event-scanner','/guest-list'].includes(u.pathname)?u.pathname+u.search+u.hash:'';}catch{return '';}
+  try{const u=new URL(value,location.origin);u.pathname=u.pathname.replace(/\.html$/,'');return u.origin===location.origin&&['/organiser','/my-tickets','/event-scanner','/guest-list','/pricing','/control-room'].includes(u.pathname)?u.pathname+u.search+u.hash:'';}catch{return '';}
 }

@@ -4,6 +4,7 @@ import handler,{cleanResponse} from '../api/[endpoint].js';
 function response(){return {headers:{},setHeader(k,v){this.headers[k]=v;},status(c){this.code=c;return this;},json(d){this.data=d;return this;}};}
 test('private services reject missing credentials before contacting upstream',async()=>{
  const res=response();await handler({query:{endpoint:'settlement'},headers:{},method:'GET'},res);assert.equal(res.code,401);
+ for(const endpoint of ['event-prebookings','ticketbunker-admin']){const r=response();await handler({query:{endpoint},headers:{},method:'GET'},r);assert.equal(r.code,401);}
 });
 test('unknown services and unsupported methods cannot be proxied',async()=>{
  for(const [endpoint,method,status] of [['admin','GET',404],['events','POST',405]]){const res=response();await handler({query:{endpoint},headers:{},method},res);assert.equal(res.code,status);}

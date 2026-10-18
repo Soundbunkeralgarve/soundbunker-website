@@ -243,13 +243,13 @@ export default async function handler(req,res){
      const tiers=await db.from('sb_event_tiers').select('quantity_total').eq('event_id',id);
      if(tiers.error)throw tiers.error;
      const capacity=tiers.data.reduce((n,t)=>n+Number(t.quantity_total||0),0);
-     if(capacity<501||capacity>2000)
-       return json(res,{error:'Deposit terms are available only for Event Plus (501–2,000) and separately quoted larger events.'},400);
+     if(capacity<1001||capacity>2000)
+       return json(res,{error:'Deposit terms are available only for Event Plus (1,001–2,000) and separately quoted larger events.'},400);
      const existing=await db.from('sb_event_payment_terms_requests').select('id,status')
        .eq('event_id',id).maybeSingle();
      if(existing.error)throw existing.error;
      if(existing.data)return json(res,{error:'Flexible payment terms have already been requested for this event.'},409);
-     const amount=ev.data.currency==='gbp'?19900:23900;
+     const amount=39900;
      const notes=safeText(body.notes,1200);
      const saved=await db.from('sb_event_payment_terms_requests').insert({
        event_id:id,organiser_profile_id:organisation.id,
@@ -265,8 +265,8 @@ export default async function handler(req,res){
        'TicketBunker Event Plus flexible payment request · '+ev.data.title,
        'Flexible listing payment enquiry (no authorisation to charge)\nEvent: '+ev.data.title
        +'\nOrganiser: '+organisation.display_name
-       +'\nTier: Event Plus · '+capacity+' tickets\nIndicative listing fee: '
-       +(ev.data.currency==='gbp'?'£199':'€239')
+       +'\nTier: Event Plus · '+capacity+' tickets\nIndicative listing fee including applicable VAT: '
+       +(ev.data.currency==='gbp'?'£399':'€399')
        +'\nRequested terms: Deposit upfront plus capped recovery from eligible ticket sales, subject to written terms and Stripe Connect approval.'
        +'\nNotes: '+notes, {brand:'ticketbunker'});
      if(email.status!=='sent')console.warn('Event Plus enquiry email notification not confirmed',{requestId:saved.data.id,status:email.status});

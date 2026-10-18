@@ -99,7 +99,7 @@ $('#ticket-form').onsubmit=async e=>{
 (async()=>{
  try{
   sb=await authClient();
-  const recovery=params.has('recovery')||location.hash.includes('type=recovery');
+  const recovery=params.has('recovery')||params.has('invite')||location.hash.includes('type=recovery')||location.hash.includes('type=invite');
   sb.auth.onAuthStateChange((event,s)=>{if(event==='PASSWORD_RECOVERY'){showAuth();setMode('recover');}else if(event==='SIGNED_OUT')showAuth();else if(event==='TOKEN_REFRESHED')session=s;});
   const {data,error}=await sb.auth.getSession();if(error)throw error;
   if(recovery&&data.session){showAuth();setMode('recover');}

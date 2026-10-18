@@ -28,3 +28,12 @@ $('#event-search-form').onsubmit=e=>{e.preventDefault();render();};$('#event-sea
 document.querySelectorAll('[data-category]').forEach(a=>a.onclick=()=>{$('#event-category').value=a.dataset.category;render();});
 async function load(){try{events=(await api('events')).events||[];events.sort((a,b)=>Number(b.featured)-Number(a.featured)||Date.parse(a.starts_at)-Date.parse(b.starts_at));render();}catch(e){$('#event-status').innerHTML='<div class="listing-empty"><h3>Events are temporarily unavailable.</h3><p>Please try again in a moment.</p><button id="retry-events" class="btn btn-light">Try again</button></div>';$('#retry-events').onclick=load;}}
 load();if(location.pathname==='/events')$('#discover').scrollIntoView();
+// Fail closed until Apple lists this exact app publicly.
+(async()=>{try{
+ const d=await api('scanner-store');if(!d.live||!d.url)return;
+ const u=new URL(d.url);if(u.protocol!=='https:'||u.hostname!=='apps.apple.com')return;
+ const pending=$('#scanner-store-button');if(!pending)return;
+ const link=document.createElement('a');link.href=u.href;link.className='scanner-store-live';link.setAttribute('aria-label','Download TicketBunker Scanner on the App Store');link.replaceChildren(...pending.childNodes);pending.replaceWith(link);
+ $('#scanner-store-status').textContent='Available now on the App Store';
+ const description=$('#scanner-description');if(description)description.textContent='Give authorised door staff one clear way to check guests in. Download TicketBunker Scanner for iPhone.';
+}catch{/* Keep the download disabled if availability cannot be verified. */}})();

@@ -8,6 +8,15 @@
   $('name').textContent=t.title;$('ticketTierMark').textContent=t.tier||'GENERAL ADMISSION';$('ticketHolder').textContent=t.holderName||'Ticket holder';$('ticketNumber').textContent=t.admissionNumber?String(t.admissionNumber).padStart(2,'0'):'—';$('ticketReference').textContent='Ticket reference · '+id;
   const date=new Intl.DateTimeFormat('en-GB',{dateStyle:'full',timeStyle:'short',timeZone:t.timezone||'Europe/Lisbon'}).format(new Date(t.date));
   $('details').textContent=date+' · venue local time · '+t.venue;
+  const facts=[t.headlineArtist?'On the bill: '+t.headlineArtist:'',t.venueCity?'Location: '+t.venueCity:'',t.endDate?'Finishes: '+new Intl.DateTimeFormat('en-GB',{dateStyle:'medium',timeStyle:'short',timeZone:t.timezone||'Europe/Lisbon'}).format(new Date(t.endDate)):'',t.admissionInfo?'Entry: '+t.admissionInfo:''].filter(Boolean).join('\n');
+  $('ticket-extra-facts').textContent=facts;
+  const orderTotal=Number(t.orderTotalCents),quantity=Number(t.orderQuantity);
+  const hasAmount=Number.isSafeInteger(orderTotal)&&orderTotal>=0&&Number.isInteger(quantity)&&quantity>0;
+  const priceText=t.test?'Private rehearsal · no payment taken.':hasAmount?'Booking total: '+new Intl.NumberFormat('en-GB',{style:'currency',currency:(t.currency||'eur').toUpperCase()}).format(orderTotal/100)+' · '+quantity+' ticket(s). Includes applicable VAT / IVA.':'Ticket price includes applicable VAT / IVA.';
+  $('ticket-price-info').textContent=priceText+' This admission pass is not a fiscal invoice.';
+  if(t.slug){$('ticket-event-link').href='/event/'+encodeURIComponent(t.slug);$('ticket-event-link').hidden=false;}
+  if(t.description){$('ticket-description').textContent=t.description;$('ticket-description-wrap').hidden=false;}
+  $('ticket-event-detail').hidden=false;
   if(t.test)document.querySelector('.ticket-masthead span').textContent='PRIVATE TEST TICKET';
   if(t.test)$('notice').textContent='PRIVATE WALLET & SCANNER TEST · €0 · Not valid for admission to a public event.';
   if(t.poster&&/^https:\/\//i.test(t.poster)){const img=document.createElement('img');img.src=t.poster;img.alt='Official event artwork';$('ticketArtwork').append(img);}
@@ -34,8 +43,8 @@ $('printTicket').onclick=()=>window.print();
   $('saveDigitalTicket').onclick=async()=>{
    const button=$('saveDigitalTicket');button.disabled=true;
    try{
-    const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=4000;const c=canvas.getContext('2d');
-    c.fillStyle='#fff';c.fillRect(0,0,1080,4000);c.fillStyle='#000';c.fillRect(0,0,1080,165);
+    const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=6000;const c=canvas.getContext('2d');
+    c.fillStyle='#fff';c.fillRect(0,0,1080,6000);c.fillStyle='#000';c.fillRect(0,0,1080,165);
     const image=async src=>new Promise(resolve=>{if(!src){resolve(null);return;}const img=new Image();img.crossOrigin='anonymous';const timer=setTimeout(()=>resolve(null),5000);img.onload=()=>{clearTimeout(timer);resolve(img)};img.onerror=()=>{clearTimeout(timer);resolve(null)};img.src=src;});
     const [logo,poster,promoter,poweredBy,appleBadge,googleBadge]=await Promise.all([image('/brand-compact.png'),image(/^https:\/\//i.test(t.poster||'')?t.poster:null),image(/^https:\/\//i.test(t.eventLogo||'')?t.eventLogo:null),image('/soundbunker-logo-white.png'),image(t.wallet?.apple?'/assets/wallet/add-to-apple-wallet.png':null),image(t.wallet?.google?'/assets/wallet/add-to-google-wallet.png':null)]);
     const contain=(img,x,y,w,h)=>{const scale=Math.min(w/img.width,h/img.height);const iw=img.width*scale,ih=img.height*scale;c.drawImage(img,x+(w-iw)/2,y+(h-ih)/2,iw,ih);};
@@ -46,13 +55,13 @@ $('printTicket').onclick=()=>window.print();
     if(promoter){c.fillStyle='#fff';c.fillRect(0,y,1080,110);c.fillStyle='#66716d';c.font='bold 18px sans-serif';c.fillText('ORGANISED BY',65,y+44);contain(promoter,330,y,340,80);y+=110;}
     function line(text,font,size,color){c.font=font+' '+size+'px sans-serif';c.fillStyle=color;let row='';for(const char of String(text)){if(c.measureText(row+char).width>940){c.fillText(row,65,y);y+=size*1.35;row=char;}else row+=char;}if(row){c.fillText(row,65,y);y+=size*1.35;}}
     y+=45;line(t.title,'bold',48,'#14291c');y+=12;line(date,'normal',27,'#4b5d4d');line(t.venue,'normal',27,'#4b5d4d');y+=20;
-    line(t.holderName||'Ticket holder','bold',34,'#14291c');line(t.tier||'General admission','normal',26,'#4b5d4d');
+    line(t.holderName||'Ticket holder','bold',34,'#14291c');line(t.tier||'General admission','normal',26,'#4b5d4d');y+=15;line(priceText,'normal',22,'#4b5d4d');if(facts){y+=15;for(const f of facts.split('\n'))line(f,'normal',22,'#4b5d4d');}
     const qr=document.querySelector('#qr canvas')||document.querySelector('#qr img');if(!qr)throw Error('Your QR is not ready yet. Please retry.');
     y+=30;c.imageSmoothingEnabled=false;c.drawImage(qr,300,y,480,480);c.imageSmoothingEnabled=true;y+=530;
     c.fillStyle='#245231';c.font='bold 24px sans-serif';c.textAlign='center';c.fillText('SHOW THIS QR AT THE DOOR',540,y);c.textAlign='left';y+=55;
     if(appleBadge||googleBadge){const badges=[appleBadge,googleBadge].filter(Boolean);for(const [i,badge] of badges.entries())contain(badge,180+i*390,y,330,100);y+=130;c.textAlign='center';c.fillStyle='#4b5d4d';c.font='20px sans-serif';c.fillText('Scan the QR above to open your ticket and add it to your wallet.',540,y);c.textAlign='left';y+=50;}
     line('Ticket reference: '+id,'normal',20,'#4b5d4d');line(t.test?'Private scanner rehearsal only · Keep your QR private':'One valid ticket · One admission · Keep your QR private','normal',20,'#4b5d4d');y+=15;
-    line('Transferred, refunded or cancelled tickets are not valid for entry.','normal',18,'#4b5d4d');line('Full entry conditions: theticketbunker.com/terms','normal',18,'#4b5d4d');y+=25;
+    line('Transferred, refunded or cancelled tickets are not valid for entry.','normal',18,'#4b5d4d');line('Admission pass only · not a fiscal invoice.','normal',18,'#4b5d4d');line('Full entry conditions: theticketbunker.com/terms','normal',18,'#4b5d4d');y+=25;
     c.fillStyle='#080e12';c.fillRect(0,y,1080,105);c.fillStyle='#fff';c.font='bold 18px sans-serif';c.fillText('POWERED BY',65,y+40);if(poweredBy)contain(poweredBy,225,y+12,300,44);c.font='17px sans-serif';c.fillText('Manage names and transfers in My tickets · theticketbunker.com',65,y+76);
     const finished=document.createElement('canvas');finished.width=1080;finished.height=y+105;finished.getContext('2d').drawImage(canvas,0,0);
     const blob=await new Promise(resolve=>finished.toBlob(resolve,'image/png'));if(!blob)throw Error('Could not save the ticket image. Use Print / save PDF instead.');

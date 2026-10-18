@@ -1,19 +1,9 @@
 import { eventsDatabase } from './events.js';
-// Public BETA pricing proposals, minor currency units. The launch supports three affordable fixed-price brackets,
+// VAT-inclusive organiser service prices in minor currency units. Self-service drafts support three fixed-price brackets,
 // each covering up to 2,000 event tickets. Larger festivals come later.
-export const listingPlans=Object.freeze({
- gbp:Object.freeze({
-  starter:Object.freeze({amount:4900,capacity:100,label:'Starter'}),
-  standard:Object.freeze({amount:9900,capacity:500,label:'Standard'}),
-  event_plus:Object.freeze({amount:19900,capacity:2000,label:'Event Plus'}),
- }),
- eur:Object.freeze({
-  starter:Object.freeze({amount:5900,capacity:100,label:'Starter'}),
-  standard:Object.freeze({amount:11900,capacity:500,label:'Standard'}),
-  event_plus:Object.freeze({amount:23900,capacity:2000,label:'Event Plus'}),
- })
-});
-export const listingOrder=Object.freeze(['starter','standard','event_plus']);
+import {commercialPlans} from './ticketbunker-commercial.js';
+export const listingPlans=Object.freeze(Object.fromEntries(['gbp','eur'].map(currency=>[currency,Object.freeze(Object.fromEntries(['starter','standard','headline','event_plus'].map(tier=>{const p=commercialPlans[tier];return [tier,Object.freeze({amount:p[currency],capacity:p.capacity,label:p.label})];})))])));
+export const listingOrder=Object.freeze(['starter','standard','headline','event_plus']);
 export function quoteListing(currency,tier,sold=0){
  const plan=listingPlans[currency]?.[tier];
  if(!plan||!Number.isSafeInteger(sold)||sold<0||sold>plan.capacity)
@@ -23,7 +13,7 @@ export function quoteListing(currency,tier,sold=0){
 export function planForSales(currency,sold){
  if(!listingPlans[currency]||!Number.isSafeInteger(sold)||sold<0)
    throw Error('Invalid currency or ticket count');
- if(sold>2000)throw Error('ticketBunker BETA supports events selling up to 2,000 tickets. Larger events are not open for registration yet.');
+ if(sold>2000)throw Error('ticketBunker BETA supports events selling up to 2,000 tickets. Larger events require an agreed setup-plus-sales plan before activation.');
  const tier=listingOrder.find(t=>sold<=listingPlans[currency][t].capacity);
  return quoteListing(currency,tier,sold);
 }

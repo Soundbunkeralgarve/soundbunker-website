@@ -1,33 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {listingPlans,listingOrder,quoteListing,planForSales,quoteUpgrade} from '../api/lib/event-listings.js';
-
-test('small-events BETA is three tiers from 1 to 2,000 tickets',()=>{
- assert.deepEqual(listingOrder,['starter','standard','event_plus']);
- const edges=[[0,'starter'],[1,'starter'],[100,'starter'],[101,'standard'],[500,'standard'],[501,'event_plus'],[1000,'event_plus'],[2000,'event_plus']];
- for(const currency of ['gbp','eur']) {
-  for(const [sold,name] of edges)assert.equal(planForSales(currency,sold).tier,name);
-  assert.throws(()=>planForSales(currency,2001),/2,000/);
-  assert.throws(()=>planForSales(currency,100000),/2,000/);
- }
+test('four fixed bands cover 1 to 2,000 tickets',()=>{
+ assert.deepEqual(listingOrder,['starter','standard','headline','event_plus']);
+ for(const currency of ['eur','gbp']){for(const [sold,tier] of [[0,'starter'],[100,'starter'],[101,'standard'],[500,'standard'],[501,'headline'],[1000,'headline'],[1001,'event_plus'],[2000,'event_plus']])assert.equal(planForSales(currency,sold).tier,tier);assert.throws(()=>planForSales(currency,2001),/2,000/);assert.deepEqual(listingOrder.map(k=>listingPlans[currency][k].amount),[9900,19900,29900,39900]);}
 });
-test('no-brainer fixed listing fees, separate GBP and EUR prices',()=>{
- assert.deepEqual(listingOrder.map(k=>listingPlans.gbp[k].amount),[4900,9900,19900]);
- assert.deepEqual(listingOrder.map(k=>listingPlans.eur[k].amount),[5900,11900,23900]);
- assert.equal(listingPlans.gbp.festival,undefined);
- assert.equal(listingPlans.eur.festival_pro,undefined);
-});
-test('difference-only upgrades require separate authorisation',()=>{
- const gb=quoteUpgrade('gbp','starter',101);
- assert.equal(gb.additionalAmount,5000);
- assert.equal(gb.requiredTier,'standard');
- assert.equal(gb.targetAmount,9900);
- const gb2=quoteUpgrade('gbp','standard',501);
- assert.equal(gb2.additionalAmount,10000);
- assert.equal(gb2.requiredTier,'event_plus');
- const pt=quoteUpgrade('eur','starter',100);
- assert.equal(pt.additionalAmount,0);
- assert.equal(pt.requiredTier,'starter');
- assert.throws(()=>quoteListing('gbp','standard',501),/Upgrade/);
- assert.throws(()=>quoteUpgrade('gbp','event_plus',2001),/2,000/);
+test('upgrades charge only the difference and do not activate a higher usage plan',()=>{
+ assert.equal(quoteUpgrade('eur','starter',101).additionalAmount,10000);
+ assert.equal(quoteUpgrade('eur','standard',1001).additionalAmount,20000);
+ assert.equal(quoteUpgrade('gbp','event_plus',100).additionalAmount,0);
+ assert.throws(()=>quoteListing('eur','headline',1001),/Upgrade/);
+ assert.throws(()=>quoteUpgrade('eur','event_plus',2001),/2,000/);
 });
