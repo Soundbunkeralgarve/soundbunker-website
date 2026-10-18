@@ -18,6 +18,14 @@
   },
   "rewrites": [
     {
+      "source": "/admin",
+      "destination": "/control-room"
+    },
+    {
+      "source": "/events-admin",
+      "destination": "/control-room"
+    },
+    {
       "source": "/login",
       "destination": "/account"
     },

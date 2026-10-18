@@ -1,14 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {commercialPlans,prebookingQuote,usageQuote,ticketBunkerAdmin} from '../api/lib/ticketbunker-commercial.js';
-import {taxExample} from '../ticketbunker-site/pricing-rules.js';
+import {taxExample,reservationUsageTerms} from '../ticketbunker-site/pricing-rules.js';
 import {lookupScannerApp} from '../ticketbunker-site/api/scanner-store.js';
 
-test('large events pay setup once plus every paid ticket actually sold',()=>{
- assert.equal(usageQuote('eur',0).totalCents,9900);
+test('large-event deposit covers 2,000 sales and only the excess is deducted at payout',()=>{
+ assert.equal(usageQuote('eur',0).totalCents,39900);
+ for(const currency of ['eur','gbp'])for(const sold of [0,100,1999,2000]){const q=usageQuote(currency,sold);assert.equal(q.totalCents,39900);assert.equal(q.settlementFeeCents,0);assert.equal(q.billableTickets,0);assert.equal(q.includedTickets,2000);}
  assert.equal(usageQuote('eur',2000).totalCents,39900);
  assert.equal(usageQuote('eur',2001).totalCents,39915);
- const q=usageQuote('eur',4389);assert.equal(q.baseCents,9900);assert.equal(q.billableTickets,4389);assert.equal(q.settlementFeeCents,65835);assert.equal(q.totalCents,75735);
+ const q=usageQuote('eur',4389);assert.equal(q.baseCents,39900);assert.equal(q.billableTickets,2389);assert.equal(q.settlementFeeCents,35835);assert.equal(q.totalCents,75735);
  assert.equal(usageQuote('eur',10000).totalCents,159900);
  for(const invalid of [-1,3.5,Infinity,NaN,Number.MAX_SAFE_INTEGER])assert.throws(()=>usageQuote('eur',invalid));assert.throws(()=>usageQuote('usd',100));
 });
@@ -34,4 +35,10 @@ test('App Store download stays off for unavailable, mismatched or unsafe results
  for(const results of [[],[{...app,bundleId:'other'}],[{...app,trackId:1}],[{...app,trackViewUrl:'https://evil.example/app'}],[{...app,trackViewUrl:'javascript:alert(1)'}]])assert.deepEqual(await lookupScannerApp(appleResult(results)),{live:false});
  assert.deepEqual(await lookupScannerApp(async()=>{throw Error('offline')}),{live:false});
  assert.deepEqual(await lookupScannerApp(appleResult([app])),{live:true,url:app.trackViewUrl});
+});
+
+test('saved reservation displays its own allowance without rewriting older terms',()=>{
+ assert.match(reservationUsageTerms({rate_cents:15,included_tickets:2000,currency:'gbp'}),/first 2,000 paid tickets; £0.15 per additional/);
+ assert.match(reservationUsageTerms({rate_cents:15,included_tickets:0,currency:'eur'}),/first sale \(previous quote terms\)/);
+ assert.equal(reservationUsageTerms({plan:'starter'}),'');
 });

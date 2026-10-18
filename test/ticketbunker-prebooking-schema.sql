@@ -17,7 +17,7 @@ begin
  q:=public.tb_reserve_events(gen_random_uuid(),actor,'headline','eur',8,code_name||'S');
  if (q->>'total_cents')::int<>215280 or q->>'discount_code_id' is not null then raise exception 'Discounts stacked or unused code consumed';end if;
  q:=public.tb_reserve_events(gen_random_uuid(),actor,'usage','eur',1);
- if (q->>'total_cents')::int<>9900 or (q->>'rate_cents')::int<>15 then raise exception 'Wrong large-event setup terms';end if;
+ if (q->>'total_cents')::int<>39900 or (q->>'rate_cents')::int<>15 or (q->>'included_tickets')::int<>2000 then raise exception 'Wrong large-event deposit terms';end if;
  begin perform public.tb_reserve_events(gen_random_uuid(),actor,'usage','eur',4);raise exception 'ASSERT usage bundle accepted';exception when others then if SQLERRM like 'ASSERT%' then raise;end if;end;
  if has_function_privilege('authenticated','public.tb_reserve_events(uuid,uuid,text,text,integer,text,text)','EXECUTE') or has_table_privilege('authenticated','public.tb_platform_admins','SELECT') or has_table_privilege('anon','public.tb_event_discount_codes','SELECT') then raise exception 'Private access exposed';end if;
  perform set_config('request.jwt.claims',json_build_object('sub',actor,'role','authenticated')::text,true);

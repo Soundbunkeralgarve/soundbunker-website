@@ -1,8 +1,9 @@
 // The existing SoundBunker ticket service owns authentication, authorisation,
 // event inventory, QR signatures and payments. No service credentials reach this site.
 const UPSTREAM = 'https://www.soundbunker.pt';
-const PUBLIC = new Set(['supabase-config', 'events', 'event-ticket', 'event-wallet']);
+const PUBLIC = new Set(['supabase-config', 'events', 'event-ticket', 'event-wallet','ticketbunker-password-reset']);
 const METHODS = {
+  'ticketbunker-password-reset':['POST'],
   'event-prebookings':['GET','POST'], 'ticketbunker-admin':['GET','POST'],
   'promo-preferences':['GET','POST'], 'event-promotion':['GET','POST'],
   'event-guest-list':['GET','POST'], 'event-capacity':['GET','POST'],

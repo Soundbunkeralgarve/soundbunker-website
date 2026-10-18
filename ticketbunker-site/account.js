@@ -6,6 +6,7 @@ const oldRole=location.hash==='#organisers'?'organiser':'';
 const next=safeNext(params.get('next'));
 const role=params.get('role')==='organiser'||oldRole||next.startsWith('/organiser')?'organiser':'buyer';
 let mode='login',sb,session,tickets=[],change=null,busy=false;
+const adminMode=next==='/control-room';
 const returnTo=next||(role==='organiser'?'/organiser':'/my-tickets');
 function message(text,bad=false){$('#auth-message').textContent=text;$('#auth-message').classList.toggle('error',bad);}
 function setMode(value){
@@ -28,6 +29,7 @@ if(role==='organiser'){
  $('#auth-description').textContent='Create events, add your branding and manage tickets, promoters and door staff from one account.';
  document.title='Organiser sign-in | TicketBunker';
 }
+if(adminMode){$('#account-label').textContent='Owner admin';$('#auth-heading').innerHTML='Your TicketBunker.<br>Your control room.';$('#auth-description').textContent='Sign in with your authorised owner email to manage organisers, offers and email promotions.';document.title='Admin sign-in | TicketBunker';$('#signup-tab').hidden=true;}
 function showAuth(){session=null;$('#account').hidden=true;$('#auth').hidden=false;$('#boot-status').hidden=true;}
 async function enter(s){
  if(busy)return;
@@ -63,12 +65,13 @@ $('#auth-form').addEventListener('submit',async e=>{
   sb ||= await authClient();let result;
   const email=$('#email').value.trim(),password=$('#password').value;
   if(mode==='reset'){
-   result=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+'/login?recovery=1'});
+   if(adminMode){const reply=await api('ticketbunker-password-reset',{email});message(reply.message);return;}
+   result=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+'/login?recovery=1'+(next?'&next='+encodeURIComponent(next):'')});
    if(result.error)throw result.error;message('If there is an account for that email, a password reset link is on its way.');return;
   }
   if(mode==='recover'){
    result=await sb.auth.updateUser({password});if(result.error)throw result.error;
-   setMode('login');message('Password updated. Sign in with your new password.');await sb.auth.signOut();return;
+   setMode('login');message('Password saved. Sign in with your new password to open '+(adminMode?'your TicketBunker control room.':'your account.'));await sb.auth.signOut();return;
   }
   result=mode==='signup'?await sb.auth.signUp({email,password,options:{emailRedirectTo:location.origin+'/login?role='+role,data:{full_name:$('#full-name').value.trim(),name:$('#full-name').value.trim(),ticketbunker_marketing_signup_pending:$('#signup-marketing').checked}}}):await sb.auth.signInWithPassword({email,password});
   if(result.error)throw result.error;
@@ -101,6 +104,8 @@ $('#ticket-form').onsubmit=async e=>{
   sb=await authClient();
   const recovery=params.has('recovery')||params.has('invite')||location.hash.includes('type=recovery')||location.hash.includes('type=invite');
   sb.auth.onAuthStateChange((event,s)=>{if(event==='PASSWORD_RECOVERY'){showAuth();setMode('recover');}else if(event==='SIGNED_OUT')showAuth();else if(event==='TOKEN_REFRESHED')session=s;});
+  const tokenHash=params.get('token_hash');
+  if(tokenHash){history.replaceState(null,'','/login?recovery=1&next=%2Fcontrol-room');const verified=await sb.auth.verifyOtp({token_hash:tokenHash,type:'recovery'});params.delete('token_hash');if(verified.error)throw Error('This password link has expired or was already used. Select Forgot your password to request a new TicketBunker link.');}
   const {data,error}=await sb.auth.getSession();if(error)throw error;
   if(recovery&&data.session){showAuth();setMode('recover');}
   else if(data.session)await enter(data.session);else showAuth();
