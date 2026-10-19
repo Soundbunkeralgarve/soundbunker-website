@@ -5,6 +5,9 @@ import * as Haptics from 'expo-haptics';
 import {createScannerClient,restoreSession,scannerApi} from './lib/backend';
 import {withDeadline} from './lib/request';
 import {admissionResult,inviteToken,ticketUrl} from './lib/scanLogic';
+import {offline,deviceKey} from './lib/offlineStore';
+import {createOfflineSync} from './lib/offlineSync';
+import {secureSessionStorage} from './lib/secureStorage';
 
 const C={bg:'#080d10',panel:'#121c20',panel2:'#19272c',edge:'#293a3e',text:'#f3f7f6',muted:'#99adb0',mint:'#20deb0',amber:'#ffd17b',red:'#ff8e9e'};
 const QR_SETTINGS={barcodeTypes:['qr']};
@@ -15,6 +18,10 @@ const Footer=()=> <View style={s.footer}><Text style={s.powered}>POWERED BY</Tex
 export default function App(){
  const [client]=useState(createScannerClient);
  const [user,setUser]=useState(null);
+ const [offlineStatus,setOfflineStatus]=useState(null);
+ const [syncMessage,setSyncMessage]=useState('');
+ const [laneCount,setLaneCount]=useState('1');
+ const [syncer]=useState(()=>createOfflineSync({offline,deviceKey,api:body=>scannerApi(client,'/api/event-scanner-offline',body)}));
  const [loading,setLoading]=useState(true);
  const [startupError,setStartupError]=useState('');
  const [attempt,setAttempt]=useState(0);
@@ -49,15 +56,17 @@ export default function App(){
   setLoading(true);setStartupError('');
   const {data:{subscription}}=client.auth.onAuthStateChange((name,session)=>{
    if(!alive)return;
-   setUser(session?.user||null);
+   if(session?.user)setUser(session.user);
    if(session){setMessage('');setStartupError('');setLoading(false);}
-   if(name==='SIGNED_OUT'){refreshVersion.current++;setEvents([]);setSelected('');setAdmissions(0);}
+   // Preserve downloaded entry if token refresh fails offline. Explicit sign-out is below.
   });
-  restoreSession(client).then(({data,error})=>{
+  const fallback=()=>secureSessionStorage.getItem('offline-identity').then(raw=>raw?JSON.parse(raw):null);
+  restoreSession(client).then(async({data,error})=>{
    if(!alive)return;
    if(error)throw error;
-   setUser(data.session?.user||null);setStartupError('');
-  }).catch(e=>{if(alive)setStartupError(e.message);}).finally(()=>{if(alive)setLoading(false);});
+   const identity=data.session?.user||await fallback();
+   if(alive){setUser(identity);setStartupError('');}
+  }).catch(async e=>{const identity=await fallback();if(alive){if(identity){setUser(identity);setStartupError('');}else setStartupError(e.message);}}).finally(()=>{if(alive)setLoading(false);});
   return()=>{alive=false;subscription.unsubscribe();};
  },[client,attempt]);
  useEffect(()=>{
@@ -75,27 +84,74 @@ export default function App(){
   try{
    const response=await scannerApi(client,'/api/event-staff?mode=my');
    if(version!==refreshVersion.current)return;
-   const next=Array.isArray(response.events)?response.events:[];
+   const cached=await offline.cachedEvents(user.id);
+   const live=Array.isArray(response.events)?response.events:[];
+   const next=[...live,...cached.filter(e=>!live.some(v=>v.id===e.id))];
+   if(version!==refreshVersion.current)return;
    setEvents(next);setSelected(old=>next.some(e=>e.id===old)?old:(next[0]?.id||''));
   }catch(e){
    if(version!==refreshVersion.current)return;
-   setEvents([]);setSelected('');setMessage(e.message||'Unable to load your events.');
+   const cached=await offline.cachedEvents(user.id);
+   if(version!==refreshVersion.current)return;
+   setEvents(cached);setSelected(old=>cached.some(e=>e.id===old)?old:(cached[0]?.id||''));
+   setMessage(cached.length?'Using your saved offline event.':e.message||'Unable to load your events.');
   }finally{if(version===refreshVersion.current)setLoadingEvents(false);}
- },[client]);
+ },[client,user?.id]);
  useEffect(()=>{
   if(user?.email_confirmed_at&&!loading&&!startupError)refresh();
   else{refreshVersion.current++;setEvents([]);setSelected('');setLoadingEvents(false);}
  },[user?.id,user?.email_confirmed_at,loading,startupError,refresh]);
 
+ useEffect(()=>{
+  if(!user?.id)return;
+  let alive=true;
+  offline.cachedEvents(user.id).then(cached=>{if(alive&&cached.length){setEvents(old=>old.length?old:cached);setSelected(old=>old||cached[0].id);}}).catch(()=>{});
+  return()=>{alive=false;};
+ },[user?.id]);
+ const refreshOffline=useCallback(async()=>{
+  if(!user?.id||!selected){setOfflineStatus(null);return;}
+  const m=await offline.manifest(user.id,selected);
+  const pending=m?(await offline.pending(m.claimId)).length:0;
+  if(eventId.current===selected)setOfflineStatus(m?{...m,pending}:null);
+ },[user?.id,selected]);
+ useEffect(()=>{setOfflineStatus(null);refreshOffline().catch(()=>{});},[refreshOffline]);
+ useEffect(()=>{
+  if(!user?.id||!foreground)return;
+  let alive=true,running=false;
+  const sync=async()=>{
+   if(running)return;running=true;
+   try{
+    for(const e of await offline.cachedEvents(user.id))await syncer.sync(user.id,e.id);
+    if(alive){setSyncMessage('');await refreshOffline();}
+   }catch(e){if(alive)setSyncMessage(e.status===401||e.status===403?'Sign in again when connected to sync. Saved scans remain safe.':'Waiting for connection · saved scans are safe');}
+   finally{running=false;}
+  };
+  sync();const timer=setInterval(sync,15000);
+  return()=>{alive=false;clearInterval(timer);};
+ },[user?.id,foreground,syncer,refreshOffline]);
+ async function prepareOffline(){
+  if(working||lock.current)return;
+  setWorking(true);setMessage('');
+  try{
+   await secureSessionStorage.setItem('offline-identity',JSON.stringify({id:user.id,email:user.email,email_confirmed_at:user.email_confirmed_at}));
+   await syncer.prepare(user.id,selected,Number(laneCount));await refreshOffline();setSyncMessage('');
+  }catch(e){setMessage(e.message);}finally{setWorking(false);}
+ }
+ async function finishOffline(){
+  if(working||lock.current)return;
+  setWorking(true);setMessage('');
+  try{await syncer.finish(user.id,selected);await refreshOffline();setSyncMessage('');setMessage('All saved entries synced. Online scanning is ready.');}
+  catch(e){await refreshOffline();setMessage(e.message);}finally{setWorking(false);}
+ }
  async function signIn(){
   if(busy)return;
-  if(!email.trim()||!password){setMessage('Enter your staff email and password.');return;}
+  if(!(email.trim()||user?.email)||!password){setMessage('Enter your staff email and password.');return;}
   setBusy(true);setMessage('');
   try{
-   const {data,error}=await withDeadline(()=>client.auth.signInWithPassword({email:email.trim(),password}),12000,'Sign-in is taking too long. Check your connection and try again.');
+   const {data,error}=await withDeadline(()=>client.auth.signInWithPassword({email:email.trim()||user?.email,password}),12000,'Sign-in is taking too long. Check your connection and try again.');
    if(error)throw error;
    if(!data.user?.email_confirmed_at)throw Error('Verify your email before using the scanner.');
-   setUser(data.user);setPassword('');
+   setUser(data.user);setPassword('');setSyncMessage('');
   }catch(e){setMessage(e.message||'Sign in failed.');}
   finally{setBusy(false);}
  }
@@ -103,6 +159,8 @@ export default function App(){
   if(busy)return;
   setBusy(true);
   try{
+   if((await offline.cachedEvents(user.id)).length)throw Error('Sync and finish offline mode before signing out.');
+   await secureSessionStorage.removeItem('offline-identity');
    const {error}=await withDeadline(()=>client.auth.signOut({scope:'local'}),10000);
    if(error)throw error;
    refreshVersion.current++;setUser(null);setEvents([]);setSelected('');setResult(null);setAdmissions(0);setPassword('');setMessage('');setToolsOpen(false);
@@ -134,7 +192,13 @@ export default function App(){
   let next;
   try{
    const code=ticketUrl(raw);
-   const response=await scannerApi(client,'/api/event-scan',{code,eventId:eventId.current});
+   const saved=await offline.manifest(user.id,eventId.current);
+   if(saved&&!saved.active)throw Error('Offline mode is closing. Reconnect and finish syncing before scanning.');
+   const parsed=new URL(code);
+   const response=saved?.active
+    ?await offline.admit(user.id,eventId.current,parsed.searchParams.get('id'),parsed.searchParams.get('sig'))
+    :await scannerApi(client,'/api/event-scan',{code,eventId:eventId.current});
+   if(saved)refreshOffline().catch(()=>{});
    next=admissionResult(response);setResult(next);
    if(response.status==='valid')setAdmissions(n=>n+1);
    const tone=next.kind==='approved'?Haptics.NotificationFeedbackType.Success:next.kind==='warning'?Haptics.NotificationFeedbackType.Warning:Haptics.NotificationFeedbackType.Error;
@@ -146,12 +210,13 @@ export default function App(){
    setManual('');setWorking(false);lock.current=false;
    if(next?.kind==='approved')feedbackTimer.current=setTimeout(dismissFeedback,900);
   }
- },[client,dismissFeedback]);
+ },[client,dismissFeedback,user?.id,refreshOffline]);
  const onBarcodeScanned=useCallback(({data})=>handleScan(data),[handleScan]);
  const myEvent=events.find(e=>e.id===selected);
- const ready=!!myEvent&&!loadingEvents&&!working&&!startupError&&!loading;
+ const ready=!!myEvent&&(!loadingEvents||offlineStatus?.active)&&!working&&!startupError&&!loading;
  const cameraActive=foreground&&!toolsOpen&&!manualOpen;
- const statusLabel=!ready?'DOOR CREW':manualOpen?'MANUAL':!cameraActive?'PAUSED':permission?.granted?'READY':'CAMERA OFF';
+ const offlineExpired=offlineStatus?.active&&Date.now()+offlineStatus.offset>=Date.parse(offlineStatus.expiresAt);
+ const statusLabel=!ready?'DOOR CREW':offlineExpired?'RECONNECT':offlineStatus?.active?`LANE ${offlineStatus.lane}`:manualOpen?'MANUAL':!cameraActive?'PAUSED':permission?.granted?'READY':'CAMERA OFF';
  const resultColor=result?.kind==='approved'?C.mint:result?.kind==='warning'?C.amber:C.red;
  return <SafeAreaView style={s.root}><StatusBar barStyle="light-content" backgroundColor="#000"/><KeyboardAvoidingView style={s.flex} behavior={Platform.OS==='ios'?'padding':undefined}>
   <View style={s.header}>
@@ -189,16 +254,23 @@ export default function App(){
     <Text style={s.label}>Have a crew invitation?</Text><Input autoCapitalize="none" autoCorrect={false} value={invite} onChangeText={setInvite} placeholder="Paste invitation link"/><Button title={working?'Accepting…':'Accept invitation'} disabled={working||!invite.trim()} onPress={acceptInvite}/>
    </View>}
    {!!message&&<Text accessibilityRole="alert" style={s.alert}>{message}</Text>}
-   {loadingEvents&&<View style={s.empty}><ActivityIndicator color={C.mint}/><Text style={s.bodyCenter}>Checking your assigned events…</Text></View>}
+   {loadingEvents&&!offlineStatus?.active&&<View style={s.empty}><ActivityIndicator color={C.mint}/><Text style={s.bodyCenter}>Checking your assigned events…</Text></View>}
    {!loadingEvents&&!myEvent&&<View style={s.empty}><Text style={s.panelHeading}>{message?'Couldn’t load events':'No event open yet'}</Text><Text style={s.bodyCenter}>{message?'Check your connection and try again.':'Accept your crew invitation in event settings. Your event appears when check-in opens.'}</Text><Button title="Try again" variant="secondary" onPress={refresh}/></View>}
-   {myEvent&&!loadingEvents&&<>
+   {myEvent&&(!loadingEvents||offlineStatus?.active)&&<>
+    <View style={s.panel}>
+     <Text style={s.panelHeading}>{offlineStatus?.active?`Offline lane ${offlineStatus.lane} of ${offlineStatus.laneCount}`:offlineStatus?'Finish syncing':'Offline entry'}</Text>
+     <Text style={s.small}>{offlineStatus?`${offlineStatus.pending}${offlineStatus.pending===200?'+':''} saved scans waiting · ${offlineStatus.ticketCount} downloaded tickets. Permit ends ${new Date(offlineStatus.expiresAt).toLocaleTimeString()}.`:'Choose the total number of offline scanners. Use the same number on every phone. Each ticket belongs to one numbered lane.'}</Text>
+     {!!syncMessage&&<Text accessibilityRole="alert" style={s.small}>{syncMessage}</Text>}
+     {syncMessage.startsWith('Sign in')&&<><Text style={s.label}>Reconnect {user.email}</Text><Input value={password} onChangeText={setPassword} secureTextEntry placeholder="Your password"/><Button title={busy?'Signing in…':'Reconnect account'} disabled={busy} onPress={signIn}/></>}
+     {offlineStatus?<><Text style={s.small}>Show your lane number at the door. Tickets for another lane must go to its scanner. New sales, refunds and access changes need a refresh.</Text><Button title={working?'Please wait…':'Sync and finish offline mode'} variant="secondary" disabled={working} onPress={finishOffline}/>{offlineStatus.active&&<Button title="Sync and refresh download" variant="secondary" disabled={working} onPress={prepareOffline}/>}</>:<><Text style={s.label}>Total offline scanners (1–16)</Text><Input value={laneCount} onChangeText={setLaneCount} keyboardType="number-pad" maxLength={2}/><Button title={working?'Downloading…':'Prepare this phone for offline entry'} disabled={working} onPress={prepareOffline}/></>}
+    </View>
     <View style={s.scanHeading}><Text style={s.panelHeading}>Scan ticket</Text><Text style={s.small}>One ticket. One entry.</Text></View>
     {permission?.granted?<View style={s.cameraFrame}><CameraView style={s.camera} facing="back" enableTorch={torch&&cameraActive} active={cameraActive} barcodeScannerSettings={QR_SETTINGS} onBarcodeScanned={cameraActive&&!feedbackOpen?onBarcodeScanned:undefined}/><View pointerEvents="none" style={s.scanOverlay}><View style={s.target}><View style={[s.corner,s.topLeft]}/><View style={[s.corner,s.topRight]}/><View style={[s.corner,s.bottomLeft]}/><View style={[s.corner,s.bottomRight]}/></View><Text style={s.scanHint}>{manualOpen?'Camera paused for manual entry':toolsOpen?'Camera paused in settings':'Hold the QR code inside the frame'}</Text></View></View>:
     <View style={s.cameraMissing}><Text style={s.panelHeading}>Enable your camera</Text><Text style={s.bodyCenter}>Point your camera at a ticket QR code to check it in.</Text><Button title={permission?.canAskAgain===false?'Open camera settings':'Allow camera access'} onPress={()=>permission?.canAskAgain===false?Linking.openSettings():requestPermission()}/></View>}
     <View style={s.controls}><Button title={torch?'Torch on':'Torch off'} variant="secondary" onPress={()=>setTorch(x=>!x)} disabled={!permission?.granted} style={s.flex}/><Button title={manualOpen?'Close entry':'Enter manually'} variant="secondary" onPress={()=>setManualOpen(x=>!x)} style={s.flex}/></View>
     {manualOpen&&<View style={s.panel}><Text style={s.label}>Ticket link</Text><Input autoCapitalize="none" autoCorrect={false} value={manual} onChangeText={setManual} placeholder="Paste ticket URL"/><Button title={working?'Checking…':'Check ticket'} disabled={working||!manual.trim()} onPress={()=>handleScan(manual.trim(),'manual')}/></View>}
     {result&&<View accessibilityRole="alert" style={[s.result,{borderColor:resultColor}]}><Text style={[s.resultHeading,{color:resultColor}]}>{result.heading}</Text><Text style={s.resultDetail}>{result.detail}</Text></View>}
-    <Text style={s.scanFoot}>Live verification required · Check ID where required</Text>
+    <Text style={s.scanFoot}>{offlineStatus?.active?'Instant local verification · entries saved on this phone':'Live verification required'} · Check ID where required</Text>
    </>}
    <Footer/>
   </ScrollView>}
@@ -207,7 +279,7 @@ export default function App(){
   <View accessibilityRole="alert" accessibilityLiveRegion="assertive" style={[s.feedback,{backgroundColor:!result?C.bg:result.kind==='approved'?'#20deb0':result.kind==='warning'?'#ffd17b':'#ef3856'}]}>
    {!result?<ActivityIndicator size="large" color={C.mint}/>:<Text style={[s.feedbackIcon,{color:result.kind==='rejected'?'#fff':'#062a23'}]}>{result.kind==='approved'?'✓':result.kind==='warning'?'!':'×'}</Text>}
    <Text style={[s.feedbackHeading,{color:!result||result.kind==='rejected'?'#fff':'#062a23'}]}>{result?.heading||'Checking ticket…'}</Text>
-   <Text style={[s.feedbackDetail,{color:!result||result.kind==='rejected'?'#fff':'#062a23'}]}>{result?.detail||'Waiting for live confirmation'}</Text>
+   <Text style={[s.feedbackDetail,{color:!result||result.kind==='rejected'?'#fff':'#062a23'}]}>{result?.detail||(offlineStatus?.active?'Saving and checking on this phone':'Waiting for live confirmation')}</Text>
    {result&&<Pressable accessibilityRole="button" onPress={dismissFeedback} style={s.feedbackNext}><Text style={s.feedbackNextText}>Scan next ticket</Text></Pressable>}
   </View>
  </Modal></SafeAreaView>;

@@ -27,6 +27,8 @@ export function admissionResult(result) {
   if (result.status==='valid' && result.test===true) return {kind:'warning',heading:'TEST CHECK-IN ACCEPTED',detail:'Test successful. This ticket is now checked in. Private rehearsal only — not public admission.'};
   if (result.status==='valid')return {kind:'approved',heading:'ENTRY APPROVED',detail:[result.event,result.tier].filter(Boolean).join(' · ')};
   if (result.status==='used')return {kind:'warning',heading:'ALREADY SCANNED',detail:result.message||'This ticket has already been admitted.'};
+  if (result.status==='wrong_lane')return {kind:'warning',heading:'USE ANOTHER LANE',detail:result.message};
+  if (result.status==='offline_reserved')return {kind:'warning',heading:'USE OFFLINE LANE',detail:result.message};
   if (result.status==='wrong_event')return {kind:'rejected',heading:'WRONG EVENT',detail:result.message||'Not valid for this event.'};
   return {kind:'rejected',heading:'ENTRY REJECTED',detail:result.message||'This QR cannot be admitted.'};
 }
