@@ -31,6 +31,7 @@ jobs:
           node-version: '24'
       - run: npm ci --no-audit --no-fund
       - run: npm test
+      - run: npm run doctor
       - name: Export both native bundles
         run: |
           npx expo export --platform ios --output-dir dist-store-ios

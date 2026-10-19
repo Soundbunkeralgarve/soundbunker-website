@@ -9,6 +9,7 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "test": "node --experimental-vm-modules --test tests/*.test.mjs",
+    "doctor": "expo-doctor",
     "build:android": "eas build --platform android --profile production",
     "build:ios": "eas build --platform ios --profile production",
     "submit:android": "eas submit --platform android --profile production",
@@ -17,20 +18,23 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "2.57.4",
-    "expo": "56.0.9",
-    "expo-camera": "~56.0.8",
-    "expo-crypto": "56.0.4",
-    "expo-haptics": "~56.0.3",
-    "expo-secure-store": "~56.0.4",
-    "expo-sqlite": "56.0.4",
+    "expo": "57.0.30",
+    "expo-build-properties": "57.0.22",
+    "expo-camera": "~57.0.6",
+    "expo-crypto": "~57.0.4",
+    "expo-haptics": "~57.0.3",
+    "expo-secure-store": "~57.0.4",
+    "expo-sqlite": "~57.0.4",
+    "expo-system-ui": "~57.0.4",
     "react": "19.2.3",
-    "react-native": "0.85.3",
+    "react-native": "0.86.3",
     "react-native-get-random-values": "1.11.0",
     "react-native-url-polyfill": "2.0.0",
     "sharp": "0.35.5",
     "tweetnacl": "1.0.3"
   },
   "devDependencies": {
-    "@babel/core": "7.28.0"
+    "@babel/core": "7.29.0",
+    "expo-doctor": "1.21.5"
   }
 }

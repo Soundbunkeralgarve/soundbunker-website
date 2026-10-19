@@ -4,6 +4,11 @@ node_modules
 **/.expo
 .git
 **/.git
+android/
+ios/
+dist/
+dist-*/
+build-cache/
 **/credentials.json
 **/.env*
 **/*.p12
