@@ -28,3 +28,18 @@ The heading is “Set up your account.” Existing accounts with a saved logo an
 The TicketBunker organiser portal now mounts Stripe’s account-onboarding embedded component instead of redirecting to a hosted Account Link. The owner-authenticated `embedded` action creates a short-lived Account Session for the saved recipient account, enabling account onboarding and bank collection only. IDs and component permissions cannot be selected by the browser. Stripe authentication and its agreement collection remain enabled; authentication can open a Stripe window. A component exit always triggers a fresh server-side capability check and never means verification succeeded.
 
 Set the dedicated `TICKETBUNKER_STRIPE_PUBLISHABLE_KEY` to the public key of the same TicketBunker live account. The studio keys remain separate. The official MIT-licensed @stripe/connect-js 3.4.6 pure loader is vendored with its license; it loads Connect.js directly from Stripe on demand. No identity or bank fields pass through TicketBunker. The older `onboard` endpoint remains for clients loaded before deployment, while the current portal exclusively uses embedded sessions. No financial feature gates are changed by this release.
+
+
+## Registration and welcome email release — 19 October 2026
+
+Registration requires the authenticated owner’s confirmed email. A database trigger queues one personal welcome only after Stripe verification and the platform billing/tax review are both complete. No registration or Stripe-only welcome is sent. The worker rechecks fresh Stripe readiness, the approved profile, logo, verified owner and saved billing name before sending. Messages use the trusted auth owner address, Steve’s display name, and his personal support reply address. The final welcome confirms organiser name, country, currency, sign-in email and billing name without including tax IDs, identity documents or bank details.
+
+The service-only mail queue uses unique organiser/kind jobs, row-locked claims, a frozen payload and a stable Resend idempotency key. Retryable failures back off; ambiguous attempts older than 23 hours require review rather than risking a duplicate outside the provider window. Completion of the owner billing review attempts delivery immediately; the protected five-minute cron retries queued messages. Provider acceptance is stored separately from actual delivery.
+
+The portal, scanner help and welcome email display an inactive App Store coming-soon badge. The working mobile scanner link and Safari/Chrome home-screen instructions remain available. Activate an App Store link only after the real listing exists.
+
+The production payment, listing and settlement flags have been enabled for the dedicated TicketBunker account. Per-organiser billing review, fresh Stripe readiness, event publication/listing payment and post-show reconciliation gates remain enforced. SoundBunker completed Stripe verification; its owner billing/tax review is still pending. No payment, transfer or payout was executed during this release.
+
+Validation: 42 focused tests passed. The wider suite has 222 passing tests and the same 14 failures reproduced on the previous local baseline (no newly failing tests); those failures include older beta wording and stale fixtures.
+
+The owner-requested SoundBunker preview was delivered to the verified owner address before the final-only email instruction. Its accepted record prevents a second automatic welcome.

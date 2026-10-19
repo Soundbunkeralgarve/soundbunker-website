@@ -7,7 +7,6 @@ import { localEventInstant } from './lib/events-time.js';
 import { eventSlugCandidate } from './lib/event-slug.js';
 import { randomBytes } from 'node:crypto';
 import { sendStudioEmail } from './lib/notify.js';
-import { deliverOrganiserMailFor } from './lib/organiser-onboarding-mail.js';
 
 const uuid=value=>/^[a-f0-9]{8}-[a-f0-9-]{27,}$/i.test(String(value||''));
 export const organiserCountries=Object.freeze({
@@ -70,7 +69,6 @@ export default async function handler(req,res){
      const saved=await db.from('sb_event_organisers').insert({owner_user_id:ctx.user.id,display_name,country_code,status:'approved'})
        .select('id,display_name,country_code,status').single();
      if(saved.error)return json(res,{error:'Could not create organiser profile'},409);
-     await deliverOrganiserMailFor(db,saved.data.id);
      return json(res,{organiser:saved.data});
    }
    if(!organisation)return json(res,{error:'Create your organiser account first'},403);
