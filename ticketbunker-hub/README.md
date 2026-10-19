@@ -24,7 +24,7 @@ A local check-in authority for several iOS / Android scanner phones on the same 
 
 ## Requirements before release
 
-The live database migration was declined by the database tool without a stated reason earlier in this session. It has **not** been applied through this work, and the hub cannot download live tickets until that is resolved. Do not treat this source update as a production release.
+The `ticketbunker_offline_scanner_hub` migration was applied to the live database on 19 October 2026 after the organiser authorised continuing deployment. RLS, server-only function/table access, the ticket guard and report columns were verified. The API/organiser deployment and signed app distribution are separate release steps. Do not treat unsigned QA installers as an operational release.
 
 1. Apply the reviewed `../SUPABASE_TICKETBUNKER_OFFLINE_SCANNER.sql` (contains reservations, hub staff attribution and reporting state) and deploy the updated scanner/report APIs together. Keep existing tickets / payments unchanged.
 2. Build new signed scanner binaries with TweetNaCl, the local network config plugin and existing SQLite/Crypto modules. A website deployment cannot update existing native app installs. Review App Store encryption declarations for the added application-level cryptography; the old blanket declaration was removed.
