@@ -70,7 +70,9 @@ export default async function handler(req,res){
    return json(res,status);
   }
   let body;try{body=await parseJson(req);}catch{return json(res,{error:'Invalid request'},400);}
-  if(body?.action!=='onboard')return json(res,{error:'Choose Validate your account to continue.'},400);
+  if(!['onboard','embedded'].includes(body?.action))return json(res,{error:'Choose Validate your account to continue.'},400);
+  const publishableKey=process.env.TICKETBUNKER_STRIPE_PUBLISHABLE_KEY||'';
+  if(body.action==='embedded'&&!/^pk_live_[A-Za-z0-9]+$/.test(publishableKey))return json(res,{error:'Secure verification is not configured yet. Your organiser details are saved.',code:'embedded_not_configured'},503);
   // All IDs come from the authenticated owner's server record, never from the request.
   const billing=await ctx.admin.from('tb_organiser_billing').select('organiser_profile_id,legal_name,billing_email,address_line_1,city,postal_code').eq('organiser_profile_id',org.id).eq('owner_user_id',ctx.user.id).maybeSingle();
   if(billing.error)throw billing.error;
@@ -90,6 +92,13 @@ export default async function handler(req,res){
   }
   const payoutSettings=await stripeCall('/v1/accounts/'+account,{method:'POST',body:{'settings[payouts][schedule][interval]':'manual'}});
   if(payoutSettings.settings?.payouts?.schedule?.interval!=='manual')throw Error('Manual organiser payout schedule was not confirmed');
+  if(body.action==='embedded'){
+   // An owner-scoped, short-lived session exposes onboarding only. Keep Stripe's
+   // own authentication and agreement collection enabled; never log the secret.
+   const session=await stripeCall('/v1/account_sessions',{method:'POST',body:{account,'components[account_onboarding][enabled]':'true','components[account_onboarding][features][external_account_collection]':'true'}});
+   if(session.account!==account||session.livemode!==true||typeof session.client_secret!=='string'||!session.client_secret||!Number.isFinite(session.expires_at)||session.expires_at<=Date.now()/1000)throw Error('Stripe returned an invalid verification session');
+   return json(res,{clientSecret:session.client_secret,publishableKey,expiresAt:session.expires_at});
+  }
   const link=await stripeCall('/v2/core/account_links',{method:'POST',version:LINK_VERSION,body:{account,use_case:{type:'account_onboarding',account_onboarding:{configurations:['recipient'],refresh_url:PORTAL+'?onboarding=refresh#verification',return_url:PORTAL+'?onboarding=returned#verification'}}}});
   if(link.livemode!==true||link.account!==account)throw Error('Stripe returned an incorrect link');
   return json(res,{url:safeStripeLink(link.url),expiresAt:link.expires_at});

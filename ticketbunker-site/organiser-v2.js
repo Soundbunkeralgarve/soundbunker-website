@@ -4,6 +4,7 @@ const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(
 const LEGACY_CUTOFF='2026-10-11T16:00:00Z';
 let sb,session,token,profile,events=[],currentDraft=null,currentPage=new URLSearchParams(location.search).has('capacity')?'capacity':'overview',reportCache={},latestReport=null;
 let billingComplete=false,billingRecord=null,connectState=null,connectBusy=false;
+let connectComponent=null;
 function notice(msg,bad=false){const el=$('#notice');el.hidden=false;el.classList.toggle('error',bad);el.textContent=msg;el.scrollIntoView({behavior:'smooth',block:'nearest'});}
 async function api(url,body){const liveSession=await sb.auth.getSession();if(!liveSession.data.session)throw Error('Your session expired. Please sign in again.');token=liveSession.data.session.access_token;const r=await fetch(url,{method:body?'POST':'GET',cache:'no-store',headers:{authorization:'Bearer '+token,...body?{'content-type':'application/json'}:{}},body:body?JSON.stringify(body):undefined});let d;try{d=await r.json()}catch{throw Error('The service returned an unreadable response. Please retry.')}if(!r.ok){const error=Error(d.error||'Request failed ('+r.status+')');error.code=d.code;error.details=d;throw error;}return d;}
 function page(name){if(!profile&&name!=='branding'){return showOnboarding();}currentPage=name;$('#notice').hidden=true;$$('.page').forEach(x=>x.hidden=x.id!=='page-'+name);$('#onboarding').hidden=true;$$('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.page===name));$('#sidebar').classList.remove('open');window.scrollTo(0,0);if(name==='create')renderBranding();if(name==='overview')renderOverview();if(name==='events')renderEvents();if(name==='branding')renderBranding();if(name==='profile')renderBillingForms();if(name==='verification')loadStripeStatus();if(name==='reports')loadReportPage();if(name==='staff')loadStaffPage();if(name==='street')loadStreetPage();if(name==='guests')loadGuestPage();if(name==='capacity')loadCapacityPage();window.dispatchEvent(new CustomEvent('ticketbunker:page',{detail:name}));}
@@ -79,13 +80,13 @@ function renderBillingForms(){
 }
 function renderConnectStatus(){
  const s=connectState||{state:'checking'};
- let text={checking:'Checking your Stripe account…',not_started:'Your organiser account is saved. Continue to Stripe to verify your business and add the bank account for your payouts.',action_required:'Action needed. Continue on Stripe to finish or update your verification details.',under_review:'Under review. Stripe is checking your submitted information. Check again later for the result.',verified:'Verified by Stripe for receiving transfers and bank payouts. Ticket sales and post-show payment release are activated separately.',restricted:'This Stripe connection needs support before it can receive payouts.',platform_blocked:'Your organiser details are saved. Verification is waiting for TicketBunker’s Stripe setup. You can continue preparing your events.',unavailable:'Live Stripe verification is temporarily unavailable. Your company details are saved.',error:'We could not check your Stripe verification. Please try Check verification status.'}[s.state]||'Check your Stripe verification status.';
+ let text={checking:'Checking your Stripe account…',not_started:'Your organiser account is saved. Verify your business and payout details here in TicketBunker using Stripe’s secure form.',action_required:'Action needed. Continue verification here to finish or update your details.',under_review:'Under review. Stripe is checking your submitted information. Check again later for the result.',verified:'Verified by Stripe for receiving transfers and bank payouts. Ticket sales and post-show payment release are activated separately.',restricted:'This Stripe connection needs support before it can receive payouts.',platform_blocked:'Your organiser details are saved. Verification is waiting for TicketBunker’s Stripe setup. You can continue preparing your events.',unavailable:'Live Stripe verification is temporarily unavailable. Your company details are saved.',error:'We could not check your Stripe verification. Please try Check verification status.'}[s.state]||'Check your Stripe verification status.';
  if(!profile)text='Create your organiser profile first.';
  else if(!profile.logo_url||!billingComplete)text='Save your organiser logo and Company & Billing details before starting Stripe verification.';
- const label=s.state==='platform_blocked'?'Payout setup temporarily unavailable':s.ready?'Update Stripe details →':s.connected?'Continue verification →':'Continue to Stripe →';
+ const label=s.state==='platform_blocked'?'Payout setup temporarily unavailable':s.ready?'Update verification details →':'Continue verification →';
  $$('[data-connect-status], [data-connect-summary]').forEach(el=>el.textContent=text);
  $$('[data-connect-setup]').forEach(el=>el.hidden=!!profile?.logo_url&&billingComplete);
- $$('[data-connect-start]').forEach(el=>{el.disabled=connectBusy||!profile?.logo_url||!billingComplete||s.canOnboard!==true;el.textContent=connectBusy?'Opening Stripe…':label;});
+ $$('[data-connect-start]').forEach(el=>{el.disabled=connectBusy||!profile?.logo_url||!billingComplete||s.canOnboard!==true;el.hidden=!!connectComponent;el.textContent=connectBusy?'Loading secure form…':label;});
  $$('[data-connect-refresh]').forEach(el=>el.disabled=connectBusy||!profile);
  const ownerSetup=s.state==='platform_blocked'&&s.setupUrl==='https://dashboard.stripe.com/connect';
  $$('[data-connect-admin]').forEach(el=>el.hidden=!ownerSetup);
@@ -105,11 +106,15 @@ async function loadStripeStatus(){
 async function startStripeOnboarding(){
  if(connectBusy)return;connectBusy=true;renderConnectStatus();$$('[data-connect-error]').forEach(el=>el.textContent='');
  try{
-  const result=await api('/api/organiser-connect',{action:'onboard'});
-  const url=new URL(result.url);
-  if(url.protocol!=='https:'||!['connect.stripe.com','accounts.stripe.com'].includes(url.hostname)||url.username||url.password)throw Error('Stripe returned an invalid verification link. Please retry.');
-  location.assign(url.href);
- }catch(err){if(err.code==='platform_setup_required'){connectState={...err.details,state:'platform_blocked',canOnboard:false};$('#notice').hidden=true;}else{$$('[data-connect-error]').forEach(el=>el.textContent=err.message);notice(err.message,true);}}
+  const {mountStripeOnboarding}=await import('./embedded-onboarding.js');
+  const shell=$('[data-connect-embedded]'),container=$('[data-connect-container]');
+  shell.hidden=false;
+  connectComponent=await mountStripeOnboarding({container,fetchSession:()=>api('/api/organiser-connect',{action:'embedded'}),
+   onExit:async()=>{container.replaceChildren();connectComponent=null;shell.hidden=true;await loadStripeStatus();},
+   onError:err=>{container.replaceChildren();connectComponent=null;shell.hidden=true;$$('[data-connect-error]').forEach(el=>el.textContent=err.message);renderConnectStatus();}
+  });
+  shell.scrollIntoView({behavior:'smooth',block:'start'});
+ }catch(err){$('[data-connect-embedded]').hidden=true;if(err.code==='platform_setup_required'){connectState={...err.details,state:'platform_blocked',canOnboard:false};$('#notice').hidden=true;}else{$$('[data-connect-error]').forEach(el=>el.textContent=err.message);notice(err.message,true);}}
  finally{connectBusy=false;renderConnectStatus();}
 }
 $$('[data-connect-start]').forEach(el=>el.onclick=startStripeOnboarding);

@@ -21,3 +21,10 @@ Live incident follow-up: the owner’s first attempt returned Stripe `non_connec
 Account creation and reads use `2026-09-30.endive`, the current stable version verified at https://docs.stripe.com/api/versioning. Account Links retain `2026-09-30.preview` as documented at https://docs.stripe.com/api/v2/core/account-links/create?api-version=preview. Other payment pins and webhooks are unchanged.
 
 The heading is “Set up your account.” Existing accounts with a saved logo and billing details return to Overview, with an explicit verification status and navigation option. New organisers continue from saved billing details to business and bank verification. Empty setup panels and the duplicate validation step have been removed. No completed account is forced through the account-creation wizard again solely because Stripe is unavailable.
+
+
+## Embedded organiser verification — 19 October 2026
+
+The TicketBunker organiser portal now mounts Stripe’s account-onboarding embedded component instead of redirecting to a hosted Account Link. The owner-authenticated `embedded` action creates a short-lived Account Session for the saved recipient account, enabling account onboarding and bank collection only. IDs and component permissions cannot be selected by the browser. Stripe authentication and its agreement collection remain enabled; authentication can open a Stripe window. A component exit always triggers a fresh server-side capability check and never means verification succeeded.
+
+Set the dedicated `TICKETBUNKER_STRIPE_PUBLISHABLE_KEY` to the public key of the same TicketBunker live account. The studio keys remain separate. The official MIT-licensed @stripe/connect-js 3.4.6 pure loader is vendored with its license; it loads Connect.js directly from Stripe on demand. No identity or bank fields pass through TicketBunker. The older `onboard` endpoint remains for clients loaded before deployment, while the current portal exclusively uses embedded sessions. No financial feature gates are changed by this release.

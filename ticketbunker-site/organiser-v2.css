@@ -25,3 +25,5 @@
 .logo-validation[data-state="error"]{border-color:#cf4b57;background:#fff0f0;color:#9d2738;font-weight:800}
 .logo-choose-label{display:block;font-weight:900;font-size:12px;margin-top:16px;margin-bottom:5px}
 @media(max-width:650px){.logo-check-actions{align-items:stretch;flex-direction:column}.logo-check-actions .primary{width:100%}}
+
+.embedded-verification{margin-top:24px;padding:20px;background:#fff;border:1px solid #dce8df;border-radius:12px;min-height:140px;scroll-margin-top:20px}.embedded-verification[hidden]{display:none}.embedded-verification [data-connect-container]{min-height:100px}@media(max-width:600px){.embedded-verification{padding:12px;margin-inline:-6px}}
