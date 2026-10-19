@@ -9,6 +9,7 @@ const UUID=/^[a-f0-9-]{36}$/i;
 const reply=(res,status,data)=>{res.writeHead(status,{'content-type':'application/json','cache-control':'no-store','x-content-type-options':'nosniff'});res.end(JSON.stringify(data));};
 async function body(req,max=64000){let bytes=0,parts=[];for await(const chunk of req){bytes+=chunk.length;if(bytes>max)throw Error('Request too large');parts.push(chunk);}return JSON.parse(Buffer.concat(parts).toString('utf8'));}
 export function createHubServers({store,cloud,addresses=[],lanPort=8787,adminPort=8788}){
+ const currentAddresses=()=>typeof addresses==='function'?addresses():addresses;
  const adminKey=randomBytes(32).toString('hex');let inFlight=0;const failures=new Map();
  const lan=http.createServer(async(req,res)=>{
   if(req.method!=='POST'||!['/v1/pair','/v1/message'].includes(req.url)||req.headers.origin){return reply(res,404,{error:'Unavailable'});}
@@ -51,7 +52,7 @@ export function createHubServers({store,cloud,addresses=[],lanPort=8787,adminPor
   }
   if(req.headers.authorization!=='Bearer '+adminKey||req.headers.origin&&req.headers.origin!==`http://${req.headers.host}`)return reply(res,403,{error:'Open the private organiser link shown in the hub terminal.'});
   try{
-   if(req.method==='GET'&&req.url==='/admin/status')return reply(res,200,{...store.status(),cloud:cloud.message,addresses,account:store.get('session')?.user?.email||''});
+   if(req.method==='GET'&&req.url==='/admin/status')return reply(res,200,{...store.status(),cloud:cloud.message,addresses:currentAddresses(),account:store.get('session')?.user?.email||''});
    if(req.method==='GET'&&req.url==='/admin/events')return reply(res,200,await cloud.events());
    if(req.method!=='POST')return reply(res,404,{error:'Unavailable'});
    const data=await body(req);
@@ -61,7 +62,7 @@ export function createHubServers({store,cloud,addresses=[],lanPort=8787,adminPor
    if(req.url==='/admin/finish'){await cloud.finish();return reply(res,200,store.status());}
    if(req.url==='/admin/revoke'){store.revoke(data.deviceId);return reply(res,200,{revoked:true});}
    if(req.url==='/admin/invite'){
-    const origin=privateHubOrigin(data.origin);if(!addresses.includes(origin))throw Error('Select this laptop’s Wi-Fi address.');
+    const origin=privateHubOrigin(data.origin);if(!currentAddresses().includes(origin))throw Error('Select this laptop’s Wi-Fi address.');
     const i=store.invitation(data.staffId,data.label||'Door scanner');
     const qr=new URL('ticketbunker-hub://pair');qr.searchParams.set('url',origin);qr.searchParams.set('hub',store.get('hubId'));qr.searchParams.set('invite',i.id);qr.searchParams.set('key',i.key);
     return reply(res,200,{qr:await QRCode.toDataURL(qr.toString(),{width:420,margin:2}),link:qr.toString(),expiresIn:300});

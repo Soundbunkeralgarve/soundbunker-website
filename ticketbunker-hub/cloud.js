@@ -3,8 +3,9 @@ import {createClient} from '@supabase/supabase-js';
 import {PUBLIC_CONFIG} from '../ticketbunker-scanner-native/lib/publicConfig.js';
 const BASE='https://www.soundbunker.pt';
 export class HubCloud{
- constructor(store,{fetcher=fetch}={}){this.store=store;this.fetcher=fetcher;this.queue=Promise.resolve();this.message='';}
- serial(fn){const p=this.queue.then(fn,fn);this.queue=p.catch(()=>{});return p;}
+ constructor(store,{fetcher=fetch}={}){this.store=store;this.fetcher=fetcher;this.queue=Promise.resolve();this.message='';this.abort=new AbortController();}
+ serial(fn){const run=()=>{this.abort.signal.throwIfAborted();return fn();};const p=this.queue.then(run,run);this.queue=p.catch(()=>{});return p;}
+ async shutdown(){this.abort.abort();await this.queue;}
  async login(email,password){
   const client=createClient(PUBLIC_CONFIG.url,PUBLIC_CONFIG.key,{global:{fetch:(url,opts)=>this.fetcher(url,{...opts,signal:AbortSignal.timeout(15000)})},auth:{persistSession:false,autoRefreshToken:false}});
   const {data,error}=await client.auth.signInWithPassword({email,password});
@@ -13,13 +14,14 @@ export class HubCloud{
   this.store.set('session',data.session);return {email:data.user.email};
  }
  async api(body,path='/api/event-scanner-offline'){
+  this.abort.signal.throwIfAborted();
   let session=this.store.get('session');if(!session)throw Error('Sign in on this laptop before downloading or syncing.');
   if(session.expires_at*1000<Date.now()+60000){
    const client=createClient(PUBLIC_CONFIG.url,PUBLIC_CONFIG.key,{global:{fetch:(url,opts)=>this.fetcher(url,{...opts,signal:AbortSignal.timeout(15000)})},auth:{persistSession:false,autoRefreshToken:false}});
    const {data,error}=await client.auth.refreshSession({refresh_token:session.refresh_token});if(error||!data.session)throw Error('Reconnect your organiser account to sync. Local entries remain safe.');
    session=data.session;this.store.set('session',session);
   }
-  const response=await this.fetcher(BASE+path,{method:body?'POST':'GET',headers:{authorization:'Bearer '+session.access_token,...(body?{'content-type':'application/json'}:{})},body:body?JSON.stringify(body):undefined,redirect:'error',signal:AbortSignal.timeout(15000)});
+  const response=await this.fetcher(BASE+path,{method:body?'POST':'GET',headers:{authorization:'Bearer '+session.access_token,...(body?{'content-type':'application/json'}:{})},body:body?JSON.stringify(body):undefined,redirect:'error',signal:AbortSignal.any([this.abort.signal,AbortSignal.timeout(15000)])});
   const data=await response.json();if(!response.ok)throw Error(data.error||'Cloud sync unavailable.');return data;
  }
  events(){return this.api(null,'/api/event-staff?mode=my');}

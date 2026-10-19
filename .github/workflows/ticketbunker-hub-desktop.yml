@@ -1,0 +1,46 @@
+name: TicketBunker Hub Desktop Packages
+on:
+  pull_request:
+    paths: ['ticketbunker-hub/**', 'ticketbunker-hub-desktop/**', 'ticketbunker-scanner-native/lib/**', '.github/workflows/ticketbunker-hub-desktop.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: ticketbunker-hub
+      - run: npm test
+        working-directory: ticketbunker-hub
+      - run: npm ci --no-audit --no-fund
+        working-directory: ticketbunker-hub-desktop
+      - run: npm test
+        working-directory: ticketbunker-hub-desktop
+      - run: npm run prepare:resources
+        working-directory: ticketbunker-hub-desktop
+      - name: Test real Electron worker and bundled SQLite
+        run: npx electron smoke.cjs
+        working-directory: ticketbunker-hub-desktop
+      - name: Build unsigned packages for QA only
+        run: npm run dist
+        working-directory: ticketbunker-hub-desktop
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ticketbunker-hub-QA-${{ matrix.os }}
+          path: |
+            ticketbunker-hub-desktop/dist/*.dmg
+            ticketbunker-hub-desktop/dist/*.exe
+          if-no-files-found: error
+          retention-days: 14

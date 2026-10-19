@@ -1,0 +1,48 @@
+name: TicketBunker Scanner Store Update
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Platform to build
+        type: choice
+        options: [all, ios, android]
+        default: all
+      submit:
+        description: Upload the new build to TestFlight / Google Play internal testing
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: ticketbunker-scanner-store
+  cancel-in-progress: false
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    defaults:
+      run:
+        working-directory: ticketbunker-scanner-native
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci --no-audit --no-fund
+      - run: npm test
+      - name: Export both native bundles
+        run: |
+          npx expo export --platform ios --output-dir dist-store-ios
+          npx expo export --platform android --output-dir dist-store-android
+      - name: Build the existing scanner app with a new store build number
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          RELEASE_PLATFORM: ${{ inputs.platform }}
+          RELEASE_SUBMIT: ${{ inputs.submit }}
+        run: |
+          set -euo pipefail
+          test -n "$EXPO_TOKEN" || { echo 'Configure the Expo build token for the existing SoundBunker account.'; exit 1; }
+          args=(build --platform "$RELEASE_PLATFORM" --profile production --non-interactive --wait)
+          if [ "$RELEASE_SUBMIT" = true ]; then args+=(--auto-submit); fi
+          npx --yes eas-cli@25.2.0 "${args[@]}"
