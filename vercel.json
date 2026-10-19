@@ -172,7 +172,7 @@
     },
     {
       "path": "/api/ticketbunker-settle",
-      "schedule": "*/5 * * * *"
+      "schedule": "* * * * *"
     }
   ]
 }

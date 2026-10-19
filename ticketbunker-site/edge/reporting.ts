@@ -54,11 +54,11 @@ Deno.serve(async(req:Request)=>{
   if(req.method==='POST')return response(405,{error:'Financial changes are not enabled.'});
   const [report,settlement,refunds]=await Promise.all([
    db.from('tb_event_reports').select('*').eq('event_id',eventId).maybeSingle(),
-   db.from('tb_event_settlements').select('payout_option,fast_fee_status,fast_fee_cents,processing_fee_cents,refunds_cents,adjustments_cents,payout_amount_cents,payout_status,stripe_arrival_at,stripe_method,reconciled_at,updated_at').eq('event_id',eventId).maybeSingle(),
+   db.from('tb_event_settlements').select('payout_option,fast_fee_status,fast_fee_cents,processing_fee_cents,refunds_cents,adjustments_cents,payout_amount_cents,payout_status,stripe_arrival_at,stripe_method,reconciled_at,updated_at,fast_fee_consent_at,payout_message').eq('event_id',eventId).maybeSingle(),
    db.from('tb_refund_requests').select('id,order_id,reason,status,created_at').eq('event_id',eventId).order('created_at',{ascending:false}).limit(200)
   ]);
   if(report.error||settlement.error||refunds.error)throw Error('Report lookup failed');
-  const dueAt=event.data.ends_at?new Date(Date.parse(event.data.ends_at)+43200000).toISOString():null;
-  return response(200,{event:event.data,dueAt,report:report.data,settlement:settlement.data,refundRequests:refunds.data,livePayments:false,fastPayoutAvailable:false,fastPayoutRate:0.01});
+  const dueAt=event.data.ends_at?new Date(Date.parse(event.data.ends_at)).toISOString():null;
+  return response(200,{event:event.data,dueAt,report:report.data,settlement:settlement.data,refundRequests:refunds.data,fastPayoutRate:0.01});
  }catch{return response(503,{error:'Reporting is temporarily unavailable. Please try again.'});}
 });

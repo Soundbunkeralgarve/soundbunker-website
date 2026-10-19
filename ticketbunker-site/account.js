@@ -17,7 +17,7 @@ function setMode(value){
  $('#password').autocomplete=signup||recover?'new-password':'current-password';
  $('#email').closest('label').hidden=recover;$('#email').required=!recover;
  $('#auth-submit').textContent=signup?'Create account →':reset?'Send reset link →':recover?'Save new password →':'Sign in →';
- $('#form-heading').textContent=signup?'Make it official.':reset?'Reset your password.':recover?'Choose a new password.':'Welcome back.';
+ $('#form-heading').textContent=signup?(role==='organiser'?'Create your organiser login.':'Create your buyer account.'):reset?'Reset your password.':recover?'Choose a new password.':'Welcome back.';
  $('#login-tab').setAttribute('aria-pressed',String(!signup));$('#signup-tab').setAttribute('aria-pressed',String(signup));
  $('#forgot').hidden=reset||recover;message('');
 }
@@ -25,7 +25,11 @@ $('#buyer-role').setAttribute('aria-current',role==='buyer'?'page':'false');
 $('#organiser-role').setAttribute('aria-current',role==='organiser'?'page':'false');
 $('#account-label').textContent=role==='organiser'?'Organiser account':'Buyer account';
 if(role==='organiser'){
+ const routes=document.querySelectorAll('.audience-switch a');routes[0].removeAttribute('aria-current');routes[1].setAttribute('aria-current','page');
  $('#auth-heading').innerHTML='Your next<br>great event<br><em>starts here.</em>';
+ document.querySelector('.auth-story .eyebrow').textContent='SELL TICKETS · ORGANISER ACCOUNT';
+ document.querySelector('.trust span').textContent='Clear event pricing';
+ $('#account-purpose').textContent='Selling tickets? Your organiser portal contains event setup, sales, door staff, reports and payouts.';
  $('#auth-description').textContent='Create events, add your branding and manage tickets, promoters and door staff from one account.';
  document.title='Organiser sign-in | TicketBunker';
 }

@@ -64,19 +64,19 @@ declare ev record; inserted integer:=0;
 begin
  for ev in select e.* from public.sb_events e
   where e.status='published' and not e.internal_free_test and not e.public_beta_test
-    and e.ends_at is not null and e.ends_at + interval '12 hours' <= now()
+    and e.ends_at is not null and e.ends_at <= now()
     and not exists(select 1 from public.tb_event_reports r where r.event_id=e.id)
   order by e.ends_at limit 100
  loop
   insert into public.tb_event_reports(event_id,due_at,event_title,currency,ends_at,sold_tickets,gross_cents,refunded_order_cents,checked_in,not_scanned,scanner_summary,tier_summary)
-  select ev.id,ev.ends_at+interval '12 hours',ev.title,ev.currency,ev.ends_at,
-   coalesce((select sum(quantity) from public.sb_event_orders where event_id=ev.id and status in ('paid','refunded') and not beta_test_order),0),
-   coalesce((select sum(total_cents) from public.sb_event_orders where event_id=ev.id and status in ('paid','refunded') and not beta_test_order),0),
-   coalesce((select sum(total_cents) from public.sb_event_orders where event_id=ev.id and status='refunded' and not beta_test_order),0),
-   (select count(*) from public.sb_event_tickets t join public.sb_event_orders o on o.id=t.order_id where t.event_id=ev.id and o.status='paid' and not o.beta_test_order and t.checked_in_at is not null),
-   (select count(*) from public.sb_event_tickets t join public.sb_event_orders o on o.id=t.order_id where t.event_id=ev.id and o.status='paid' and not o.beta_test_order and t.checked_in_at is null),
-   coalesce((select jsonb_agg(to_jsonb(sc)) from (select coalesce(p.full_name,'Scanner') as name,count(*) as scans from public.sb_event_tickets t join public.sb_event_orders o on o.id=t.order_id left join public.profiles p on p.id=t.checked_in_by where t.event_id=ev.id and o.status='paid' and not o.beta_test_order and t.checked_in_at is not null group by t.checked_in_by,p.full_name)sc),'[]'::jsonb),
-   coalesce((select jsonb_agg(to_jsonb(tt)) from (select tier.name,coalesce(sum(o.quantity),0) as sold,coalesce(sum(o.total_cents),0) as gross_cents from public.sb_event_tiers tier left join public.sb_event_orders o on o.tier_id=tier.id and o.status in ('paid','refunded') and not o.beta_test_order where tier.event_id=ev.id group by tier.id,tier.name)tt),'[]'::jsonb)
+  select ev.id,ev.ends_at,ev.title,ev.currency,ev.ends_at,
+   coalesce((select sum(quantity) from public.sb_event_orders where event_id=ev.id and status in ('paid','refunded') and not beta_test_order and guest_allocation_id is null),0),
+   coalesce((select sum(total_cents) from public.sb_event_orders where event_id=ev.id and status in ('paid','refunded') and not beta_test_order and guest_allocation_id is null),0),
+   coalesce((select sum(total_cents) from public.sb_event_orders where event_id=ev.id and status='refunded' and not beta_test_order and guest_allocation_id is null),0),
+   (select count(*) from public.sb_event_tickets t join public.sb_event_orders o on o.id=t.order_id where t.event_id=ev.id and o.status='paid' and not o.beta_test_order and o.guest_allocation_id is null and t.checked_in_at is not null),
+   (select count(*) from public.sb_event_tickets t join public.sb_event_orders o on o.id=t.order_id where t.event_id=ev.id and o.status='paid' and not o.beta_test_order and o.guest_allocation_id is null and t.checked_in_at is null),
+   coalesce((select jsonb_agg(to_jsonb(sc)) from (select coalesce(p.full_name,'Scanner') as name,count(*) as scans from public.sb_event_tickets t join public.sb_event_orders o on o.id=t.order_id left join public.profiles p on p.id=t.checked_in_by where t.event_id=ev.id and o.status='paid' and not o.beta_test_order and o.guest_allocation_id is null and t.checked_in_at is not null group by t.checked_in_by,p.full_name)sc),'[]'::jsonb),
+   coalesce((select jsonb_agg(to_jsonb(tt)) from (select tier.name,coalesce(sum(o.quantity),0) as sold,coalesce(sum(o.total_cents),0) as gross_cents from public.sb_event_tiers tier left join public.sb_event_orders o on o.tier_id=tier.id and o.status in ('paid','refunded') and not o.beta_test_order and o.guest_allocation_id is null where tier.event_id=ev.id group by tier.id,tier.name)tt),'[]'::jsonb)
   on conflict(event_id) do nothing;
   if found then inserted:=inserted+1;end if;
   insert into public.tb_event_settlements(event_id)values(ev.id)on conflict do nothing;

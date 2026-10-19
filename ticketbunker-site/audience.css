@@ -1,0 +1,22 @@
+/* A consistent route between the buyer shop and seller workspace. */
+:root{--paper:#ffffff;--ink:#111111;--muted:#454b48}
+body{background-color:#ffffff;color:#111111}
+.audience-switch{display:grid;grid-template-columns:1fr 1fr;gap:0;background:#ffffff;color:#111111;border-bottom:1px solid #dce4df;padding:0 max(20px,5vw);font:14px/1.35 'DM Sans',Arial,sans-serif}
+.audience-switch a{display:flex;align-items:center;justify-content:center;gap:12px;padding:15px 20px;text-decoration:none;border-bottom:3px solid transparent;color:#111111}
+.audience-switch a+a{border-left:1px solid #dce4df}
+.audience-switch a[aria-current=page]{border-bottom-color:#008460;background:#f0faf6}
+.audience-switch a:hover{background:#e9f8f2}
+.audience-switch a:focus-visible{outline:3px solid #008460;outline-offset:-4px}
+.audience-switch span{font-size:12px;color:#454b48}
+.account-shell{max-width:980px;margin:auto;min-height:55vh;padding:56px 24px 80px}
+.account-shell h1{font-size:clamp(40px,6vw,70px)}
+@media(max-width:680px){.audience-switch{padding:0 12px}.audience-switch a{padding:12px 8px;flex-direction:column;gap:3px;font-size:14px}.audience-switch span{font-size:10px}.role-tabs a{font-size:11px}.account-header{flex-wrap:wrap;gap:14px}.account-header nav{gap:14px}.account-header nav>a:first-child{display:inline}.account-shell{padding-top:32px}}
+@media print{.audience-switch{display:none!important}}
+/* Keep checkout in the TicketBunker palette. */
+body:has(.event-shell){--green:#00d7a6;--ink:#111111;--muted:#454b48;--paper:#ffffff;--line:#dce4df}
+.event-shell .eyebrow,.booking-benefit{color:#086248}
+.event-shell .primary{background:#00d7a6;color:#06291d}
+.event-shell .secondary{background:#ffffff;color:#143b2b;border-color:#b9d5c8}
+.event-shell .event-notice{background:#edf8f2;color:#193d2c}
+.event-shell .event-poster{background:#f3f7f4}
+.event-shell :focus-visible{outline-color:#008460}

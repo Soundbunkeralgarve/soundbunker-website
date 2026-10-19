@@ -1,3 +1,4 @@
+import {payoutPlan,instantPayoutDestinations,instantDestination} from './ticketbunker-payout-options.js';
 import {randomUUID} from 'node:crypto';
 import {ticketBunkerStripe,ticketBunkerPaymentsEnabled,ticketBunkerPlatformReadiness} from './ticketbunker-stripe.js';
 import {allocateSettlement} from './ticketbunker-payments.js';
@@ -24,10 +25,11 @@ export async function releaseEvent(db,eventId){
  if(f.transfers.some(p=>p.recipient_account!==recipient||p.currency!==e.currency))throw Error('Payment recipient or currency mismatch');
  const [platform,connected,account]=await Promise.all([ticketBunkerPlatformReadiness(),fetchConnectStatus(recipient),ticketBunkerStripe('/v1/accounts/'+encodeURIComponent(recipient))]);
  if(!platform.ready||!connected.ready||account.settings?.payouts?.schedule?.interval!=='manual')throw Error('Verified accounts and manual payout schedules are required');
+ const plan=payoutPlan(f);
  const group='tb_event_'+eventId,remote=await stripeList('/v1/transfers?transfer_group='+encodeURIComponent(group));
  const prior=new Map();for(const t of remote){const id=t.metadata?.order_id;if(id){if(prior.has(id))throw Error('Duplicate transfer requires review');prior.set(id,t);}}
- const save=await db.from('tb_event_settlements').update({processing_fee_cents:f.totals.processingCents,refunds_cents:f.totals.refundCents,adjustments_cents:f.totals.usageCents,usage_fee_cents:f.totals.usageCents,payout_amount_cents:f.totals.netCents,reconciled_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq('event_id',eventId).eq('release_token',token);if(save.error)throw save.error;
- for(const p of f.transfers){
+ const save=await db.from('tb_event_settlements').update({processing_fee_cents:f.totals.processingCents,refunds_cents:f.totals.refundCents,adjustments_cents:f.totals.usageCents+plan.feeCents,usage_fee_cents:f.totals.usageCents,fast_fee_cents:plan.deductFee?plan.feeCents:f.settlement?.fast_fee_cents??null,payout_amount_cents:plan.amount,reconciled_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq('event_id',eventId).eq('release_token',token);if(save.error)throw save.error;
+ for(const p of plan.transfers){
   if(!p.amount)continue;
   const state=await db.from('tb_ticket_payments').select('refunded_cents,disputed').eq('order_id',p.order_id).single();if(state.error||state.data.disputed||state.data.refunded_cents!==p.refunded_cents)throw Error('Payment changed during settlement');
   let transfer=prior.get(p.order_id);
@@ -41,13 +43,26 @@ export async function releaseEvent(db,eventId){
  const since=Math.floor(Date.parse(e.ends_at)/1000),payouts=(await payoutList(recipient,since)).filter(p=>p.metadata?.ticketbunker_event_id===eventId);
  if(payouts.length>1)throw Error('Multiple payouts require review');
  let payout=payouts[0];
- if(!payout&&f.totals.netCents>0){
-  const balance=await ticketBunkerStripe('/v1/balance',{account:recipient});
-  if((balance.available||[]).filter(b=>b.currency===e.currency).reduce((a,b)=>a+b.amount,0)<f.totals.netCents)return {status:'reconciling',message:'Transfers are recorded. Waiting for Stripe to make the recipient balance available.'};
-  payout=await ticketBunkerStripe('/v1/payouts',{method:'POST',account:recipient,idem:'tb-event-payout-'+eventId,body:{amount:String(f.totals.netCents),currency:e.currency,method:'standard','metadata[ticketbunker_event_id]':eventId}});
+ if(!payout&&plan.amount>0){
+  const fast=plan.method==='instant';
+  const balance=await ticketBunkerStripe('/v1/balance'+(fast?'?expand[]=instant_available.net_available':''),{account:recipient});
+  const destination=fast?instantDestination(balance,await instantPayoutDestinations(recipient,e.currency),e.currency,plan.amount):null;
+  const available=fast?!!destination:(balance.available||[]).filter(b=>b.currency===e.currency).reduce((a,b)=>a+b.amount,0)>=plan.amount;
+  if(!available){
+   const message=fast?'Fast Payout selected. Waiting for Stripe instant eligibility, limits or available funds; no standard payout has been substituted.':'Standard payout is queued automatically and will start as soon as Stripe makes the funds available.';
+   const held=await db.from('tb_event_settlements').update({payout_message:message,updated_at:new Date().toISOString()}).eq('event_id',eventId).eq('release_token',token);if(held.error)throw held.error;
+   return {status:'reconciling',message};
+  }
+  payout=await ticketBunkerStripe('/v1/payouts',{method:'POST',account:recipient,idem:'tb-event-payout-'+eventId,body:{amount:String(plan.amount),currency:e.currency,method:plan.method,...(destination?{destination}:{}),'metadata[ticketbunker_event_id]':eventId}});
  }
- if(!payout)return {status:'ready',message:'No positive balance is due. Settlement is reconciled.'};
- if(payout.amount!==f.totals.netCents||payout.currency!==e.currency)throw Error('Payout reconciliation mismatch');
- const saved=await db.from('tb_event_settlements').update({payout_status:payout.status==='paid'?'paid':['failed','canceled'].includes(payout.status)?'failed':'processing',stripe_payout_id:payout.id,stripe_method:'standard',stripe_arrival_at:payout.arrival_date?new Date(payout.arrival_date*1000).toISOString():null,updated_at:new Date().toISOString()}).eq('event_id',eventId).eq('release_token',token);if(saved.error)throw saved.error;
- return {status:payout.status==='paid'?'paid':'processing',message:'Stripe has confirmed the standard payout request.'};
+ if(!payout){
+  const message='Report and reconciliation complete. No positive balance is due.';
+  const saved=await db.from('tb_event_settlements').update({payout_status:'ready',payout_message:message,updated_at:new Date().toISOString()}).eq('event_id',eventId).eq('release_token',token);if(saved.error)throw saved.error;
+  return {status:'ready',message};
+ }
+ if(payout.amount!==plan.amount||payout.currency!==e.currency||payout.method!==plan.method)throw Error('Payout reconciliation mismatch');
+ const status=payout.status==='paid'?'paid':['failed','canceled'].includes(payout.status)?'failed':'processing';
+ const message=status==='failed'?'Stripe reported a payout failure. Contact TicketBunker support.':plan.method==='instant'?'Fast Payout requested automatically. Eligible instant payouts usually arrive within 30 minutes.':'Standard payout started automatically. Expected bank arrival is normally 2–3 working days from release; the confirmed date appears in your portal.';
+ const saved=await db.from('tb_event_settlements').update({payout_status:status,payout_message:message,stripe_payout_id:payout.id,stripe_method:payout.method,...(plan.deductFee?{fast_fee_status:'deducted'}:{}),stripe_arrival_at:payout.arrival_date?new Date(payout.arrival_date*1000).toISOString():null,updated_at:new Date().toISOString()}).eq('event_id',eventId).eq('release_token',token);if(saved.error)throw saved.error;
+ return {status,message};
 }
