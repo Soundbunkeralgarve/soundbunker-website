@@ -98,6 +98,7 @@ function renderConnectStatus(){
  $('#verification-banner').hidden=!profile||s.ticketSalesEnabled===true;
  $('#account-status').textContent=s.ticketSalesEnabled?'Ready to publish':s.ready?'Stripe verified':s.state==='under_review'?'Stripe reviewing':s.state==='platform_blocked'?'Verification unavailable':'Validation needed';
  $('#verification-banner-title').textContent=s.ready?(s.billingReviewComplete?'Ticket payment activation pending':'Billing review pending'):s.state==='platform_blocked'?'Stripe verification is not available yet':'Verify your business and payout details';
+ if(currentDraft)renderListingPayment();
  $('#verification-banner-action').textContent=s.ready?'View account status →':s.state==='platform_blocked'?'View setup status →':'Validate your account →';
 }
 let stripeStatusPromise;
@@ -262,11 +263,13 @@ function renderListingPayment(){
  const rate=offer&&(!offer.valid_until||Date.parse(offer.valid_until)>Date.now())?Number(offer.listing_discount_percent||0):0,amount=band[1]-Math.round(band[1]*rate/100),button=$('#pay-listing');
  button.hidden=paid||waived||!capacity;button.dataset.plan=band[0];button.disabled=!connectState?.ready||!profile?.tax_review_complete;
  button.textContent='Pay '+money(amount,currentDraft?.currency||'eur')+' event listing →';
+ const accountReady=connectState?.ready&&profile?.tax_review_complete;
+ $('#request-review').disabled=!capacity||!accountReady||!(paid||waived);
  $('#listing-payment-review').textContent=paid?'Your event listing payment is confirmed.':waived?'Your fixed-band listing fee is waived. Payment and tax verification still apply.':!capacity?'Add ticket types to calculate your event listing fee.':button.disabled?'Complete Stripe verification and billing/tax confirmation before paying the listing fee.':'Listing fee: '+money(amount,currentDraft?.currency||'eur')+' including applicable VAT / IVA. Payment processing remains separate. No added buyer booking fee.';
 }
 $('#pay-listing').onclick=async()=>{const button=$('#pay-listing');button.disabled=true;try{const r=await api('/api/organiser-listing',{eventId:currentDraft.id,plan:button.dataset.plan});if(r.waived){notice(r.message);await reloadEvents();drawReview();return;}const target=new URL(r.url);if(target.origin!=='https://checkout.stripe.com')throw Error('Invalid payment link');location.assign(target.href);}catch(error){notice(error.message,true);button.disabled=false;}};
 
-$('#request-review').onclick=async()=>{const btn=$('#request-review');btn.disabled=true;try{if(!currentDraft?.id)throw Error('Save an event first.');const r=await api('/api/organiser',{action:'publish',eventId:currentDraft.id});notice(r.message||'Event published successfully.');await reloadEvents();page('events');}catch(err){notice(err.message,true)}finally{btn.disabled=false;}};
+$('#request-review').onclick=async()=>{const btn=$('#request-review');btn.disabled=true;try{if(!currentDraft?.id)throw Error('Save an event first.');const r=await api('/api/organiser',{action:'publish',eventId:currentDraft.id});notice(r.message||'Event published successfully.');await reloadEvents();page('events');}catch(err){notice(err.message,true)}finally{renderListingPayment();}};
 async function reloadEvents(){const r=await api('/api/organiser');events=r.events||[];profile=r.organiser||profile;const item=events.find(e=>e.id===currentDraft?.id);if(item)currentDraft=item;return r;}
 async function fetchReport(id,overview=false){if(!id)return;try{const {report}=await api('/api/event-organiser-report?eventId='+encodeURIComponent(id));reportCache[id]=report;if(overview){const reports=await Promise.allSettled(safeEvents().slice(0,50).map(ev=>reportCache[ev.id]?Promise.resolve(reportCache[ev.id]):api('/api/event-organiser-report?eventId='+encodeURIComponent(ev.id)).then(z=>z.report)));let paid=0,checked=0,revenue=0;reports.forEach(z=>{if(z.status==='fulfilled'){paid+=z.value.paidTickets||0;checked+=z.value.paidCheckedIn||0;revenue+=z.value.revenueCents||0;}});$('#metric-paid').textContent=paid;$('#metric-scanned').textContent=checked;$('#metric-money').textContent=money(revenue,profile.country_code==='GB'?'gbp':'eur');return;}
 if($('#report-event').value!==id)return;latestReport=report;renderReport(report);

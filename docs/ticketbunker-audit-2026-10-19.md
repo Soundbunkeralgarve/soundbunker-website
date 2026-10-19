@@ -2,7 +2,7 @@
 
 ## Scope and evidence
 
-Reviewed all 16 HTML entry points in the canonical ticketbunker-site directory, shared scripts, local navigation/assets, and the signed-in SoundBunker organiser workspace and owner controls. All 16 page requests and the events, public configuration and scanner-store endpoints returned HTTP 200. The events endpoint currently returns no bookable public events. App Store availability remains false and the download stays inactive.
+Reviewed all 15 HTML entry points in the canonical ticketbunker-site directory, shared scripts, local navigation/assets, and the signed-in SoundBunker organiser workspace and owner controls. All 16 page-route requests and the events, public configuration and scanner-store endpoints returned HTTP 200. The events endpoint currently returns no bookable public events. App Store availability remains false and the download stays inactive.
 
 Browser-reviewed organiser areas: overview, event list/create, ticket options, reports, scanner crew, guest lists, capacity, street team, branding, business/billing details, verification and promotion. Buyer ticket loading completed and showed the expected empty account. The scanner returned the expected no-active-assignment message. Demo cards and ticket/email design previews remain clearly labelled and isolated from purchases.
 
@@ -15,13 +15,13 @@ Browser-reviewed organiser areas: overview, event list/create, ticket options, r
 - Ran independent billing and Stripe status reads concurrently, shared concurrent Stripe status reads, and bounded portal requests.
 - Allowed sign-in configuration to recover from a temporary fetch failure and preserved safe return destinations through account verification.
 - Clarified incomplete ticket and missing checkout-reference states without generating a QR or polling with an invalid reference.
-- Displayed already saved ticket types before adding more, with correct event currency and a route directly to review.
+- Displayed already saved ticket types before adding more, with correct event currency and a route directly to review. Publication is disabled until its account, capacity and listing-payment requirements are satisfied.
 - Added hero-image preload, styled the promotion country selector, and handled organiser hash navigation.
 - Clarified promotion requests and inclusive pricing language.
 
 ## Checks
 
-25 canonical frontend/gateway tests passed. Added behavioral regressions for incomplete ticket links, absent/malformed checkout references, server-confirmed paid status and sign-in recovery/concurrency. All canonical frontend JavaScript passed node --check. Local asset and navigation references passed, including documented rewrite/dynamic-route exceptions. git diff --check passed.
+26 canonical frontend/gateway tests passed. Added behavioral regressions for incomplete ticket links, absent/malformed checkout references, server-confirmed paid status and sign-in recovery/concurrency and publication gating. All canonical frontend JavaScript passed node --check. Local asset and navigation references passed, including documented rewrite/dynamic-route exceptions. git diff --check passed.
 
 ## Live-test blocker and limits
 
