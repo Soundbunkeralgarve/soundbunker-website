@@ -3,7 +3,7 @@ const path=require('node:path');
 const {homedir}=require('node:os');
 const {mkdirSync}=require('node:fs');
 const {HUB_ORIGIN,localWindowUrl,eventFromLink}=require('./policy.cjs');
-function startDesktop({dataDirectory=path.join(homedir(),'.ticketbunker-hub'),resourceRoot,onReady,onError,onStage=()=>{}}={}){
+function startDesktop({dataDirectory=path.join(homedir(),'.ticketbunker-hub'),resourceRoot,onReady,onError,onStage=()=>{},showWindow=true}={}){
 const reportError=(title,message)=>onError?onError(title,message):dialog.showErrorBox(title,message);
 onStage('set-name');app.setName('TicketBunker Check-in Hub');
 const browserData=path.join(dataDirectory,'desktop');mkdirSync(browserData,{recursive:true,mode:0o700});
@@ -40,7 +40,9 @@ onStage('instance-lock');if(!app.requestSingleInstanceLock()){app.quit();}else{
   window.webContents.on('will-navigate',(event,url)=>{if(!localWindowUrl(url))event.preventDefault();});
   window.webContents.on('will-redirect',event=>event.preventDefault());
   window.on('close',e=>{if(!quitting){e.preventDefault();requestQuit();}});
-  window.once('ready-to-show',show);
+  window.once('ready-to-show',()=>{onStage('screen-ready');if(showWindow)show();});
+  window.webContents.on('dom-ready',()=>onStage('document-ready'));
+  window.webContents.on('did-finish-load',()=>onStage('screen-loaded'));
   Menu.setApplicationMenu(Menu.buildFromTemplate([{label:'Hub',submenu:[{label:'Show check-in hub',click:show},{type:'separator'},{label:'Close hub',click:requestQuit}]},{label:'Edit',submenu:[{role:'undo'},{role:'redo'},{type:'separator'},{role:'cut'},{role:'copy'},{role:'paste'},{role:'selectAll'}]}]));
   powerId=powerSaveBlocker.start('prevent-app-suspension');
   const root=resourceRoot||(app.isPackaged?process.resourcesPath:path.resolve(__dirname,'..'));
