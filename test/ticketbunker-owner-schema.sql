@@ -5,6 +5,7 @@ begin
  insert into auth.users(id,email,email_confirmed_at) values(actor,'owner-'||actor||'@example.test',now()),(client_user,'client-'||client_user||'@example.test',now());
  insert into public.tb_platform_admins(email) values('owner-'||actor||'@example.test');
  insert into public.sb_event_organisers(owner_user_id,display_name,country_code) values(client_user,'Synthetic QA organiser','PT') returning id into org;
+ if (select status from public.sb_event_organisers where id=org)<>'approved' then raise exception 'New organiser incorrectly waits for account approval';end if;
  begin perform public.tb_update_client(client_user,org,'Synthetic QA organiser','approved',100,null,'QA test');raise exception 'ASSERT client can grant free account';exception when others then if SQLERRM like 'ASSERT%' then raise;end if;end;
  perform public.tb_update_client(actor,org,'Synthetic QA organiser','approved',100,now()+interval '1 day','QA free listing');
  quote:=public.tb_reserve_events(gen_random_uuid(),client_user,'event_plus','eur',1);
@@ -16,6 +17,9 @@ begin
  insert into public.sb_event_tiers(event_id,name,price_cents,quantity_total) values(ev,'General',2000,90) returning id into tier;
  begin update public.sb_events set status='published' where id=ev;raise exception 'ASSERT free listing bypasses verification';exception when others then if SQLERRM like 'ASSERT%' then raise;end if;end;
  update public.sb_event_organisers set stripe_account_id='acct_synthetic_no_network',stripe_capabilities_ready=true,tax_review_complete=true where id=org;
+ perform public.tb_update_client(actor,org,'Synthetic QA organiser','suspended',100,null,'QA suspend account');
+ begin update public.sb_events set status='published' where id=ev;raise exception 'ASSERT suspended account can publish';exception when others then if SQLERRM like 'ASSERT%' then raise;end if;end;
+ perform public.tb_update_client(actor,org,'Synthetic QA organiser','approved',100,null,'QA restore account');
  update public.sb_events set status='published' where id=ev;
  quote:=public.sb_capacity_quote(client_user,ev,tier,500);
  if (quote->>'amountCents')::int<>0 then raise exception 'Free account capacity quote charged listing fee';end if;

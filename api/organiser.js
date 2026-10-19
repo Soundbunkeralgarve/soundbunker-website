@@ -64,7 +64,7 @@ export default async function handler(req,res){
      const display_name=safeText(body.displayName,160),country_code=safeText(body.country,2).toUpperCase();
      if(display_name.length<2||!organiserCountries[country_code]||body.acceptTerms!==true)
        return json(res,{error:'Enter a promoter name, select your country and accept organiser terms'},400);
-     const saved=await db.from('sb_event_organisers').insert({owner_user_id:ctx.user.id,display_name,country_code})
+     const saved=await db.from('sb_event_organisers').insert({owner_user_id:ctx.user.id,display_name,country_code,status:'approved'})
        .select('id,display_name,country_code,status').single();
      if(saved.error)return json(res,{error:'Could not create organiser profile'},409);
      return json(res,{organiser:saved.data});

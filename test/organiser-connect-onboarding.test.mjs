@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 const source=readFileSync(new URL('../api/organiser-connect.js',import.meta.url),'utf8');
-const orgBase={id:'org-owner',country_code:'PT',display_name:'SoundBunker',logo_url:'https://example.org/logo.png',stripe_account_id:null,status:'pending_review'};
+const orgBase={id:'org-owner',country_code:'PT',display_name:'SoundBunker',logo_url:'https://example.org/logo.png',stripe_account_id:null,status:'approved'};
 const v2Base={id:'acct_real',livemode:true,dashboard:'express',defaults:{responsibilities:{fees_collector:'application',losses_collector:'application'}},configuration:{recipient:{capabilities:{stripe_balance:{stripe_transfers:{status:'active'}}}}}};
 async function harness({org={...orgBase},user={id:'owner',email:'owner@example.org',email_confirmed_at:'2026-01-01'},role='admin',enabled=true,live=true,billing=true,v2=v2Base,v1={payouts_enabled:true,requirements:{}},link,authError,fetchError}={}){
  const calls=[],updates=[],filters=[];
