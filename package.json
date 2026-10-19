@@ -17,5 +17,8 @@
     "passkit-generator": "3.6.1",
     "pdf-lib": "^1.17.1",
     "sharp": "0.35.5"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.10"
   }
 }

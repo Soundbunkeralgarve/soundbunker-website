@@ -3,7 +3,7 @@
     "name": "TicketBunker Scanner",
     "slug": "ticketbunker-scanner",
     "scheme": "ticketbunkerscanner",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#080e12",
@@ -11,21 +11,20 @@
     "ios": {
       "bundleIdentifier": "pt.soundbunker.ticketbunkerscanner",
       "supportsTablet": true,
-      "buildNumber": "7",
-      "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
-      }
+      "buildNumber": "8",
+      "infoPlist": {}
     },
     "android": {
       "package": "pt.soundbunker.ticketbunkerscanner",
-      "versionCode": 4,
+      "versionCode": 5,
       "permissions": [
         "android.permission.CAMERA"
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#080e12"
-      }
+      },
+      "allowBackup": false
     },
     "plugins": [
       [
@@ -36,7 +35,8 @@
           "barcodeScannerEnabled": true
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "./plugins/withLocalHub.cjs"
     ],
     "extra": {
       "apiBase": "https://www.soundbunker.pt",

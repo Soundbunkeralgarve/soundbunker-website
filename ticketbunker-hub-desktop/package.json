@@ -1,0 +1,101 @@
+{
+  "name": "ticketbunker-hub-desktop",
+  "productName": "TicketBunker Check-in Hub",
+  "version": "1.0.0",
+  "description": "Local check-in hub for TicketBunker scanners, with or without internet",
+  "author": "SoundBunker Algarve",
+  "private": true,
+  "main": "launcher.cjs",
+  "engines": {
+    "node": ">=24.13.0"
+  },
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test test/*.test.cjs",
+    "prepare:resources": "node prepare-resources.cjs",
+    "pack": "npm run prepare:resources && electron-builder --dir --publish never",
+    "dist": "npm run prepare:resources && electron-builder --publish never"
+  },
+  "devDependencies": {
+    "electron": "44.9.0",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "pt.soundbunker.ticketbunkerhub",
+    "artifactName": "TicketBunker-Hub-${version}-${os}-${arch}.${ext}",
+    "asar": true,
+    "protocols": [
+      {
+        "name": "TicketBunker Hub",
+        "schemes": [
+          "ticketbunkerhub"
+        ]
+      }
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.cjs",
+      "policy.cjs",
+      "package.json",
+      "launcher.cjs"
+    ],
+    "extraResources": [
+      {
+        "from": ".resources",
+        "to": "."
+      }
+    ],
+    "electronFuses": {
+      "runAsNode": false,
+      "enableNodeOptionsEnvironmentVariable": false,
+      "enableNodeCliInspectArguments": false,
+      "enableEmbeddedAsarIntegrityValidation": true,
+      "onlyLoadAppFromAsar": true
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
+      "category": "public.app-category.business",
+      "hardenedRuntime": true,
+      "entitlements": "entitlements.mac.plist",
+      "entitlementsInherit": "entitlements.mac.plist",
+      "extendInfo": {
+        "NSLocalNetworkUsageDescription": "Allow TicketBunker scanners on your private Wi-Fi to check in tickets through this hub."
+      }
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "signAndEditExecutable": true
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "deleteAppDataOnUninstall": false
+    },
+    "linux": {
+      "target": [
+        "dir"
+      ],
+      "category": "Office"
+    },
+    "icon": "../ticketbunker-scanner-native/assets/icon.png"
+  }
+}

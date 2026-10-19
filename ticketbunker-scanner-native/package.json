@@ -1,6 +1,6 @@
 {
   "name": "ticketbunker-scanner-native",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
   "main": "index.js",
@@ -19,13 +19,16 @@
     "@supabase/supabase-js": "2.57.4",
     "expo": "56.0.9",
     "expo-camera": "~56.0.8",
+    "expo-crypto": "56.0.4",
     "expo-haptics": "~56.0.3",
     "expo-secure-store": "~56.0.4",
+    "expo-sqlite": "56.0.4",
     "react": "19.2.3",
     "react-native": "0.85.3",
     "react-native-get-random-values": "1.11.0",
     "react-native-url-polyfill": "2.0.0",
-    "sharp": "0.35.5"
+    "sharp": "0.35.5",
+    "tweetnacl": "1.0.3"
   },
   "devDependencies": {
     "@babel/core": "7.28.0"

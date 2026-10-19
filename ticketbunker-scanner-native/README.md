@@ -8,7 +8,7 @@ Native React Native/Expo camera application (NOT a WebView). Uses the same Ticke
 - Event-scoped staff authorisation and invite acceptance
 - Server-authoritative one-time ticket entry; duplicate, cancelled, refunded, transferred-out and wrong-event tickets are denied
 - Manual QR URL fallback
-- No offline admissions; this is intentional to prevent double-scanning and stale access
+- Offline entry with durable SQLite scans, per-device ticket reservations, numbered offline lanes and idempotent reconnect sync
 
 ## Run / test
 ```bash
@@ -45,3 +45,28 @@ The native header uses the existing official monogram and a high-resolution rend
 7. First uploads to Google Play internal testing and Apple TestFlight, then request store review
 
 No app store submission is represented as complete until a signed binary is accepted in the appropriate console.
+
+## Offline entry and multiple door staff
+
+Before losing connectivity, choose the **same total scanner count (1–16)** on every phone and tap **Prepare this phone for offline entry**. Phones receive separate numbered lanes. Each ticket is assigned by the first 32 bits of its UUID modulo the lane count; only that lane downloads its fingerprint and can approve it. Other phones show **USE ANOTHER LANE**. Display lane numbers at the door. All lanes must be prepared before relying on fully offline entry.
+
+A phone saves a scan in a SQLite transaction before showing approval. Unique ticket rows block repeats, including after app restart. Download refreshes retain used entries. The database also blocks live scanners and old app versions from consuming a ticket reserved offline. Transfers/name changes on reserved tickets wait until offline mode ends. No signing keys, buyer names or reusable QR signatures are downloaded.
+
+Automatic sync runs while the app is in the foreground, approximately every 15 seconds when scans are pending; foregrounding also retries. Uploads are acknowledged in batches of 200 and are idempotent. **Sync and finish offline mode** disables local admission durably before server ownership is released. Do not uninstall, erase app data or replace a phone holding unsynced scans. Missing-download recovery is deliberately blocked; reconcile the original device before replacing it. Device-only SecureStore identity and disabled Android backups prevent a restored database from becoming a second offline scanner.
+
+Offline permits last up to 12 hours within the event entry window. Renew while connected. Reservations do not auto-expire on the server because unsynced admissions may exist. A dead/lost phone needs reconciliation; blindly releasing it could allow duplicate entry. Device clock changes fail closed and require reconnecting. Staff revocations, cancellations/refunds and sales after the snapshot cannot be discovered without a connection: refresh before doors open and whenever connectivity returns. A scan valid against the downloaded snapshot is logged on sync even if the order was subsequently refunded; staff should review such exceptional refunds separately.
+
+Completely disconnected phones cannot share a live used-ticket list. **Any ticket at any door without internet** requires a shared local network and a local check-in hub. The local check-in hub and QR pairing are implemented in `../ticketbunker-hub/`; see its README for setup, local-network requirements, validation and release gates.
+
+### Release state and verification
+
+This change prepares version 1.0.1 (iOS build 8 / Android version code 5). It is not a signed store build or proof of device testing.
+
+1. Apply `SUPABASE_TICKETBUNKER_OFFLINE_SCANNER.sql` to the SoundBunker database, then deploy `/api/event-scanner-offline` and the updated `/api/event-scan` together.
+2. Build fresh signed binaries: `expo-sqlite` and `expo-crypto` require the native modules. This cannot update old installed builds merely by deploying the website.
+3. Test on real iOS and Android devices in airplane mode, including app force-close, low battery, several lanes, interrupted upload, expired login and safe phone replacement.
+4. Submit verified binaries through TestFlight / Play testing before store release.
+
+The live migration attempt was declined by the database tool without a stated reason. No live claims/tickets were changed. Isolated Postgres tests apply the real migration against minimal fixtures and verify lane ownership, old/live-client rejection, transfer protection, staff/device checks, retry idempotency and release. SQLite tests exercise the actual store SQL through a Node SQLite adapter; they do not replace real-device tests.
+
+The scanner now includes **Connect to local hub**. It uses a per-device encrypted pairing and sends every check to that hub, preserving a request ID across an uncertain response. Hub credentials are kept in secure storage and bound to this device. A missing hub response never falls back to online or independent offline approval. Native network permissions/configuration and encryption declarations must be verified in signed device builds.

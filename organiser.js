@@ -701,7 +701,7 @@ async function loadReport(){
   $('#metricIssuedTickets').textContent=formatCount(d.issuedTickets);
   $('#metricCheckedIn').textContent=formatCount(d.checkedIn);
   $('#metricPaidCheckedIn').textContent=formatCount(d.paidCheckedIn);
-  $('#metricPaidNotArrived').textContent=formatCount(d.paidNotCheckedIn);
+  $('#metricPaidNotArrived').textContent=d.attendancePending?'Pending sync':formatCount(d.paidNotCheckedIn);
   $('#metricPaidNotArrivedLabel').textContent=d.eventFinished?'PAID NO-SHOWS':'PAID NOT YET SCANNED';
   $('#metricTestCheckedIn').textContent=formatCount(d.testCheckedIn);
   $('#reportStatus').textContent='Showing '+d.title+': '+formatCount(d.issuedTickets)+

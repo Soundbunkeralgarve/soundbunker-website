@@ -63,6 +63,7 @@ export default async function handler(req,res){
    p_ticket:id,p_actor:ctx.user.id,p_version:ticket.data.transfer_version||0
   });
   mark('checkin',checkinStarted);
+  if(scanned.error?.code==='55000')return reply({status:'offline_reserved',message:scanned.error.message||'This ticket is assigned to an offline lane. Use its scanner.'});
   if(scanned.error)throw scanned.error;
   const rehearsal=normalRehearsalFeedback(id,eventMeta.data);
   return reply({...scanned.data,...(rehearsal?{event:scanned.data.event+' · Private rehearsal',rehearsal:true}:{}),test:!rehearsal&&(eventMeta.data.internal_free_test===true||eventMeta.data.public_beta_test===true)});

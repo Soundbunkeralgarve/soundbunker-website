@@ -1,0 +1,115 @@
+name: Publish Signed TicketBunker Hub
+on:
+  push:
+    tags: ['ticketbunker-hub-v*']
+permissions:
+  contents: read
+jobs:
+  signed:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify released version and source
+        shell: bash
+        run: |
+          git merge-base --is-ancestor HEAD origin/main
+          node -e 'const p=require("./ticketbunker-hub-desktop/package.json");if(process.env.GITHUB_REF_NAME!=="ticketbunker-hub-v"+p.version)throw Error("Tag must match desktop version")'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: ticketbunker-hub
+      - run: npm test
+        working-directory: ticketbunker-hub
+      - run: npm ci --no-audit --no-fund
+        working-directory: ticketbunker-hub-desktop
+      - run: npm test
+        working-directory: ticketbunker-hub-desktop
+      - run: npm run prepare:resources
+        working-directory: ticketbunker-hub-desktop
+      - name: Test real desktop startup, renderer and SQLite
+        timeout-minutes: 1
+        run: npx electron smoke.cjs
+        working-directory: ticketbunker-hub-desktop
+      - name: Prepare Mac notarization key
+        if: runner.os == 'macOS'
+        shell: bash
+        env:
+          MAC_KEY: ${{ secrets.HUB_APPLE_API_KEY_P8 }}
+        run: |
+          test -n "$MAC_KEY"
+          printf '%s' "$MAC_KEY" > "$RUNNER_TEMP/hub-apple-key.p8"
+          chmod 600 "$RUNNER_TEMP/hub-apple-key.p8"
+          printf 'APPLE_API_KEY=%s/hub-apple-key.p8\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+      - name: Build signed and notarized Mac installers
+        if: runner.os == 'macOS'
+        run: npx electron-builder --mac --publish never --config.forceCodeSigning=true --config.mac.notarize=true
+        working-directory: ticketbunker-hub-desktop
+        env:
+          CSC_LINK: ${{ secrets.HUB_MAC_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.HUB_MAC_CSC_KEY_PASSWORD }}
+          APPLE_API_KEY_ID: ${{ secrets.HUB_APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.HUB_APPLE_API_ISSUER }}
+      - name: Build signed Windows installer
+        if: runner.os == 'Windows'
+        run: npx electron-builder --win --publish never --config.forceCodeSigning=true
+        working-directory: ticketbunker-hub-desktop
+        env:
+          CSC_LINK: ${{ secrets.HUB_WIN_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.HUB_WIN_CSC_KEY_PASSWORD }}
+      - name: Verify Mac notarization is stapled for offline installation
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          set -euo pipefail
+          for image in ticketbunker-hub-desktop/dist/*.dmg; do xcrun stapler validate "$image"; done
+      - name: Verify Windows signature
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Get-ChildItem ticketbunker-hub-desktop/dist/*.exe | ForEach-Object {
+            if ((Get-AuthenticodeSignature $_.FullName).Status -ne 'Valid') { throw "Installer signature is invalid" }
+          }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hub-signed-${{ runner.os }}
+          path: |
+            ticketbunker-hub-desktop/dist/*.dmg
+            ticketbunker-hub-desktop/dist/*.exe
+          if-no-files-found: error
+      - name: Remove notarization key
+        if: always() && runner.os == 'macOS'
+        shell: bash
+        run: rm -f "$RUNNER_TEMP/hub-apple-key.p8"
+  publish:
+    needs: signed
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: hub-signed-*
+          path: installers
+          merge-multiple: true
+      - name: Publish complete signed release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          cd installers
+          test -f TicketBunker-Hub-1.0.0-mac-arm64.dmg
+          test -f TicketBunker-Hub-1.0.0-mac-x64.dmg
+          test -f TicketBunker-Hub-1.0.0-win-x64.exe
+          sha256sum *.dmg *.exe > SHA256SUMS.txt
+          printf 'Signed desktop release. macOS builds notarized. Scanner 1.0.1 or later with hub support required.\n' > SIGNED-RELEASE.txt
+          gh release create "$RELEASE_TAG" --repo "$REPOSITORY" --verify-tag --title 'TicketBunker Check-in Hub 1.0.0' --notes 'Windows and Mac local check-in hub. Download your event before travel. Scanners and laptop must share private Wi-Fi. Works with or without venue internet. Requires updated TicketBunker Scanner.' *.dmg *.exe SHA256SUMS.txt SIGNED-RELEASE.txt

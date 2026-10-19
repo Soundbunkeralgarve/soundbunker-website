@@ -1,0 +1,15 @@
+create role anon;create role authenticated;create role service_role bypassrls;
+create schema auth;
+create table auth.users(id uuid primary key);
+create table public.profiles(id uuid primary key,role text,full_name text,email text);
+create table public.sb_event_organisers(id uuid primary key,owner_user_id uuid);
+create table public.sb_events(id uuid primary key,organiser_profile_id uuid,title text,venue text,status text,starts_at timestamptz,internal_free_test boolean default false,test_expires_at timestamptz,public_beta_test boolean default false);
+create table public.sb_event_staff_access(id uuid primary key,event_id uuid,user_id uuid,revoked_at timestamptz);
+create table public.sb_event_tiers(id uuid primary key,name text);
+create table public.sb_event_orders(id uuid primary key,status text,beta_test_order boolean default false,guest_allocation_id uuid);
+create table public.sb_event_tickets(id uuid primary key,event_id uuid,order_id uuid,tier_id uuid,transfer_version integer default 0,checked_in_at timestamptz,checked_in_by uuid,holder_email text,holder_name text);
+grant usage on schema public,auth to service_role;
+grant all on all tables in schema public,auth to service_role;
+
+create table public.tb_event_reports(event_id uuid primary key,checked_in integer default 0,not_scanned integer default 0,scanner_summary jsonb);
+grant all on public.tb_event_reports to service_role;
