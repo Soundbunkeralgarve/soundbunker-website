@@ -1,17 +1,18 @@
 console.log('Smoke script loading');
 // Exercises the real desktop bootstrap, local renderer, bundled Node/SQLite and worker IPC.
 const {app}=require('electron');
-const {mkdtempSync,rmSync}=require('node:fs');
+const {mkdtempSync}=require('node:fs');
 const {tmpdir}=require('node:os');
 const path=require('node:path');
 const {startDesktop}=require('./main.cjs');
 const directory=mkdtempSync(path.join(tmpdir(),'tb-electron-smoke-'));
 let success=false;
 const timeout=setTimeout(()=>{console.error('Hub desktop did not complete its smoke test.');app.exit(1);},20000);
-app.on('will-quit',()=>{
- clearTimeout(timeout);rmSync(directory,{recursive:true,force:true});
+app.on('will-quit',event=>{
+ clearTimeout(timeout);
+ // Chromium still owns cache files here on Windows. The ephemeral runner cleans its temp folder after exit.
  console.log(success?'Electron desktop hub and renderer smoke test passed.':'Electron desktop hub and renderer smoke test failed.');
- if(!success)process.exitCode=1;
+ if(!success){event.preventDefault();app.exit(1);}
 });
 startDesktop({showWindow:false,onStage:stage=>console.log('Desktop stage: '+stage),dataDirectory:directory,resourceRoot:path.join(__dirname,'.resources'),onError:(title,message)=>console.error(title+': '+message),onReady:async({window,stop})=>{
  try{
