@@ -5,6 +5,7 @@ import {chargeForTicketCheckout,refreshTicketCharge} from './lib/ticketbunker-pa
 import {fulfilListingCheckout} from './lib/event-listings.js';
 import {fulfilCapacityCheckout} from './lib/event-capacity.js';
 import {fulfilPremiumPlacementCheckout} from './lib/ticketbunker-premium-autosend.js';
+import {fetchConnectStatus} from './organiser-connect.js';
 export const config={api:{bodyParser:false}};
 export default async function handler(req,res){
  if(req.method!=='POST')return json(res,{error:'Method not allowed'},405);
@@ -18,9 +19,9 @@ export default async function handler(req,res){
   const prior=await db.from('tb_stripe_events').select('stripe_event_id').eq('stripe_event_id',event.id).maybeSingle();if(prior.error)throw prior.error;if(prior.data)return json(res,{received:true,duplicate:true});
   if(event.account){
    if(event.type==='account.updated'){
-    // An account event can revoke readiness immediately. Only a fresh v2/v1
-    // check in organiser-connect can grant it again.
-    if(object.id===event.account&&(!object.payouts_enabled||object.capabilities?.transfers!=='active')){const saved=await db.from('sb_event_organisers').update({stripe_capabilities_ready:false}).eq('stripe_account_id',event.account);if(saved.error)throw saved.error;}
+    // A fresh server-side check grants readiness; a signed event alone cannot.
+    // The database queues the personal welcome when verification first completes.
+    if(object.id===event.account){const status=await fetchConnectStatus(event.account);const saved=await db.from('sb_event_organisers').update({stripe_capabilities_ready:status.ready}).eq('stripe_account_id',event.account);if(saved.error)throw saved.error;}
    }
    if(['payout.paid','payout.failed','payout.canceled','payout.updated'].includes(event.type)){
     const saved=await db.from('tb_event_settlements').update({payout_status:object.status==='paid'?'paid':['failed','canceled'].includes(object.status)?'failed':'processing',stripe_arrival_at:object.arrival_date?new Date(object.arrival_date*1000).toISOString():null,updated_at:new Date().toISOString()}).eq('stripe_payout_id',object.id);if(saved.error)throw saved.error;

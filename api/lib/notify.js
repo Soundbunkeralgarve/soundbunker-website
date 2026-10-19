@@ -14,20 +14,22 @@ export async function sendStudioEmail(to, subject, body, { brand } = {}) {
 
 // Stripe can deliver the same event repeatedly. A stable key for each recipient
 // lets Resend acknowledge retries without sending a second confirmation.
-export async function sendTransactionalEmail({ to, subject, text, key, brand, attachments, artwork }) {
-  const from = brand === 'ticketbunker' ? ticketBunkerFrom : (process.env.NOTIFICATION_FROM_EMAIL || process.env.RESEND_FROM_EMAIL);
+export async function sendTransactionalEmail({ to, subject, text, key, brand, attachments, artwork, personal = false }) {
+  const from = brand === 'ticketbunker' ? (personal ? 'Steve at The TicketBunker <bookings@theticketbunker.com>' : ticketBunkerFrom) : (process.env.NOTIFICATION_FROM_EMAIL || process.env.RESEND_FROM_EMAIL);
   if (!process.env.RESEND_API_KEY || !from) throw new Error('Resend email is not configured');
   if (!to) throw new Error('Confirmation recipient is missing');
   const result = await fetch('https://api.resend.com/emails', {
     method: 'POST',
+    signal: AbortSignal.timeout(15000),
     headers: {
       authorization: `Bearer ${process.env.RESEND_API_KEY}`,
       'content-type': 'application/json',
       'Idempotency-Key': key
     },
-    body: JSON.stringify({ from, to: [to], subject, ...(attachments?.length?{attachments}:{}), ...(brand === 'ticketbunker' ? ticketBunkerEmailContent(text,artwork) : studioEmailContent(text)), reply_to: brand === 'ticketbunker' ? ticketBunkerReplyTo : 'bookings@soundbunker.pt' })
+    body: JSON.stringify({ from, to: [to], subject, ...(attachments?.length?{attachments}:{}), ...(brand === 'ticketbunker' ? ticketBunkerEmailContent(text,artwork) : studioEmailContent(text)), reply_to: brand === 'ticketbunker' ? (personal ? 'steve@soundbunker.pt' : ticketBunkerReplyTo) : 'bookings@soundbunker.pt' })
   });
-  if (!result.ok) throw new Error(`Resend rejected confirmation (${result.status})`);
+  if (!result.ok) {const error=new Error(`Resend rejected confirmation (${result.status})`);error.status=result.status;error.retryable=result.status===429||result.status>=500;throw error;}
+  return typeof result.json === 'function' ? result.json() : {};
 }
 
 const base = () => (process.env.SITE_URL || 'https://www.soundbunker.pt').replace(/\/$/, '');

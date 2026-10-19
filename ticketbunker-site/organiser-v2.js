@@ -83,6 +83,8 @@ function renderConnectStatus(){
  let text={checking:'Checking your Stripe account…',not_started:'Your organiser account is saved. Verify your business and payout details here in TicketBunker using Stripe’s secure form.',action_required:'Action needed. Continue verification here to finish or update your details.',under_review:'Under review. Stripe is checking your submitted information. Check again later for the result.',verified:'Verified by Stripe for receiving transfers and bank payouts. Ticket sales and post-show payment release are activated separately.',restricted:'This Stripe connection needs support before it can receive payouts.',platform_blocked:'Your organiser details are saved. Verification is waiting for TicketBunker’s Stripe setup. You can continue preparing your events.',unavailable:'Live Stripe verification is temporarily unavailable. Your company details are saved.',error:'We could not check your Stripe verification. Please try Check verification status.'}[s.state]||'Check your Stripe verification status.';
  if(!profile)text='Create your organiser profile first.';
  else if(!profile.logo_url||!billingComplete)text='Save your organiser logo and Company & Billing details before starting Stripe verification.';
+ if(s.ready)text=s.ticketSalesEnabled?'Your account checks are complete. Add your event and ticket types, then complete any listing fee to publish.':s.billingReviewComplete?'Stripe verification is complete. Live ticket payments are awaiting platform activation. You can prepare your event now.':'Stripe verification is complete. TicketBunker still needs to review your saved billing and tax details before paid events can be published. You can prepare your event now.';
+ const help=$('[data-connect-help]');if(help)help.textContent=s.ready?'Your verification is saved. Use Update verification details if your business or bank information changes. Ticket payouts are released separately after the event, the report and payment checks.':'Stripe may ask for legal business details, a tax number, an identity document and a bank account. Complete the secure form here in TicketBunker. Stripe may open a window to verify your email or phone. No payment is taken during verification.';
  const label=s.state==='platform_blocked'?'Payout setup temporarily unavailable':s.ready?'Update verification details →':'Continue verification →';
  $$('[data-connect-status], [data-connect-summary]').forEach(el=>el.textContent=text);
  $$('[data-connect-setup]').forEach(el=>el.hidden=!!profile?.logo_url&&billingComplete);
@@ -92,10 +94,10 @@ function renderConnectStatus(){
  $$('[data-connect-admin]').forEach(el=>el.hidden=!ownerSetup);
  $$('[data-connect-error]').forEach(el=>el.hidden=s.state==='platform_blocked');
  if($('#stripe-account-status'))$('#stripe-account-status').textContent=text;
- $('#verification-banner').hidden=!profile||s.ready===true;
- $('#account-status').textContent=s.ready?'Stripe verified':s.state==='under_review'?'Stripe reviewing':s.state==='platform_blocked'?'Verification unavailable':'Validation needed';
- $('#verification-banner-title').textContent=s.state==='platform_blocked'?'Stripe verification is not available yet':'Verify your business and payout details';
- $('#verification-banner-action').textContent=s.state==='platform_blocked'?'View setup status →':'Validate your account →';
+ $('#verification-banner').hidden=!profile||s.ticketSalesEnabled===true;
+ $('#account-status').textContent=s.ticketSalesEnabled?'Ready to publish':s.ready?'Stripe verified':s.state==='under_review'?'Stripe reviewing':s.state==='platform_blocked'?'Verification unavailable':'Validation needed';
+ $('#verification-banner-title').textContent=s.ready?(s.billingReviewComplete?'Ticket payment activation pending':'Billing review pending'):s.state==='platform_blocked'?'Stripe verification is not available yet':'Verify your business and payout details';
+ $('#verification-banner-action').textContent=s.ready?'View account status →':s.state==='platform_blocked'?'View setup status →':'Validate your account →';
 }
 async function loadStripeStatus(){
  if(!profile){renderConnectStatus();return;}
@@ -104,7 +106,7 @@ async function loadStripeStatus(){
  renderConnectStatus();
 }
 async function startStripeOnboarding(){
- if(connectBusy)return;connectBusy=true;renderConnectStatus();$$('[data-connect-error]').forEach(el=>el.textContent='');
+ if(connectBusy)return;connectBusy=true;$('#notice').hidden=true;renderConnectStatus();$$('[data-connect-error]').forEach(el=>el.textContent='');
  try{
   const {mountStripeOnboarding}=await import('./embedded-onboarding.js');
   const shell=$('[data-connect-embedded]'),container=$('[data-connect-container]');

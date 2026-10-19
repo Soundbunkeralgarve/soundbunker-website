@@ -163,6 +163,10 @@
   },
   "crons": [
     {
+      "path": "/api/ticketbunker-organiser-mail",
+      "schedule": "*/5 * * * *"
+    },
+    {
       "path": "/api/premium-mail-reconcile",
       "schedule": "0 * * * *"
     },

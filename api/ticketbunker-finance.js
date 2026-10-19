@@ -4,6 +4,7 @@ import {json,parseJson} from './lib/http.js';
 import {ticketBunkerStripe,ticketBunkerPlatformReadiness,ticketBunkerPaymentsEnabled} from './lib/ticketbunker-stripe.js';
 import {eventFinancials,releaseEvent} from './lib/ticketbunker-settlement.js';
 import {refreshTicketCharge} from './lib/ticketbunker-payments.js';
+import {deliverOrganiserMailFor} from './lib/organiser-onboarding-mail.js';
 const ID=/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i;
 export default async function handler(req,res){
  if(!['GET','POST'].includes(req.method))return json(res,{error:'Method not allowed'},405);
@@ -13,7 +14,7 @@ export default async function handler(req,res){
   const db=ctx.admin,admin=await ticketBunkerAdmin(ctx),b=req.method==='GET'?req.query:await parseJson(req);
   if(req.method==='POST'&&b.action==='reviewTax'){
    if(!admin||!ID.test(String(b.organiserId||''))||typeof b.confirmed!=='boolean')return json(res,{error:'Owner review required'},403);
-   const review=await db.rpc('tb_review_organiser_tax',{p_actor:ctx.user.id,p_organiser:b.organiserId,p_confirm:b.confirmed,p_reason:String(b.reason||'').slice(0,1000)});if(review.error)return json(res,{error:'Complete the saved billing details and add a review note of at least ten characters.'},400);return json(res,{message:'Billing and tax review recorded. Stripe verification still applies.'});
+   const review=await db.rpc('tb_review_organiser_tax',{p_actor:ctx.user.id,p_organiser:b.organiserId,p_confirm:b.confirmed,p_reason:String(b.reason||'').slice(0,1000)});if(review.error)return json(res,{error:'Complete the saved billing details and add a review note of at least ten characters.'},400);if(b.confirmed)await deliverOrganiserMailFor(db,b.organiserId);return json(res,{message:'Billing and tax review recorded. Stripe verification still applies.'});
   }
   if(req.method==='GET'&&!b.eventId){
    if(!admin)return json(res,{error:'Owner admin access required'},403);

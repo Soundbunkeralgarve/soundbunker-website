@@ -76,11 +76,12 @@ test('checkout collects the face value on the platform and waits for post-event 
 test('unready recipients/platform and unpaid listing fees cannot start checkout',async()=>{
  for(const options of [{ready:false},{recipient:false},{paid:false}]){const f=await checkoutFixture(options);assert.ok((await f.run()).status>=400);assert.equal(f.calls.length,0);}
 });
-async function webhookFixture(){
+async function webhookFixture({recipient=false}={}){
  const done=new Set(),calls=[],secret='whsec_synthetic';
- const db={from(){const q={select(){return q},eq(k,v){q.eventId=v;return q},maybeSingle:async()=>({data:done.has(q.eventId)?{stripe_event_id:q.eventId}:null}),upsert:async v=>{done.add(v.stripe_event_id);return {}}};return q;}};
+ const db={from(){const q={select(){return q},update(v){calls.push(v);return q},then(resolve){return Promise.resolve({}).then(resolve)},eq(k,v){q.eventId=v;return q},maybeSingle:async()=>({data:done.has(q.eventId)?{stripe_event_id:q.eventId}:null}),upsert:async v=>{done.add(v.stripe_event_id);return {}}};return q;}};
  const context=vm.createContext({console:{error(){}},process:{env:{TICKETBUNKER_STRIPE_WEBHOOK_SECRET:secret}}});
  const exports={
+ './organiser-connect.js':{fetchConnectStatus:async()=>{calls.push('fresh-status');return {ready:recipient}}},
  './lib/stripe.js':{verifyStripeSignature},'./lib/http.js':{json:(r,data,status=200)=>({data,status}),readRawBody:async r=>r.body},
  './lib/events.js':{eventsDatabase:()=>db,fulfillEventCheckout:async()=>calls.push('fulfill')},
  './lib/ticketbunker-payments.js':{chargeForTicketCheckout:async()=>calls.push('ledger'),refreshTicketCharge:async()=>calls.push('refresh')},
@@ -99,3 +100,5 @@ test('signed live payment events reconcile before issuing tickets and duplicate 
 test('a legacy direct-charge event cannot issue tickets through the isolated TicketBunker webhook',async()=>{
  const f=await webhookFixture();const e=structuredClone(f.event);delete e.data.object.metadata.ticketbunker_flow;assert.equal((await f.run(e)).status,500);assert.equal(f.calls.length,0);
 });
+
+test('account updates use fresh verification rather than trusting event claims',async()=>{for(const recipient of [false,true]){const f=await webhookFixture({recipient});const e={id:'evt_account',livemode:true,account:'acct_Synthetic',type:'account.updated',data:{object:{id:'acct_Synthetic',payouts_enabled:true}}};assert.equal((await f.run(e)).status,200);assert.equal(f.calls[0],'fresh-status');assert.equal(f.calls[1].stripe_capabilities_ready,recipient);}});
