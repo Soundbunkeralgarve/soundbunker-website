@@ -5,6 +5,20 @@ const ID=/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i;
 const count=orders=>orders.reduce((total,order)=>total+Number(order.quantity||0),0);
 const moneyTotal=orders=>orders.reduce((total,order)=>total+Number(order.total_cents||0),0);
 
+// Keyset pages avoid the Data API's row cap silently truncating large event reports.
+export async function readReportRows(db,table,columns,eventId){
+ const rows=[];let last='';
+ for(let page=0;page<1000;page++){
+  let q=db.from(table).select(columns,{count:'exact'}).eq('event_id',eventId).order('id',{ascending:true}).limit(1000);
+  if(last)q=q.gt('id',last);
+  const result=await q;if(result.error)throw result.error;
+  const next=result.data||[];if(!next.length)return {data:rows};
+  rows.push(...next);last=next[next.length-1].id;
+  if(result.count!==null&&result.count!==undefined&&next.length>=result.count)return {data:rows};
+ }
+ throw Error('Event report is too large to retrieve safely');
+}
+
 export default async function handler(req,res){
  if(req.method!=='GET')return json(res,{error:'Method not allowed'},405);
  const ctx=await requireUser(req);
@@ -23,20 +37,19 @@ export default async function handler(req,res){
    .eq('id',eventId).eq('organiser_profile_id',owner.data.id).maybeSingle();
   if(event.error||!event.data)return json(res,{error:'Event not found in your account'},403);
 
-  const [orders,tiers,tickets]=await Promise.all([
-   db.from('sb_event_orders')
-    .select('id,tier_id,quantity,total_cents,status,beta_test_order,guest_allocation_id')
-    .eq('event_id',eventId).limit(10000),
+  const [orders,tiers,tickets,offlineClaims]=await Promise.all([
+   readReportRows(db,'sb_event_orders','id,tier_id,quantity,total_cents,status,beta_test_order,guest_allocation_id',eventId),
    db.from('sb_event_tiers').select('id,name,quantity_total,price_cents')
     .eq('event_id',eventId).limit(200),
-   db.from('sb_event_tickets')
-    .select('id,sequence_number,tier_id,order_id,checked_in_at,checked_in_by')
-    .eq('event_id',eventId).limit(10000)
+   readReportRows(db,'sb_event_tickets','id,sequence_number,tier_id,order_id,checked_in_at,checked_in_by',eventId),
+   db.from('tb_scanner_claims').select('id,mode,created_at,expires_at').eq('event_id',eventId).is('released_at',null).limit(100)
   ]);
-  if(orders.error||tiers.error||tickets.error)throw Error('Unable to retrieve event reports');
+  if(orders.error||tiers.error||tickets.error||offlineClaims.error)throw Error('Unable to retrieve event reports');
 
   // Every confirmed paid order contributes to revenue whether its ticket is scanned or not.
   // €0 beta orders contribute to attendance only and are never paid revenue.
+  const allOrdersById=new Map((orders.data||[]).map(o=>[o.id,o]));
+  const exceptionalCheckedIn=(tickets.data||[]).filter(t=>t.checked_in_at&&allOrdersById.has(t.order_id)&&allOrdersById.get(t.order_id).status!=='paid').length;
   const approved=(orders.data||[]).filter(order=>order.status==='paid');
   const paidOrders=approved.filter(order=>order.beta_test_order!==true&&!order.guest_allocation_id);
   const guestOrders=approved.filter(order=>!!order.guest_allocation_id);
@@ -83,6 +96,10 @@ export default async function handler(req,res){
    poster:event.data.image_url||null,
    currency:event.data.currency,startsAt:event.data.starts_at,endsAt:event.data.ends_at,
    venueTimezone:event.data.venue_timezone,eventFinished,
+   exceptionalCheckedIn,
+   attendancePending:(offlineClaims.data||[]).length>0,offlineScannersPending:(offlineClaims.data||[]).length,
+   attendanceStatus:(offlineClaims.data||[]).length?'Awaiting offline scanner sync — confirmed check-ins only; no-show totals are provisional.':'Check-ins reconciled',
+   checkedInUpdatedAt:new Date().toISOString(),
    capacity:(tiers.data||[]).reduce((total,tier)=>total+Number(tier.quantity_total||0),0),
    paidTickets,testTickets,guestTickets:count(guestOrders),issuedTickets:paidTickets+testTickets+count(guestOrders),
    revenueCents:moneyTotal(paidOrders),

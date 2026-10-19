@@ -33,7 +33,7 @@ export function createOfflineEngine({store,digest,clock=Date.now,uptime=()=>perf
    }
    if(!ticket||ticket.digest!==await digest(id+':'+signature))return {status:'invalid',message:'Ticket not in this offline download. Reconnect to refresh tickets.'};
    if(ticket.used)return {status:'used',message:'This ticket has already been scanned on this phone.'};
-   const at=new Date(Math.max(now,Date.parse(manifest.createdAt))).toISOString();
+   const at=new Date(Math.max(now,Date.parse(manifest.createdAt)+1)).toISOString();
    // A failed disk write must NEVER show approval. Store enforces used=0 atomically.
    if(!await store.consume(manifest.claimId,id,at,clock()))return {status:'used',message:'This ticket has already been scanned.'};
    return {status:'valid',event:manifest.event,tier:ticket.tier,test:manifest.test,offline:true};

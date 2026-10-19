@@ -16,7 +16,7 @@ export default async function handler(req,res){
   const device=hash(body.deviceKey);
   if(body.action==='prepare'){
    if(!UUID.test(body.eventId||'')||(body.claimId&&!UUID.test(body.claimId))||!Number.isInteger(body.laneCount)||body.laneCount<1||body.laneCount>16)return json(res,{error:'Invalid event'},400);
-   const result=await ctx.admin.rpc('tb_prepare_offline_scanner',{p_event:body.eventId,p_actor:ctx.user.id,p_device:device,p_resume:body.claimId||null,p_lanes:body.laneCount});
+   const result=await ctx.admin.rpc('tb_prepare_offline_scanner',{p_event:body.eventId,p_actor:ctx.user.id,p_device:device,p_resume:body.claimId||null,p_lanes:body.laneCount,p_hub:body.mode==='hub'});
    if(result.error)throw result.error;
    const manifest=result.data;
    // Store fingerprints only. No ticket signing key or reusable QR signatures leave the server.
@@ -25,11 +25,11 @@ export default async function handler(req,res){
   }
   if(body.action==='sync'){
    if(!UUID.test(body.claimId||'')||!Array.isArray(body.entries)||body.entries.length>200||
-    body.entries.some(e=>!UUID.test(e?.id||'')||!Number.isFinite(Date.parse(e?.at))))
+    body.entries.some(e=>!UUID.test(e?.id||'')||!Number.isFinite(Date.parse(e?.at))||(e.staffId&&!UUID.test(e.staffId))))
     return json(res,{error:'Invalid saved scans'},400);
    const result=await ctx.admin.rpc('tb_sync_offline_scanner',{
     p_claim:body.claimId,p_actor:ctx.user.id,p_device:device,
-    p_entries:body.entries.map(({id,at})=>({id,at})),p_release:body.release===true
+    p_entries:body.entries.map(({id,at,staffId})=>({id,at,...(staffId?{staffId}:{})})),p_release:body.release===true
    });
    if(result.error)throw result.error;
    return json(res,result.data);

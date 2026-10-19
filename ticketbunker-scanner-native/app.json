@@ -12,9 +12,7 @@
       "bundleIdentifier": "pt.soundbunker.ticketbunkerscanner",
       "supportsTablet": true,
       "buildNumber": "8",
-      "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
-      }
+      "infoPlist": {}
     },
     "android": {
       "package": "pt.soundbunker.ticketbunkerscanner",
@@ -37,7 +35,8 @@
           "barcodeScannerEnabled": true
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "./plugins/withLocalHub.cjs"
     ],
     "extra": {
       "apiBase": "https://www.soundbunker.pt",

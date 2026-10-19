@@ -27,7 +27,8 @@
     "react-native": "0.85.3",
     "react-native-get-random-values": "1.11.0",
     "react-native-url-polyfill": "2.0.0",
-    "sharp": "0.35.5"
+    "sharp": "0.35.5",
+    "tweetnacl": "1.0.3"
   },
   "devDependencies": {
     "@babel/core": "7.28.0"

@@ -56,7 +56,7 @@ Automatic sync runs while the app is in the foreground, approximately every 15 s
 
 Offline permits last up to 12 hours within the event entry window. Renew while connected. Reservations do not auto-expire on the server because unsynced admissions may exist. A dead/lost phone needs reconciliation; blindly releasing it could allow duplicate entry. Device clock changes fail closed and require reconnecting. Staff revocations, cancellations/refunds and sales after the snapshot cannot be discovered without a connection: refresh before doors open and whenever connectivity returns. A scan valid against the downloaded snapshot is logged on sync even if the order was subsequently refunded; staff should review such exceptional refunds separately.
 
-Completely disconnected phones cannot share a live used-ticket list. **Any ticket at any door without internet** requires a shared local network and a local check-in hub. That hub is a separate capability and is not implemented by this change.
+Completely disconnected phones cannot share a live used-ticket list. **Any ticket at any door without internet** requires a shared local network and a local check-in hub. The local check-in hub and QR pairing are implemented in `../ticketbunker-hub/`; see its README for setup, local-network requirements, validation and release gates.
 
 ### Release state and verification
 
@@ -68,3 +68,5 @@ This change prepares version 1.0.1 (iOS build 8 / Android version code 5). It is
 4. Submit verified binaries through TestFlight / Play testing before store release.
 
 The live migration attempt was declined by the database tool without a stated reason. No live claims/tickets were changed. Isolated Postgres tests apply the real migration against minimal fixtures and verify lane ownership, old/live-client rejection, transfer protection, staff/device checks, retry idempotency and release. SQLite tests exercise the actual store SQL through a Node SQLite adapter; they do not replace real-device tests.
+
+The scanner now includes **Connect to local hub**. It uses a per-device encrypted pairing and sends every check to that hub, preserving a request ID across an uncertain response. Hub credentials are kept in secure storage and bound to this device. A missing hub response never falls back to online or independent offline approval. Native network permissions/configuration and encryption declarations must be verified in signed device builds.
