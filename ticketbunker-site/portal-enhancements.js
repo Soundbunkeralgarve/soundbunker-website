@@ -27,5 +27,5 @@ $('#featured-event').onchange=()=>{
  $('#featured-status').textContent=(e.currency==='gbp'?'£49':'€59')+' including applicable VAT / IVA · '+(e.showcase?'Featured request: '+e.showcase.status.replaceAll('_',' '):'No featured placement requested yet')+'.';
 };
 $('#featured-form').onsubmit=async e=>{e.preventDefault();const b=e.submitter;b.disabled=true;try{const eventId=$('#featured-event').value;if(!eventId)throw Error('Choose an event first.');const d=await api('event-promotion',{...readPreferences($('#promotion-fields')),eventId,requestFeatured:$('#request-featured').checked},await token());$('#featured-status').textContent=d.message;const savedId=eventId;await promotions();$('#featured-event').value=savedId;$('#featured-event').dispatchEvent(new Event('change'));$('#featured-status').textContent=d.message;}catch(err){$('#featured-status').textContent=err.message;}finally{b.disabled=false;}};
-window.addEventListener('ticketbunker:ready',profile);
+window.addEventListener('ticketbunker:ready',()=>{profile();if(!$('#page-promotions').hidden)promotions();});
 window.addEventListener('ticketbunker:page',e=>{if(e.detail==='profile'&&!profileLoaded)profile();if(e.detail==='promotions')promotions();});

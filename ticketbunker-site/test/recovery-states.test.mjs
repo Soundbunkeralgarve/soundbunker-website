@@ -1,0 +1,35 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+const source=name=>readFileSync(new URL('../'+name,import.meta.url),'utf8');
+function elements(){const map=new Map();return {map,get:id=>{if(!map.has(id))map.set(id,{textContent:'',hidden:true});return map.get(id);}};}
+test('incomplete ticket links never fetch a ticket or generate an admission QR',async()=>{
+ const els=elements();let calls=0;
+ await vm.runInNewContext(source('event-ticket.js'),{document:{getElementById:els.get},location:{search:'',pathname:'/event-ticket'},URLSearchParams,fetch:()=>{calls++;throw Error('unexpected fetch');}});
+ assert.equal(calls,0);assert.equal(els.get('ticketTierMark').textContent,'NO VALID TICKET');assert.match(els.get('details').textContent,/booking email/);assert.equal(els.get('ticketActions').hidden,true);
+});
+test('a missing or malformed checkout reference directs the buyer to their bookings without polling',async()=>{
+ for(const search of ['', '?session_id=bad']){
+  const els=elements();let calls=0;
+  const code=source('checkout-complete.js').replace("import {api} from './shared.js';",'');
+  vm.runInNewContext(code,{document:{querySelector:els.get},location:{search},URLSearchParams,api:()=>{calls++;},setTimeout:()=>assert.fail('must not poll')});
+  assert.equal(calls,0);assert.equal(els.get('#booking-title').textContent,'Find your booking.');assert.match(els.get('#booking-status').textContent,/already paid/);
+ }
+});
+test('confirmed live payment displays confirmation only after the status endpoint verifies it',async()=>{
+ const els=elements();let request;
+ const code=source('checkout-complete.js').replace("import {api} from './shared.js';",'');
+ vm.runInNewContext(code,{document:{querySelector:els.get},location:{search:'?session_id=cs_live_12345678901234'},URLSearchParams,api:async path=>{request=path;return {status:'paid',emailSent:true};},setTimeout:()=>assert.fail('confirmed payment must not poll')});
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.match(request,/cs_live_12345678901234/);assert.equal(els.get('#booking-title').textContent,'Your tickets are confirmed.');assert.match(els.get('#booking-status').textContent,/email has been sent/);
+});
+test('a temporary configuration error permits a later sign-in retry and concurrent attempts share a client',async()=>{
+ let calls=0,clients=0;
+ const context={AbortSignal,URL,Intl,location:{origin:'https://theticketbunker.com'},window:{supabase:{createClient:()=>{clients++;return {ready:true};}}},fetch:async()=>{calls++;if(calls===1)throw Error('temporary outage');return {ok:true,json:async()=>({url:'https://example.supabase.co',key:'public-publishable-key'})};}};
+ const code=source('shared.js').replaceAll('export ','')+'\nthis.getClient=authClient;';
+ vm.runInNewContext(code,context);
+ await assert.rejects(context.getClient(),/temporary outage/);
+ const [a,b]=await Promise.all([context.getClient(),context.getClient()]);
+ assert.equal(a,b);assert.equal(a.ready,true);assert.equal(calls,2);assert.equal(clients,1);
+});

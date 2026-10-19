@@ -73,7 +73,7 @@ $('#auth-form').addEventListener('submit',async e=>{
    result=await sb.auth.updateUser({password});if(result.error)throw result.error;
    setMode('login');message('Password saved. Sign in with your new password to open '+(adminMode?'your TicketBunker control room.':'your account.'));await sb.auth.signOut();return;
   }
-  result=mode==='signup'?await sb.auth.signUp({email,password,options:{emailRedirectTo:location.origin+'/login?role='+role,data:{full_name:$('#full-name').value.trim(),name:$('#full-name').value.trim(),ticketbunker_marketing_signup_pending:$('#signup-marketing').checked}}}):await sb.auth.signInWithPassword({email,password});
+  result=mode==='signup'?await sb.auth.signUp({email,password,options:{emailRedirectTo:location.origin+'/login?role='+role+(next?'&next='+encodeURIComponent(next):''),data:{full_name:$('#full-name').value.trim(),name:$('#full-name').value.trim(),ticketbunker_marketing_signup_pending:$('#signup-marketing').checked}}}):await sb.auth.signInWithPassword({email,password});
   if(result.error)throw result.error;
   if(!result.data.session){message('Check your email to confirm your account, then sign in here.');return;}
   session=result.data.session;

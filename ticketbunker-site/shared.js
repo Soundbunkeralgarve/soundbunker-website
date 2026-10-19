@@ -15,7 +15,7 @@ export function authClient() {
     const config=await api('supabase-config');
     if(!window.supabase||!config.url||!config.key)throw Error('Sign-in is temporarily unavailable. Please refresh.');
     return window.supabase.createClient(config.url,config.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-  })();
+  })().catch(error=>{clientPromise=undefined;throw error;});
 }
 export function safeNext(value) {
   if(!value)return '';

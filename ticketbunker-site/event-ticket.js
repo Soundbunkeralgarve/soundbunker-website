@@ -1,6 +1,6 @@
 (async()=>{
  const $=id=>document.getElementById(id),p=new URLSearchParams(location.search),preview=['/ticket-preview','/ticket-preview.html'].includes(location.pathname),id=preview?'design-preview':p.get('id'),sig=p.get('sig');
- if(!preview&&(!id||!sig)){$('name').textContent='Ticket link incomplete';$('notice').textContent='Open the secure ticket link from My tickets.';return;}
+ if(!preview&&(!id||!sig)){$('name').textContent='Ticket link incomplete';$('ticketTierMark').textContent='NO VALID TICKET';$('details').textContent='Open My tickets or use the full ticket link from your booking email.';$('notice').textContent='This page cannot be used for entry without a valid ticket link.';return;}
  try{
   let t;
   if(preview){
@@ -11,7 +11,7 @@
    document.querySelector('.ticket-masthead span').textContent='DESIGN PREVIEW · NOT VALID FOR ENTRY';
    $('notice').textContent='DESIGN PREVIEW ONLY · No booking or payment. Not valid for event admission.';
   }else{
-   const response=await fetch('/api/event-ticket?id='+encodeURIComponent(id)+'&sig='+encodeURIComponent(sig),{cache:'no-store'});
+   const response=await fetch('/api/event-ticket?id='+encodeURIComponent(id)+'&sig='+encodeURIComponent(sig),{cache:'no-store',signal:AbortSignal.timeout(30000)});
    const data=await response.json();if(!response.ok)throw Error(data.error||'Ticket unavailable');t=data.ticket;
   }
   if(t.test&&!t.walletTest)throw Error('This ticket is not valid for admission.');
