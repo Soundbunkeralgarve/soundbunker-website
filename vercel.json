@@ -151,14 +151,14 @@
     "api/stripe-webhook.js": {
       "maxDuration": 60
     },
-    "api/*.js": {
-      "includeFiles": "assets/soundbunker-email-footer.png"
-    },
     "api/ticketbunker-finance.js": {
       "maxDuration": 60
     },
     "api/ticketbunker-settle.js": {
       "maxDuration": 60
+    },
+    "api/*.js": {
+      "includeFiles": "assets/soundbunker-email-footer.png"
     }
   },
   "crons": [
