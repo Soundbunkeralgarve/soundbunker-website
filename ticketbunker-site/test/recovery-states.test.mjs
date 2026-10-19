@@ -41,3 +41,9 @@ test('publication stays blocked until account, saved capacity and listing requir
   assert.equal(els.get('#request-review').disabled,expected,JSON.stringify({reviewed,paid,capacity}));
  }
 });
+test('an account containing only drafts shows zero sales without fetching unavailable event reports',()=>{
+ const code=source('organiser-v2.js').split('function renderOverview(){')[1].split('function renderEvents()')[0];
+ const els=elements();let reports=0;
+ vm.runInNewContext('function renderOverview(){'+code+'\nrenderOverview();',{$:els.get,profile:{display_name:'Example organiser',country_code:'PT'},safeEvents:()=>[{id:'draft',status:'draft'}],drawEvent:()=>'',wireRows:()=>{},money:()=> '€0.00',fetchReport:()=>{reports++;},empty:()=>''});
+ assert.equal(reports,0);assert.equal(els.get('#metric-paid').textContent,'0');assert.equal(els.get('#metric-scanned').textContent,'0');assert.equal(els.get('#metric-money').textContent,'€0.00');
+});

@@ -12,7 +12,7 @@ Browser-reviewed organiser areas: overview, event list/create, ticket options, r
 - Replaced stale global booking/payout-unavailable claims with event/account eligibility wording. Refund rights and amounts were preserved.
 - Replaced SoundBunker-specific organiser copy and fixed the organiser-benefits homepage link.
 - Added actionable billing-review guidance without asking organisers to repeat completed Stripe checks.
-- Ran independent billing and Stripe status reads concurrently, shared concurrent Stripe status reads, and bounded portal requests.
+- Ran independent billing and Stripe status reads concurrently, shared concurrent Stripe status reads, and bounded portal requests. Draft-only accounts show zero sales/check-ins/revenue without requesting reports for unpublished events.
 - Allowed sign-in configuration to recover from a temporary fetch failure and preserved safe return destinations through account verification.
 - Clarified incomplete ticket and missing checkout-reference states without generating a QR or polling with an invalid reference.
 - Displayed already saved ticket types before adding more, with correct event currency and a route directly to review. Publication is disabled until its account, capacity and listing-payment requirements are satisfied.
@@ -21,7 +21,7 @@ Browser-reviewed organiser areas: overview, event list/create, ticket options, r
 
 ## Checks
 
-26 canonical frontend/gateway tests passed. Added behavioral regressions for incomplete ticket links, absent/malformed checkout references, server-confirmed paid status and sign-in recovery/concurrency and publication gating. All canonical frontend JavaScript passed node --check. Local asset and navigation references passed, including documented rewrite/dynamic-route exceptions. git diff --check passed.
+27 canonical frontend/gateway tests passed. Added behavioral regressions for incomplete ticket links, absent/malformed checkout references, server-confirmed paid status and sign-in recovery/concurrency and publication gating and draft-only overview metrics. All canonical frontend JavaScript passed node --check. Local asset and navigation references passed, including documented rewrite/dynamic-route exceptions. git diff --check passed.
 
 ## Live-test blocker and limits
 
