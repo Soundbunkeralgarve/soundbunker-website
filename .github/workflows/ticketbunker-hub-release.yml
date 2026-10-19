@@ -35,6 +35,7 @@ jobs:
       - run: npm run prepare:resources
         working-directory: ticketbunker-hub-desktop
       - name: Test real desktop startup, renderer and SQLite
+        timeout-minutes: 1
         run: npx electron smoke.cjs
         working-directory: ticketbunker-hub-desktop
       - name: Prepare Mac notarization key

@@ -3,7 +3,8 @@ const path=require('node:path');
 const {homedir}=require('node:os');
 const {mkdirSync}=require('node:fs');
 const {HUB_ORIGIN,localWindowUrl,eventFromLink}=require('./policy.cjs');
-function startDesktop({dataDirectory=path.join(homedir(),'.ticketbunker-hub'),resourceRoot,onReady}={}){
+function startDesktop({dataDirectory=path.join(homedir(),'.ticketbunker-hub'),resourceRoot,onReady,onError}={}){
+const reportError=(title,message)=>onError?onError(title,message):dialog.showErrorBox(title,message);
 app.setName('TicketBunker Check-in Hub');
 const browserData=path.join(dataDirectory,'desktop');mkdirSync(browserData,{recursive:true,mode:0o700});
 app.setPath('userData',browserData);
@@ -44,16 +45,16 @@ if(!app.requestSingleInstanceLock()){app.quit();}else{
   const root=resourceRoot||(app.isPackaged?process.resourcesPath:path.resolve(__dirname,'..'));
   worker=utilityProcess.fork(path.join(root,'ticketbunker-hub','start.js'),[],{serviceName:'TicketBunker entry ledger',stdio:'ignore',env:{...process.env,TB_HUB_DATA_DIR:dataDirectory}});
   worker.on('message',async message=>{
-   if(message.type==='ready'&&localWindowUrl(message.url)){clearTimeout(startupTimer);adminUrl=message.url;try{await loadWindow();if(onReady)await onReady({window,stop});}catch(e){dialog.showErrorBox('Hub screen could not open',e.message);stop();}}
-   if(message.type==='failed'){clearTimeout(startupTimer);dialog.showErrorBox('Hub could not start',message.message);stop();}
+   if(message.type==='ready'&&localWindowUrl(message.url)){clearTimeout(startupTimer);adminUrl=message.url;try{await loadWindow();if(onReady)await onReady({window,stop});}catch(e){reportError('Hub screen could not open',e.message);stop();}}
+   if(message.type==='failed'){clearTimeout(startupTimer);reportError('Hub could not start',message.message);stop();}
   });
   worker.on('exit',()=>{
    worker=null;clearTimeout(startupTimer);
-   if(!stopping)dialog.showErrorBox('Hub stopped','Entry is paused. Reopen TicketBunker Check-in Hub to recover the saved event. The scanners will wait for confirmation before admitting tickets.');
+   if(!stopping)reportError('Hub stopped','Entry is paused. Reopen TicketBunker Check-in Hub to recover the saved event. The scanners will wait for confirmation before admitting tickets.');
    if(powerId!==undefined)powerSaveBlocker.stop(powerId);quitting=true;app.quit();
   });
-  startupTimer=setTimeout(()=>{dialog.showErrorBox('Hub startup is taking too long','Close and reopen the app. No ticket approvals have been issued by this window.');stop();},30000);
- }).catch(e=>{dialog.showErrorBox('Hub could not start',e.message);quitting=true;app.quit();});
+  startupTimer=setTimeout(()=>{reportError('Hub startup is taking too long','Close and reopen the app. No ticket approvals have been issued by this window.');stop();},30000);
+ }).catch(e=>{reportError('Hub could not start',e.message);quitting=true;app.quit();});
 }
 
 }

@@ -12,7 +12,7 @@ app.on('will-quit',()=>{
  console.log(success?'Electron desktop hub and renderer smoke test passed.':'Electron desktop hub and renderer smoke test failed.');
  if(!success)process.exitCode=1;
 });
-startDesktop({dataDirectory:directory,resourceRoot:path.join(__dirname,'.resources'),onReady:async({window,stop})=>{
+startDesktop({dataDirectory:directory,resourceRoot:path.join(__dirname,'.resources'),onError:(title,message)=>console.error(title+': '+message),onReady:async({window,stop})=>{
  try{
   const rendered=await window.webContents.executeJavaScript(`new Promise(resolve=>{
    const started=Date.now();const poll=()=>{
