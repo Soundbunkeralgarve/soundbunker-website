@@ -1,0 +1,143 @@
+/* Storefront layout. Shared styles continue to serve the other pages. */
+.shop-home{--paper:#f6f6f2}
+.shop-home .wrap{width:min(1240px,calc(100% - 72px))}
+.shop-home .topbar{padding:7px 18px;font-size:10px;letter-spacing:.07em}
+.shop-home .header-inner{height:76px;gap:24px}
+.shop-home .brand img{width:205px;height:auto}
+.shop-home .navigation{gap:22px}.shop-home .mobile-nav-link{display:none}
+.shop-home .navigation a{font-size:12px;white-space:nowrap}
+.shop-home .nav-actions{gap:20px}
+.shop-home .hero,.shop-home .hero-body{min-height:390px}
+.shop-home .hero-body{padding:40px 0 48px}
+.shop-home .hero-image{filter:contrast(1.05);background-position:center 42%}
+.shop-home .hero-overlay{background:linear-gradient(90deg,#040707ed,#0407078c 48%,#04070714),linear-gradient(0deg,#04070775,transparent 70%)}
+.shop-home .hero .eyebrow{font-size:10px;letter-spacing:.16em;color:#effbf6;margin-bottom:18px}
+.shop-home .hero h1{font-size:clamp(68px,7.2vw,108px);line-height:.86;margin:0 0 20px;max-width:680px}
+.shop-home .hero-intro{font-size:15px;line-height:1.6;max-width:420px;margin:0 0 22px}
+.shop-home .hero-actions{align-items:center;gap:22px}
+.shop-home .hero-actions .btn{min-height:46px;padding:12px 20px;font-size:12px}
+.hero-ticket-link{font-size:12px;font-weight:700;border-bottom:1px solid #ffffff62;padding:6px 0}
+.shop-home .hero-counter{bottom:26px;gap:10px;font-size:9px}
+.shop-home .hero-pause{background:#0007;border:1px solid #ffffff70;color:#fff;padding:6px 10px;min-height:32px}
+.shop-discover{padding:54px 0 48px}
+.shop-section-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:22px}
+.shop-section-heading h2{font-size:clamp(38px,4vw,56px);margin:10px 0 0;line-height:.97}
+.text-link{display:inline-block;font-size:12px;font-weight:800;text-underline-offset:4px}
+.text-link:hover{text-decoration:underline}
+.shop-home .event-browser{margin:0;scroll-margin-top:100px}
+.shop-home #event-search-form{background:#fff;border:1px solid #d8ded8;padding:7px;margin:0 0 14px;gap:7px}
+.shop-home #event-search-form input,.shop-home #event-search-form select{border:0;background:#f3f5f0;font-size:13px;min-height:46px;padding:12px}
+.shop-home #event-search-form select{max-width:190px}
+.shop-filter-row{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 15px}
+.category-chips{display:flex;gap:7px;flex-wrap:wrap}
+.category-chips button{font:700 11px var(--font);background:transparent;border:1px solid #cbd2cb;border-radius:25px;padding:8px 13px;min-height:36px;color:#3d4b43}
+.category-chips button[aria-pressed=true]{background:#0b0e0d;color:#fff;border-color:#0b0e0d}
+#event-count{font-size:11px;color:#5d6a62;white-space:nowrap}
+.sample-shop-note{font-size:11px;color:#56625b;line-height:1.6;margin:0 0 20px}
+.sample-shop-note strong{color:#23372b}
+.shop-home .events-grid{gap:22px;grid-template-columns:repeat(3,minmax(0,1fr))}
+.shop-home .live-event-card{border:1px solid #dce1d9;border-radius:4px;background:white;transition:transform .2s,box-shadow .2s;display:flex;flex-direction:column;min-width:0}
+.shop-home .live-event-card:hover{transform:translateY(-4px);box-shadow:0 10px 25px #16342613}
+.shop-home .live-event-card>div.event-image{aspect-ratio:4/3;padding:0;position:relative;overflow:hidden;background:#12251f}
+.event-image>img{width:100%;height:100%;object-fit:cover;transition:transform .5s;position:absolute;inset:0}
+.live-event-card:hover .event-image>img{transform:scale(1.035)}
+.demo-art:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#030706e8,transparent 85%)}
+.demo-art.tone-sunset:after{background:linear-gradient(0deg,#2f0c0beb,#3f1d0018 80%)}
+.demo-art.tone-purple:after{background:linear-gradient(0deg,#1b0631eb,transparent 80%)}
+.event-badges{position:absolute;top:14px;left:14px;right:14px;display:flex;gap:6px;z-index:2}
+.demo-badge,.shop-home .featured-label{background:#f8faf4;color:#172a20;font:800 9px var(--font);letter-spacing:.12em;padding:5px 8px;border-radius:2px;margin:0}
+.shop-home .featured-label{background:var(--teal);letter-spacing:.03em}
+.poster-caption{position:absolute;left:22px;right:20px;bottom:21px;z-index:1;color:#fff}
+.poster-caption small{font:700 9px var(--font);letter-spacing:.19em;text-transform:uppercase;display:block;margin-bottom:9px}
+.poster-caption b{display:block;font:800 clamp(36px,3.2vw,49px)/.88 var(--display);letter-spacing:-.02em;text-transform:uppercase;white-space:pre-line}
+.poster-caption i{display:block;width:28px;height:3px;background:var(--teal);margin-top:13px}
+.shop-home .live-event-card>div.event-card-copy{padding:19px 20px 17px;display:flex;flex-direction:column;flex:1}
+.shop-home .live-event-card h3{font-size:28px;line-height:1.03;margin:6px 0 8px;letter-spacing:-.015em}
+.shop-home .live-event-card p{font-size:12px;line-height:1.5;color:#56635a;margin:0 0 6px}
+.shop-home .live-event-card .event-date{font-size:10px;letter-spacing:.04em;font-weight:800;color:#35604a}
+.shop-home .live-event-card strong.card-price{border-top:1px solid #e6eae3;font-size:12px;margin:13px 0 0;padding:13px 0 0;align-items:center;gap:10px;display:flex;justify-content:space-between}
+.card-price span{font-size:10px;font-weight:700;color:#475f50}
+.shop-home .live-event-card .event-venue{margin-bottom:auto}
+.shop-home .no-poster{height:100%;font-size:36px}
+.shop-home .listing-empty{margin:20px 0}
+.catalogue-status{font-size:12px;color:#6b5440;padding:12px 0;line-height:1.6}
+.catalogue-status button{border:0;background:none;padding:0;text-decoration:underline;font-weight:700;color:inherit}
+.shop-ad{display:grid;grid-template-columns:248px minmax(0,1fr);background:#091611;color:white;border:1px solid #1b3a2d;border-radius:5px;overflow:hidden}
+.wallet-ad{margin:32px 0}
+.shop-ad .ad-visual{display:block;width:100%;height:100%;object-fit:contain;background:#000;max-height:330px}
+.shop-ad-copy{padding:28px 40px;align-self:center}
+.shop-ad-copy h2{font-size:44px;line-height:.95;margin:10px 0 13px}
+.shop-ad-copy h2 em,.organiser-shop h2 em{font-style:normal;color:var(--teal)}
+.shop-ad-copy p{font-size:13px;color:#c6d8cd;max-width:580px;line-height:1.65;margin:0 0 16px}
+.shop-ad-copy .text-link{color:var(--teal)}
+.shop-ad-copy>small{display:block;color:#aec2b4;font-size:10px;line-height:1.5;margin-top:11px}
+.wallet-brand-buttons{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:15px}
+.wallet-brand-buttons a{display:inline-flex;min-height:44px;align-items:center}
+.wallet-brand-buttons img{height:44px;width:auto;max-width:100%}
+.buyer-strip{padding:46px 0 50px;background:#fff}
+.buyer-strip .shop-section-heading h2{font-size:42px}
+.buyer-benefits{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:30px;margin-top:30px}
+.buyer-benefits article{display:flex;gap:14px;padding-top:20px;border-top:1px solid #dae3db}
+.benefit-number{color:#087d5d;font:800 25px/1 var(--display);padding-top:3px}
+.buyer-benefits h3{font-size:26px;margin:0 0 8px;line-height:1}
+.buyer-benefits p{font-size:12px;color:#526058;line-height:1.7;margin:0}
+.organiser-shop{padding:50px 0 30px;background:#0a120f;color:#fff}
+.organiser-summary{display:grid;grid-template-columns:1fr 1fr;gap:65px}
+.organiser-shop h2{font-size:clamp(43px,4.5vw,62px);margin:13px 0 18px;line-height:.94}
+.organiser-summary>div>p{font-size:14px;line-height:1.6;color:#bfd0c4;margin:0 0 22px}
+.seller-benefits{display:grid;gap:16px;padding:5px 0}
+.seller-benefits article{border-bottom:1px solid #2b3a31;padding:0 0 15px}
+.seller-benefits article:last-child{border:0;padding-bottom:0}
+.seller-benefits h3{font-size:26px;line-height:1.05;margin:0 0 7px}
+.seller-benefits p{color:#bfd0c4;font-size:12px;line-height:1.65;margin:0}
+.seller-benefits a{color:var(--teal);font-size:11px;font-weight:700}
+.compact-pricing{border:1px solid #35483c;margin-top:32px;padding:22px;background:#101e16}
+.pricing-label{display:flex;justify-content:space-between;gap:20px;align-items:center;margin-bottom:18px}
+.pricing-label h3{font-size:28px;line-height:1;margin:0}
+.pricing-label a,.pricing-footnote a{font-size:11px;font-weight:700;color:var(--teal)}
+.compact-bands{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+.compact-bands>div{border-left:2px solid var(--teal);padding:0 14px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.compact-bands span{font-size:11px;color:#d8e2da;max-width:90px}
+.compact-bands strong{font:800 35px/1 var(--display)}
+.compact-pricing>p{font-size:11px;line-height:1.7;color:#c9d8ce;margin:20px 0 13px}
+.pricing-footnote{display:flex;justify-content:space-between;gap:15px;font-size:10px;line-height:1.6;color:#acbfb1;border-top:1px solid #304537;padding-top:13px}
+.seller-note{font-size:11px;line-height:1.6;color:#b1c6b7;margin:16px 0 0}
+.compact-beta{border-top:1px solid #304235;margin-top:20px;padding-top:16px;font-size:11px;color:#cadbd0}
+.compact-beta summary{cursor:pointer;font-weight:700;min-height:24px}
+.compact-beta p{max-width:900px;font-size:12px;line-height:1.7;margin:14px 0}
+.compact-beta a{color:var(--teal);font-weight:700}
+.scanner-promo{padding:34px 0;background:#f6f6f2}
+.scanner-ad .ad-visual{object-fit:cover;max-height:310px;object-position:center 48%}
+.scanner-actions{display:flex;align-items:center;flex-wrap:wrap;gap:22px}
+.store-pending{display:inline-flex;padding:0;background:none;border:0;cursor:default;opacity:.65}
+.store-pending img,.scanner-store-live img{height:43px;width:auto}
+.scanner-store-live{display:inline-flex}
+.weekly-shop{background:#dcf9ed;padding:30px 0}
+.weekly-shop .wrap{display:flex;align-items:center;justify-content:space-between;gap:25px}
+.weekly-shop h2{font-size:34px;margin:0 0 7px;line-height:1}
+.weekly-shop p{font-size:12px;margin:0;line-height:1.6;color:#345a46}
+.shop-home .footer{padding-top:36px}
+.shop-home .footer-top{padding-bottom:28px;gap:45px}
+.shop-home .footer-top .brand{margin-bottom:13px}
+.shop-home .footer-lead{font-size:12px;max-width:310px;margin-bottom:0}
+.shop-home .footer-links{gap:7px}
+.shop-home .footer-links a{font-size:12px}
+.shop-home .footer h4{margin-bottom:13px}
+.shop-home .footer-company{padding:20px 0}
+.shop-home .footer-legal{margin:0;font-size:10px}
+@media(max-width:1120px){.shop-home .navigation{gap:13px}.shop-home .brand img{width:180px}.shop-home .nav-actions{gap:15px}.shop-home .header-inner{gap:18px}.shop-home .navigation a{font-size:11px}.shop-home .nav-actions .btn{padding:10px 14px}.compact-bands>div{flex-direction:column;align-items:flex-start;gap:10px}.compact-bands span{max-width:none}}
+@media(max-width:900px){.shop-home .wrap{width:calc(100% - 42px)}.shop-home .navigation{display:none;position:absolute;left:0;right:0;top:76px;gap:0;flex-direction:column;align-items:stretch;padding:16px 24px 24px;background:#090e0b}.shop-home .navigation a{padding:12px 0;border-bottom:1px solid #ffffff25}.shop-home .mobile-nav-link{display:block}.shop-home .navigation.open{display:flex}.shop-home .menu-toggle{display:inline-flex}.shop-home .hero-counter{right:0;left:auto}.shop-home .hero h1{font-size:83px}.shop-ad-copy{padding:25px}.shop-ad-copy h2{font-size:40px}.shop-home .events-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.organiser-summary{gap:35px}.buyer-benefits{gap:20px}.poster-caption b{font-size:43px}}
+@media(max-width:650px){
+.shop-home .wrap{width:calc(100% - 32px)}.shop-home .topbar{font-size:8px;letter-spacing:.035em}.shop-home .topbar span{margin:0 8px}.shop-home .header-inner{height:65px}.shop-home .brand img{width:181px}.shop-home .navigation{top:65px}.shop-home .nav-actions .btn,.shop-home .nav-actions .login{display:none}
+.shop-home .hero,.shop-home .hero-body{min-height:352px}.shop-home .hero-body{padding:30px 0 53px;justify-content:center}.shop-home .hero .eyebrow{font-size:8px;letter-spacing:.1em;gap:7px;margin:0 0 18px}.shop-home .hero h1{font-size:73px;line-height:.86;margin:0 0 19px}.shop-home .hero-intro{font-size:13px;margin-bottom:20px}.shop-home .hero-actions{gap:15px;width:auto}.shop-home .hero-actions .btn{flex:none;min-height:44px;font-size:11px;padding:11px 14px}.hero-ticket-link{font-size:10px}.shop-home .hero-counter{bottom:15px;left:0;right:auto;font-size:8px;gap:10px}.shop-home .hero-pause{padding:4px 8px;min-height:27px}
+.shop-discover{padding:32px 0}.shop-section-heading{align-items:flex-start;gap:15px;margin-bottom:18px}.shop-section-heading h2{font-size:35px}.shop-section-heading .eyebrow{font-size:9px}.shop-section-heading>.text-link{font-size:10px;max-width:110px;margin-top:16px}
+.shop-home #event-search-form{display:grid;grid-template-columns:minmax(0,1fr) 115px;gap:6px;padding:6px}.shop-home #event-search-form input{grid-column:1/-1;font-size:13px;padding:10px;min-height:42px}.shop-home #event-search-form select{font-size:12px;min-width:0;max-width:none;width:100%;min-height:40px;padding:8px}.shop-home #event-search-form .btn{min-height:40px;font-size:10px;padding:9px 10px}.shop-filter-row{align-items:flex-start;flex-direction:column;gap:10px;margin:0 0 12px}.category-chips{gap:5px}.category-chips button{padding:7px 10px;font-size:10px;min-height:33px}#event-count{font-size:10px}.sample-shop-note{font-size:10px;margin-bottom:17px}
+.shop-home .events-grid{grid-template-columns:1fr 1fr;gap:12px}.shop-home .live-event-card>div.event-image{aspect-ratio:3/3.8}.event-badges{top:9px;left:9px;right:7px;flex-wrap:wrap;gap:4px}.demo-badge,.shop-home .featured-label{font-size:8px;padding:4px 5px}.poster-caption{left:13px;right:10px;bottom:16px}.poster-caption b{font-size:32px}.poster-caption small{font-size:7px;letter-spacing:.1em;line-height:1.5;margin-bottom:7px}.poster-caption i{margin-top:10px;width:20px}.shop-home .live-event-card>div.event-card-copy{padding:13px 11px 12px}.shop-home .live-event-card h3{font-size:23px;line-height:1.03;margin:5px 0 7px}.shop-home .live-event-card p{font-size:10px;line-height:1.5}.shop-home .live-event-card .event-date{font-size:8px}.shop-home .live-event-card strong.card-price{font-size:11px;flex-wrap:wrap;gap:5px;padding-top:10px;margin-top:12px}.card-price span{font-size:9px}
+.shop-ad{grid-template-columns:104px minmax(0,1fr)}.wallet-ad{margin:22px 0}.shop-ad .ad-visual{max-height:none;object-fit:cover;object-position:center;min-height:100%}.wallet-ad .ad-visual{object-fit:contain}.shop-ad-copy{padding:19px 16px}.shop-ad-copy .eyebrow{font-size:8px;letter-spacing:.1em}.shop-ad-copy h2{font-size:31px;margin:9px 0 12px}.shop-ad-copy p{font-size:11px;margin-bottom:12px;line-height:1.65}.shop-ad-copy>small{font-size:9px;margin-top:9px}.wallet-brand-buttons{gap:8px;margin-bottom:13px}.wallet-brand-buttons a{min-height:33px}.wallet-brand-buttons img{height:33px}.shop-ad-copy .text-link{font-size:10px}
+.buyer-strip{padding:30px 0}.buyer-strip .shop-section-heading h2{font-size:35px}.buyer-benefits{grid-template-columns:1fr;gap:17px;margin-top:24px}.buyer-benefits article{padding-top:17px;gap:14px}.buyer-benefits h3{font-size:25px}.buyer-benefits p{font-size:12px}
+.organiser-shop{padding:32px 0 24px}.organiser-summary{grid-template-columns:1fr;gap:27px}.organiser-shop h2{font-size:46px;margin:13px 0 17px}.organiser-summary>div>p{font-size:13px}.seller-benefits{grid-template-columns:1fr;gap:15px}.seller-benefits h3{font-size:25px}.seller-benefits p{font-size:12px}.compact-pricing{padding:18px;margin-top:25px}.pricing-label{flex-direction:column;align-items:flex-start;gap:10px;margin-bottom:20px}.pricing-label h3{font-size:28px}.compact-bands{grid-template-columns:1fr 1fr;gap:20px 12px}.compact-bands>div{padding:0 12px;gap:8px}.compact-bands span{font-size:10px}.compact-bands strong{font-size:34px}.compact-pricing>p{font-size:11px;line-height:1.8;margin-top:22px}.pricing-footnote{flex-direction:column;gap:10px}.seller-note{font-size:10px}.compact-beta{font-size:10px}
+.scanner-promo{padding:23px 0}.scanner-ad{grid-template-columns:115px minmax(0,1fr)}.scanner-ad .ad-visual{object-position:center 50%}.scanner-actions{gap:13px}.store-pending img,.scanner-store-live img{height:36px}.weekly-shop{padding:25px 0}.weekly-shop .wrap{align-items:flex-start;flex-direction:column;gap:17px}.weekly-shop h2{font-size:31px}.weekly-shop p{font-size:11px}.weekly-shop .btn{font-size:11px;min-height:42px}
+.shop-home .footer{padding-top:28px}.shop-home .footer-top{grid-template-columns:1fr 1fr;gap:27px 20px;padding-bottom:25px}.shop-home .footer-top>div:first-child{grid-column:1/-1}.shop-home .footer-top .brand img{width:190px}.shop-home .footer h4{font-size:10px}.shop-home .footer-links a{font-size:11px}.shop-home .footer-company{gap:17px}.shop-home .soundbunker-link{font-size:10px;gap:12px}.shop-home .soundbunker-link img{width:125px}.shop-home .footer-legal,.shop-home .footer-bottom{font-size:9px}
+}
+@media(max-width:360px){.shop-home .hero h1{font-size:65px}.shop-home .hero-actions{gap:10px}.hero-ticket-link{font-size:9px}.category-chips button{padding:7px 8px}.poster-caption b{font-size:28px}.shop-ad{grid-template-columns:88px minmax(0,1fr)}.shop-ad-copy{padding:17px 13px}.shop-ad-copy h2{font-size:28px}}
+@media(prefers-reduced-motion:reduce){.shop-home .live-event-card,.event-image>img{transition:none}.shop-home .live-event-card:hover,.live-event-card:hover .event-image>img{transform:none}}

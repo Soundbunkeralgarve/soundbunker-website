@@ -5,8 +5,8 @@ import {bookingForm,wireBooking} from './booking-form.js';
 const root=document.getElementById('event-root');
 (async()=>{try{
  const slug=new URLSearchParams(location.search).get('slug')||decodeURIComponent(location.pathname.split('/')[2]||'');
- const preview=root.dataset.preview==='club'&&/^\/event-preview(?:\.html)?$/.test(location.pathname);
- const event=preview?(await import('./club-preview.js')).clubPreview:(await api('events')).events.find(e=>e.slug===slug);
+ const preview=['club','shop'].includes(root.dataset.preview)&&/^\/event-preview(?:\.html)?$/.test(location.pathname);
+ const event=preview?(await import('./shop-preview-events.js')).shopPreviewEvent(slug):(await api('events')).events.find(e=>e.slug===slug);
  if(!event){root.innerHTML='<div class="empty-state"><span class="eyebrow">EVENT UNAVAILABLE</span><h1>This event isn’t available.</h1><p>It may be private, finished or no longer listed.</p><a class="primary" href="/#discover">Find events ↗</a></div>';return;}
  document.title=event.title+' | TicketBunker';
  const image=safeUrl(event.image_url),logo=safeUrl(event.event_logo_url),link=eventLink(event);
@@ -15,7 +15,7 @@ const root=document.getElementById('event-root');
  const summary=[eventKind(event.event_kind),event.venue,date(event.starts_at,event.venue_timezone),event.description].filter(Boolean).join(' · ').slice(0,250);
  document.querySelector('meta[name="description"]').content=summary;
  const canonical=document.querySelector('link[rel="canonical"]')||document.createElement('link');canonical.rel='canonical';canonical.href=link;if(!canonical.isConnected)document.head.append(canonical);
- root.innerHTML=`${event.preview?'<div class="preview-banner"><strong>TEST EVENT · NOT A REAL CLUB NIGHT</strong><p>Sample details and prices only. No booking, payment, email or ticket will be created.</p></div>':''}<a class="text-link" href="/#discover">← Discover events</a>
+ root.innerHTML=`${event.preview?'<div class="preview-banner"><strong>DEMO EVENT · NOT BOOKABLE</strong><p>Sample details and prices only. No booking, payment, email or ticket will be created.</p></div>':''}<a class="text-link" href="/#discover">← Discover events</a>
  <header class="event-heading"><span class="eyebrow">${esc(eventKind(event.event_kind))}${event.venue_city?' · '+esc(event.venue_city):''}</span><h1>${esc(event.title)}</h1><p>Presented by <a href="#organiser">${esc(event.organiser)}</a></p></header>
  <nav class="event-jump" aria-label="On this event page"><a href="#about-event">About</a>${event.headline_artist?'<a href="#lineup">Line-up</a>':''}<a href="#venue">Venue &amp; times</a><a href="#tickets">Tickets</a><a href="#event-help">Good to know</a></nav>
  <div class="event-layout"><div class="event-main">

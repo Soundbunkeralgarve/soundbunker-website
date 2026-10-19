@@ -1,4 +1,6 @@
-import {api,escapeHtml as esc,date,money,safeUrl} from './shared.js';
+import {api} from './shared.js';
+import {shopPreviewEvents} from './shop-preview-events.js';
+import {eventCard} from './event-cards.js';
 const $=s=>document.querySelector(s),nav=$('#navigation'),toggle=$('#menu-toggle');
 toggle.addEventListener('click',()=>{const open=nav.classList.toggle('open');toggle.setAttribute('aria-expanded',String(open));});
 nav.querySelectorAll('a').forEach(a=>a.onclick=()=>{nav.classList.remove('open');toggle.setAttribute('aria-expanded','false');});
@@ -9,25 +11,32 @@ function play(){clearInterval(timer);if(!paused&&!document.hidden&&!matchMedia('
 dots.forEach(d=>d.onclick=()=>{scene(Number(d.dataset.scene));play();});
 const pause=document.createElement('button');pause.type='button';pause.className='hero-pause';pause.textContent='Pause';pause.setAttribute('aria-label','Pause hero slideshow');$('.hero-counter').append(pause);pause.onclick=()=>{paused=!paused;pause.textContent=paused?'Play':'Pause';pause.setAttribute('aria-label',paused?'Play hero slideshow':'Pause hero slideshow');play();};
 document.addEventListener('visibilitychange',play);matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change',play);scene(0);play();
-let events=[];
+
+let catalogue=[],catalogueError=false;
+const narrow=matchMedia('(max-width: 900px)');
 function render(){
  const term=$('#event-search').value.trim().toLowerCase(),category=$('#event-category').value;
- const list=events.filter(e=>(category==='all'||e.event_kind===category)&&(!term||[e.title,e.venue,e.venue_city,e.headline_artist,e.organiser].join(' ').toLowerCase().includes(term)));
- $('#event-count').textContent=list.length?list.length+' event'+(list.length===1?'':'s'):'';
- $('#events-grid').innerHTML=list.map(e=>{
-  const available=(e.tiers||[]).filter(t=>t.remaining>0),price=available.length?Math.min(...available.map(t=>t.price_cents)):null;
-  return `<a class="live-event-card" href="/event/${encodeURIComponent(e.slug)}">${e.image_url&&safeUrl(e.image_url)?`<img src="${esc(safeUrl(e.image_url))}" alt="${esc(e.title)} event poster" loading="lazy" width="600" height="750">`:'<div class="no-poster">LIVE EVENT</div>'}<div>${e.featured?'<span class="featured-label">FEATURED EVENT</span>':''}<p class="event-date">${esc(date(e.starts_at,e.venue_timezone))}</p><h3>${esc(e.title)}</h3><p>${esc(e.venue)}</p><strong>${price===null?'Sold out':price===0?'Free':`From ${esc(money(price,e.currency))}`} <span>↗</span></strong></div></a>`;
- }).join('');
- const featured=list.filter(e=>e.featured&&(e.tiers||[]).some(t=>t.remaining>0));
- $('#featured-shop').hidden=!featured.length;
- $('#featured-events-grid').innerHTML=featured.slice(0,6).map(e=>`<a class="live-event-card" href="/event/${encodeURIComponent(e.slug)}">${safeUrl(e.image_url)?`<img src="${esc(safeUrl(e.image_url))}" alt="${esc(e.title)} event poster" loading="lazy" width="600" height="750">`:''}<div><span class="featured-label">FEATURED</span><h3>${esc(e.title)}</h3><p>${esc(date(e.starts_at,e.venue_timezone))} · ${esc(e.venue)}</p><strong>View event &amp; tickets ↗</strong></div></a>`).join('');
- $('#event-status').innerHTML=list.length?'':events.length?'<div class="listing-empty"><h3>No matching events.</h3><p>Try a different name, location or category.</p><button class="btn btn-light" id="clear-filters">Clear filters</button></div>':'<div class="listing-empty"><span class="eyebrow">THE NEXT GREAT NIGHT IS COMING</span><h3>New events are on their way.</h3><p>Discover independent shows, local talent and your next big night out. Organising an event? Give your crowd a place to find it.</p><a class="btn btn-black" href="/organiser">Organiser portal ↗</a></div>';
+ const list=[...catalogue,...shopPreviewEvents].filter(e=>(category==='all'||e.event_kind===category)&&(!term||[e.title,e.venue,e.venue_city,e.headline_artist,e.organiser].join(' ').toLowerCase().includes(term)));
+ const examples=list.filter(e=>e.preview).length,real=list.length-examples;
+ $('#event-count').textContent=[real?real+' event'+(real===1?'':'s'):'',examples?examples+' sample event'+(examples===1?'':'s'):''].filter(Boolean).join(' · ')||'No matches';
+ document.querySelectorAll('[data-category]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.category===category)));
+ const split=narrow.matches?4:3;
+ $('#events-grid').innerHTML=list.slice(0,split).map(eventCard).join('');
+ $('#more-events-grid').innerHTML=list.slice(split).map(eventCard).join('');
+ $('#ready-at-the-door').hidden=!list.length;
+ $('#event-status').innerHTML=!list.length?'<div class="listing-empty"><h3>No matching events.</h3><p>Try a different event, location or category.</p><button class="btn btn-light" id="clear-filters">Clear filters</button></div>':catalogueError?'<p class="catalogue-status">Live listings are temporarily unavailable. Sample events are shown below. <button type="button" id="retry-events">Try live listings again</button></p>':'';
  $('#clear-filters')?.addEventListener('click',()=>{$('#event-search').value='';$('#event-category').value='all';render();});
+ $('#retry-events')?.addEventListener('click',load);
 }
-$('#event-search-form').onsubmit=e=>{e.preventDefault();render();};$('#event-search').oninput=render;$('#event-category').onchange=render;
-document.querySelectorAll('[data-category]').forEach(a=>a.onclick=()=>{$('#event-category').value=a.dataset.category;render();});
-async function load(){try{events=(await api('events')).events||[];events.sort((a,b)=>Number(b.featured)-Number(a.featured)||Date.parse(a.starts_at)-Date.parse(b.starts_at));render();}catch(e){$('#event-status').innerHTML='<div class="listing-empty"><h3>Events are temporarily unavailable.</h3><p>Please try again in a moment.</p><button id="retry-events" class="btn btn-light">Try again</button></div>';$('#retry-events').onclick=load;}}
-load();if(location.pathname==='/events')$('#discover').scrollIntoView();
+$('#event-search-form').onsubmit=e=>{e.preventDefault();render();};
+$('#event-search').oninput=render;$('#event-category').onchange=render;
+document.querySelectorAll('[data-category]').forEach(b=>b.onclick=()=>{$('#event-category').value=b.dataset.category;render();});
+narrow.addEventListener('change',render);
+async function load(){try{
+ const response=await api('events');catalogue=Array.isArray(response.events)?response.events:[];
+ catalogue.sort((a,b)=>Number(Boolean(b.featured))-Number(Boolean(a.featured))||Date.parse(a.starts_at)-Date.parse(b.starts_at));catalogueError=false;
+}catch{catalogueError=true;}render();}
+render();load();if(location.pathname==='/events')$('#discover').scrollIntoView();
 // Fail closed until Apple lists this exact app publicly.
 (async()=>{try{
  const d=await api('scanner-store');if(!d.live||!d.url)return;
