@@ -18,7 +18,7 @@ function manifest(){const now=Date.now();return {claimId:randomUUID(),eventId:'2
 function setup(path=':memory:'){const store=new HubStore(path);store.install(manifest());store.set('lastRefresh',Date.now());const cloud=new HubCloud(store);return {store,cloud};}
 function invitation(store,index){const i=store.invitation(staff[index],'Door '+index);const u=new URL('ticketbunker-hub://pair');for(const[k,v]of Object.entries({url:origin,hub:store.get('hubId'),invite:i.id,key:i.key}))u.searchParams.set(k,v);return u.toString();}
 function client(request,index=0){const values=new Map();const storage={getItem:async k=>values.get(k)||null,setItem:async(k,v)=>values.set(k,v),removeItem:async k=>values.delete(k)};return {values,client:createHubClient({storage,protocol,request,randomId:randomUUID,deviceIdentity:async()=>digest('device-'+index),digest})};}
-async function network(){const {store,cloud}=setup();const servers=createHubServers({store,cloud,addresses:[origin],lanPort:0,adminPort:0});await servers.listen();const request=async(url,body)=>{const r=await fetch('http://127.0.0.1:'+servers.lan.address().port+new URL(url).pathname,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});const data=await r.json();if(!r.ok)throw Error(data.error);return data;};return {store,cloud,servers,request,close:async()=>{await servers.close();store.close();}};}
+async function network(path=':memory:'){const {store,cloud}=setup(path);const servers=createHubServers({store,cloud,addresses:[origin],lanPort:0,adminPort:0});await servers.listen();const request=async(url,body)=>{const r=await fetch('http://127.0.0.1:'+servers.lan.address().port+new URL(url).pathname,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});const data=await r.json();if(!r.ok)throw Error(data.error);return data;};return {store,cloud,servers,request,close:async()=>{await servers.close();store.close();}};}
 test('two encrypted scanner clients submit the same QR simultaneously: exactly one entry',async()=>{
  const x=await network();try{
   const a=client(x.request,0).client,b=client(x.request,1).client;
@@ -88,4 +88,66 @@ test('twenty paired staff racing one ticket yield one durable entry',async()=>{
 });
 test('finish stops entry immediately even if a background cloud request is still waiting',async()=>{
  const {store,cloud}=setup();try{const i=store.invitation(staff[0],'Door'),d=store.pair(i.id,{requestId:randomUUID(),staffId:staff[0],deviceBinding:'b'.repeat(64)});let unblock;const pending=new Promise(r=>unblock=r);cloud.queue=pending;cloud.api=async()=>({accepted:[],released:true});const finish=cloud.finish();assert.throws(()=>store.scan(d.deviceId,randomUUID(),code),/not active/);unblock();await finish;}finally{store.close();}
+});
+test('durable multi-door rehearsal survives lost replies, restart and multi-page cloud sync',async t=>{
+ const dir=mkdtempSync(tmpdir()+'/tb-hub-rehearsal-'),path=dir+'/entries.sqlite';
+ let x,restored;
+ try{
+  x=await network(path);
+  const m=x.store.get('manifest'),started=performance.now();
+  const tickets=Array.from({length:300},()=>({id:randomUUID(),sig:randomBytes(32).toString('hex')}));
+  x.store.install({...m,serverTime:new Date().toISOString(),tickets:tickets.map(ticket=>({id:ticket.id,digest:digest(ticket.id+':'+ticket.sig),tier:'GA',used:false}))});
+  const urls=tickets.map(ticket=>'https://theticketbunker.com/event-ticket?id='+ticket.id+'&sig='+ticket.sig);
+  const doors=[];
+  for(let door=0;door<20;door++){
+   const dropped=new Set();
+   const c=client(async(url,body)=>{
+    const response=await x.request(url,body);
+    if(url.endsWith('/v1/message')){
+     const payload=protocol.open(body,x.store.device(body.id).key);
+     if(payload.action==='scan'&&door%4===0&&!dropped.has(payload.requestId)){
+      dropped.add(payload.requestId);throw Error('Rehearsal reply lost after durable write');
+     }
+    }
+    return response;
+   },door).client;
+   await c.pair(staff[door%2],invitation(x.store,door%2));doors.push(c);
+  }
+  const retry=async(door,url)=>{
+   try{return await doors[door].scan(staff[door%2],m.eventId,url);}
+   catch(error){if(!error.message.startsWith('Rehearsal reply lost'))throw error;return doors[door].scan(staff[door%2],m.eventId,url);}
+  };
+  for(let offset=0;offset<urls.length;offset+=20){
+   const results=await Promise.all(urls.slice(offset,offset+20).map((url,door)=>retry(door,url)));
+   assert.ok(results.every(result=>result.status==='valid'));
+  }
+  assert.equal(x.store.status().admitted,300);
+  const duplicates=await Promise.all(doors.map((_,door)=>retry(door,urls[0])));
+  assert.ok(duplicates.every(result=>result.status==='used'));
+  const savedDevices=x.store.devices().map(device=>device.id),hubId=x.store.get('hubId');
+  await x.close();x=null;
+  restored=new HubStore(path);
+  assert.equal(restored.get('hubId'),hubId);
+  assert.equal(restored.status().admitted,300);
+  assert.deepEqual(restored.devices().map(device=>device.id),savedDevices);
+  const cloud=new HubCloud(restored),batches=[],receipts=new Map();let loseAcknowledgement=true;
+  cloud.api=async body=>{
+   batches.push(body.entries.length);
+   for(const receipt of body.entries){
+    assert.ok(staff.includes(receipt.staffId));
+    assert.ok(!receipts.has(receipt.id)||JSON.stringify(receipts.get(receipt.id))===JSON.stringify(receipt));
+    receipts.set(receipt.id,receipt);
+   }
+   if(loseAcknowledgement){loseAcknowledgement=false;throw Error('Cloud accepted receipts but reply was lost');}
+   return {accepted:body.entries.map(entry=>entry.id),released:!!body.release};
+  };
+  await assert.rejects(cloud.finish(),/reply was lost/);
+  assert.equal(restored.status().ready,false);
+  assert.equal(restored.pending().length,200);
+  await cloud.finish();
+  assert.deepEqual(batches,[200,200,100,0]);
+  assert.equal(receipts.size,300);
+  assert.equal(restored.get('manifest'),null);
+  t.diagnostic('300 durable admissions across 20 encrypted clients, with reply loss and restart: '+Math.round(performance.now()-started)+' ms in this test environment; not a physical-device latency measurement.');
+ }finally{if(x)await x.close();restored?.close();rmSync(dir,{recursive:true,force:true});}
 });
