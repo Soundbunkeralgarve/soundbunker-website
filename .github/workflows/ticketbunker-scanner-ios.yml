@@ -1,6 +1,8 @@
 name: TicketBunker Scanner iOS Simulator Build
 on:
   workflow_dispatch:
+  pull_request:
+    paths: ['ticketbunker-scanner-native/**', '.github/workflows/ticketbunker-scanner-ios.yml']
   push:
     branches: [main]
     paths:
@@ -19,11 +21,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24'
       - name: Check Xcode
         run: xcodebuild -version
       - name: Install JS dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
       - name: Verify scanner rules
         run: npm test
       - name: Generate native iOS project

@@ -36,7 +36,16 @@
         }
       ],
       "expo-secure-store",
-      "./plugins/withLocalHub.cjs"
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "enableSceneSupport": true
+          }
+        }
+      ],
+      "./plugins/withLocalHub.cjs",
+      "expo-sqlite"
     ],
     "extra": {
       "apiBase": "https://www.soundbunker.pt",

@@ -13,11 +13,14 @@ Native React Native/Expo camera application (NOT a WebView). Uses the same Ticke
 ## Run / test
 ```bash
 cd ticketbunker-scanner-native
-npm install
+npm ci
 npm test
+npm run doctor
 npx expo start
 ```
 Test on physical Android and iPhone cameras. The app bundles only the public Supabase URL and publishable key in `lib/publicConfig.js`, verified against the production `/api/supabase-config` endpoint. It restores the encrypted local session without a configuration or `getUser` roundtrip. Existing `/api/event-staff` and `/api/event-scan` endpoints at `https://www.soundbunker.pt` verify staff identity and current access for every request. Session restore has a 4.5-second UI deadline and a retry screen; network operations have deadlines and never imply admission on timeout. It does not use any buyer/admin credentials.
+
+The runtime uses Expo SDK 57 and React Native 0.86.3 to include the Hermes V1 memory-regression fix documented in the [SDK 57 changelog](https://expo.dev/changelog/sdk-57). SDK 57's supported UIKit scene lifecycle is enabled for builds using Xcode 27. CI checks Expo Doctor and both platform bundles, with native Android and iOS simulator builds on pull requests. These checks supplement physical-device testing.
 
 ## Build and store submission (needs your own developer accounts)
 ```bash
@@ -60,7 +63,7 @@ Completely disconnected phones cannot share a live used-ticket list. **Any ticke
 
 ### Release state and verification
 
-This change prepares version 1.0.1 (iOS build 8 / Android version code 5). It is not a signed store build or proof of device testing.
+This change prepares version 1.0.1. EAS manages build numbers remotely and increments them for each production build; local source numbers do not describe store state. The earlier signed Android 1.0.1 build 6 used SDK 56 and is superseded by this runtime update. It must not be selected for distribution. A successful cloud build does not establish real-device readiness or store acceptance.
 
 1. Apply `SUPABASE_TICKETBUNKER_OFFLINE_SCANNER.sql` to the SoundBunker database, then deploy `/api/event-scanner-offline` and the updated `/api/event-scan` together.
 2. Build fresh signed binaries: `expo-sqlite` and `expo-crypto` require the native modules. This cannot update old installed builds merely by deploying the website.
