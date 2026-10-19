@@ -42,7 +42,7 @@ export async function stripeCall(path,{method='GET',body,idem,version=VERSION}={
  return data;
 }
 export async function fetchConnectStatus(account){
- const query=new URLSearchParams();['configuration.recipient','defaults','requirements'].forEach(x=>query.append('include[]',x));
+ const query=new URLSearchParams();['configuration.recipient','defaults','requirements'].forEach((x,i)=>query.append('include['+i+']',x));
  const [v2,v1]=await Promise.all([stripeCall('/v2/core/accounts/'+account+'?'+query),stripeCall('/v1/accounts/'+account)]);
  return connectAccountStatus(v2,v1);
 }
