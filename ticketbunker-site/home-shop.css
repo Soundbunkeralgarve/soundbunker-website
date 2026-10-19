@@ -141,3 +141,26 @@
 }
 @media(max-width:360px){.shop-home .hero h1{font-size:65px}.shop-home .hero-actions{gap:10px}.hero-ticket-link{font-size:9px}.category-chips button{padding:7px 8px}.poster-caption b{font-size:28px}.shop-ad{grid-template-columns:88px minmax(0,1fr)}.shop-ad-copy{padding:17px 13px}.shop-ad-copy h2{font-size:28px}}
 @media(prefers-reduced-motion:reduce){.shop-home .live-event-card,.event-image>img{transition:none}.shop-home .live-event-card:hover,.live-event-card:hover .event-image>img{transform:none}}
+
+/* Shared local check-in hub: organiser advert. */
+.hub-promo{padding:58px 0;background:#e8f7ef;color:#0b0c0c;scroll-margin-top:130px}
+.hub-promo-layout{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:58px}
+.hub-promo .eyebrow{color:#0b0c0c;font-size:10px;letter-spacing:.13em}
+.hub-promo h2{font-size:clamp(48px,5.5vw,76px);line-height:.93;margin:18px 0 23px;color:#0b0c0c}
+.hub-promo-intro{font-size:15px;max-width:540px;margin-bottom:25px;color:#0b0c0c}
+.hub-promo-steps{list-style:none;counter-reset:hub-step;margin:0 0 26px;padding:0;display:grid;gap:17px}
+.hub-promo-steps li{counter-increment:hub-step;position:relative;padding-left:39px}
+.hub-promo-steps li:before{content:counter(hub-step);position:absolute;left:0;top:1px;display:grid;place-items:center;width:26px;height:26px;border:1px solid #0b0c0c;border-radius:50%;font-size:12px;font-weight:800}
+.hub-promo-steps strong{display:block;font-size:13px;line-height:1.5}
+.hub-promo-steps span{display:block;font-size:12px;line-height:1.65;margin-top:3px}
+.hub-promo .btn{color:#0b0c0c}
+.hub-promo-graphic{margin:0;padding:26px 15px;background:#dcf9ed;border:1px solid #b5d7c5;border-radius:18px;min-width:0}
+.hub-promo-graphic svg{display:block;width:100%;height:auto}
+.hub-promo-graphic figcaption{text-align:center;font-size:17px;line-height:1.5;font-weight:800;padding:8px 10px 0;color:#0b0c0c}
+.hub-promo-graphic figcaption span{font-size:11px;font-weight:500}
+.hub-promo-release{display:flex;align-items:center;gap:24px;margin-top:32px;padding-top:23px;border-top:1px solid #a7cbb9;color:#0b0c0c}
+.hub-promo-release>strong{display:inline-block;background:#fff;border:1px solid #a7cbb9;border-radius:5px;padding:8px 12px;font-size:11px;flex-shrink:0}
+.hub-promo-release p{font-size:12px;line-height:1.6;margin:0}
+.hub-promo-note{font-size:11px;line-height:1.7;margin:17px 0 0;max-width:1050px;color:#0b0c0c}
+@media(max-width:900px){.hub-promo-layout{gap:28px}.hub-promo-graphic{padding:20px 5px}.hub-promo-intro{font-size:13px}}
+@media(max-width:650px){.hub-promo{padding:34px 0}.hub-promo-layout{grid-template-columns:1fr;gap:25px}.hub-promo h2{font-size:53px;margin:15px 0 19px}.hub-promo-graphic{padding:14px 6px 20px}.hub-promo-graphic figcaption{font-size:16px}.hub-promo-release{align-items:flex-start;flex-direction:column;gap:12px;margin-top:24px;padding-top:20px}.hub-promo-note{font-size:10px}.hub-promo-steps{gap:15px}.hub-promo .eyebrow{font-size:9px}}
