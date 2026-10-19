@@ -1,6 +1,16 @@
 {
   "redirects": [
     {
+      "source": "/event-ticket",
+      "destination": "https://theticketbunker.com/event-ticket",
+      "permanent": false
+    },
+    {
+      "source": "/event-ticket.html",
+      "destination": "https://theticketbunker.com/event-ticket",
+      "permanent": false
+    },
+    {
       "source": "/about",
       "destination": "/",
       "permanent": true
@@ -143,12 +153,22 @@
     },
     "api/*.js": {
       "includeFiles": "assets/soundbunker-email-footer.png"
+    },
+    "api/ticketbunker-finance.js": {
+      "maxDuration": 60
+    },
+    "api/ticketbunker-settle.js": {
+      "maxDuration": 60
     }
   },
   "crons": [
     {
       "path": "/api/premium-mail-reconcile",
       "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/ticketbunker-settle",
+      "schedule": "*/5 * * * *"
     }
   ]
 }

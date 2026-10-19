@@ -1,8 +1,9 @@
 import {requireUser} from './lib/supabase-auth.js';
 import {json,parseJson} from './lib/http.js';
+import {ticketBunkerStripe,ticketBunkerPaymentsEnabled,ticketBunkerPlatformReadiness} from './lib/ticketbunker-stripe.js';
 const ID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 // Separate launch switch: configuring this feature never activates payment collection.
-const enabled=()=>process.env.EVENTS_MARKETPLACE_PAYMENTS_ENABLED==='true'&&process.env.EVENT_LISTING_PAYMENTS_ENABLED==='true'&&process.env.EVENT_CAPACITY_PAYMENTS_ENABLED==='true';
+const enabled=()=>ticketBunkerPaymentsEnabled()&&process.env.EVENT_LISTING_PAYMENTS_ENABLED==='true'&&process.env.EVENT_CAPACITY_PAYMENTS_ENABLED==='true';
 export default async function handler(req,res){
  res.setHeader('Cache-Control','private, no-store');
  if(!['GET','POST'].includes(req.method))return json(res,{error:'Method not allowed'},405);
@@ -37,10 +38,10 @@ export default async function handler(req,res){
  const prepared=await db.rpc('sb_prepare_capacity_change',{...params,p_expected_amount:b.expectedAmount});if(prepared.error)return json(res,{error:prepared.error.message},409);
  const row=prepared.data;
  if(row.status==='applied')return json(res,{applied:true});
- const form=new URLSearchParams({mode:'payment',customer_email:c.user.email,client_reference_id:row.id,success_url:'https://theticketbunker.com/organiser?capacity='+b.eventId+'&payment=returned',cancel_url:'https://theticketbunker.com/organiser?capacity='+b.eventId,expires_at:String(Math.floor(Date.now()/1000)+1805),'line_items[0][quantity]':'1','line_items[0][price_data][currency]':row.currency,'line_items[0][price_data][unit_amount]':String(row.amount_cents),'line_items[0][price_data][product_data][name]':'TicketBunker listing upgrade · '+row.target_band,'line_items[0][price_data][product_data][description]':e.data.title+' · '+row.new_total+' total places · band difference only','metadata[purchase_type]':'event_capacity_upgrade','metadata[capacity_change_id]':row.id});
- const response=await fetch('https://api.stripe.com/v1/checkout/sessions',{method:'POST',headers:{authorization:'Bearer '+process.env.STRIPE_SECRET_KEY,'content-type':'application/x-www-form-urlencoded','Idempotency-Key':'capacity-'+row.id},body:form});
- const checkout=await response.json();
- if(!response.ok||!/^https:\/\/checkout\.stripe\.com\//.test(checkout.url||''))throw Error('Upgrade checkout unavailable');
+ const form=new URLSearchParams({mode:'payment',customer_email:c.user.email,client_reference_id:row.id,success_url:'https://theticketbunker.com/organiser?capacity='+b.eventId+'&payment=returned',cancel_url:'https://theticketbunker.com/organiser?capacity='+b.eventId,expires_at:String(Math.floor(Date.now()/1000)+1805),'line_items[0][quantity]':'1','line_items[0][price_data][currency]':row.currency,'line_items[0][price_data][unit_amount]':String(row.amount_cents),'line_items[0][price_data][tax_behavior]':'inclusive','line_items[0][price_data][product_data][name]':'TicketBunker listing upgrade · '+row.target_band,'line_items[0][price_data][product_data][description]':e.data.title+' · '+row.new_total+' total places · band difference only','metadata[purchase_type]':'event_capacity_upgrade','metadata[capacity_change_id]':row.id});
+ if(!(await ticketBunkerPlatformReadiness()).ready)throw Error('Stripe platform setup incomplete');
+ const checkout=await ticketBunkerStripe('/v1/checkout/sessions',{method:'POST',body:form,idem:'capacity-'+row.id});
+ if(checkout.livemode!==true||!/^https:\/\/checkout\.stripe\.com\//.test(checkout.url||''))throw Error('Upgrade checkout unavailable');
  const saved=await db.from('sb_capacity_changes').update({stripe_session_id:checkout.id}).eq('id',row.id).eq('status','pending').select('id').single();if(saved.error)throw saved.error;
  return json(res,{url:checkout.url});
  }catch(error){console.error('Capacity request failed',error.code||error.name);return json(res,{error:'Unable to update capacity. Refresh to check its status before retrying.'},503);}

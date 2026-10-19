@@ -2,6 +2,7 @@ import {requireUser} from './lib/supabase-auth.js';
 import {json,parseJson,safeText,validEmail} from './lib/http.js';
 import {signedTicket} from './lib/events.js';
 import {sendTransactionalEmail} from './lib/notify.js';
+import {eventTicketArtwork} from './lib/ticketbunker-email-template.js';
 const ID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 export function guestInput(body){
  const name=safeText(body.name,100).trim(),email=safeText(body.email,254).trim().toLowerCase();
@@ -23,11 +24,12 @@ export async function deliverGuest(db,entryId,send=sendTransactionalEmail){
  db.from('sb_event_tickets').select('id,transfer_version,holder_email').eq('order_id',g.order_id).single(),
  db.from('sb_guest_allocations').select('event_id').eq('id',g.allocation_id).single()]);
  if(o.error||t.error||e.error||o.data.status!=='paid'||t.data.transfer_version!==0)throw Error('Ticket is no longer available for this guest');
- const event=await db.from('sb_events').select('title,starts_at,venue,venue_timezone,status').eq('id',e.data.event_id).single();
+ const event=await db.from('sb_events').select('title,starts_at,venue,venue_timezone,status,image_url,event_logo_url,organiser,organiser_profile_id').eq('id',e.data.event_id).single();
  if(event.error||event.data.status!=='published')throw Error('Event unavailable');
  const ev=event.data,date=new Intl.DateTimeFormat('en-GB',{dateStyle:'full',timeStyle:'short',timeZone:ev.venue_timezone||'Europe/Lisbon'}).format(new Date(ev.starts_at));
  const url='https://theticketbunker.com/event-ticket?id='+t.data.id+'&sig='+signedTicket(t.data.id);
  await send({brand:'ticketbunker',to:g.guest_email,key:'guest-ticket-'+g.id,subject:'Your TicketBunker guest-list pass · '+ev.title,
+ artwork:await eventTicketArtwork(db,ev),
  text:'Hi '+g.guest_name+',\n\nYour complimentary guest-list pass is confirmed. No payment is required.\n\n'+ev.title+'\n'+date+' (venue time)\n'+ev.venue+'\n\nOpen your ticket to display the QR code, print it or save it:\n'+url+'\n\nOne pass admits one person. Bring photo ID if required by the event. The QR can be scanned once only.\n\nYour tickets: https://theticketbunker.com/my-tickets'});
  const saved=await db.from('sb_guest_entries').update({email_sent_at:new Date().toISOString()}).eq('id',g.id);if(saved.error)throw saved.error;return true;
 }

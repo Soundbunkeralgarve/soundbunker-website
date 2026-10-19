@@ -56,7 +56,8 @@ test('staff invitations now send secure email while keeping WhatsApp and SMS com
 });
 test('original paid booking remains disabled in beta, genuine test stays isolated',()=>{
  const checkout=file('api/event-checkout.js');
- assert.match(checkout,/Checkout and payments are not live/);
+ assert.match(checkout,/if\(!ticketBunkerPaymentsEnabled\(\)\)/);
+ assert.match(checkout,/No payment has been taken/);
  const api=file('api/events.js');
  assert.match(api,/eq\('internal_free_test',false\)/);
 });

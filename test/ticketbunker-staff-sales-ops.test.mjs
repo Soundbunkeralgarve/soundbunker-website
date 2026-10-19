@@ -59,11 +59,11 @@ test('buyer sees show-specific Booking Confirmed with QR tickets and fee clarity
  assert.match(buyerJs,/\$\('bookingConfirmation'\)\.hidden=false/);
  assert.match(buyerJs,/\$\('confirmedEventName'\)/);
  assert.match(buyerJs,/ref:streetReferral/);
- const book=read('api/event-beta-book.js'),mail=read('api/lib/notify.js');
+ const book=read('api/event-beta-book.js'),mail=read('api/lib/notify.js')+read('api/lib/ticketbunker-email-template.js');
  assert.match(book,/sendTicketBunkerConfirmation/);
  assert.match(mail,/BOOKING CONFIRMED/);
- assert.match(mail,/TicketBunker official|ticketbunker-logo\.svg/);
- assert.match(mail,/No TicketBunker booking fees/);
+ assert.match(mail,/brand-compact\.png/);
+ assert.match(mail,/Powered by SoundBunker/);
  assert.match(book,/totalCents:0/);
 });
 test('buyer journey stays distinct from organiser reporting and street team rewards',()=>{

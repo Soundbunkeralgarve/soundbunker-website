@@ -35,13 +35,13 @@ export function connectAccountReady(account,legacy){return connectAccountStatus(
 export async function stripeCall(path,{method='GET',body,idem,version=VERSION}={}){
  const response=await fetch(BASE+path,{method,redirect:'error',signal:AbortSignal.timeout(20000),headers:{
   Authorization:'Bearer '+process.env.TICKETBUNKER_STRIPE_SECRET_KEY,'Stripe-Version':version,
-  ...(body?{'Content-Type':'application/json'}:{}),...(idem?{'Idempotency-Key':idem}:{})
- },body:body?JSON.stringify(body):undefined});
+  ...(body?{'Content-Type':path.startsWith('/v1/')?'application/x-www-form-urlencoded':'application/json'}:{}),...(idem?{'Idempotency-Key':idem}:{})
+ },body:body?(path.startsWith('/v1/')?new URLSearchParams(body):JSON.stringify(body)):undefined});
  const data=await response.json().catch(()=>({}));
  if(!response.ok){const err=Error('Stripe request failed');err.stripeCode=data.error?.code||data.code||'stripe_unavailable';err.stripeStatus=response.status;err.platformSetup=platformSetupCodes.has(err.stripeCode)||/loss liability|platform profile|sign up for Connect|onboard.*Connect|not.*connect platform/i.test(data.error?.message||data.message||'');throw err;}
  return data;
 }
-async function fetchStatus(account){
+export async function fetchConnectStatus(account){
  const query=new URLSearchParams();['configuration.recipient','defaults','requirements'].forEach(x=>query.append('include[]',x));
  const [v2,v1]=await Promise.all([stripeCall('/v2/core/accounts/'+account+'?'+query),stripeCall('/v1/accounts/'+account)]);
  return connectAccountStatus(v2,v1);
@@ -64,7 +64,7 @@ export default async function handler(req,res){
     await stripeCall('/v2/core/accounts?limit=1&applied_configurations%5B0%5D=recipient');
     return json(res,{connected:false,ready:false,live:true,state:'not_started',canOnboard:true,ticketSalesEnabled:false});
    }
-   const status=await fetchStatus(org.stripe_account_id);
+   const status=await fetchConnectStatus(org.stripe_account_id);
    const saved=await ctx.admin.from('sb_event_organisers').update({stripe_capabilities_ready:status.ready}).eq('id',org.id).eq('stripe_account_id',org.stripe_account_id);
    if(saved.error)throw saved.error;
    return json(res,status);
@@ -78,7 +78,7 @@ export default async function handler(req,res){
   let account=org.stripe_account_id;
   if(account&&!stripeId(account))throw Error('Invalid saved account');
   if(account){
-   const status=await fetchStatus(account);
+   const status=await fetchConnectStatus(account);
    if(!status.canOnboard)return json(res,{error:'Your Stripe connection needs platform support before it can be updated.',code:'connection_review_required',...status},409);
   }else{
    const created=await stripeCall('/v2/core/accounts',{method:'POST',body:createConnectAccountBody(org,ctx.user.email),idem:'ticketbunker-recipient-live-'+org.id});
@@ -88,6 +88,8 @@ export default async function handler(req,res){
    if(saved.error)throw saved.error;
    if(!saved.data){const current=await organiserForUser(ctx.admin,ctx.user.id);if(current?.stripe_account_id!==account)return json(res,{error:'Account setup changed. Refresh and try again.'},409);}
   }
+  const payoutSettings=await stripeCall('/v1/accounts/'+account,{method:'POST',body:{'settings[payouts][schedule][interval]':'manual'}});
+  if(payoutSettings.settings?.payouts?.schedule?.interval!=='manual')throw Error('Manual organiser payout schedule was not confirmed');
   const link=await stripeCall('/v2/core/account_links',{method:'POST',version:LINK_VERSION,body:{account,use_case:{type:'account_onboarding',account_onboarding:{configurations:['recipient'],refresh_url:PORTAL+'?onboarding=refresh#verification',return_url:PORTAL+'?onboarding=returned#verification'}}}});
   if(link.livemode!==true||link.account!==account)throw Error('Stripe returned an incorrect link');
   return json(res,{url:safeStripeLink(link.url),expiresAt:link.expires_at});

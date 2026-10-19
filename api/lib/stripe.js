@@ -53,11 +53,9 @@ export async function createCheckoutSession({ session, booking, origin, bookingR
 
 export function verifyStripeSignature(rawBody, signatureHeader, secret = process.env.STRIPE_WEBHOOK_SECRET) {
   if (!secret || !signatureHeader) return false;
-  const pairs = Object.fromEntries(signatureHeader.split(",").map(part => part.split("=")));
-  if (!pairs.t || !pairs.v1) return false;
-  if (Math.abs(Date.now() / 1000 - Number(pairs.t)) > 300) return false;
-  const expected = createHmac("sha256", secret).update(`${pairs.t}.${rawBody}`).digest("hex");
-  const supplied = Buffer.from(pairs.v1, "hex");
-  const calculated = Buffer.from(expected, "hex");
-  return supplied.length === calculated.length && timingSafeEqual(supplied, calculated);
+  const parts=String(signatureHeader).split(',').map(x=>x.trim().split('='));
+  const timestamp=parts.find(([key])=>key==='t')?.[1];
+  if(!/^\d+$/.test(timestamp||'')||Math.abs(Date.now()/1000-Number(timestamp))>300)return false;
+  const expected=createHmac('sha256',secret).update(`${timestamp}.${rawBody}`).digest();
+  return parts.filter(([key,value])=>key==='v1'&&/^[a-f0-9]{64}$/i.test(value||'')).some(([,value])=>timingSafeEqual(expected,Buffer.from(value,'hex')));
 }

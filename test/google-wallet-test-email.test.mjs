@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFile} from 'node:fs/promises';
 import * as http from '../api/lib/http.js';
-import {ticketBunkerEmailContent,ticketBunkerFrom,ticketBunkerReplyTo} from '../api/lib/ticketbunker-email-template.js';
+import {ticketBunkerEmailContent,ticketBunkerFrom,ticketBunkerReplyTo,eventTicketArtwork} from '../api/lib/ticketbunker-email-template.js';
 
 async function fixture({enabled=true,connected=true}={}){
  const calls={issued:0,emails:[],google:0,apple:0};
@@ -22,7 +22,8 @@ async function fixture({enabled=true,connected=true}={}){
    createGoogleWalletLink:()=>{calls.google++;return 'https://pay.google.com/gp/v/save/test'},
    createApplePass:async()=>{calls.apple++;return Buffer.from('apple')}
   },
-  './lib/notify.js':{sendTransactionalEmail:async payload=>calls.emails.push(payload)}
+  './lib/notify.js':{sendTransactionalEmail:async payload=>calls.emails.push(payload)},
+  './lib/ticketbunker-email-template.js':{eventTicketArtwork}
  };
  const context=vm.createContext({process:{env:{}},console,Buffer,Intl});
  const module=new vm.SourceTextModule(await readFile(new URL('../api/event-free-test.js',import.meta.url),'utf8'),{context});
@@ -63,7 +64,8 @@ test('Google email uses the real booking layout and footer without Apple instruc
  assert.equal(ticketBunkerReplyTo,'bookings@theticketbunker.com');
  const content=ticketBunkerEmailContent(email.text);
  assert.match(content.text,/Customer Services — The TicketBunker/);
- assert.match(content.html,/lh3.googleusercontent.com/);
+ assert.match(content.html,/theticketbunker.com\/soundbunker-logo-white.png/);
+ assert.match(content.html,/Powered by SoundBunker/);
 });
 test('Apple rehearsal email retains its Wallet attachment',async()=>{
  const f=await fixture(),res=await f.claim('apple');

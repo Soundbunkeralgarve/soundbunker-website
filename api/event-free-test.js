@@ -5,6 +5,7 @@ import {eventsDatabase,signedTicket} from './lib/events.js';
 import ticketHandler from './event-ticket.js';
 import {walletTestEvent,walletAvailability,createApplePass,createGoogleWalletLink,googleWalletReadiness} from './lib/ticket-wallet.js';
 import {sendTransactionalEmail} from './lib/notify.js';
+import {eventTicketArtwork} from './lib/ticketbunker-email-template.js';
 
 const TEST=/^[a-f0-9]{48}$/;
 const digest=code=>createHash('sha256').update(code).digest('hex');
@@ -13,7 +14,7 @@ const ticketUrl=id=>origin()+'/event-ticket.html?id='+encodeURIComponent(id)+'&s
 async function testEventForCode(db,code){
  if(!TEST.test(code))return null;
  const result=await db.from('sb_events')
-  .select('id,title,venue,starts_at,ends_at,venue_timezone,currency,event_logo_url,image_url,test_expires_at,internal_free_test,status')
+  .select('id,title,venue,starts_at,ends_at,venue_timezone,currency,event_logo_url,image_url,organiser,organiser_profile_id,test_expires_at,internal_free_test,status')
   .eq('internal_free_test',true).eq('status','published')
   .eq('test_code_hash',digest(code)).gt('test_expires_at',new Date().toISOString()).maybeSingle();
  if(result.error)throw result.error;
@@ -127,7 +128,7 @@ export default async function handler(req,res){
     ?'ADD TO GOOGLE WALLET\nOpen your ticket above on your Android phone, choose Add to Google Wallet, and save it to your Google account. Then open it in Google Wallet and show its QR to the organiser for the scanner test.'
     :'ADD TO APPLE WALLET\nOpen the attached Apple Wallet pass on your iPhone and tap Add, or open your ticket above and choose Add to Apple Wallet. Then show its QR to the organiser for the scanner test.';
    await sendTransactionalEmail({brand:'ticketbunker',to:email,key:'ticketbunker-free-real-test-'+issued.data,
-    attachments,artwork:{title:event.title,poster:event.image_url,organiserLogo:event.event_logo_url},
+    attachments,artwork:await eventTicketArtwork(db,event),
     subject:rehearsal?'Booking confirmed · '+event.title:'Your FREE ticketBunker QR test tickets (not for a real event)',
     text:rehearsal?'BOOKING CONFIRMED · THE TICKETBUNKER\n\nHi '+name+',\n\nYour complimentary SoundBunker test booking is confirmed.\n\nEvent: '+event.title+'\nWhen: '+new Intl.DateTimeFormat('en-GB',{dateStyle:'full',timeStyle:'short',timeZone:event.venue_timezone||'Europe/Lisbon'}).format(new Date(event.starts_at))+' (Portugal time)\nWhere: '+event.venue+'\nAttendee: '+name+'\nTickets: '+quantity+'\nTotal: €0.00 — no payment required\n\nOPEN YOUR TICKET\n'+links.join('\n')+'\n\n'+walletInstructions+'\n\nPRIVATE SOFTWARE TEST ONLY. This booking does not grant admission to a public event. Each QR can be checked in once; a repeat scan should be rejected.\n\nSoundBunker Algarve':'Hi '+name+',\n\nThese are REAL test-system QR tickets with a price of €0/£0. No payment has been made and this is NOT a real public event.\n\n'+event.title+'\n'+event.venue+'\n\nOpen each unique test QR link:\n'+links.join('\n')+'\n\nEach ticket can be checked in once using the ticketBunker door scanner.\n\nSoundBunker Algarve'});
    emailSent=true;

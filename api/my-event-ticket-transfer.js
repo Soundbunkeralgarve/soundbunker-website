@@ -2,9 +2,10 @@ import {requireUser} from './lib/supabase-auth.js';
 import {json,parseJson,safeText,validEmail} from './lib/http.js';
 import {signedTicket} from './lib/events.js';
 import {sendTransactionalEmail} from './lib/notify.js';
+import {eventTicketArtwork} from './lib/ticketbunker-email-template.js';
 
 const UUID=/^[a-f\d]{8}-(?:[a-f\d]{4}-){3}[a-f\d]{12}$/i;
-const base=()=>String(process.env.SITE_URL||'https://www.soundbunker.pt').replace(/\/$/,'');
+const base=()=> 'https://theticketbunker.com';
 export default async function handler(req,res){
  if(req.method!=='POST')return json(res,{error:'Method not allowed'},405);
  const ctx=await requireUser(req);
@@ -33,17 +34,18 @@ export default async function handler(req,res){
   if(!item?.ticket_id)throw Error('Ticket change was not confirmed');
   if(action==='name')return json(res,{changed:true,holderName:item.holder_name});
   const order=await ctx.admin.from('sb_event_tickets')
-   .select('sb_events(title,starts_at,venue,venue_timezone),sb_event_tiers(name)')
+   .select('sb_events(title,starts_at,venue,venue_timezone,image_url,event_logo_url,organiser,organiser_profile_id),sb_event_tiers(name)')
    .eq('id',id).single();
-  const ticketUrl=base()+'/event-ticket.html?id='+encodeURIComponent(id)+'&sig='+signedTicket(id,item.transfer_version);
+  const ticketUrl=base()+'/event-ticket?id='+encodeURIComponent(id)+'&sig='+signedTicket(id,item.transfer_version);
   let emailSent=false;
   try{
    await sendTransactionalEmail({brand:'ticketbunker',to:recipientEmail,key:'ticketbunker-transfer-'+id+'-'+item.transfer_version,
+    artwork:await eventTicketArtwork(ctx.admin,order.data?.sb_events),
     subject:'Your TicketBunker ticket is ready · '+(order.data?.sb_events?.title||'Event'),
     text:'Hi '+name+',\n\nA TicketBunker ticket has been transferred into your name and email address.\n\n'+
       (order.data?.sb_events?.title||'Event')+' · '+(order.data?.sb_event_tiers?.name||'Admission')+'\n\n'+
-      'Sign in or create a SoundBunker account using this email to find it in My Tickets:\n'+
-      base()+'/client?next=%2Fclient%23my-tickets\n\nYour unique, updated QR ticket:\n'+ticketUrl+
+      'Sign in or create a TicketBunker account using this email to find it in My tickets:\n'+
+      base()+'/my-tickets\n\nYour unique, updated QR ticket:\n'+ticketUrl+
       '\n\nThe previous ticket QR was invalidated. Do not forward the same QR to multiple people.\n\nTicketBunker'}
    );
    emailSent=true;

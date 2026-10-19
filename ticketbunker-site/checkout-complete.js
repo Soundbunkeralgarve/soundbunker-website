@@ -1,0 +1,5 @@
+import {api} from './shared.js';
+const title=document.querySelector('#booking-title'),status=document.querySelector('#booking-status'),id=new URLSearchParams(location.search).get('session_id');
+let attempts=0;
+async function check(){try{const data=await api('event-checkout-status?session_id='+encodeURIComponent(id||''));if(data.status==='paid'){title.textContent='Your tickets are confirmed.';status.textContent=data.emailSent?'Your ticket email has been sent. Keep each QR private; one valid ticket admits one person once.':'Payment is confirmed. Your ticket email is being prepared; you can also check My tickets.';return;}if(['cancelled','refunded'].includes(data.status)){title.textContent='Booking '+data.status+'.';status.textContent='This booking does not provide valid admission. Contact support if you need help.';return;}if(++attempts<12)setTimeout(check,5000);else{title.textContent='We’re confirming your booking.';status.textContent='Check your email or My tickets shortly. Contact support before paying again if confirmation does not arrive.';}}catch(error){title.textContent='Check your booking status.';status.textContent=error.message;}}
+check();

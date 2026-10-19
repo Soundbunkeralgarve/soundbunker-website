@@ -1,4 +1,5 @@
 import { json } from './lib/http.js';
+import {ticketBunkerPaymentsEnabled} from './lib/ticketbunker-stripe.js';
 import { eventsDatabase } from './lib/events.js';
 export default async function handler(req,res) {
   if(req.method!=='GET') return json(res,{error:'Method not allowed'},405);
@@ -30,7 +31,7 @@ export default async function handler(req,res) {
     if(inventory.error) throw inventory.error;
     const used=new Map((inventory.data||[]).map(row=>[row.tier_id,Number(row.used_count)]));
     return json(res,{events:visible.map(e=>({
-      ...e,event_logo_url:e.event_logo_url||logoMap.get(e.organiser_profile_id)||null,featured:featured.has(e.id),public_beta_test:e.public_beta_test===true,
+      ...e,paymentsEnabled:ticketBunkerPaymentsEnabled()&&!e.public_beta_test,event_logo_url:e.event_logo_url||logoMap.get(e.organiser_profile_id)||null,featured:featured.has(e.id),public_beta_test:e.public_beta_test===true,
       beta_test_expires_at:undefined,
       tiers:tiers.data.filter(t=>t.event_id===e.id).map(t=>({
        id:t.id,name:t.name,

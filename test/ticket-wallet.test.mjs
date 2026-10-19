@@ -35,6 +35,20 @@ test('Apple and Google use the same current-generation admission QR',()=>{
  assert.match(apple.barcodes[0].message,/sig=aaaa/);
  assert.equal(apple.eventTicket.auxiliaryFields[0].value,'Alex Taylor');
 });
+test('wallet fronts retain event and organiser identity with SoundBunker below the QR',()=>{
+ const branded={...ticket,organiserName:'Example promoter',eventLogo:'https://theticketbunker.com/example-logo.png',poster:'https://theticketbunker.com/example-poster.png'};
+ const apple=applePassData(branded,sig,{});
+ assert.equal(apple.barcodes[0].altText,'Powered by SoundBunker');
+ assert.equal(apple.eventTicket.primaryFields[0].value,ticket.title);
+ assert.equal(apple.eventTicket.auxiliaryFields.find(f=>f.key==='presentedBy').value,'Example promoter');
+ const {payload}=googlePassPayload(branded,sig,{GOOGLE_WALLET_ISSUER_ID:'123'});
+ const pass=payload.eventTicketObjects[0],layout=payload.eventTicketClasses[0];
+ assert.equal(pass.heroImage.sourceUri.uri,branded.poster);
+ assert.equal(pass.imageModulesData[0].mainImage.sourceUri.uri,branded.eventLogo);
+ assert.equal(pass.textModulesData.find(f=>f.id==='powered').body,'Powered by SoundBunker');
+ assert.equal(layout.classTemplateInfo.cardBarcodeSectionDetails.firstBottomDetail.fieldSelector.fields[0].fieldPath,"object.textModulesData['powered'].body");
+ assert.equal(pass.barcode.value,apple.barcodes[0].message);
+});
 test('Google save links carry an authentic RS256 signature and no private key',()=>{
  const {privateKey,publicKey}=generateKeyPairSync('rsa',{modulusLength:2048});
  const env={GOOGLE_WALLET_ENABLED:'true',GOOGLE_WALLET_ISSUER_ID:'123',GOOGLE_WALLET_CLIENT_EMAIL:'issuer@example.com',GOOGLE_WALLET_PRIVATE_KEY:privateKey.export({type:'pkcs8',format:'pem'})};

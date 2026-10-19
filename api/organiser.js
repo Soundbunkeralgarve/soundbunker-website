@@ -1,4 +1,5 @@
 import {clientControl,activeClientDiscount} from './lib/ticketbunker-owner.js';
+import {ticketBunkerPaymentsEnabled} from './lib/ticketbunker-stripe.js';
 import {walletTestEvent} from './lib/ticket-wallet.js';
 import { requireUser } from './lib/supabase-auth.js';
 import { json,parseJson,safeText } from './lib/http.js';
@@ -330,7 +331,7 @@ export default async function handler(req,res){
      return json(res,{showcase:inserted.data,payment_required_now:false});
    }
    if(action==='publish'){
-     if(process.env.EVENTS_MARKETPLACE_PAYMENTS_ENABLED!=='true')
+     if(!ticketBunkerPaymentsEnabled())
        return json(res,{error:'Third-party ticket publishing is not enabled yet'},503);
      if(!uuid(body.eventId)||organisation.status!=='approved'||!organisation.tax_review_complete||
          !organisation.stripe_capabilities_ready||!organisation.stripe_account_id)

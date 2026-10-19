@@ -7,15 +7,15 @@ export default async function handler(req,res) {
     const id=String(req.query?.id||''),sig=String(req.query?.sig||'');
     const db=eventsDatabase();
     const found=await db.from('sb_event_tickets')
-       .select('id,event_id,checked_in_at,transfer_version,holder_name,sequence_number,sb_event_orders(customer_name,beta_test_order,status,guest_allocation_id,total_cents,quantity,currency),sb_events(status,title,slug,description,headline_artist,admission_info,venue_city,currency,starts_at,ends_at,venue,venue_timezone,internal_free_test,test_expires_at,public_beta_test,image_url,event_logo_url,organiser_profile_id),sb_event_tiers(name,price_cents)')
+       .select('id,event_id,checked_in_at,transfer_version,holder_name,sequence_number,sb_event_orders(customer_name,beta_test_order,status,guest_allocation_id,total_cents,quantity,currency),sb_events(status,title,slug,description,headline_artist,admission_info,venue_city,currency,starts_at,ends_at,venue,venue_timezone,internal_free_test,test_expires_at,public_beta_test,image_url,event_logo_url,organiser,organiser_profile_id),sb_event_tiers(name,price_cents)')
        .eq('id',id).single();
     if(found.error||!found.data)return json(res,{error:'Ticket not found'},404);
     if(!validTicket(id,sig,found.data.transfer_version||0))return json(res,{error:'This QR is no longer valid. Open your current ticket in My Tickets.'},403);
     if(found.data.sb_event_orders?.status!=='paid'||found.data.sb_events?.status==='cancelled')return json(res,{error:'This ticket is cancelled or refunded and cannot be used for entry.'},409);
-    let organiserLogo=found.data.sb_events?.event_logo_url||null,organiserName=null;
+    let organiserLogo=found.data.sb_events?.event_logo_url||null,organiserName=found.data.sb_events?.organiser||null;
     if(found.data.sb_events?.organiser_profile_id){
       const org=await db.from('sb_event_organisers').select('logo_url,display_name').eq('id',found.data.sb_events.organiser_profile_id).maybeSingle();
-      if(!org.error){organiserLogo=organiserLogo||org.data?.logo_url||null;organiserName=org.data?.display_name||null;}
+      if(!org.error){organiserLogo=organiserLogo||org.data?.logo_url||null;organiserName=org.data?.display_name||organiserName;}
     }
     return json(res,{ticket:{
       id,eventId:found.data.event_id,walletTest:walletTestEvent({...found.data.sb_events,id:found.data.event_id}),testExpiresAt:found.data.sb_events?.test_expires_at,version:found.data.transfer_version||0,endDate:found.data.sb_events?.ends_at,wallet:walletAvailability(),used:!!found.data.checked_in_at,

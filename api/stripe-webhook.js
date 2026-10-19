@@ -23,6 +23,7 @@ export default async function handler(request, response) {
   if (!checkout || checkout.payment_status !== "paid") return json(response, { received: true });
   try {
     const metadata = checkout.metadata || {};
+    if(metadata.ticketbunker_flow==='separate_v1')return json(response,{error:'TicketBunker payments require their dedicated signed webhook'},400);
     if(metadata.purchase_type==='event_capacity_upgrade'){const result=await fulfilCapacityCheckout(checkout);return json(response,{received:true,capacity:result.status});}
     if (metadata.purchase_type === 'event_listing_fee') {
       const result = await fulfilListingCheckout(checkout);

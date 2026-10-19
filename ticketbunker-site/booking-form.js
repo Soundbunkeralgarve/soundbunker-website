@@ -1,0 +1,14 @@
+import {api,escapeHtml as esc,money} from './shared.js';
+export function bookingForm(event){
+ if(event.preview||!event.paymentsEnabled)return '';
+ const tiers=(event.tiers||[]).filter(t=>t.remaining>0&&t.price_cents>0);
+ if(!tiers.length)return '<p>No paid tickets are available.</p>';
+ return `<form id="paid-booking" class="paid-booking"><label>Ticket type<select name="tier" required>${tiers.map(t=>`<option value="${esc(t.id)}">${esc(t.name)} · ${esc(money(t.price_cents,event.currency))}</option>`).join('')}</select></label><label>Tickets<select name="quantity">${Array.from({length:Math.min(8,tiers[0].remaining)},(_,i)=>`<option>${i+1}</option>`).join('')}</select></label><label>Attendee / booking name<input name="name" autocomplete="name" minlength="2" maxlength="120" required></label><label>Email for your tickets<input name="email" type="email" autocomplete="email" maxlength="254" required></label><label class="booking-terms"><input name="terms" type="checkbox" required><span>I accept the <a href="/terms" target="_blank" rel="noopener">ticket and refund terms</a> and the event’s entry requirements.</span></label><strong id="booking-total"></strong><button class="primary" type="submit">Continue to secure payment →</button><p class="small">Total includes applicable VAT / IVA. No added TicketBunker booking fee. Your payment details are entered securely on Stripe.</p><p id="booking-error" role="status"></p></form>`;
+}
+export function wireBooking(event){
+ const form=document.getElementById('paid-booking');if(!form)return;
+ const tiers=event.tiers||[];let requestId=crypto.randomUUID(),lastInput='';
+ function total(){const tier=tiers.find(t=>t.id===form.elements.tier.value);if(!tier)return;const maximum=Math.min(8,tier.remaining);if(form.elements.quantity.options.length!==maximum)form.elements.quantity.innerHTML=Array.from({length:maximum},(_,i)=>'<option>'+(i+1)+'</option>').join('');document.getElementById('booking-total').textContent='Total: '+money(tier.price_cents*Number(form.elements.quantity.value),event.currency);}
+ form.elements.tier.onchange=total;form.elements.quantity.onchange=total;total();
+ form.onsubmit=async e=>{e.preventDefault();const button=form.querySelector('button'),status=document.getElementById('booking-error');button.disabled=true;status.textContent='Opening secure checkout…';try{const input={tier:form.elements.tier.value,quantity:Number(form.elements.quantity.value),name:form.elements.name.value,email:form.elements.email.value,acceptTerms:form.elements.terms.checked};const signature=JSON.stringify(input);if(lastInput&&signature!==lastInput)requestId=crypto.randomUUID();lastInput=signature;const result=await api('event-checkout',{...input,requestId});const target=new URL(result.url);if(target.origin!=='https://checkout.stripe.com')throw Error('Invalid checkout destination');location.assign(target.href);}catch(error){status.textContent=error.message;button.disabled=false;}};
+}

@@ -56,16 +56,16 @@ export function applePassData(t,sig,env=process.env){
  serialNumber:t.id+'-v'+(t.version||0),organizationName:'The TicketBunker',description:(t.test?'TEST ONLY — ':'')+t.title+' — '+t.tier,
  backgroundColor:'rgb(0,0,0)',foregroundColor:'rgb(255,255,255)',labelColor:'rgb(0,224,166)',
  relevantDate:t.date,...(t.endDate?{expirationDate:t.endDate}:{}),
- barcodes:[{format:'PKBarcodeFormatQR',message:walletTicketUrl(t,sig),messageEncoding:'iso-8859-1',altText:'Admission '+String(t.admissionNumber||'')}],
+ barcodes:[{format:'PKBarcodeFormatQR',message:walletTicketUrl(t,sig),messageEncoding:'iso-8859-1',altText:'Powered by SoundBunker'}],
  eventTicket:{headerFields:[{key:'ticketType',label:t.test?'TEST ONLY':'ADMISSION',value:t.tier||'General admission'}],
  primaryFields:[{key:'event',label:'EVENT',value:t.title}],
  secondaryFields:[{key:'when',label:'DATE & TIME',value:when},{key:'venue',label:'VENUE',value:t.venue}],
- auxiliaryFields:[{key:'holder',label:'ATTENDEE',value:t.holderName},{key:'number',label:'TICKET',value:String(t.admissionNumber||'')}],
+ auxiliaryFields:[{key:'holder',label:'ATTENDEE',value:t.holderName},{key:'number',label:'TICKET',value:String(t.admissionNumber||'')},...(t.organiserName?[{key:'presentedBy',label:'ORGANISED BY',value:t.organiserName}]:[])],
  backFields:[{key:'manage',label:'Manage your ticket',value:origin+'/my-tickets'},
  {key:'organiser',label:'Presented by',value:t.organiserName||'Event organiser'},
  {key:'conditions',label:'Entry conditions',value:(t.test?'Private wallet/scanner rehearsal only. Not valid for admission to a public event. ':'')+'One admission only. Transferred, cancelled, refunded or previously scanned tickets are not valid. Reopen My tickets after changing a name or transferring a ticket.'},
  {key:'support',label:'Customer Services',value:'bookings@theticketbunker.com'},
- {key:'powered',label:'Powered by',value:'SoundBunker Algarve'}]}};
+ {key:'powered',label:'Powered by',value:'SoundBunker'}]}};
 }
 // Only fetch artwork from the project's public storage or its own static event assets.
 async function trustedArtwork(url,width,height,{fit='contain',background='#ffffff'}={}){
@@ -109,6 +109,7 @@ export function googlePassPayload(t,sig,env=process.env){
  if(!/^\d+$/.test(issuer||''))throw Error('Google Wallet issuer is not configured.');
  const classId=issuer+'.event_'+t.eventId;
  const ticketClass={id:classId,issuerName:'The TicketBunker',reviewStatus:'UNDER_REVIEW',eventName:localized(t.title),
+ classTemplateInfo:{cardBarcodeSectionDetails:{firstBottomDetail:{fieldSelector:{fields:[{fieldPath:"object.textModulesData['powered'].body"}]}}}},
  logo:image(origin+'/brand-icon.png','The TicketBunker'),wideLogo:image('https://www.soundbunker.pt/assets/ticketbunker/wallet-brand-lockup.png','The TicketBunker · Powered by SoundBunker'),...(t.venue&&t.venueAddress?{venue:{name:localized(t.venue),address:localized(t.venueAddress)}}:{}),dateTime:{start:t.date,...(t.endDate?{end:t.endDate}:{})}};
  const safeUrl=url=>typeof url==='string'&&/^https:\/\/[^\s<>"]+$/.test(url);
  const ticketObject={id:issuer+'.ticket_'+t.id+'_v'+(t.version||0),classId,state:'ACTIVE',hexBackgroundColor:'#000000',
@@ -116,7 +117,7 @@ export function googlePassPayload(t,sig,env=process.env){
  barcode:{type:'QR_CODE',value:walletTicketUrl(t,sig),alternateText:'Admission '+String(t.admissionNumber||'')},
  ...(safeUrl(t.poster)?{heroImage:image(t.poster,'Event artwork')}:{}),
  ...(safeUrl(t.eventLogo)?{imageModulesData:[{id:'organiser-logo',mainImage:image(t.eventLogo,'Event organiser')}]}:{}),
- textModulesData:[...(!t.venueAddress&&t.venue?[{id:'venue',header:'Venue',body:t.venue}]:[]),{id:'organiser',header:'Presented by',body:t.organiserName||'Event organiser'},{id:'terms',header:'Entry conditions',body:(t.test?'Private wallet/scanner rehearsal only. Not valid for admission to a public event. ':'')+'One admission only. Transferred, cancelled, refunded or used tickets are not valid. Reopen My tickets after attendee changes.'}],
+ textModulesData:[{id:'powered',header:'Platform',body:'Powered by SoundBunker'},...(!t.venueAddress&&t.venue?[{id:'venue',header:'Venue',body:t.venue}]:[]),{id:'organiser',header:'Presented by',body:t.organiserName||'Event organiser'},{id:'terms',header:'Entry conditions',body:(t.test?'Private wallet/scanner rehearsal only. Not valid for admission to a public event. ':'')+'One admission only. Transferred, cancelled, refunded or used tickets are not valid. Reopen My tickets after attendee changes.'}],
  linksModuleData:{uris:[{uri:origin+'/my-tickets',description:'Manage your ticket'},{uri:'mailto:bookings@theticketbunker.com',description:'Customer Services'}]}};
  return {iss:googleCredentials(env).email,aud:'google',typ:'savetowallet',iat:Math.floor(Date.now()/1000),origins:['https://theticketbunker.com','https://www.theticketbunker.com'],payload:{eventTicketClasses:[ticketClass],eventTicketObjects:[ticketObject]}};
 }

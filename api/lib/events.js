@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { sendTransactionalEmail } from './notify.js';
+import {eventTicketArtwork} from './ticketbunker-email-template.js';
 
 export function eventsDatabase() {
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SECRET_KEY) throw new Error('Events database not configured');
@@ -43,19 +44,22 @@ export async function fulfillEventCheckout(checkout, db=eventsDatabase(), connec
     return {status:'needs_attention'};
   }
   if(done.data!=='paid') throw new Error('Unexpected event payment status');
+  if(order.ticket_email_sent_at)return {status:'paid',tickets:order.quantity};
   const [tickets,event,tier]=await Promise.all([
     db.from('sb_event_tickets').select('id,sequence_number').eq('order_id',id).order('sequence_number'),
-    db.from('sb_events').select('title,starts_at,venue,venue_timezone').eq('id',order.event_id).single(),
+    db.from('sb_events').select('title,starts_at,venue,venue_timezone,image_url,event_logo_url,organiser,organiser_profile_id').eq('id',order.event_id).single(),
     db.from('sb_event_tiers').select('name').eq('id',order.tier_id).single()
   ]);
   if(tickets.error || !tickets.data || tickets.data.length!==order.quantity || event.error || tier.error)
     throw new Error('Could not retrieve issued event tickets');
-  const base=(process.env.SITE_URL||'https://www.soundbunker.pt').replace(/\/$/,'');
-  const links=tickets.data.map(t=>base+'/event-ticket.html?id='+encodeURIComponent(t.id)+'&sig='+signedTicket(t.id));
+  const links=tickets.data.map(t=>'https://theticketbunker.com/event-ticket?id='+encodeURIComponent(t.id)+'&sig='+signedTicket(t.id));
   const date=new Intl.DateTimeFormat('en-GB',{dateStyle:'full',timeStyle:'short',timeZone:event.data.venue_timezone||'Europe/Lisbon'}).format(new Date(event.data.starts_at));
   await sendTransactionalEmail({brand:'ticketbunker',
+    artwork:await eventTicketArtwork(db,event.data),
     to:order.customer_email, key:'event-order-'+id, subject:'Your TicketBunker event tickets · '+event.data.title,
     text:'Hi '+order.customer_name+',\n\nYour tickets are confirmed!\n\n'+event.data.title+'\n'+date+' (venue time)\n'+event.data.venue+'\n'+tier.data.name+' · '+order.quantity+' ticket(s)\n\nOpen each ticket on your phone to display its QR code:\n'+links.join('\n')+'\n\nShow each QR code at the door. Each ticket works for one entry only.\n\nSoundBunker Algarve'
   });
+  const delivered=await db.from('sb_event_orders').update({ticket_email_sent_at:new Date().toISOString()}).eq('id',id);
+  if(delivered.error)throw delivered.error;
   return {status:'paid',tickets:tickets.data.length};
 }
