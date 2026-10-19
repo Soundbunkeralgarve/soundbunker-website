@@ -28,7 +28,7 @@ jobs:
         working-directory: ticketbunker-hub-desktop
       - run: npm run prepare:resources
         working-directory: ticketbunker-hub-desktop
-      - name: Test real Electron worker and bundled SQLite
+      - name: Test real desktop startup, renderer and SQLite
         run: npx electron smoke.cjs
         working-directory: ticketbunker-hub-desktop
       - name: Build unsigned packages for QA only

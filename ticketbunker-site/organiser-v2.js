@@ -2,7 +2,7 @@
 'use strict';
 const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s)),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const LEGACY_CUTOFF='2026-10-11T16:00:00Z';
-let sb,session,token,profile,events=[],currentDraft=null,currentPage=new URLSearchParams(location.search).has('capacity')?'capacity':'overview',reportCache={},latestReport=null;
+let sb,session,token,profile,events=[],currentDraft=null,currentPage=new URLSearchParams(location.search).has('hub')?'hub':new URLSearchParams(location.search).has('capacity')?'capacity':'overview',reportCache={},latestReport=null;
 let billingComplete=false,billingRecord=null,connectState=null,connectBusy=false;
 let connectComponent=null;
 function notice(msg,bad=false){const el=$('#notice');el.hidden=false;el.classList.toggle('error',bad);el.textContent=msg;el.scrollIntoView({behavior:'smooth',block:'nearest'});}
@@ -288,8 +288,6 @@ $('#street-form').onsubmit=async e=>{e.preventDefault();const btn=e.submitter;bt
 $('#sign-out').onclick=async()=>{try{await sb.auth.signOut();location.replace('/login.html?next=%2Forganiser.html')}catch(err){notice(err.message,true)}};
 window.addEventListener('hashchange',()=>{const target={'#featured-placement':'promotions','#business-details':'profile','#verification':'verification'}[location.hash];if(target&&profile)page(target);});
 async function boot(){try{const r=await fetch('/api/supabase-config',{cache:'no-store'});if(!r.ok)throw Error('Shared login service is unavailable');const cfg=await r.json();if(!window.supabase)throw Error('Authentication library failed to load');sb=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true}});let auth=await sb.auth.getSession();session=auth.data?.session;if(!session){location.replace('/login.html?next=%2Forganiser.html');return;}const verified=await sb.auth.getUser();if(verified.error||!verified.data.user)throw Error('Please sign in again.');token=session.access_token;window.ticketbunkerAuth=sb;window.ticketbunkerRefresh=async()=>{await reloadEvents();await refresh();};sb.auth.onAuthStateChange((event,s)=>{if(event==='TOKEN_REFRESHED')token=s.access_token;if(event==='SIGNED_OUT')location.replace('/login?role=organiser');});if(!verified.data.user.email_confirmed_at)throw Error('Please confirm your account email before opening the Organiser Portal.');await refresh();window.dispatchEvent(new Event('ticketbunker:ready'));const paidEvent=new URLSearchParams(location.search).get('event');if(paidEvent&&new URLSearchParams(location.search).has('listing')){currentDraft=events.find(e=>e.id===paidEvent)||null;if(currentDraft){page('create');drawReview();nextStep(3);}}if(['#featured-placement','#promotions'].includes(location.hash))page('promotions');if(location.hash==='#business-details')page('profile');if(location.hash==='#verification')page('verification');const onboarding=new URLSearchParams(location.search).get('onboarding');if(onboarding){history.replaceState(null,'','/organiser#verification');page('verification');if(onboarding==='refresh'&&connectState?.canOnboard)await startStripeOnboarding();else if(onboarding==='returned')notice(connectState?.ready?'Stripe has confirmed your account verification.':'You have returned from Stripe. Check the current verification status below.');}}catch(err){$('#loading').classList.add('error');$('#loading-text').textContent=err.message;const a=document.createElement('a');a.href='/login?role=organiser';a.textContent='Return to sign-in →';a.style.color='#00e0a6';$('#loading').append(a);}}
-boot();
-})();
 
 async function loadHubPage(){
  const select=$('#hub-event'),list=safeEvents().filter(isLive);select.innerHTML=list.length?options(list,select.value):'<option value="">No active events</option>';
@@ -301,3 +299,6 @@ async function loadHubPage(){
   for(const item of release.downloads){const url=new URL(item.url);if(url.protocol!=='https:'||url.hostname!=='github.com'||!url.pathname.startsWith('/Soundbunkeralgarve/soundbunker-website/releases/download/ticketbunker-hub-v'))continue;const a=document.createElement('a');a.className='ghost';a.href=url.href;a.textContent=item.label;a.rel='noopener';container.append(a,document.createTextNode(' '));}
  }catch{container.textContent='App downloads are temporarily unavailable. Please check again while connected to the internet.';}
 }
+
+boot();
+})();

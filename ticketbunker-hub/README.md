@@ -36,3 +36,6 @@ The live database migration was declined by the database tool without a stated r
 `npm ci && npm test` in this folder runs real HTTP/encrypted scanner-client integration tests with SQLite: simultaneous scans, 20-phone collision, response replay/tampering, hub restart, disk write failure, staff-specific pairing, revoked devices, cloud outages, safe finishing and first-download response loss. Root tests also run the real migration in isolated PostgreSQL and check pagination / reporting reconciliation. Native tests exercise offline SQLite logic separately.
 
 The data directory defaults to `~/.ticketbunker-hub`. `TB_HUB_DATA_DIR` selects another directory for controlled tests. Both the SQLite database and the lock file must stay on the hub’s local disk. This source package runs in the repository because it shares the protocol and public configuration files from `../ticketbunker-scanner-native/lib/`.
+
+
+For the installable Windows/Mac app, organiser integration and signed release path, see [the desktop app](../ticketbunker-hub-desktop/README.md). The command-line steps above remain available for development.

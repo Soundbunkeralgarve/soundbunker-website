@@ -1,24 +1,27 @@
-// Run by Electron on Windows/Mac CI: exercises its bundled Node/SQLite and real worker IPC.
-const {app,utilityProcess}=require('electron');
+// Exercises the real desktop bootstrap, local renderer, bundled Node/SQLite and worker IPC.
+const {app}=require('electron');
 const {mkdtempSync,rmSync}=require('node:fs');
 const {tmpdir}=require('node:os');
 const path=require('node:path');
-let worker,directory,success=false;
-const timeout=setTimeout(()=>{console.error('Hub worker did not complete its smoke test.');worker?.kill();app.exit(1);},20000);
-app.whenReady().then(()=>{
- directory=mkdtempSync(path.join(tmpdir(),'tb-electron-smoke-'));
- worker=utilityProcess.fork(path.join(__dirname,'.resources/ticketbunker-hub/start.js'),[],{stdio:'pipe',env:{...process.env,TB_HUB_DATA_DIR:directory}});
- worker.stderr?.on('data',b=>process.stderr.write(b));
- worker.on('message',async message=>{
-  try{
-   if(message.type==='failed')throw Error(message.message);
-   if(message.type!=='ready')return;
-   const url=new URL(message.url),key=url.hash.slice(1);
-   const response=await fetch(url.origin+'/admin/status',{headers:{authorization:'Bearer '+key}});
-   const status=await response.json();
-   if(!response.ok||status.total!==0||status.ready!==false||!status.hubId)throw Error('Invalid first-run hub state.');
-   success=true;worker.postMessage({type:'stop'});
-  }catch(e){console.error(e.message);worker.kill();}
- });
- worker.on('exit',code=>{clearTimeout(timeout);rmSync(directory,{recursive:true,force:true});console.log(success&&code===0?'Electron hub worker smoke test passed.':'Electron hub worker smoke test failed.');app.exit(success&&code===0?0:1);});
-}).catch(e=>{console.error(e.message);clearTimeout(timeout);app.exit(1);});
+const {startDesktop}=require('./main.cjs');
+const directory=mkdtempSync(path.join(tmpdir(),'tb-electron-smoke-'));
+let success=false;
+const timeout=setTimeout(()=>{console.error('Hub desktop did not complete its smoke test.');app.exit(1);},20000);
+app.on('will-quit',()=>{
+ clearTimeout(timeout);rmSync(directory,{recursive:true,force:true});
+ console.log(success?'Electron desktop hub and renderer smoke test passed.':'Electron desktop hub and renderer smoke test failed.');
+ if(!success)process.exitCode=1;
+});
+startDesktop({dataDirectory:directory,resourceRoot:path.join(__dirname,'.resources'),onReady:async({window,stop})=>{
+ try{
+  const rendered=await window.webContents.executeJavaScript(`new Promise(resolve=>{
+   const started=Date.now();const poll=()=>{
+    const state=document.getElementById('state')?.textContent;
+    if(state==='ENTRY PAUSED')return resolve(!!document.getElementById('login')&&!document.getElementById('login').hidden&&document.getElementById('total').textContent==='0');
+    if(Date.now()-started>5000)return resolve(false);setTimeout(poll,50);
+   };poll();
+  })`);
+  if(!rendered)throw Error('Hub renderer did not reach a safe first-run screen.');
+  success=true;await stop();
+ }catch(e){console.error(e.message);await stop();}
+}});
