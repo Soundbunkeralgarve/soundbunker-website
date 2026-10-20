@@ -110,6 +110,7 @@ $('#auth-form').addEventListener('submit',async e=>{
  }catch(error){message(error.message||'Unable to sign in. Please try again.',true);}
  finally{busy=false;$('#auth-submit').disabled=false;}
 });
+if(params.get('mode')==='signup')setMode('signup');
 $('#sign-out').onclick=async()=>{await sb.auth.signOut();tickets=[];$('#ticket-list').replaceChildren();showAuth();};
 $('#refresh-tickets').onclick=()=>Promise.allSettled([loadTickets(),loadCancellationRefunds(),loadPostponements()]);
 $('#preferences-form').onsubmit=async e=>{e.preventDefault();const b=e.submitter;b.disabled=true;try{await api('client-marketing-consent',{source:'account',consent:$('#marketing-consent').checked},await currentToken());$('#preferences-status').textContent='Your preference is saved.';}catch(err){$('#preferences-status').textContent=err.message;}finally{b.disabled=false;}};
