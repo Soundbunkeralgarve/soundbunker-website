@@ -419,7 +419,7 @@ async function loadHubPage(){
  const container=$('#hub-downloads');container.textContent='Checking desktop app availability…';
  try{
   const response=await fetch('/api/hub-release');if(!response.ok)throw Error();const release=await response.json();container.replaceChildren();
-  if(!release.available){container.textContent='The desktop app download is being prepared. This setup page will show the Windows and Mac installers when the signed release is published.';return;}
+  if(!release.available){container.textContent='Public installers are being prepared. For organiser testing, use the App Downloads section above.';return;}
   for(const item of release.downloads){const url=new URL(item.url);if(url.protocol!=='https:'||url.hostname!=='github.com'||!url.pathname.startsWith('/Soundbunkeralgarve/soundbunker-website/releases/download/ticketbunker-hub-v'))continue;const a=document.createElement('a');a.className='ghost';a.href=url.href;a.textContent=item.label;a.rel='noopener';container.append(a,document.createTextNode(' '));}
  }catch{container.textContent='App downloads are temporarily unavailable. Please check again while connected to the internet.';}
 }
