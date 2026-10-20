@@ -1,13 +1,10 @@
-import {api} from './shared.js';
 import {shopPreviewEvents} from './shop-preview-events.js';
 import {eventCard} from './event-cards.js';
-const $=s=>document.querySelector(s),nav=$('#navigation'),toggle=$('#menu-toggle');
-toggle.addEventListener('click',()=>{const open=nav.classList.toggle('open');toggle.setAttribute('aria-expanded',String(open));});
-nav.querySelectorAll('a').forEach(a=>a.onclick=()=>{nav.classList.remove('open');toggle.setAttribute('aria-expanded','false');});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){nav.classList.remove('open');toggle.setAttribute('aria-expanded','false');}});
+import {getPublicEvents} from './featured-events.js?v=20261020';
+const $=s=>document.querySelector(s);
 const scenes=[...document.querySelectorAll('.hero-image')],dots=[...document.querySelectorAll('[data-scene]')],labels=['LIVE CROWDS','DJS & DANCEFLOORS','BANDS & LIVE MUSIC'];let current=0,timer,paused=false;
 function scene(i){current=i;scenes.forEach((s,j)=>s.classList.toggle('active',i===j));dots.forEach((s,j)=>{s.classList.toggle('active',i===j);s.setAttribute('aria-pressed',String(i===j));});$('#scene-label').textContent=labels[i];$('#scene-count').textContent=String(i+1).padStart(2,'0')+' / 03';}
-function play(){clearInterval(timer);if(!paused&&!document.hidden&&!matchMedia('(prefers-reduced-motion: reduce)').matches)timer=setInterval(()=>scene((current+1)%scenes.length),6500);}
+function play(){document.querySelector('.hero-images').classList.toggle('motion-paused',paused||document.hidden);clearInterval(timer);if(!paused&&!document.hidden&&!matchMedia('(prefers-reduced-motion: reduce)').matches)timer=setInterval(()=>scene((current+1)%scenes.length),6500);}
 dots.forEach(d=>d.onclick=()=>{scene(Number(d.dataset.scene));play();});
 const pause=document.createElement('button');pause.type='button';pause.className='hero-pause';pause.textContent='Pause';pause.setAttribute('aria-label','Pause hero slideshow');$('.hero-counter').append(pause);pause.onclick=()=>{paused=!paused;pause.textContent=paused?'Play':'Pause';pause.setAttribute('aria-label',paused?'Play hero slideshow':'Pause hero slideshow');play();};
 document.addEventListener('visibilitychange',play);matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change',play);scene(0);play();
@@ -33,16 +30,7 @@ $('#event-search').oninput=render;$('#event-category').onchange=render;
 document.querySelectorAll('[data-category]').forEach(b=>b.onclick=()=>{$('#event-category').value=b.dataset.category;render();});
 narrow.addEventListener('change',render);
 async function load(){try{
- const response=await api('events');catalogue=Array.isArray(response.events)?response.events:[];
+ const response=await getPublicEvents();catalogue=Array.isArray(response.events)?response.events:[];
  catalogue.sort((a,b)=>Number(Boolean(b.featured))-Number(Boolean(a.featured))||Date.parse(a.starts_at)-Date.parse(b.starts_at));catalogueError=false;
 }catch{catalogueError=true;}render();}
 render();load();if(location.pathname==='/events')$('#discover').scrollIntoView();
-// Fail closed until Apple lists this exact app publicly.
-(async()=>{try{
- const d=await api('scanner-store');if(!d.live||!d.url)return;
- const u=new URL(d.url);if(u.protocol!=='https:'||u.hostname!=='apps.apple.com')return;
- const pending=$('#scanner-store-button');if(!pending)return;
- const link=document.createElement('a');link.href=u.href;link.className='scanner-store-live';link.setAttribute('aria-label','Download TicketBunker Scanner on the App Store');link.replaceChildren(...pending.childNodes);pending.replaceWith(link);
- $('#scanner-store-status').textContent='Available now on the App Store';
- const description=$('#scanner-description');if(description)description.textContent='Give authorised door staff one clear way to check guests in. Download TicketBunker Scanner for iPhone.';
-}catch{/* Keep the download disabled if availability cannot be verified. */}})();
