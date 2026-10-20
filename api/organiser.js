@@ -26,7 +26,7 @@ export default async function handler(req,res){
    const organisation=await organiserForUser(db,ctx.user.id);
    if(req.method==='GET') {
      if(!organisation)return json(res,{organiser:null,events:[]});
-     const ev=await db.from('sb_events').select('id,slug,title,description,venue,starts_at,ends_at,status,country_code,currency,venue_timezone,event_kind,image_url,event_logo_url,headline_artist,venue_city,publish_requested_at,public_beta_test,beta_test_expires_at,created_at,internal_free_test,test_expires_at')
+     const ev=await db.from('sb_events').select('id,slug,title,description,venue,starts_at,ends_at,status,country_code,currency,venue_timezone,event_kind,image_url,event_logo_url,headline_artist,venue_city,publish_requested_at,public_beta_test,beta_test_expires_at,created_at,internal_free_test,test_expires_at,postponements:tb_event_postponements(id,applied_at,published_at)')
        .eq('organiser_profile_id',organisation.id).order('starts_at',{ascending:false}).limit(200);
      if(ev.error)throw ev.error;
      const ids=ev.data.map(v=>v.id);
@@ -48,7 +48,7 @@ export default async function handler(req,res){
        id:organisation.id,display_name:organisation.display_name,country_code:organisation.country_code,
        status:organisation.status,stripe_connected:!!organisation.stripe_account_id,
        stripe_capabilities_ready:organisation.stripe_capabilities_ready,tax_review_complete:organisation.tax_review_complete,logo_url:organisation.logo_url||null,listingOffer
-     },events:ev.data.map(e=>({...e,wallet_test:walletTestEvent(e),tiers:tiers.data.filter(t=>t.event_id===e.id),fees:fees.data.filter(f=>f.event_id===e.id),showcase:showcases.data.find(f=>f.event_id===e.id)||null,festivalQuote:festivalQuotes.data.find(f=>f.event_id===e.id)||null,
+     },events:ev.data.map(e=>({...e,rescheduling:e.postponements?.some(p=>p.applied_at&&!p.published_at)||false,wallet_test:walletTestEvent(e),tiers:tiers.data.filter(t=>t.event_id===e.id),fees:fees.data.filter(f=>f.event_id===e.id),showcase:showcases.data.find(f=>f.event_id===e.id)||null,festivalQuote:festivalQuotes.data.find(f=>f.event_id===e.id)||null,
        flexibleTerms:paymentTerms.data.find(f=>f.event_id===e.id)||null,charity:charities.data.find(f=>f.event_id===e.id)||null}))});
    }
    if(req.method!=='POST')return json(res,{error:'Method not allowed'},405);
