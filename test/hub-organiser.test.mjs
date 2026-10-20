@@ -6,7 +6,7 @@ const source=readFileSync(new URL('../ticketbunker-site/organiser-v2.js',import.
 function portal(release){
  const nodes=new Map();const element=()=>({value:'',children:[],addEventListener(){},replaceChildren(){this.children=[];},append(...items){this.children.push(...items);},classList:{toggle(){},add(){},remove(){}}});
  const node=id=>{if(!nodes.has(id))nodes.set(id,element());return nodes.get(id);};
- const document={querySelector:node,querySelectorAll:()=>[],createElement:element,createTextNode:text=>({textContent:text})};
+ const document={addEventListener(){},querySelector:node,querySelectorAll:()=>[],createElement:element,createTextNode:text=>({textContent:text})};
  const context={document,URL,URLSearchParams,AbortSignal,location:{search:'?hub=1',hash:''},window:{addEventListener(){}},fetch:async()=>({ok:true,json:async()=>release})};
  vm.runInNewContext(source.replace('boot();\n})();','globalThis.testHub={load:loadHubPage,page:currentPage,setEvents:list=>events=list};\n})();'),context);
  return {hub:context.testHub,node};
