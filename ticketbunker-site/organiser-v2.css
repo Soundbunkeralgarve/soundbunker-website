@@ -27,3 +27,6 @@
 @media(max-width:650px){.logo-check-actions{align-items:stretch;flex-direction:column}.logo-check-actions .primary{width:100%}}
 
 .embedded-verification{margin-top:24px;padding:20px;background:#fff;border:1px solid #dce8df;border-radius:12px;min-height:140px;scroll-margin-top:20px}.embedded-verification[hidden]{display:none}.embedded-verification [data-connect-container]{min-height:100px}@media(max-width:600px){.embedded-verification{padding:12px;margin-inline:-6px}}
+
+/* Keep action feedback in the form, clear of the sticky header. */
+.notice{scroll-margin-top:100px;width:100%;overflow-wrap:anywhere}.field-error{color:#8b2338;font-weight:700}[aria-invalid=true]{border-color:#b72443!important;scroll-margin-top:100px}

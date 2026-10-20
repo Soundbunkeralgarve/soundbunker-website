@@ -3,9 +3,37 @@
 const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s)),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const LEGACY_CUTOFF='2026-10-11T16:00:00Z';
 let sb,session,token,profile,events=[],currentDraft=null,currentPage=new URLSearchParams(location.search).has('hub')?'hub':new URLSearchParams(location.search).has('capacity')?'capacity':'overview',reportCache={},latestReport=null;
+let savedEventInput=null,posterUploaded=false;
 let billingComplete=false,billingRecord=null,connectState=null,connectBusy=false;
 let connectComponent=null;
-function notice(msg,bad=false){const el=$('#notice');el.hidden=false;el.classList.toggle('error',bad);el.textContent=msg;el.scrollIntoView({behavior:'smooth',block:'nearest'});}
+let feedbackAnchor=null;
+document.addEventListener('submit',e=>{feedbackAnchor=e.submitter||e.target.querySelector('button[type=submit],button:not([type])');},true);
+document.addEventListener('click',e=>{const button=e.target.closest('button');if(button)feedbackAnchor=button;},true);
+function notice(msg,bad=false,anchor=feedbackAnchor){
+ const el=$('#notice');
+ const visible=node=>node?.isConnected&&!node.closest('[hidden]');
+ if(!visible(anchor))anchor=$('.page:not([hidden]) .panel')||$('#onboarding:not([hidden])');
+ if(anchor&&anchor!==el){
+  const row=anchor.closest('.button-row');
+  const target=row||anchor;
+  if(target.matches('.panel,#onboarding'))target.prepend(el);else target.before(el);
+ }
+ el.hidden=false;el.classList.toggle('error',bad);el.setAttribute('role',bad?'alert':'status');el.textContent=msg;
+ if(bad){el.tabIndex=-1;el.focus({preventScroll:true});}
+ const rect=el.getBoundingClientRect();if(rect.top<90||rect.bottom>innerHeight-20)el.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function eventError(err){
+ const form=$('#event-form'),field=err.details?.field,control=field?form.elements.namedItem(field):null;
+ if(control){
+  const hint=document.createElement('small');hint.id='event-field-error';hint.className='field-error';hint.textContent=err.message;control.after(hint);
+  control.setAttribute('aria-invalid','true');control.setAttribute('aria-describedby',hint.id);
+  notice(err.message,true,$('#save-event'));control.focus();control.scrollIntoView({behavior:'smooth',block:'center'});
+ }else notice(err.message,true,$('#save-event'));
+}
+function clearEventError(){
+ $('#event-field-error')?.remove();$$('#event-form [aria-invalid]').forEach(el=>{el.removeAttribute('aria-invalid');el.removeAttribute('aria-describedby')});$('#notice').hidden=true;
+}
+
 async function api(url,body){const liveSession=await sb.auth.getSession();if(!liveSession.data.session)throw Error('Your session expired. Please sign in again.');token=liveSession.data.session.access_token;const r=await fetch(url,{method:body?'POST':'GET',cache:'no-store',headers:{authorization:'Bearer '+token,...body?{'content-type':'application/json'}:{}},body:body?JSON.stringify(body):undefined,signal:AbortSignal.timeout(60000)});let d;try{d=await r.json()}catch{throw Error('The service returned an unreadable response. Please retry.')}if(!r.ok){const error=Error(d.error||'Request failed ('+r.status+')');error.code=d.code;error.details=d;throw error;}return d;}
 function page(name){if(!profile&&name!=='branding'){return showOnboarding();}currentPage=name;$('#notice').hidden=true;$$('.page').forEach(x=>x.hidden=x.id!=='page-'+name);$('#onboarding').hidden=true;$$('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.page===name));$('#sidebar').classList.remove('open');window.scrollTo(0,0);if(name==='create')renderBranding();if(name==='overview')renderOverview();if(name==='events')renderEvents();if(name==='branding')renderBranding();if(name==='profile')renderBillingForms();if(name==='verification')loadStripeStatus();if(name==='reports')loadReportPage();if(name==='staff')loadStaffPage();if(name==='hub')loadHubPage();if(name==='street')loadStreetPage();if(name==='guests')loadGuestPage();if(name==='capacity')loadCapacityPage();window.dispatchEvent(new CustomEvent('ticketbunker:page',{detail:name}));}
 $$('[data-page]').forEach(x=>x.onclick=()=>{if(x.dataset.page==='create')startNewEvent();page(x.dataset.page)});$$('[data-go]').forEach(x=>x.onclick=()=>{if(x.dataset.go==='create')startNewEvent();page(x.dataset.go)});$('#menu-btn').onclick=()=>{const yes=$('#sidebar').classList.toggle('open');$('#menu-btn').setAttribute('aria-expanded',String(yes))};
@@ -237,8 +265,8 @@ $('#brand-save').addEventListener('click',async()=>{
  try{await uploadCheckedLogo('brand')}catch(e){notice(e.message,true);btn.disabled=false;}
 });
 function renderBranding(){if(profile?.logo_url){$('#brand-preview').src=profile.logo_url;$('#brand-preview').hidden=false;$('#brand-preview-hint').hidden=true;}$('#event-brand-preview').src=profile?.logo_url||'/brand-icon.png';}
-$('#event-poster').onchange=e=>{const file=e.target.files[0];if(!file)return;if(file.size>2000000||!['image/png','image/jpeg','image/webp'].includes(file.type)){notice('Poster must be PNG, JPG or WebP under 2 MB.',true);e.target.value='';return;}const reader=new FileReader();reader.onload=()=>{$('#poster-preview').src=reader.result;$('#poster-preview').hidden=false;};reader.readAsDataURL(file);};
-function startNewEvent(){$('#saved-ticket-types').hidden=true;currentDraft=null;$('#event-form').reset();$('#poster-preview').hidden=true;$('#tier-form').reset();const rows=$$('#tier-rows .tier-row');rows.slice(1).forEach(x=>x.remove());nextStep(1);}
+$('#event-poster').onchange=e=>{const file=e.target.files[0];if(!file)return;if(file.size>2000000||!['image/png','image/jpeg','image/webp'].includes(file.type)){notice('Poster must be PNG, JPG or WebP under 2 MB.',true,$('#event-poster'));e.target.value='';return;}const reader=new FileReader();reader.onload=()=>{$('#poster-preview').src=reader.result;$('#poster-preview').hidden=false;};reader.readAsDataURL(file);};
+function startNewEvent(){clearEventError();savedEventInput=null;posterUploaded=false;$('#save-event').textContent='Save event draft →';$('#saved-ticket-types').hidden=true;currentDraft=null;$('#event-form').reset();$('#poster-preview').hidden=true;$('#tier-form').reset();const rows=$$('#tier-rows .tier-row');rows.slice(1).forEach(x=>x.remove());nextStep(1);}
 function openDraftTickets(event){
  if(!event)return;
  currentDraft=event;page('create');$('#tier-form').reset();$$('#tier-rows .tier-row').slice(1).forEach(row=>row.remove());
@@ -249,7 +277,30 @@ function openDraftTickets(event){
 }
 function nextStep(n){[1,2,3].forEach(i=>{$('#event-step-'+i).hidden=i!==n;$$('.step')[i-1].classList.toggle('active',i===n)});$('#page-create').scrollIntoView({behavior:'smooth',block:'start'});}
 function fileData(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=()=>reject(Error('Could not read uploaded image'));r.readAsDataURL(file)});}
-$('#event-form').onsubmit=async e=>{e.preventDefault();const button=e.submitter;button.disabled=true;try{const f=new FormData(e.target),poster=$('#event-poster').files[0];const data={action:'event',title:f.get('title'),kind:f.get('kind'),venue:f.get('venue'),venueCity:f.get('venueCity'),headlineArtist:f.get('headlineArtist'),startsAt:f.get('startsAt'),endsAt:f.get('endsAt'),description:f.get('description')};if(!data.endsAt||Date.parse(data.endsAt)<=Date.parse(data.startsAt))throw Error('Set a finish time after the start time.');const result=await api('/api/organiser',data);currentDraft={...data,...result.event,status:'draft',tiers:[],currency:profile.country_code==='GB'?'gbp':'eur',event_logo_url:profile.logo_url};if(!result.event?.id)throw Error('Event was not saved.');if(poster){const upload=await api('/api/event-media',{eventId:result.event.id,kind:'poster',dataUrl:await fileData(poster)});currentDraft.image_url=upload.url;}notice('Event draft saved successfully. Now choose your ticket types.');await reloadEvents();$('#tier-event-name').textContent=currentDraft.title;$$('.currency-symbol').forEach(x=>x.textContent=profile.country_code==='GB'?'£':'€');nextStep(2);}catch(err){notice(err.message+'. Check My Events before trying again to avoid duplicate drafts.',true)}finally{button.disabled=false;}};
+$('#event-form').onsubmit=async e=>{
+ e.preventDefault();const button=e.submitter||$('#save-event');button.disabled=true;clearEventError();
+ try{
+  const f=new FormData(e.target),poster=$('#event-poster').files[0];
+  const data={action:'event',title:f.get('title'),kind:f.get('kind'),venue:f.get('venue'),venueCity:f.get('venueCity'),headlineArtist:f.get('headlineArtist'),startsAt:f.get('startsAt'),endsAt:f.get('endsAt'),description:f.get('description')};
+  if(!data.endsAt||Date.parse(data.endsAt)<=Date.parse(data.startsAt))throw Object.assign(Error('Set a finish time after the start time.'),{details:{field:'endsAt'}});
+  if(poster&&(poster.size>2000000||!['image/png','image/jpeg','image/webp'].includes(poster.type)))throw Error('Poster must be PNG, JPG or WebP under 2 MB.');
+  const input=JSON.stringify(data);
+  if(savedEventInput&&input!==savedEventInput)throw Error('Your draft is already saved. Finish uploading its poster first, or start a new event from Create Event.');
+  if(!savedEventInput){
+   const result=await api('/api/organiser',data);
+   if(!result.event?.id)throw Error('The service did not confirm the save. Check My Events before retrying.');
+   currentDraft={...data,...result.event,status:'draft',tiers:[],currency:profile.country_code==='GB'?'gbp':'eur',event_logo_url:profile.logo_url};
+   savedEventInput=input;posterUploaded=false;
+  }
+  if(poster&&!posterUploaded){
+   try{const upload=await api('/api/event-media',{eventId:currentDraft.id,kind:'poster',dataUrl:await fileData(poster)});currentDraft.image_url=upload.url;posterUploaded=true;}
+   catch(err){button.textContent='Retry poster upload →';throw Error('Your event draft is saved, but its poster could not upload. '+err.message+' Use Retry poster upload to continue with the same draft.');}
+  }
+  $('#tier-event-name').textContent=currentDraft.title;$$('.currency-symbol').forEach(x=>x.textContent=profile.country_code==='GB'?'£':'€');
+  nextStep(2);notice('Event draft and poster saved. Now choose your ticket types.',false,$('#tier-form button[type=submit]'));
+  try{await reloadEvents()}catch{notice('Your event draft and poster are saved. The event list could not refresh; you can continue with ticket options.',true,$('#tier-form button[type=submit]'));}
+ }catch(err){eventError(err)}finally{button.disabled=false;}
+};
 function addTierRow(){let first=$('#tier-rows .tier-row');const clone=first.cloneNode(true);clone.querySelectorAll('input').forEach(i=>{i.value=i.name==='capacity'?'100':''});clone.querySelector('.remove-tier').onclick=()=>clone.remove();$('#tier-rows').appendChild(clone);}
 $('#add-tier').onclick=()=>{if($$('#tier-rows .tier-row').length>=10)return notice('Maximum ten types per batch.',true);addTierRow()};
 $$('.remove-tier').forEach(x=>x.onclick=()=>{if($$('#tier-rows .tier-row').length>1)x.closest('.tier-row').remove()});

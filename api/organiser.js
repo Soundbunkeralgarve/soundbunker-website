@@ -82,21 +82,24 @@ export default async function handler(req,res){
      if(charityEvent&&!/^[A-Za-z0-9][A-Za-z0-9 .\/-]{2,39}$/.test(charityNumber))
        return json(res,{error:'Enter the registered charity number (3–40 characters)'},400);
      const startsAt=String(body.startsAt||''),endsAt=String(body.endsAt||'');
-     if(title.length<3||!venue||!['show','festival','workshop','club','community','comedy','sports','other'].includes(category)||description.length<20)
-       return json(res,{error:'Check your event name, link, venue, dates and category'},400);
+     for(const [field,valid,error] of [
+       ['title',title.length>=3,'Enter an event name of at least 3 characters.'],
+       ['venue',!!venue,'Enter the venue name and address.'],
+       ['kind',['show','festival','workshop','club','community','comedy','sports','other'].includes(category),'Choose an event category.'],
+       ['description',description.length>=20,'Add at least 20 characters of event information.']
+     ])if(!valid)return json(res,{error,field},400);
      const place=organiserCountries[organisation.country_code];
+     if(!place)return json(res,{error:'Your organiser country needs checking. Please contact Customer Services.'},409);
      let startInstant,endInstant;
-     try {
-       startInstant=localEventInstant(startsAt,place.timezone);
-       endInstant=endsAt?localEventInstant(endsAt,place.timezone):null;
-     } catch(error){return json(res,{error:error.message},400);}
-     if(Date.parse(startInstant)<=Date.now()||(endInstant&&Date.parse(endInstant)<=Date.parse(startInstant)))
-       return json(res,{error:'Enter a future event with the end after its start'},400);
+     try{startInstant=localEventInstant(startsAt,place.timezone)}catch(error){return json(res,{error:error.message,field:'startsAt'},400);}
+     try{endInstant=localEventInstant(endsAt,place.timezone)}catch(error){return json(res,{error:error.message,field:'endsAt'},400);}
+     if(Date.parse(startInstant)<=Date.now())return json(res,{error:'Choose an event start in the future.',field:'startsAt'},400);
+     if(Date.parse(endInstant)<=Date.parse(startInstant))return json(res,{error:'Set a finish time after the start time.',field:'endsAt'},400);
      const details={
        title,venue,organiser:organisation.display_name,organiser_profile_id:organisation.id,
        country_code:organisation.country_code,currency:place.currency,venue_timezone:place.timezone,
        starts_at:startInstant,ends_at:endInstant,
-       event_logo_url:organisation.logo_url||null,listingOffer:await clientControl(db,organisation.id),
+       event_logo_url:organisation.logo_url||null,
        event_kind:category,description,headline_artist:safeText(body.headlineArtist,120),venue_city:safeText(body.venueCity,120),
        image_url:/^https:\/\/[^\s]+$/i.test(body.imageUrl||'')?safeText(body.imageUrl,900):null,
        status:'draft'
