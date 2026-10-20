@@ -17,7 +17,10 @@ async function pf(path,method='GET',body){
  if(!process.env.PRINTFUL_TOKEN)throw Error('Supplier connection is unavailable');
  if(!(method==='GET'&&/^\/(?:store\/(?:products|variants)\/\d+|products\/\d+|files\/\d+)$/.test(path))&&!(method==='PUT'&&/^\/store\/variants\/\d+$/.test(path))&&!(method==='POST'&&['/orders/estimate-costs','/shipping/rates'].includes(path)))throw Error('Supplier operation is not allowed');
  const wait=650-(Date.now()-lastRequest);if(wait>0)await new Promise(r=>setTimeout(r,wait));lastRequest=Date.now();
- const r=await fetch('https://api.printful.com'+path,{method,headers:{authorization:'Bearer '+process.env.PRINTFUL_TOKEN,'Content-Type':'application/json',...(process.env.PRINTFUL_STORE_ID?{'X-PF-Store-Id':process.env.PRINTFUL_STORE_ID}:{})},...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(25000)});
+ // A short-lived, store-scoped maintenance token can supply product editing
+ // without replacing or expanding the live checkout connection.
+ const token=method==='PUT'?(process.env.PRINTFUL_BRANDING_TOKEN||process.env.PRINTFUL_TOKEN):process.env.PRINTFUL_TOKEN;
+ const r=await fetch('https://api.printful.com'+path,{method,headers:{authorization:'Bearer '+token,'Content-Type':'application/json',...(process.env.PRINTFUL_STORE_ID?{'X-PF-Store-Id':process.env.PRINTFUL_STORE_ID}:{})},...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(25000)});
  const data=await r.json();if(!r.ok||data.code>=400)throw Error('Provider '+r.status+': '+String(data.error?.message||data.result||'request failed').slice(0,350));return data.result;
 }
 const cents=value=>Math.round(Number(value||0)*100);
