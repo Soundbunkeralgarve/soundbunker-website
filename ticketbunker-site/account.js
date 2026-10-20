@@ -8,6 +8,7 @@ const role=params.get('role')==='organiser'||oldRole||next.startsWith('/organise
 let mode='login',sb,session,tickets=[],change=null,busy=false;
 const adminMode=next==='/control-room';
 const returnTo=next||(role==='organiser'?'/organiser':'/my-tickets');
+const loginPath='/login?role='+role+(next?'&next='+encodeURIComponent(next):'');
 function message(text,bad=false){$('#auth-message').textContent=text;$('#auth-message').classList.toggle('error',bad);}
 function setMode(value){
  mode=value;const signup=mode==='signup',reset=mode==='reset',recover=mode==='recover';
@@ -70,7 +71,7 @@ $('#auth-form').addEventListener('submit',async e=>{
   const email=$('#email').value.trim(),password=$('#password').value;
   if(mode==='reset'){
    if(adminMode){const reply=await api('ticketbunker-password-reset',{email});message(reply.message);return;}
-   result=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+'/login?recovery=1'+(next?'&next='+encodeURIComponent(next):'')});
+   result=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+loginPath+'&recovery=1'});
    if(result.error)throw result.error;message('If there is an account for that email, a password reset link is on its way.');return;
   }
   if(mode==='recover'){
@@ -106,10 +107,10 @@ $('#ticket-form').onsubmit=async e=>{
 (async()=>{
  try{
   sb=await authClient();
-  const recovery=params.has('recovery')||params.has('invite')||location.hash.includes('type=recovery')||location.hash.includes('type=invite');
+  const recovery=params.has('recovery')||params.has('invite')||params.has('token_hash')||location.hash.includes('type=recovery')||location.hash.includes('type=invite');
   sb.auth.onAuthStateChange((event,s)=>{if(event==='PASSWORD_RECOVERY'){showAuth();setMode('recover');}else if(event==='SIGNED_OUT')showAuth();else if(event==='TOKEN_REFRESHED')session=s;});
   const tokenHash=params.get('token_hash');
-  if(tokenHash){history.replaceState(null,'','/login?recovery=1&next=%2Fcontrol-room');const verified=await sb.auth.verifyOtp({token_hash:tokenHash,type:'recovery'});params.delete('token_hash');if(verified.error)throw Error('This password link has expired or was already used. Select Forgot your password to request a new TicketBunker link.');}
+  if(tokenHash){history.replaceState(null,'',loginPath+'&recovery=1');const verified=await sb.auth.verifyOtp({token_hash:tokenHash,type:params.has('invite')?'invite':'recovery'});params.delete('token_hash');if(verified.error)throw Error('This password link has expired or was already used. Select Forgot your password to request a new TicketBunker link.');}
   const {data,error}=await sb.auth.getSession();if(error)throw error;
   if(recovery&&data.session){showAuth();setMode('recover');}
   else if(data.session)await enter(data.session);else showAuth();

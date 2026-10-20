@@ -76,12 +76,13 @@ test('checkout collects the face value on the platform and waits for post-event 
 test('unready recipients/platform and unpaid listing fees cannot start checkout',async()=>{
  for(const options of [{ready:false},{recipient:false},{paid:false}]){const f=await checkoutFixture(options);assert.ok((await f.run()).status>=400);assert.equal(f.calls.length,0);}
 });
-async function webhookFixture({recipient=false}={}){
+async function webhookFixture({recipient=false,payoutStatus='paid',payoutFails=false}={}){
  const done=new Set(),calls=[],secret='whsec_synthetic';
  const db={from(){const q={select(){return q},update(v){calls.push(v);return q},then(resolve){return Promise.resolve({}).then(resolve)},eq(k,v){q.eventId=v;return q},maybeSingle:async()=>({data:done.has(q.eventId)?{stripe_event_id:q.eventId}:null}),upsert:async v=>{done.add(v.stripe_event_id);return {}}};return q;}};
  const context=vm.createContext({console:{error(){}},process:{env:{TICKETBUNKER_STRIPE_WEBHOOK_SECRET:secret}}});
  const exports={
  './organiser-connect.js':{fetchConnectStatus:async()=>{calls.push('fresh-status');return {ready:recipient}}},
+ './lib/ticketbunker-stripe.js':{ticketBunkerStripe:async(path,options)=>{calls.push({path,account:options.account});if(payoutFails)throw Error('Stripe unavailable');return {id:'po_synthetic',status:payoutStatus,livemode:true,arrival_date:2000000000}}},
  './lib/stripe.js':{verifyStripeSignature},'./lib/http.js':{json:(r,data,status=200)=>({data,status}),readRawBody:async r=>r.body},
  './lib/events.js':{eventsDatabase:()=>db,fulfillEventCheckout:async()=>calls.push('fulfill')},
  './lib/ticketbunker-payments.js':{chargeForTicketCheckout:async()=>calls.push('ledger'),refreshTicketCharge:async()=>calls.push('refresh')},
@@ -102,3 +103,12 @@ test('a legacy direct-charge event cannot issue tickets through the isolated Tic
 });
 
 test('account updates use fresh verification rather than trusting event claims',async()=>{for(const recipient of [false,true]){const f=await webhookFixture({recipient});const e={id:'evt_account',livemode:true,account:'acct_Synthetic',type:'account.updated',data:{object:{id:'acct_Synthetic',payouts_enabled:true}}};assert.equal((await f.run(e)).status,200);assert.equal(f.calls[0],'fresh-status');assert.equal(f.calls[1].stripe_capabilities_ready,recipient);}});
+
+ test('delayed payout snapshots read current connected-account status instead of reverting paid to processing',async()=>{
+  const f=await webhookFixture();const e={id:'evt_payout',livemode:true,account:'acct_Synthetic',type:'payout.updated',data:{object:{id:'po_synthetic',status:'pending'}}};
+  assert.equal((await f.run(e)).status,200);assert.deepEqual(f.calls[0],{path:'/v1/payouts/po_synthetic',account:'acct_Synthetic'});assert.equal(f.calls[1].payout_status,'paid');assert.match(f.calls[1].payout_message,/confirmed/);
+ });
+ test('payout verification failure requests webhook retry without saving the stale snapshot',async()=>{
+  const f=await webhookFixture({payoutFails:true});const e={id:'evt_retry',livemode:true,account:'acct_Synthetic',type:'payout.paid',data:{object:{id:'po_synthetic',status:'paid'}}};
+  assert.equal((await f.run(e)).status,500);assert.equal(f.calls.length,1);assert.equal((await f.run(e)).status,500);assert.equal(f.calls.length,2);
+ });

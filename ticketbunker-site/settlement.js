@@ -3,8 +3,11 @@ import {payoutView} from './payout-summary.js';
 
 let latest=null,requestNumber=0;
 async function load(){
- const id=$('#report-event').value;if(!id){latest=null;$('#downloadReport').disabled=true;$('#settlementStatus').textContent='Select an event to see its reporting schedule.';$('#settlementBody').replaceChildren();$('#refundRequests').replaceChildren();$('#payoutChoice').replaceChildren();return;}
- const seq=++requestNumber;$('#settlementStatus').textContent='Checking report and payout…';$('#downloadReport').disabled=true;
+ const seq=++requestNumber,id=$('#report-event').value;
+ latest=null;$('#downloadReport').disabled=true;
+ $('#settlementBody').replaceChildren();$('#refundRequests').replaceChildren();$('#payoutChoice').replaceChildren();
+ if(!id){$('#settlementStatus').textContent='Select an event to see its reporting schedule.';return;}
+ $('#settlementStatus').textContent='Checking report and payout…';
  try{
   const {data:{session}}=await window.ticketbunkerAuth.auth.getSession();
   const d=await api('settlement?eventId='+encodeURIComponent(id),null,session?.access_token);
@@ -17,7 +20,7 @@ async function load(){
   if(seq!==requestNumber)return;
   $('#refundRequests').innerHTML=d.refundRequests?.length?'<h4>Refund requests to review</h4>'+d.refundRequests.map(x=>`<article class="refund-request"><strong>${esc(x.status.replaceAll('_',' '))}</strong><p>${esc(x.reason)}</p><small>Request ${esc(x.id)} · ${esc(date(x.created_at,zone))}</small><p>Payment refunds require review and Stripe confirmation. Recording a request does not issue money.</p></article>`).join(''):'';
   $('#downloadReport').disabled=!r;
- }catch(e){if(seq!==requestNumber)return;$('#settlementStatus').textContent=e.message;$('#settlementBody').replaceChildren();}
+ }catch(e){if(seq!==requestNumber)return;latest=null;$('#settlementStatus').textContent=e.message;$('#settlementBody').replaceChildren();$('#refundRequests').replaceChildren();$('#payoutChoice').replaceChildren();$('#downloadReport').disabled=true;}
 }
 $('#downloadReport').onclick=()=>{
  if(!latest?.report)return;const d=latest,r=d.report,v=payoutView(d),c=d.event.currency;
@@ -36,14 +39,22 @@ async function renderPayoutChoice(d,token,seq){
  if(!d.event.ends_at||Date.parse(d.event.ends_at)<=Date.now())return;
  try{
   const o=await api('ticketbunker-finance?eventId='+encodeURIComponent(d.event.id)+'&action=payoutOptions',null,token);
-  if(seq!==requestNumber||!o.canChoose)return;
+  if(seq!==requestNumber)return;
+  if(!o.canChoose){target.textContent=o.message||'';return;}
   const current=d.settlement?.payout_option||'standard';
   target.innerHTML='<h3>Choose your payout</h3><p>Your report and payout run automatically after the event. Save your choice before the recorded finish time.</p><form id="payout-choice-form"><label>Payout speed<select name="option"><option value="standard">Standard · no speed fee · normally 2–3 working days</option><option value="fast"'+(!o.fastEligible?' disabled':'')+'>Fast Payout · eligible instant payment · 1% fee</option></select></label><p>'+(o.fastEligible?'Fast Payout: 1% of the instant payout is deducted from proceeds, with no TicketBunker markup. For example, €1,010 of net proceeds gives a €1,000 payout and a €10 fee. Eligible payments usually arrive within 30 minutes.':'Fast Payout needs an eligible bank destination. Standard payout is available automatically.')+'</p><label class="check"><input name="confirmed" type="checkbox" required><span>I confirm this payout choice and, if selecting Fast Payout, agree to deduct its disclosed fee from event proceeds.</span></label><button class="secondary" type="submit">Save payout choice</button><p id="payout-choice-status" role="status"></p></form>';
   target.querySelector('select').value=current;
   target.querySelector('form').onsubmit=async e=>{
-   e.preventDefault();const b=e.submitter;b.disabled=true;const status=target.querySelector('#payout-choice-status');
-   try{const result=await api('ticketbunker-finance',{action:'payoutOptions',eventId:d.event.id,option:target.querySelector('select').value,confirmed:true},token);status.textContent=result.message;}
-   catch(error){status.textContent=error.message;}finally{b.disabled=false;}
+   e.preventDefault();if(seq!==requestNumber||$('#report-event').value!==d.event.id)return;
+   const form=e.currentTarget,b=e.submitter||form.querySelector('button'),status=form.querySelector('#payout-choice-status'),option=form.querySelector('select').value;
+   if(b.disabled||!form.reportValidity())return;b.disabled=true;status.textContent='Saving payout choice…';
+   try{
+    const {data:{session}}=await window.ticketbunkerAuth.auth.getSession();
+    if(!session)throw Error('Your session expired. Please sign in again.');
+    if(seq!==requestNumber)return;
+    const result=await api('ticketbunker-finance',{action:'payoutOptions',eventId:d.event.id,option,confirmed:true},session.access_token);
+    if(seq===requestNumber)status.textContent=result.message;
+   }catch(error){if(seq===requestNumber)status.textContent=error.message;}finally{b.disabled=false;}
   };
  }catch(error){if(seq===requestNumber)target.textContent='Payout settings: '+error.message;}
 }

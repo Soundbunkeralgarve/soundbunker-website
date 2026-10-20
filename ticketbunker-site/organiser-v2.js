@@ -43,7 +43,7 @@ function isLive(e){return e.status==='published'&&Date.parse(e.starts_at)>Date.n
 function options(arr,selected=''){return arr.map(e=>'<option value="'+esc(e.id)+'"'+(e.id===selected?' selected':'')+'>'+esc(e.title)+'</option>').join('')}
 function empty(msg){return '<div class="empty">'+esc(msg)+'</div>'}
 function drawEvent(e){return '<div class="event-row">'+(e.image_url?'<img class="thumb" src="'+esc(e.image_url)+'" alt="Event poster">':'<img class="thumb" src="/brand-icon.png" alt="">')+'<div class="event-detail"><span class="eyebrow">'+esc(e.status==='published'?'Published':e.publish_requested_at?'Publication pending':'Draft')+'</span><h3>'+esc(e.title)+'</h3><p>'+esc(e.venue)+' · '+new Date(e.starts_at).toLocaleString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})+'</p></div><div class="event-actions"><button class="ghost" data-report="'+esc(e.id)+'" type="button">Reports ↗</button>'+(e.status==='published'&&e.slug?'<a class="ghost" href="/event/'+encodeURIComponent(e.slug)+'" target="_blank" rel="noopener">View event page ↗</a><button class="primary" type="button" data-promote="'+esc(e.id)+'">Share &amp; promote ↗</button>':'')+(e.status==='draft'?'<button class="ghost" type="button" data-tickets="'+esc(e.id)+'">Tickets ↗</button>':'')+'</div></div>';}
-function wireRows(root){root.querySelectorAll('[data-promote]').forEach(b=>b.onclick=async()=>{const event=events.find(e=>e.id===b.dataset.promote);if(!event)return;const {sharePanel,wireShare}=await import('./event-share.js');let panel=document.getElementById('event-social-tools');if(!panel){panel=document.createElement('dialog');panel.id='event-social-tools';document.body.append(panel);}panel.innerHTML='<form method="dialog"><button class="ghost">Close ×</button></form>'+sharePanel(event);wireShare(panel.querySelector('.social-share'),event);panel.showModal();});root.querySelectorAll('[data-report]').forEach(b=>b.onclick=()=>{page('reports');$('#report-event').value=b.dataset.report;fetchReport(b.dataset.report)});root.querySelectorAll('[data-tickets]').forEach(b=>b.onclick=()=>{openDraftTickets(events.find(e=>e.id===b.dataset.tickets));});}
+function wireRows(root){root.querySelectorAll('[data-promote]').forEach(b=>b.onclick=async()=>{const event=events.find(e=>e.id===b.dataset.promote);if(!event)return;const {sharePanel,wireShare}=await import('./event-share.js');let panel=document.getElementById('event-social-tools');if(!panel){panel=document.createElement('dialog');panel.id='event-social-tools';document.body.append(panel);}panel.innerHTML='<form method="dialog"><button class="ghost">Close ×</button></form>'+sharePanel(event);wireShare(panel.querySelector('.social-share'),event);panel.showModal();});root.querySelectorAll('[data-report]').forEach(b=>b.onclick=()=>{page('reports');$('#report-event').value=b.dataset.report;$('#report-event').dispatchEvent(new Event('change'))});root.querySelectorAll('[data-tickets]').forEach(b=>b.onclick=()=>{openDraftTickets(events.find(e=>e.id===b.dataset.tickets));});}
 async function loadCapacityNotifications(){try{const r=await api('/api/event-capacity');const seen=new Set();const alerts=r.alerts.filter(a=>!seen.has(a.event_id)&&seen.add(a.event_id));$('#capacity-banner').hidden=!alerts.length;$('#capacity-banner').innerHTML=alerts.map(a=>'<p><strong>'+esc(a.title)+'</strong> reached '+a.threshold+'% allocation ('+a.used+' / '+a.capacity+'). <a href="/organiser?capacity='+esc(a.event_id)+'">Review current capacity →</a></p>').join('');}catch{/* Capacity detail remains available from navigation. */}}
 async function loadGuestPage(){const list=safeEvents().filter(e=>isLive(e)&&!e.public_beta_test);$('#guests-event').innerHTML=options(list,$('#guests-event').value);await fetchGuestPage();}
 async function fetchGuestPage(){const id=$('#guests-event').value;$('#guests-roster').textContent='';$('#guests-form').hidden=!id;if(!id){$('#guests-roster').innerHTML=empty('Publish an event to allocate guest passes.');return;}
@@ -84,6 +84,19 @@ function showOnboarding(){
  $('#sidebar-name').textContent=profile?.display_name||'New organiser';
  renderBillingForms();
 }
+
+$('#register-form').onsubmit=async e=>{
+ e.preventDefault();const form=e.currentTarget,button=e.submitter||form.querySelector('button[type=submit]');
+ if(button.disabled)return;button.disabled=true;$('#notice').hidden=true;
+ try{
+  const fields=new FormData(form);
+  const result=await api('/api/organiser',{action:'register',displayName:String(fields.get('displayName')||'').trim(),country:fields.get('country'),acceptTerms:form.elements.acceptTerms.checked});
+  if(!result.organiser?.id)throw Error('The service did not confirm your organiser profile. Please retry.');
+  profile=result.organiser;billingRecord=null;billingComplete=false;connectState=null;
+  showOnboarding();notice('Organiser profile saved. Next, upload your logo.',false,$('#initial-logo-save'));
+  $('#initial-logo-file').focus();
+ }catch(err){notice(err.message,true,button);}finally{button.disabled=false;}
+};
 
 const billFields=['entity_type','legal_name','contact_name','billing_email','phone','address_line_1','address_line_2','city','postal_code','vat_number'];
 async function loadBilling(){
@@ -184,9 +197,9 @@ async function saveBilling(event){
   const saved=await sb.from('tb_organiser_billing').upsert(record,{onConflict:'organiser_profile_id'}).select('organiser_profile_id').single();
   if(saved.error)throw Error('Unable to save billing details: '+saved.error.message);
   billingRecord=record;billingComplete=true;renderBillingForms();
-  notice('Company and billing details saved. No registration or membership charge.');
-  if(form.id==='billing-form'){await refresh();page('verification');}
+  if(form.id==='billing-form')page('verification');
   else $('#billing-edit-status').textContent='Billing details updated successfully.';
+  notice('Company and billing details saved. No registration or membership charge.',false,form.id==='billing-form'?$('[data-connect-start]'):btn);
  }catch(err){
   const node=form.id==='billing-form'?$('#billing-status'):$('#billing-edit-status');
   if(node)node.textContent=err.message;
@@ -254,8 +267,10 @@ async function uploadCheckedLogo(which){
  const result=await api('/api/organiser-brand',{dataUrl:checked.uri});
  if(!result.logoUrl)throw Error('Logo was not saved. Please try again.');
  profile.logo_url=result.logoUrl;
- notice('Your logo is saved and will appear with TicketBunker branding on event pages and tickets.');
- checkedLogo.delete(which);await refresh();return result.logoUrl;
+ checkedLogo.delete(which);renderBranding();
+ if(which==='initial')showOnboarding();
+ notice('Your logo is saved.'+(billingComplete?' It will appear on your events and tickets.':' Next, save your company and billing details.'),false,which==='initial'?$('#save-billing'):$('#brand-save'));
+ void loadStripeStatus();return result.logoUrl;
 }
 $('#initial-logo-file').addEventListener('change',()=>checkSelectedLogo('initial'));
 $('#brand-file').addEventListener('change',()=>checkSelectedLogo('brand'));
@@ -359,10 +374,11 @@ function renderListingPayment(){
  const capacity=(currentDraft?.tiers||[]).reduce((s,t)=>s+t.quantity_total,0),paid=currentDraft?.fees?.some(f=>f.status==='paid'),offer=profile?.listingOffer,free=offer?.listing_discount_percent===100&&(!offer.valid_until||Date.parse(offer.valid_until)>Date.now()),waived=free||currentDraft?.charity?.status==='verified';
  const band=capacity<=100?['starter',9900]:capacity<=500?['standard',19900]:capacity<=1000?['headline',29900]:['event_plus',39900];
  const rate=offer&&(!offer.valid_until||Date.parse(offer.valid_until)>Date.now())?Number(offer.listing_discount_percent||0):0,amount=band[1]-Math.round(band[1]*rate/100),button=$('#pay-listing');
- button.hidden=paid||waived||!capacity;button.dataset.plan=band[0];button.disabled=!connectState?.ready||!profile?.tax_review_complete;
+ button.hidden=paid||waived||!capacity;button.dataset.plan=band[0];button.disabled=connectState?.ticketSalesEnabled!==true;
  button.textContent='Pay '+money(amount,currentDraft?.currency||'eur')+' event listing →';
- const accountReady=connectState?.ready&&profile?.tax_review_complete;
- $('#request-review').disabled=!capacity||!accountReady||!(paid||waived);
+ const accountReady=connectState?.ticketSalesEnabled===true;
+ $('#request-review').disabled=!capacity||capacity>2000||!accountReady||!(paid||waived);
+ $('#review-message').textContent=!capacity?'Add a priced ticket type to continue.':capacity>2000?'Events above 2,000 tickets need an agreed larger-event plan. Contact Customer Services.':!accountReady?(connectState?.ready?(connectState.billingReviewComplete?'Your draft is saved. Ticket payments are waiting for platform activation.':'Your draft is saved. Complete the billing and tax review in Account Validation to publish.'):'Your draft is saved. Complete Account Validation to publish.'):!(paid||waived)?'Your draft is saved. Complete the listing payment below, then publish your event.':'Your draft is ready. Choose Publish event to make tickets available.';
  $('#listing-payment-review').textContent=paid?'Your event listing payment is confirmed.':waived?'Your fixed-band listing fee is waived. Payment and tax verification still apply.':!capacity?'Add ticket types to calculate your event listing fee.':button.disabled?'Complete Stripe verification and billing/tax confirmation before paying the listing fee.':'Listing fee: '+money(amount,currentDraft?.currency||'eur')+' including applicable VAT / IVA. Payment processing remains separate. No added buyer booking fee.';
 }
 $('#pay-listing').onclick=async()=>{const button=$('#pay-listing');button.disabled=true;try{const r=await api('/api/organiser-listing',{eventId:currentDraft.id,plan:button.dataset.plan});if(r.waived){notice(r.message);await reloadEvents();drawReview();return;}const target=new URL(r.url);if(target.origin!=='https://checkout.stripe.com')throw Error('Invalid payment link');location.assign(target.href);}catch(error){notice(error.message,true);button.disabled=false;}};
@@ -381,10 +397,10 @@ $('#request-review').onclick=async()=>{
 async function reloadEvents(){const r=await api('/api/organiser');events=r.events||[];profile=r.organiser||profile;const item=events.find(e=>e.id===currentDraft?.id);if(item)currentDraft=item;return r;}
 async function fetchReport(id,overview=false){if(!id)return;try{const {report}=await api('/api/event-organiser-report?eventId='+encodeURIComponent(id));reportCache[id]=report;if(overview){const reports=await Promise.allSettled(safeEvents().filter(ev=>ev.status==='published').slice(0,50).map(ev=>reportCache[ev.id]?Promise.resolve(reportCache[ev.id]):api('/api/event-organiser-report?eventId='+encodeURIComponent(ev.id)).then(z=>z.report)));let paid=0,checked=0,revenue=0;reports.forEach(z=>{if(z.status==='fulfilled'){paid+=z.value.paidTickets||0;checked+=z.value.paidCheckedIn||0;revenue+=z.value.revenueCents||0;}});$('#metric-paid').textContent=paid;$('#metric-scanned').textContent=checked;$('#metric-money').textContent=money(revenue,profile.country_code==='GB'?'gbp':'eur');return;}
 if($('#report-event').value!==id)return;latestReport=report;renderReport(report);
-}catch(err){if(!overview)$('#report-body').innerHTML='<p>'+esc(err.message)+'</p>';}}
+}catch(err){if(!overview&&$('#report-event').value===id)$('#report-body').innerHTML='<p>'+esc(err.message)+'</p>';}}
 function renderReport(r){if(!r)return;$('#report-body').innerHTML=(r.exceptionalCheckedIn?'<p class="preview-note">'+Number(r.exceptionalCheckedIn)+' ticket entries were recorded against orders that are now cancelled or refunded. Review these separately from paid attendance.</p>':'')+(r.attendancePending?'<p class="preview-note" role="status"><strong>Awaiting offline scanner sync.</strong> These are confirmed uploaded check-ins. Final attendance and no-show totals will update after the hubs and offline scanners finish syncing.</p>':'')+'<div class="report-brand">'+(r.organiserLogo?'<img src="'+esc(r.organiserLogo)+'" alt="Organiser logo">':'')+'<div><strong>'+esc(r.title)+'</strong><br><span>'+esc(r.organiserName||profile.display_name)+' · Powered by TicketBunker</span></div><img src="/brand-icon.png" alt="TicketBunker" style="width:45px;height:45px;margin-left:auto"></div><div class="report-stats"><div class="metric"><span>PAID TICKETS</span><strong>'+Number(r.paidTickets||0)+'</strong></div><div class="metric"><span>GROSS REVENUE</span><strong>'+esc(money(r.revenueCents,r.currency))+'</strong></div><div class="metric"><span>DOOR CHECK-INS</span><strong>'+Number(r.paidCheckedIn||0)+'</strong></div><div class="metric"><span>'+esc(r.attendancePending?'AWAITING SCANNER SYNC':r.eventFinished?'NO-SHOWS':'NOT YET SCANNED')+'</span><strong>'+(r.attendancePending?'Pending':Number(r.paidNotCheckedIn||0))+'</strong></div></div><p><strong>Guest passes: '+Number(r.guestTickets||0)+' issued · '+Number(r.guestCheckedIn||0)+' scanned</strong></p><h3>Scanner crew activity</h3>'+(r.scannedByStaff?.length?'<table class="report-table"><thead><tr><th>Staff member</th><th>Paid scans</th></tr></thead><tbody>'+r.scannedByStaff.map(x=>'<tr><td>'+esc(x.name)+'</td><td>'+Number(x.paid||0)+'</td></tr>').join('')+'</tbody></table>':empty('No scanner activity yet.'))+'<p class="preview-note">Paid ticket sales are counted independently of scans. Processing fees and payouts are reconciled separately.</p>';}
 function loadReportPage(){const list=safeEvents(),s=$('#report-event');s.innerHTML='<option value="">Select an event</option>'+options(list,s.value);if(s.value)fetchReport(s.value);else $('#report-body').innerHTML=empty('Select an event to see verified reporting data.');window.dispatchEvent(new Event('ticketbunker:reports'));}
-$('#report-event').onchange=e=>fetchReport(e.target.value);$('#refresh-report').onclick=()=>fetchReport($('#report-event').value);
+$('#report-event').onchange=e=>{latestReport=null;$('#report-body').innerHTML=empty(e.target.value?'Loading event report…':'Select an event to see verified reporting data.');if(e.target.value)fetchReport(e.target.value);};$('#refresh-report').onclick=()=>fetchReport($('#report-event').value);
 function loadStaffPage(){const list=safeEvents().filter(isLive);$('#staff-event').innerHTML='<option value="">Choose a published event</option>'+options(list);$('#staff-form').hidden=!list.length;$('#staff-list').innerHTML=list.length?empty('Choose a published event to manage scanner invitations.'):empty('Publish an event first. Scanner crew invitations appear only after the event is live.');}
 $('#staff-event').onchange=async()=>{const id=$('#staff-event').value;if(!id)return;try{const d=await api('/api/event-staff?eventId='+encodeURIComponent(id));$('#staff-list').innerHTML=(d.staff||[]).filter(x=>!x.revoked_at).map(x=>'<div class="roster-line">'+esc(x.email||x.user_id)+' · Active <button class="ghost" data-revoke-user="'+esc(x.user_id)+'">Revoke access</button></div>').join('')+(d.invites||[]).filter(x=>!x.revoked_at&&!x.accepted_at).map(x=>'<div class="roster-line">'+esc(x.invited_email)+' · Invitation pending <button class="ghost" data-revoke-invite="'+esc(x.id)+'">Revoke invitation</button></div>').join('')||empty('No active scanner crew or invitations.');}catch(err){notice(err.message,true)}};
 $('#staff-list').onclick=async e=>{const b=e.target.closest('[data-revoke-user],[data-revoke-invite]');if(!b)return;b.disabled=true;try{await api('/api/event-staff',{action:b.dataset.revokeUser?'revokeStaff':'revokeInvite',eventId:$('#staff-event').value,userId:b.dataset.revokeUser,inviteId:b.dataset.revokeInvite});await $('#staff-event').onchange();notice('Access revoked.');}catch(err){notice(err.message,true);b.disabled=false;}};

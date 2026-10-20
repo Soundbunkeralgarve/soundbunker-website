@@ -6,6 +6,7 @@ import {fulfilListingCheckout} from './lib/event-listings.js';
 import {fulfilCapacityCheckout} from './lib/event-capacity.js';
 import {fulfilPremiumPlacementCheckout} from './lib/ticketbunker-premium-autosend.js';
 import {fetchConnectStatus} from './organiser-connect.js';
+import {ticketBunkerStripe} from './lib/ticketbunker-stripe.js';
 export const config={api:{bodyParser:false}};
 export default async function handler(req,res){
  if(req.method!=='POST')return json(res,{error:'Method not allowed'},405);
@@ -24,7 +25,12 @@ export default async function handler(req,res){
     if(object.id===event.account){const status=await fetchConnectStatus(event.account);const saved=await db.from('sb_event_organisers').update({stripe_capabilities_ready:status.ready}).eq('stripe_account_id',event.account);if(saved.error)throw saved.error;}
    }
    if(['payout.paid','payout.failed','payout.canceled','payout.updated'].includes(event.type)){
-    const saved=await db.from('tb_event_settlements').update({payout_status:object.status==='paid'?'paid':['failed','canceled'].includes(object.status)?'failed':'processing',stripe_arrival_at:object.arrival_date?new Date(object.arrival_date*1000).toISOString():null,updated_at:new Date().toISOString()}).eq('stripe_payout_id',object.id);if(saved.error)throw saved.error;
+    // Stripe can deliver older snapshots after newer ones. Read its current
+    // account-scoped payout so a delayed event cannot overwrite the final result.
+    const payout=await ticketBunkerStripe('/v1/payouts/'+encodeURIComponent(object.id),{account:event.account});
+    if(payout.id!==object.id||payout.livemode!==true)throw Error('Payout status mismatch');
+    const status=payout.status==='paid'?'paid':['failed','canceled'].includes(payout.status)?'failed':'processing';
+    const saved=await db.from('tb_event_settlements').update({payout_status:status,payout_message:status==='paid'?'Stripe has confirmed this payout as paid.':status==='failed'?'Stripe reported a payout failure. Contact TicketBunker support.':'Stripe is processing your payout.',stripe_arrival_at:payout.arrival_date?new Date(payout.arrival_date*1000).toISOString():null,updated_at:new Date().toISOString()}).eq('stripe_payout_id',payout.id);if(saved.error)throw saved.error;
    }
   }else if(['checkout.session.completed','checkout.session.async_payment_succeeded'].includes(event.type)&&object.payment_status==='paid'){
    const type=object.metadata?.purchase_type;

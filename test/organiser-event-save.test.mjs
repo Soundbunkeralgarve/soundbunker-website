@@ -5,16 +5,16 @@ import {readFileSync} from 'node:fs';
 import {localEventInstant} from '../api/lib/events-time.js';
 import {eventSlugCandidate} from '../api/lib/event-slug.js';
 const source=readFileSync(new URL('../api/organiser.js',import.meta.url),'utf8');
-async function harness({insertError=null,slugConflict=false}={}){
+async function harness({insertError=null,slugConflict=false,hasOrganiser=true}={}){
  const inserts=[],filters=[];
  const org={id:'organiser-owner',display_name:'SoundBunker',country_code:'PT',status:'approved',logo_url:'https://example.com/logo.png'};
- const db={from(table){const q={select(){return q},eq(k,v){filters.push([table,k,v]);return q},insert(row){inserts.push(row);return q},async maybeSingle(){return {data:org}},async single(){return insertError?{error:insertError}:slugConflict&&inserts.length===1?{error:{code:'23505',message:'sb_events_slug_key'}}:{data:{id:'saved-event',title:inserts.at(-1).title,slug:inserts.at(-1).slug,status:'draft'}}}};return q;}};
+ const db={from(table){const q={select(){return q},eq(k,v){filters.push([table,k,v]);return q},insert(row){inserts.push(row);return q},async maybeSingle(){return {data:hasOrganiser?org:null}},async single(){return insertError?{error:insertError}:slugConflict&&inserts.length===1?{error:{code:'23505',message:'sb_events_slug_key'}}:{data:{...inserts.at(-1),id:'saved-event',title:inserts.at(-1).title,slug:inserts.at(-1).slug,status:'draft'}}}};return q;}};
  const context=vm.createContext({console:{error(){}},process:{env:{}},Date});
  const exports={
   './lib/ticketbunker-owner.js':{clientControl:async()=>{throw Error('Account discounts must not be loaded for event inserts')},activeClientDiscount:()=>null},
   './lib/ticketbunker-stripe.js':{ticketBunkerPaymentsEnabled:()=>false},
   './lib/ticket-wallet.js':{walletTestEvent:()=>false},
-  './lib/supabase-auth.js':{requireUser:async()=>({admin:db,user:{id:'owner'}})},
+  './lib/supabase-auth.js':{requireUser:async()=>({admin:db,user:{id:'owner',email_confirmed_at:'2026-10-01'}})},
   './lib/http.js':{json:(res,data,status=200)=>({data,status}),parseJson:async req=>req.body,safeText:(x,n)=>String(x||'').trim().slice(0,n)},
   './lib/events-time.js':{localEventInstant},'./lib/event-slug.js':{eventSlugCandidate},
   'node:crypto':{randomBytes:()=>({toString:()=> 'abc123'})},'./lib/notify.js':{sendStudioEmail:async()=>{}}
@@ -45,4 +45,12 @@ test('feedback stays alongside the triggering action and alerts remain visible',
  const context=vm.createContext({$:(s)=>s==='#notice'?el:null,innerHeight:700,feedbackAnchor:anchor});
  const a=client.indexOf('function notice('),b=client.indexOf('\nfunction eventError',a);new vm.Script(client.slice(a,b)).runInContext(context);context.notice('Save failed',true);
  assert.equal(anchor.feedback,el);assert.equal(el.role,'alert');assert.equal(el.focused,true);assert.equal(el.hidden,false);assert.equal(el.scrolled.block,'center');
+});
+
+test('new organiser registration saves owner, country and terms; an identical retry returns the existing profile',async()=>{
+ const h=await harness({hasOrganiser:false}),r=await h.run({action:'register',displayName:'SoundBunker',country:'PT',acceptTerms:true});
+ assert.equal(r.status,200);assert.equal(h.inserts.length,1);assert.equal(h.inserts[0].owner_user_id,'owner');assert.equal(h.inserts[0].country_code,'PT');
+ const retry=await harness();const repeated=await retry.run({action:'register',displayName:'SoundBunker',country:'PT',acceptTerms:true});assert.equal(repeated.status,200);assert.equal(repeated.data.alreadySaved,true);assert.equal(retry.inserts.length,0);
+ assert.equal((await retry.run({action:'register',displayName:'Other name',country:'PT',acceptTerms:true})).status,409);
+ assert.equal((await retry.run({action:'register',displayName:'SoundBunker',country:'PT',acceptTerms:false})).status,400);
 });

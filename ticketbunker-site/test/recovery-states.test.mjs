@@ -36,7 +36,7 @@ test('a temporary configuration error permits a later sign-in retry and concurre
 test('publication stays blocked until account, saved capacity and listing requirements are all satisfied',()=>{
  const code=source('organiser-v2.js').split('function renderListingPayment(){')[1].split("$('#pay-listing').onclick")[0];
  for(const [reviewed,paid,capacity,expected] of [[false,true,100,true],[true,false,100,true],[true,true,0,true],[true,true,100,false]]){
-  const els=elements();const context={$:els.get,currentDraft:{tiers:[{quantity_total:capacity}],fees:paid?[{status:'paid'}]:[],currency:'eur'},connectState:{ready:true},profile:{tax_review_complete:reviewed},money:n=>String(n)};
+  const els=elements();const context={$:els.get,currentDraft:{tiers:[{quantity_total:capacity}],fees:paid?[{status:'paid'}]:[],currency:'eur'},connectState:{ready:true,ticketSalesEnabled:reviewed,billingReviewComplete:reviewed},profile:{tax_review_complete:reviewed},money:n=>String(n)};
   els.get('#pay-listing').dataset={};vm.runInNewContext('function renderListingPayment(){'+code+'\nrenderListingPayment();',context);
   assert.equal(els.get('#request-review').disabled,expected,JSON.stringify({reviewed,paid,capacity}));
  }

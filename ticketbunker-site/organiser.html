@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 
 <html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/><meta content="noindex,nofollow" name="robots"/><meta content="#080b0a" name="theme-color"/>
-<title>Organiser Portal | TicketBunker</title><link href="/brand-icon.png" rel="icon"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&amp;family=DM+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/><link href="/organiser-v2.css?v=20261020-guided-review" rel="stylesheet"/>
-<script defer="" src="/vendor/supabase.js"></script><script defer="" src="/organiser-v2.js?v=20261020-portal-speed"></script><script src="/settlement.js" type="module"></script><script src="/portal-enhancements.js?v=20261011-save-fix" type="module"></script><link href="/portal-extra.css" rel="stylesheet"/><link href="/event-share.css" rel="stylesheet"/><link rel="stylesheet" href="/promo.css"><link href="/hub-testing.css?v=20261020" rel="stylesheet"/></head>
+<title>Organiser Portal | TicketBunker</title><link href="/brand-icon.png" rel="icon"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&amp;family=DM+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/><link href="/organiser-v2.css?v=20261020-journey-audit" rel="stylesheet"/>
+<script defer="" src="/vendor/supabase.js"></script><script defer="" src="/organiser-v2.js?v=20261020-journey-audit"></script><script src="/settlement.js?v=20261020-journey-audit" type="module"></script><script src="/portal-enhancements.js?v=20261011-save-fix" type="module"></script><link href="/portal-extra.css" rel="stylesheet"/><link href="/event-share.css" rel="stylesheet"/><link rel="stylesheet" href="/promo.css"><link href="/hub-testing.css?v=20261020" rel="stylesheet"/></head>
 <body><div hidden="" id="page-app">
 <aside class="sidebar" id="sidebar"><a aria-label="TicketBunker homepage" class="brand" href="/"><img alt="TicketBunker" src="/brand-compact.png"/></a>
 <div class="workspace-small">YOUR EVENT. YOUR CROWD. YOUR RULES.</div>
@@ -37,7 +37,7 @@
  <p>One-time setup. Billing information stays with your organiser account and is used for ticketing invoices. Registration is free — there is no membership fee.</p>
  <form id="billing-form" class="form-stack">
  <div class="form-grid">
-  <label>Business type<select name="entity_type" required><option value="company">Limited company / incorporated business</option><option value="sole_trader">Sole trader / self-employed</option><option value="association">Association / club</option><option value="charity">Registered charity</option><option value="individual">Individual organiser</option></select></label>
+  <label>Business type<select name="entity_type" required><option value="" disabled selected>Choose business type</option><option value="company">Limited company / incorporated business</option><option value="sole_trader">Sole trader / self-employed</option><option value="association">Association / club</option><option value="charity">Registered charity</option><option value="individual">Individual organiser</option></select></label>
   <label>Legal name for invoices<input name="legal_name" maxlength="180" minlength="2" required autocomplete="organization" placeholder="Registered legal name"></label>
   <label>Contact name<input name="contact_name" maxlength="120" minlength="2" required autocomplete="name"></label>
   <label>Billing email<input name="billing_email" type="email" maxlength="254" required autocomplete="email"></label>

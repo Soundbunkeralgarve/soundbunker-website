@@ -29,12 +29,14 @@ export default async function handler(req,res){
    const org=await db.from('sb_event_organisers').select('stripe_account_id,status,tax_review_complete,stripe_capabilities_ready').eq('id',event.data.organiser_profile_id).eq('owner_user_id',ctx.user.id).maybeSingle();
    if(org.error||!org.data||org.data.status!=='approved')return json(res,{error:'Verified event owner required'},403);
    const details=await db.from('sb_events').select('currency,ends_at,internal_free_test,public_beta_test').eq('id',eventId).single();if(details.error)throw details.error;
-   const canChoose=!!details.data.ends_at&&Date.parse(details.data.ends_at)>Date.now()&&!details.data.internal_free_test&&!details.data.public_beta_test;
+   const verified=org.data.tax_review_complete===true&&org.data.stripe_capabilities_ready===true&&!!org.data.stripe_account_id;
+   const canChoose=verified&&!!details.data.ends_at&&Date.parse(details.data.ends_at)>Date.now()&&!details.data.internal_free_test&&!details.data.public_beta_test;
    let fastEligible=false;
    if(ticketBunkerPaymentsEnabled()&&org.data.tax_review_complete&&org.data.stripe_capabilities_ready&&org.data.stripe_account_id){
     fastEligible=(await instantPayoutDestinations(org.data.stripe_account_id,details.data.currency)).length>0;
    }
-   if(req.method==='GET')return json(res,{canChoose,fastEligible,feeRate:0.01});
+   if(req.method==='GET')return json(res,{canChoose,fastEligible,feeRate:0.01,...(!verified?{message:'Complete Account Validation before choosing your payout. Standard payout remains the default.'}:{})});
+   if(!verified)return json(res,{error:'Complete Account Validation before choosing your payout.'},409);
    if(!canChoose||!['standard','fast'].includes(b.option)||b.confirmed!==true)return json(res,{error:'Choose and confirm your payout option before the event finishes.'},409);
    if(b.option==='fast'&&!fastEligible)return json(res,{error:'Your bank destination is not eligible for Fast Payout. Standard payout remains available.'},409);
    const saved=await db.rpc('tb_select_event_payout',{p_actor:ctx.user.id,p_event:eventId,p_option:b.option});if(saved.error||!saved.data)return json(res,{error:'Payout choice is locked or your account checks are incomplete. Refresh your event.'},409);
