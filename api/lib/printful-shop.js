@@ -1,6 +1,6 @@
 import { collectionFor, displayProductTitle, validateCouplesCombo } from './shop-collections.js';
 import { campaignImages, campaignBackViews } from './shop-artwork.js';
-import { supplierCost, deliveryRetailPrice, retailPrice, productCategory, productLabel, marginCheck, minimumShopPrice, applyShopDiscount, loadShopDiscount } from './shop-pricing.js';
+import { supplierCost, deliveryRetailPrice, retailPrice, productCategory, productLabel, marginCheck, minimumShopPrice, applyShopDiscount, loadShopDiscount, isOwnerCostCode, applyOwnerCost } from './shop-pricing.js';
 import { randomUUID, randomBytes, timingSafeEqual } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import { sendTransactionalEmail } from './notify.js';
@@ -129,10 +129,12 @@ export function cleanCart(cart) {
   if ([...merged.values()].some(q => q > 10) || [...merged.values()].reduce((a,b) => a+b,0) > 30) throw new Error('Please contact us for larger orders.');
   return [...merged].map(([id,quantity]) => ({ id, quantity }));
 }
-export async function quoteOrder(input, db) {
+export async function quoteOrder(input, db, { ownerUserId } = {}) {
   let stage = "quote_setup";
   try {
   db ||= shopDB();
+  const ownerCost = isOwnerCostCode(input.discount_code);
+  if (ownerCost && !ownerUserId) throw new Error('Please sign in with your SoundBunker admin account to use this code.');
   if(!countries().includes(String(input.recipient?.country_code||'').toUpperCase())) await shippingDestinations();
   const recipient = cleanRecipient(input.recipient);
   if(['US','CA','AU'].includes(recipient.country_code)&&!recipient.state_code)throw new Error('Please choose your state or province.');
@@ -153,25 +155,26 @@ export async function quoteOrder(input, db) {
     items.push({ ...variant, collection, product_id:syncVariant.sync_product_id, catalog_variant_id: syncVariant.variant_id, quantity: item.quantity });
   }
   validateCouplesCombo(items);
-  applyShopDiscount(items, await loadShopDiscount(db, input.discount_code));
+  if (!ownerCost) applyShopDiscount(items, await loadShopDiscount(db, input.discount_code));
   const discounted = items.some(item => Number.isInteger(item.list_price) && item.price < item.list_price);
-  const minimumMargin = discounted ? 0.05 : 0.10;
+  const minimumMargin = ownerCost ? 0 : discounted ? 0.05 : 0.10;
   const pfItems = items.map(i => ({ sync_variant_id: i.id, quantity: i.quantity }));
   stage = 'delivery_data';
   const rates = await pf('/shipping/rates', { recipient, items: items.map(i => ({ variant_id: i.catalog_variant_id, quantity: i.quantity })), currency: 'EUR' });
   const available = rates.filter(r => r.currency === 'EUR' && r.id && Number(r.rate) >= 0);
   const rate = available.find(r => r.id === 'STANDARD') || available.sort((a,b) => Number(a.rate)-Number(b.rate))[0];
   if (!rate) throw new Error('Delivery is not available for this basket and address.');
-  const shipping = deliveryRetailPrice(cents(rate.rate));
-  const subtotal = items.reduce((n,i) => n+i.price*i.quantity,0);
+  let shipping = deliveryRetailPrice(cents(rate.rate));
+  let subtotal = items.reduce((n,i) => n+i.price*i.quantity,0);
   stage = 'estimate_data';
   const estimate = await pf('/orders/estimate-costs', { recipient, items: pfItems, shipping: rate.id });
   if (estimate.costs?.currency !== 'EUR') {const error=new Error('This basket needs a price review. Please contact bookings@soundbunker.pt.');error.shopStage='estimate_currency_'+(/^[A-Z]{3}$/.test(estimate.costs?.currency)?estimate.costs.currency:'missing');throw error;}
   const supplierTotal = supplierCost(cents(estimate.costs.total), cents(estimate.costs.vat ?? '0'));
+  if (ownerCost) ({ subtotal, shipping } = applyOwnerCost(items, shipping, supplierTotal, ownerUserId));
   const review=[];
   if (!marginCheck(subtotal, shipping, supplierTotal, minimumMargin).allowed) review.push({scope:'basket',minimum_subtotal:minimumShopPrice(shipping,supplierTotal,minimumMargin)});
   // Do not let a profitable item subsidise a loss-making product in a mixed basket.
-  if (items.length > 1) {
+  if (!ownerCost && items.length > 1) {
     for (const item of items) {
       stage = 'line_estimate_data';
       const line = await pf('/orders/estimate-costs', { recipient, items: [{ sync_variant_id: item.id, quantity: item.quantity }], shipping: rate.id });

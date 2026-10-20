@@ -81,6 +81,29 @@ export async function loadShopDiscount(db, value) {
   return offer;
 }
 
+// This is an identifier, not a bearer secret: the API separately requires admin
+// authentication and binds each cost quote to the account that requested it.
+export const isOwnerCostCode = value => typeof value === 'string' && value.trim().toUpperCase() === 'STEVECOST';
+export function applyOwnerCost(items, shipping, supplierTotal, ownerUserId) {
+  if (!ownerUserId) throw new Error('Please sign in with your SoundBunker admin account to use this code.');
+  const total = minimumShopPrice(0, supplierTotal, 0);
+  const units = items.reduce((sum,item) => sum + item.quantity, 0);
+  const retail = items.reduce((sum,item) => sum + item.price * item.quantity, 0);
+  if (!units || !retail || total < units) throw new Error('Please contact SoundBunker to confirm cost pricing.');
+  const budget = total - Math.min(shipping, total - units) - units;
+  for (const item of items) {
+    item.list_price = item.price;
+    item.price = 1 + Math.floor(budget * item.price / retail);
+    item.discount_code = 'STEVECOST';
+    item.price_mode = 'owner_cost';
+    item.owner_user_id = ownerUserId;
+  }
+  // Put sub-cent per-unit allocation remainders into delivery so the final
+  // charge is exactly the smallest whole-cent break-even total, for any quantity.
+  const subtotal = items.reduce((sum,item) => sum + item.price * item.quantity, 0);
+  return { subtotal, shipping: total - subtotal, total };
+}
+
 export function minimumShopPrice(shipping, supplierTotal, minimum = 0.10) {
  let low=0,high=10000000;
  while(low<high){const mid=Math.floor((low+high)/2);if(marginCheck(mid,shipping,supplierTotal,minimum).allowed)high=mid;else low=mid+1;}

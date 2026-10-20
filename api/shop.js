@@ -1,6 +1,7 @@
 import { visibleProduct, couplesComboIds } from './lib/shop-collections.js';
 import { json, parseJson } from './lib/http.js';
 import { requireAdmin } from './lib/supabase-auth.js';
+import { isOwnerCostCode } from './lib/shop-pricing.js';
 import { pf, countries, shippingDestinations, shopProduct, storefrontProduct, shirtPairs, hiddenProductIds, httpsURL, quoteOrder, checkoutOrder, shopDB, hasAccess, stripeRequest, fulfillShopCheckout } from './lib/printful-shop.js';
 
 export const config = { maxDuration: 60 };
@@ -55,8 +56,14 @@ export default async function handler(req,res) {
     }
     if (req.method === 'POST' && action === 'quote') {
       const input = await parseJson(req);
-      const row = await quoteOrder(input);
-      return json(res,{ id:row.id,token:row.access_token,items:row.items,subtotal:row.subtotal_cents,discount:row.items.reduce((sum,i)=>sum+((i.list_price??i.price)-i.price)*i.quantity,0),shipping:row.shipping_cents,total:row.total_cents,delivery:row.shipping_label });
+      let ownerUserId;
+      if (isOwnerCostCode(input.discount_code)) {
+        const ctx = await requireAdmin(req);
+        if (ctx.error) return json(res,{error:'Please sign in with your SoundBunker admin account to use this code.'},ctx.status);
+        ownerUserId = ctx.user.id;
+      }
+      const row = await quoteOrder(input, undefined, { ownerUserId });
+      return json(res,{ id:row.id,token:row.access_token,items:row.items,subtotal:row.subtotal_cents,pricing:ownerUserId?'owner_cost':'retail',discount:ownerUserId?0:row.items.reduce((sum,i)=>sum+((i.list_price??i.price)-i.price)*i.quantity,0),shipping:row.shipping_cents,total:row.total_cents,delivery:row.shipping_label });
     }
     if (req.method === 'POST' && ['checkout','status'].includes(action)) {
       const input = await parseJson(req);
@@ -64,7 +71,14 @@ export default async function handler(req,res) {
       const db = shopDB();
       const {data:row,error} = await db.from('shop_orders').select('*').eq('id',input.id).single();
       if (error || !row || !hasAccess(row,input.token)) return json(res,{error:'Order not found'},404);
-      if (action === 'checkout') return json(res,{url:await checkoutOrder(row,db)});
+      if (action === 'checkout') {
+        if (row.items.some(item => item.price_mode === 'owner_cost')) {
+          const ctx = await requireAdmin(req);
+          if (ctx.error) return json(res,{error:'Please sign in with the SoundBunker admin account that requested this cost quote.'},ctx.status);
+          if (row.items.some(item => item.owner_user_id !== ctx.user.id)) return json(res,{error:'Please calculate a new cost quote using your own admin account.'},403);
+        }
+        return json(res,{url:await checkoutOrder(row,db)});
+      }
       let status = row.last_error && !row.printful_order_id ? 'needs_attention' : row.status, shipments = [], payment = 'pending';
       if (row.stripe_session_id) {
         const checkout = await stripeRequest(`/checkout/sessions/${encodeURIComponent(row.stripe_session_id)}`);
