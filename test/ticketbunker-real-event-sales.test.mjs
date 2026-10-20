@@ -47,6 +47,6 @@ test('organiser opt-in activates live test without touching paid publishing or t
  assert.match(file('organiser.html'),/id="activateBetaTest"/);
  assert.match(file('organiser.html'),/id="betaTestLink"/);
  assert.match(file('organiser.js'),/Make live for €0 testing/);
- assert.match(file('api/event-checkout.js'),/Checkout and payments are not live/);
- assert.match(file('api/organiser-listing.js'),/Checkout and payments are not live/);
+ assert.match(file('api/event-checkout.js'),/!ticketBunkerPaymentsEnabled\(\)/);
+ assert.match(file('api/organiser-listing.js'),/!ticketBunkerPaymentsEnabled\(\)/);
 });

@@ -3,14 +3,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 const get=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const index=get('index.html'),events=get('events.html'),js=get('events.js'),organiser=get('organiser.html'),orgApi=get('api/organiser.js');
-test('TicketBunker is prominently branded with approved vector, without altering studio logo',()=>{
- assert.match(index,/aria-label="ticketBunker — Events & Tickets"/);
- assert.match(index,/id="ticketbunker-home-promo"/);
- assert.match(index,/assets\/ticketbunker\/ticketbunker-logo\.svg/);
- assert.match(index,/alt="SoundBunker Algarve recording studio"/);
- assert.match(events,/ticketbunker-logo\.svg/);
- assert.match(events,/href="\/organiser"/);
-});
+test('dedicated storefront uses TicketBunker branding and the studio keeps its identity',()=>{const page=get('ticketbunker-site/index.html');assert.match(page,/aria-label="The TicketBunker homepage"/);assert.match(page,/brand-compact.png/);assert.match(page,/href="\/organiser"/);assert.match(index,/alt="SoundBunker Algarve recording studio"/);});
+
 test('Events landing keeps a clean ticketing experience',()=>{
  assert.match(events,/ticketbunker\.css/);
  assert.match(events,/Explore Event Tickets/);

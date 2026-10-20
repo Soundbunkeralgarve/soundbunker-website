@@ -67,11 +67,12 @@ async function refresh(){
  const d=await api('/api/organiser');profile=d.organiser;events=d.events||[];
  if(!profile){connectState=null;showOnboarding();return;}
  $('#sidebar-name').textContent=profile.display_name;$('#sidebar-country').textContent=profile.country_code==='GB'?'United Kingdom':'Portugal';
- await loadBilling();
- // External verification must not hold the whole portal behind its loading screen.
- void loadStripeStatus();void loadCapacityNotifications();
+ const verification=loadStripeStatus();
+ await loadBilling();loadCapacityNotifications();
  if((!profile.logo_url||!billingComplete)&&currentPage!=='hub'){showOnboarding();return;}
  $('#page-app').hidden=false;$('#loading').hidden=true;page(currentPage||'overview');
+ // External payout verification updates the visible status without blocking the workspace.
+ void verification;
 }
 function showOnboarding(){
  $('#page-app').hidden=false;$('#loading').hidden=true;$$('.page').forEach(x=>x.hidden=true);
@@ -268,15 +269,47 @@ $('#brand-save').addEventListener('click',async()=>{
 });
 function renderBranding(){if(profile?.logo_url){$('#brand-preview').src=profile.logo_url;$('#brand-preview').hidden=false;$('#brand-preview-hint').hidden=true;}$('#event-brand-preview').src=profile?.logo_url||'/brand-icon.png';}
 $('#event-poster').onchange=e=>{const file=e.target.files[0];if(!file)return;if(file.size>2000000||!['image/png','image/jpeg','image/webp'].includes(file.type)){notice('Poster must be PNG, JPG or WebP under 2 MB.',true,$('#event-poster'));e.target.value='';return;}const reader=new FileReader();reader.onload=()=>{$('#poster-preview').src=reader.result;$('#poster-preview').hidden=false;};reader.readAsDataURL(file);};
-function startNewEvent(){clearEventError();savedEventInput=null;posterUploaded=false;$('#save-event').textContent='Save event draft →';$('#saved-ticket-types').hidden=true;currentDraft=null;$('#event-form').reset();$('#poster-preview').hidden=true;$('#tier-form').reset();const rows=$$('#tier-rows .tier-row');rows.slice(1).forEach(x=>x.remove());nextStep(1);}
+const standardTicketTypes=['General Admission','VIP','Concessions','60+','Kids'];
+function ticketRow(name=''){
+ return '<div class="tier-row"><label>Ticket name<input name="name" maxlength="100" minlength="2" value="'+esc(name)+'"></label><label>Price including applicable IVA <em class="currency-symbol">'+(profile?.country_code==='GB'?'£':'€')+'</em><input name="price" type="number" min="1" max="100000" step=".01" placeholder="Price"></label><label>Quantity<input name="capacity" type="number" min="1" max="2000" value="100"></label><button aria-label="Remove '+esc(name||'ticket type')+'" class="remove-tier" type="button">×</button></div>';
+}
+function resetTicketRows(){
+ const saved=new Set((currentDraft?.tiers||[]).map(t=>t.name.trim().toLocaleLowerCase()));
+ const names=standardTicketTypes.filter(name=>!saved.has(name.toLocaleLowerCase()));
+ $('#tier-rows').innerHTML=(names.length?names:['']).map(ticketRow).join('');
+}
+function pricedTicketRows(rows){
+ const priced=rows.filter(row=>String(row.price??'').trim()!=='');
+ if(!priced.length)throw Error('Enter a price for at least one ticket type. Leave unused prices blank.');
+ const seen=new Set();
+ return priced.map(row=>{
+  const name=String(row.name||'').trim(),price=Number(row.price),capacity=Number(row.capacity),priceCents=Math.round(price*100);
+  if(name.length<2||name.length>100)throw Error('Each priced ticket needs a name of 2–100 characters.');
+  if(!Number.isFinite(price)||priceCents<100||priceCents>10000000||Math.abs(price*100-priceCents)>0.000001)throw Error(name+': enter a price from 1.00 to 100,000.00 with up to two decimal places.');
+  if(!Number.isInteger(capacity)||capacity<1||capacity>2000)throw Error(name+': enter a whole ticket quantity from 1 to 2,000.');
+  const key=name.toLocaleLowerCase();if(seen.has(key))throw Error('Each priced ticket type needs a different name.');seen.add(key);
+  return {name,priceCents,capacity};
+ });
+}
+function startNewEvent(){clearEventError();savedEventInput=null;posterUploaded=false;$('#save-event').textContent='Save event draft →';$('#saved-ticket-types').hidden=true;$('#ticket-next-actions').hidden=true;$('#tier-form').hidden=false;currentDraft=null;$('#event-form').reset();$('#poster-preview').hidden=true;$('#tier-form').reset();resetTicketRows();nextStep(1);}
+function renderSavedTicketTypes(){
+ const saved=currentDraft?.tiers||[],summary=$('#saved-ticket-types');summary.hidden=!saved.length;
+ summary.innerHTML=saved.length?'<h3>Your saved ticket types</h3>'+saved.map(t=>'<p><strong>'+esc(t.name)+'</strong> · '+esc(money(t.price_cents,currentDraft.currency))+' · '+Number(t.quantity_total)+' tickets</p>').join(''):'';
+ $('#ticket-next-actions').hidden=!saved.length;$('#tier-form').hidden=!!saved.length;
+}
 function openDraftTickets(event){
  if(!event)return;
- currentDraft=event;page('create');$('#tier-form').reset();$$('#tier-rows .tier-row').slice(1).forEach(row=>row.remove());
- const saved=event.tiers||[],summary=$('#saved-ticket-types');summary.hidden=!saved.length;
- summary.innerHTML=saved.length?'<h3>Your saved ticket types</h3>'+saved.map(t=>'<p><strong>'+esc(t.name)+'</strong> · '+esc(money(t.price_cents,event.currency))+' · '+Number(t.quantity_total)+' tickets</p>').join('')+'<p>These tickets are already saved. Choose Review draft to continue, or add a different ticket type below.</p>':'';
- if(saved.length)$('#tier-rows [name=name]').value='';
+ currentDraft=event;page('create');$('#notice').hidden=true;$('#tier-form').reset();resetTicketRows();
+ renderSavedTicketTypes();
  $('#tier-event-name').textContent=event.title;$$('.currency-symbol').forEach(el=>el.textContent=event.currency==='gbp'?'£':'€');nextStep(2);
 }
+$('#add-more-tickets').onclick=()=>{
+ $('#tier-form').reset();resetTicketRows();
+ $('#tier-form').hidden=false;$('#notice').hidden=true;
+ $('#tier-rows [name=name]').focus();
+};
+$('#review-tickets').onclick=()=>openDraftTickets(currentDraft);
+
 function nextStep(n){[1,2,3].forEach(i=>{$('#event-step-'+i).hidden=i!==n;$$('.step')[i-1].classList.toggle('active',i===n)});$('#page-create').scrollIntoView({behavior:'smooth',block:'start'});}
 function fileData(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=()=>reject(Error('Could not read uploaded image'));r.readAsDataURL(file)});}
 $('#event-form').onsubmit=async e=>{
@@ -303,11 +336,23 @@ $('#event-form').onsubmit=async e=>{
   try{await reloadEvents()}catch{notice('Your event draft and poster are saved. The event list could not refresh; you can continue with ticket options.',true,$('#tier-form button[type=submit]'));}
  }catch(err){eventError(err)}finally{button.disabled=false;}
 };
-function addTierRow(){let first=$('#tier-rows .tier-row');const clone=first.cloneNode(true);clone.querySelectorAll('input').forEach(i=>{i.value=i.name==='capacity'?'100':''});clone.querySelector('.remove-tier').onclick=()=>clone.remove();$('#tier-rows').appendChild(clone);}
+function addTierRow(){const box=document.createElement('div');box.innerHTML=ticketRow();$('#tier-rows').append(box.firstElementChild);$('#tier-rows .tier-row:last-child [name=name]').focus();}
 $('#add-tier').onclick=()=>{if($$('#tier-rows .tier-row').length>=10)return notice('Maximum ten types per batch.',true);addTierRow()};
-$$('.remove-tier').forEach(x=>x.onclick=()=>{if($$('#tier-rows .tier-row').length>1)x.closest('.tier-row').remove()});
-$('#tier-form').onsubmit=async e=>{e.preventDefault();const btn=e.submitter;btn.disabled=true;try{if(!currentDraft?.id)throw Error('Save event details first.');const list=$$('#tier-rows .tier-row').map(row=>({name:row.querySelector('[name=name]').value.trim(),priceCents:Math.round(Number(row.querySelector('[name=price]').value)*100),capacity:Number(row.querySelector('[name=capacity]').value)}));const r=await api('/api/organiser',{action:'tiers',eventId:currentDraft.id,tiers:list});currentDraft.tiers=r.tiers||[];notice('Ticket options saved. Your event is still private.');await reloadEvents();drawReview();nextStep(3);}catch(err){notice(err.message,true)}finally{btn.disabled=false;}};
-$('#skip-tier').onclick=()=>{drawReview();nextStep(3)};
+$('#tier-rows').onclick=e=>{const button=e.target.closest('.remove-tier');if(!button)return;button.closest('.tier-row').remove();if(!$('#tier-rows .tier-row'))addTierRow();};
+$('#tier-form').onsubmit=async e=>{
+ e.preventDefault();const btn=e.submitter||$('#tier-form button[type=submit]');btn.disabled=true;$('#notice').hidden=true;
+ try{
+  if(!currentDraft?.id)throw Error('Save event details first.');
+  const list=pricedTicketRows($$('#tier-rows .tier-row').map(row=>({name:row.querySelector('[name=name]').value,price:row.querySelector('[name=price]').value,capacity:row.querySelector('[name=capacity]').value})));
+  const r=await api('/api/organiser',{action:'tiers',eventId:currentDraft.id,tiers:list});
+  const merged=new Map((currentDraft.tiers||[]).map(t=>[t.id,t]));(r.tiers||[]).forEach(t=>merged.set(t.id,t));currentDraft.tiers=[...merged.values()];
+  renderSavedTicketTypes();drawReview();nextStep(3);
+  notice('Ticket options saved. Review your event below.',false,$('#request-review'));
+  try{await reloadEvents();if(!$('#event-step-3').hidden)drawReview();}catch{notice('Your ticket types are saved. The event list could not refresh; you can continue reviewing this draft.',true,$('#request-review'));}
+ }catch(err){notice(err.message,true,btn)}finally{btn.disabled=false;}
+};
+$('#skip-tier').onclick=()=>{$('#notice').hidden=true;drawReview();nextStep(3);$('#event-step-3 h2').tabIndex=-1;$('#event-step-3 h2').focus({preventScroll:true});};
+
 function drawReview(){if(!currentDraft)return;$('#review-summary').innerHTML='<div class="event-row">'+(currentDraft.image_url?'<img class="thumb" src="'+esc(currentDraft.image_url)+'" alt="Event poster">':'')+'<div class="event-detail"><h3>'+esc(currentDraft.title)+'</h3><p>'+esc(currentDraft.venue)+'</p><p>'+esc((currentDraft.tiers||[]).length)+' ticket types saved</p></div></div>';$('#review-message').textContent='Your event draft has been saved. You can add more ticket types or publish directly once payment setup is ready.';renderListingPayment();}
 
 function renderListingPayment(){
@@ -322,7 +367,17 @@ function renderListingPayment(){
 }
 $('#pay-listing').onclick=async()=>{const button=$('#pay-listing');button.disabled=true;try{const r=await api('/api/organiser-listing',{eventId:currentDraft.id,plan:button.dataset.plan});if(r.waived){notice(r.message);await reloadEvents();drawReview();return;}const target=new URL(r.url);if(target.origin!=='https://checkout.stripe.com')throw Error('Invalid payment link');location.assign(target.href);}catch(error){notice(error.message,true);button.disabled=false;}};
 
-$('#request-review').onclick=async()=>{const btn=$('#request-review');btn.disabled=true;try{if(!currentDraft?.id)throw Error('Save an event first.');const r=await api('/api/organiser',{action:'publish',eventId:currentDraft.id});notice(r.message||'Event published successfully.');await reloadEvents();page('events');}catch(err){notice(err.message,true)}finally{renderListingPayment();}};
+$('#request-review').onclick=async()=>{
+ const btn=$('#request-review');btn.disabled=true;
+ try{
+  if(!currentDraft?.id)throw Error('Save an event first.');
+  const r=await api('/api/organiser',{action:'publish',eventId:currentDraft.id});
+  currentDraft.status='published';events=events.map(ev=>ev.id===currentDraft.id?{...ev,status:'published'}:ev);
+  page('events');notice(r.message||'Event published successfully.',false,$('#all-events'));
+  try{await reloadEvents();if(currentPage==='events')renderEvents();}catch{notice('Your event is published. The event list could not refresh; reopen My Events to update it.',true,$('#all-events'));}
+ }catch(err){notice(err.message,true,btn)}finally{if(currentDraft?.status!=='published')renderListingPayment();}
+};
+
 async function reloadEvents(){const r=await api('/api/organiser');events=r.events||[];profile=r.organiser||profile;const item=events.find(e=>e.id===currentDraft?.id);if(item)currentDraft=item;return r;}
 async function fetchReport(id,overview=false){if(!id)return;try{const {report}=await api('/api/event-organiser-report?eventId='+encodeURIComponent(id));reportCache[id]=report;if(overview){const reports=await Promise.allSettled(safeEvents().filter(ev=>ev.status==='published').slice(0,50).map(ev=>reportCache[ev.id]?Promise.resolve(reportCache[ev.id]):api('/api/event-organiser-report?eventId='+encodeURIComponent(ev.id)).then(z=>z.report)));let paid=0,checked=0,revenue=0;reports.forEach(z=>{if(z.status==='fulfilled'){paid+=z.value.paidTickets||0;checked+=z.value.paidCheckedIn||0;revenue+=z.value.revenueCents||0;}});$('#metric-paid').textContent=paid;$('#metric-scanned').textContent=checked;$('#metric-money').textContent=money(revenue,profile.country_code==='GB'?'gbp':'eur');return;}
 if($('#report-event').value!==id)return;latestReport=report;renderReport(report);
@@ -340,7 +395,7 @@ $('#street-event').onchange=async()=>{let id=$('#street-event').value;if(!id)ret
 $('#street-form').onsubmit=async e=>{e.preventDefault();const btn=e.submitter;btn.disabled=true;try{const id=$('#street-event').value;if(!id)throw Error('Choose an event first.');const f=new FormData(e.target),r=await api('/api/event-street-team',{action:'create',eventId:id,name:f.get('name'),email:f.get('email'),rewardType:f.get('rewardType'),rewardGoal:Number(f.get('rewardGoal')),rewardDescription:f.get('rewardDescription'),rewardValueCents:Math.round(Number(f.get('rewardValue')||0)*100)});notice('Promoter link created: '+r.link);$('#street-event').dispatchEvent(new Event('change'));e.target.reset();}catch(err){notice(err.message,true)}finally{btn.disabled=false;}};
 $('#sign-out').onclick=async()=>{try{await sb.auth.signOut();location.replace('/login.html?next=%2Forganiser.html')}catch(err){notice(err.message,true)}};
 window.addEventListener('hashchange',()=>{const target={'#featured-placement':'promotions','#business-details':'profile','#verification':'verification'}[location.hash];if(target&&profile)page(target);});
-async function boot(){try{const r=await fetch('/api/supabase-config',{cache:'no-store',signal:AbortSignal.timeout(15000)});if(!r.ok)throw Error('Shared login service is unavailable');const cfg=await r.json();if(!window.supabase)throw Error('Authentication library failed to load');sb=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true}});let auth=await sb.auth.getSession();session=auth.data?.session;if(!session){location.replace('/login?role=organiser&next='+encodeURIComponent(location.pathname+location.search+location.hash));return;}const verified=await sb.auth.getUser();if(verified.error||!verified.data.user)throw Error('Please sign in again.');token=session.access_token;window.ticketbunkerAuth=sb;window.ticketbunkerRefresh=refresh;sb.auth.onAuthStateChange((event,s)=>{if(event==='TOKEN_REFRESHED')token=s.access_token;if(event==='SIGNED_OUT')location.replace('/login?role=organiser');});if(!verified.data.user.email_confirmed_at)throw Error('Please confirm your account email before opening the Organiser Portal.');await refresh();window.dispatchEvent(new Event('ticketbunker:ready'));const paidEvent=new URLSearchParams(location.search).get('event');if(paidEvent&&new URLSearchParams(location.search).has('listing')){currentDraft=events.find(e=>e.id===paidEvent)||null;if(currentDraft){page('create');drawReview();nextStep(3);}}if(['#featured-placement','#promotions'].includes(location.hash))page('promotions');if(location.hash==='#business-details')page('profile');if(location.hash==='#verification')page('verification');const onboarding=new URLSearchParams(location.search).get('onboarding');if(onboarding){history.replaceState(null,'','/organiser#verification');page('verification');if(onboarding==='refresh'&&connectState?.canOnboard)await startStripeOnboarding();else if(onboarding==='returned')notice(connectState?.ready?'Stripe has confirmed your account verification.':'You have returned from Stripe. Check the current verification status below.');}}catch(err){$('#loading').classList.add('error');$('#loading-text').textContent=err.message;const a=document.createElement('a');a.href='/login?role=organiser';a.textContent='Return to sign-in →';a.style.color='#00e0a6';$('#loading').append(a);}}
+async function boot(){try{const r=await fetch('/api/supabase-config',{cache:'no-store',signal:AbortSignal.timeout(15000)});if(!r.ok)throw Error('Shared login service is unavailable');const cfg=await r.json();if(!window.supabase)throw Error('Authentication library failed to load');sb=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true}});let auth=await sb.auth.getSession();session=auth.data?.session;if(!session){location.replace('/login?role=organiser&next='+encodeURIComponent(location.pathname+location.search+location.hash));return;}const verified=await sb.auth.getUser();if(verified.error||!verified.data.user)throw Error('Please sign in again.');token=session.access_token;window.ticketbunkerAuth=sb;window.ticketbunkerRefresh=refresh;sb.auth.onAuthStateChange((event,s)=>{if(event==='TOKEN_REFRESHED')token=s.access_token;if(event==='SIGNED_OUT')location.replace('/login?role=organiser');});if(!verified.data.user.email_confirmed_at)throw Error('Please confirm your account email before opening the Organiser Portal.');await refresh();window.dispatchEvent(new Event('ticketbunker:ready'));const paidEvent=new URLSearchParams(location.search).get('event');if(paidEvent&&new URLSearchParams(location.search).has('listing')){currentDraft=events.find(e=>e.id===paidEvent)||null;if(currentDraft){page('create');drawReview();nextStep(3);}}if(['#featured-placement','#promotions'].includes(location.hash))page('promotions');if(location.hash==='#business-details')page('profile');if(location.hash==='#verification')page('verification');const onboarding=new URLSearchParams(location.search).get('onboarding');if(onboarding){history.replaceState(null,'','/organiser#verification');page('verification');await loadStripeStatus();if(onboarding==='refresh'&&connectState?.canOnboard)await startStripeOnboarding();else if(onboarding==='returned')notice(connectState?.ready?'Stripe has confirmed your account verification.':'You have returned from Stripe. Check the current verification status below.');}}catch(err){$('#loading').classList.add('error');$('#loading-text').textContent=err.message;const a=document.createElement('a');a.href='/login?role=organiser';a.textContent='Return to sign-in →';a.style.color='#00e0a6';$('#loading').append(a);}}
 
 async function loadHubPage(){
  const select=$('#hub-event'),list=safeEvents().filter(isLive);select.innerHTML=list.length?options(list,select.value):'<option value="">No active events</option>';

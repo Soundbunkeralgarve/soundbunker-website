@@ -6,7 +6,7 @@ const root=document.getElementById('event-root');
 (async()=>{try{
  const slug=new URLSearchParams(location.search).get('slug')||decodeURIComponent(location.pathname.split('/')[2]||'');
  const preview=['club','shop'].includes(root.dataset.preview)&&/^\/event-preview(?:\.html)?$/.test(location.pathname);
- const event=preview?(await import('./shop-preview-events.js')).shopPreviewEvent(slug):(await api('events')).events.find(e=>e.slug===slug);
+ const event=preview?(await import('./shop-preview-events.js')).shopPreviewEvent(slug):(await api('events?slug='+encodeURIComponent(slug))).events.find(e=>e.slug===slug);
  if(!event){root.innerHTML='<div class="empty-state"><span class="eyebrow">EVENT UNAVAILABLE</span><h1>This event isn’t available.</h1><p>It may be private, finished or no longer listed.</p><a class="primary" href="/#discover">Find events ↗</a></div>';return;}
  document.title=event.title+' | TicketBunker';
  const image=safeUrl(event.image_url),logo=safeUrl(event.event_logo_url),link=eventLink(event);

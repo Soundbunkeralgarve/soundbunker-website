@@ -63,7 +63,7 @@ export default async function handler(req, res) {
     try {body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;} catch {return reply(400,{error:'Please check your request and try again.'});}
     if (!body || typeof body !== 'object' || Array.isArray(body)) return reply(400,{error:'A valid request is required.'});
     if (Buffer.byteLength(JSON.stringify(body)) > 3_100_000) return reply(413,{error:'Please use an image smaller than 2 MB.'});
-    if(endpoint==='organiser'&&body.action==='event'&&(!body.endsAt||Date.parse(body.endsAt)<=Date.parse(body.startsAt)))return reply(400,{error:'Set an event finish time after the start time for automatic reporting.'});
+    if(endpoint==='organiser'&&body.action==='event'&&(!body.endsAt||Date.parse(body.endsAt)<=Date.parse(body.startsAt)))return reply(400,{error:'Set an event finish time after the start time for automatic reporting.',field:'endsAt'});
     if (endpoint === 'organiser' && ['activateBetaTest','stopBetaTest'].includes(body.action)) return reply(403,{error:'Test events cannot be published on TicketBunker.'});
   }
   const promotion=['promo-preferences','event-promotion'].includes(endpoint);
