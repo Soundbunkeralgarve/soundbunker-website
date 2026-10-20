@@ -11,7 +11,7 @@ document.addEventListener('submit',e=>{feedbackAnchor=e.submitter||e.target.quer
 document.addEventListener('click',e=>{const button=e.target.closest('button');if(button)feedbackAnchor=button;},true);
 function notice(msg,bad=false,anchor=feedbackAnchor){
  const el=$('#notice');
- const visible=node=>node?.isConnected&&!node.closest('[hidden]');
+ const visible=node=>node?.isConnected&&!node.closest('[hidden],#sidebar,.app-header');
  if(!visible(anchor))anchor=$('.page:not([hidden]) .panel')||$('#onboarding:not([hidden])');
  if(anchor&&anchor!==el){
   const row=anchor.closest('.button-row');
