@@ -26,7 +26,6 @@ $('#buyer-role').setAttribute('aria-current',role==='buyer'?'page':'false');
 $('#organiser-role').setAttribute('aria-current',role==='organiser'?'page':'false');
 $('#account-label').textContent=role==='organiser'?'Organiser account':'Buyer account';
 if(role==='organiser'){
- const routes=document.querySelectorAll('.audience-switch a');routes[0].removeAttribute('aria-current');routes[1].setAttribute('aria-current','page');
  $('#auth-heading').innerHTML='Your next<br>great event<br><em>starts here.</em>';
  document.querySelector('.auth-story .eyebrow').textContent='SELL TICKETS · ORGANISER ACCOUNT';
  document.querySelector('.trust span').textContent='Clear event pricing';

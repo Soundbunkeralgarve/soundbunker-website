@@ -47,3 +47,18 @@ test('an account containing only drafts shows zero sales without fetching unavai
  vm.runInNewContext('function renderOverview(){'+code+'\nrenderOverview();',{$:els.get,profile:{display_name:'Example organiser',country_code:'PT'},safeEvents:()=>[{id:'draft',status:'draft'}],drawEvent:()=>'',wireRows:()=>{},money:()=> '€0.00',fetchReport:()=>{reports++;},empty:()=>''});
  assert.equal(reports,0);assert.equal(els.get('#metric-paid').textContent,'0');assert.equal(els.get('#metric-scanned').textContent,'0');assert.equal(els.get('#metric-money').textContent,'€0.00');
 });
+
+test('organiser setup opens account creation with the current navigation markup',()=>{
+ const html=source('account.html'),js=source('account.js'),nodes=new Map();
+ const get=selector=>{
+  if(selector.startsWith('#'))assert.ok(html.includes('id="'+selector.slice(1)+'"'),selector+' exists in the page');
+  if(!nodes.has(selector))nodes.set(selector,{hidden:false,setAttribute(k,v){this[k]=v;},classList:{toggle(){}},closest(){return this;}});
+  return nodes.get(selector);
+ };
+ const code=js.replace(/^import .*\n/gm,'').split('function showAuth()')[0];
+ const initial=js.split('\n').find(line=>line.startsWith("if(params.get('mode')==='signup')"));
+ vm.runInNewContext(code+'\n'+initial,{$:get,document:{querySelector:get,querySelectorAll:()=>[]},preferenceFields(){},URLSearchParams,location:{search:'?role=organiser&mode=signup&next=%2Forganiser',hash:''},safeNext:v=>v||''});
+ assert.equal(get('#form-heading').textContent,'Create your organiser login.');
+ assert.equal(get('#name-field').hidden,false);assert.equal(get('#accept-terms').required,true);
+ assert.equal(get('#organiser-role')['aria-current'],'page');assert.equal(get('#signup-tab')['aria-pressed'],'true');
+});
