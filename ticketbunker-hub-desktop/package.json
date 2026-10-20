@@ -39,7 +39,8 @@
       "main.cjs",
       "policy.cjs",
       "package.json",
-      "launcher.cjs"
+      "launcher.cjs",
+      "smoke.cjs"
     ],
     "extraResources": [
       {

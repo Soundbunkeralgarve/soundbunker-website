@@ -4,7 +4,7 @@ The Windows/Mac app includes its runtime. Organisers do not install Node or run 
 
 ## Organiser flow
 
-1. In the TicketBunker organiser platform, choose **Check-in Hub**. Install the appropriate desktop release while internet is available.
+1. In the TicketBunker organiser platform, choose **App Downloads**. Install the appropriate desktop release while internet is available.
 2. Choose the event and **Open installed hub app**. This opens `ticketbunkerhub://open?event=<UUID>`; no account tokens travel through that link. Sign into the hub with the organiser account, load events, and download the selected event.
 3. Connect the laptop and scanner phones to the same private Wi-Fi router. Internet access through that router is optional during entry. Guest Wi-Fi with client isolation will not work.
 4. Allow private-network connections on the laptop if prompted. Pair each staff phone using its own five-minute QR, and confirm the correct event on every phone. Staff should sign into the scanner app before travelling offline.
@@ -30,7 +30,7 @@ npm start
 
 The desktop renderer has no Node integration or preload bridge, is sandboxed, and can request only the loopback control service. The worker uses authenticated encrypted scanner messages over the private LAN. Its startup key is sent over process IPC and never written to logs. A singleton app lock and the existing database lock prevent simultaneous hub processes from owning the same folder.
 
-PR CI builds **unsigned QA installers**, tests first-run startup, the sandboxed renderer, Node SQLite and worker IPC in the real Electron runtime on Windows and Mac, and uploads installers as GitHub Actions artifacts. These are not enabled as organiser downloads.
+PR CI builds QA installers (Windows unsigned; Mac ad-hoc integrity signed), tests first-run startup, the sandboxed renderer, Node SQLite and worker IPC in the real Electron runtime on Windows and Mac, and uploads installers as GitHub Actions artifacts. Mac QA images are re-signed after executable/fuse changes and checked with `codesign --verify --deep --strict`, including the app mounted from the final DMG. The native-architecture packaged executable must pass the renderer/SQLite smoke test. QA uses `entitlements.qa.mac.plist` only; signed releases retain `entitlements.mac.plist`. These test builds do not establish Developer ID trust or notarization, and may still require a one-time macOS approval. They must never be described as a signed public release.
 
 ## Public desktop release
 
