@@ -24,6 +24,8 @@ startDesktop({showWindow:false,onStage:stage=>console.log('Desktop stage: '+stag
    };poll();
   })`);
   if(!rendered)throw Error('Hub renderer did not reach a safe first-run screen.');
+  const network=await window.webContents.executeJavaScript('window.hubNetwork.status()');
+  if(network.platform!==process.platform||typeof network.available!=='boolean'||network.state!=='idle')throw Error('Desktop network bridge did not return a safe first-run state.');
   success=true;await stop();
  }catch(e){console.error(e.message);await stop();}
 }});

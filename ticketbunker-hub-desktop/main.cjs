@@ -37,7 +37,7 @@ onStage('instance-lock');if(!app.requestSingleInstanceLock()){app.quit();}else{
   const launchLink=process.argv.find(x=>x.startsWith('ticketbunkerhub:'));if(launchLink)requestedEvent=eventFromLink(launchLink);
   onStage('session');session.defaultSession.setPermissionRequestHandler((_webContents,_permission,callback)=>callback(false));
   session.defaultSession.webRequest.onBeforeRequest((details,callback)=>{callback({cancel:!details.url.startsWith(HUB_ORIGIN+'/')&&!details.url.startsWith('data:image/')});});
-  onStage('create-window');window=new BrowserWindow({width:1240,height:900,minWidth:760,minHeight:640,backgroundColor:'#080e12',title:'TicketBunker Check-in Hub',show:false,webPreferences:{preload:path.join(__dirname,'preload.cjs'),nodeIntegration:false,contextIsolation:true,sandbox:true,webSecurity:true,devTools:!app.isPackaged}});
+  onStage('create-window');window=new BrowserWindow({width:1240,height:900,minWidth:760,minHeight:640,backgroundColor:'#f5f7f5',title:'TicketBunker Check-in Hub',show:false,webPreferences:{preload:path.join(__dirname,'preload.cjs'),nodeIntegration:false,contextIsolation:true,sandbox:true,webSecurity:true,devTools:!app.isPackaged}});
   window.webContents.setWindowOpenHandler(()=>({action:'deny'}));
   window.webContents.on('will-navigate',(event,url)=>{if(!localWindowUrl(url))event.preventDefault();});
   window.webContents.on('will-redirect',event=>event.preventDefault());

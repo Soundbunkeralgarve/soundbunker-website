@@ -14,7 +14,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 35
     env:
-      TB_HUB_QA_VERSION: '1.0.1'
+      TB_HUB_QA_VERSION: '1.0.3'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -43,7 +43,7 @@ jobs:
         run: npx electron smoke.cjs
         working-directory: ticketbunker-hub-desktop
       - name: Build unsigned packages for QA only
-        run: npm run dist -- --config.extraMetadata.version=1.0.1
+        run: npm run dist -- --config.extraMetadata.version=${{ env.TB_HUB_QA_VERSION }}
         working-directory: ticketbunker-hub-desktop
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
