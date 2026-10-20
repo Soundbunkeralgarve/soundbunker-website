@@ -1,0 +1,108 @@
+name: Publish Gatekeeper-Verified TicketBunker Mac Hub
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'New Mac installer version, for example 1.0.2'
+        default: '1.0.2'
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  mac:
+    runs-on: macos-latest
+    timeout-minutes: 90
+    outputs:
+      version: ${{ steps.source.outputs.version }}
+      commit: ${{ steps.source.outputs.commit }}
+    env:
+      TB_HUB_RELEASE_VERSION: ${{ inputs.version }}
+      TB_APPLE_TEAM_ID: '488DLN54MP'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check trusted source and version
+        id: source
+        env:
+          RELEASE_REF: ${{ github.ref }}
+        run: |
+          test "$RELEASE_REF" = refs/heads/main
+          node -e 'if(!/^\d+\.\d+\.\d+$/.test(process.env.TB_HUB_RELEASE_VERSION))throw Error("Use a numeric release version")'
+          printf 'version=%s\ncommit=%s\n' "$TB_HUB_RELEASE_VERSION" "$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+      - name: Require Apple release credentials before building
+        env:
+          CSC_LINK: ${{ secrets.HUB_MAC_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.HUB_MAC_CSC_KEY_PASSWORD }}
+          MAC_KEY: ${{ secrets.HUB_APPLE_API_KEY_P8 }}
+          APPLE_API_KEY_ID: ${{ secrets.HUB_APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.HUB_APPLE_API_ISSUER }}
+        run: |
+          set -euo pipefail
+          for name in CSC_LINK CSC_KEY_PASSWORD MAC_KEY APPLE_API_KEY_ID APPLE_API_ISSUER; do
+            if [ -z "${!name}" ]; then echo "::error::Missing Mac release credential: $name"; exit 1; fi
+          done
+          printf '%s' "$MAC_KEY" > "$RUNNER_TEMP/hub-apple-key.p8"
+          chmod 600 "$RUNNER_TEMP/hub-apple-key.p8"
+          printf 'APPLE_API_KEY=%s/hub-apple-key.p8\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: ticketbunker-hub
+      - run: npm test
+        working-directory: ticketbunker-hub
+      - run: npm ci --no-audit --no-fund
+        working-directory: ticketbunker-hub-desktop
+      - run: npm test
+        working-directory: ticketbunker-hub-desktop
+      - name: Build Developer ID signed apps and disk images
+        working-directory: ticketbunker-hub-desktop
+        env:
+          CSC_LINK: ${{ secrets.HUB_MAC_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.HUB_MAC_CSC_KEY_PASSWORD }}
+          APPLE_API_KEY_ID: ${{ secrets.HUB_APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.HUB_APPLE_API_ISSUER }}
+        run: npm run prepare:resources && npx electron-builder --mac --publish never --config.forceCodeSigning=true --config.mac.notarize=true --config.dmg.sign=true --config.extraMetadata.version="$TB_HUB_RELEASE_VERSION"
+      - name: Notarize final images and verify downloaded-app Gatekeeper acceptance
+        working-directory: ticketbunker-hub-desktop
+        env:
+          APPLE_API_KEY_ID: ${{ secrets.HUB_APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.HUB_APPLE_API_ISSUER }}
+        run: node verify-mac-release.cjs
+      - name: Record final file checksums
+        working-directory: ticketbunker-hub-desktop/dist
+        run: shasum -a 256 *.dmg > SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mac-gatekeeper-verified
+          path: |
+            ticketbunker-hub-desktop/dist/*.dmg
+            ticketbunker-hub-desktop/dist/SHA256SUMS.txt
+            ticketbunker-hub-desktop/dist/MAC-GATEKEEPER-VERIFIED.json
+          if-no-files-found: error
+      - name: Remove notarization key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/hub-apple-key.p8"
+  publish:
+    needs: mac
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ needs.mac.outputs.version }}
+      COMMIT_SHA: ${{ needs.mac.outputs.commit }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: mac-gatekeeper-verified
+          path: installers
+      - name: Publish only verified Mac installers for organiser testing
+        working-directory: installers
+        run: |
+          set -euo pipefail
+          sha256sum --check SHA256SUMS.txt
+          test -f MAC-GATEKEEPER-VERIFIED.json
+          TAG="ticketbunker-mac-v$VERSION"
+          gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" -f ref="refs/tags/$TAG" -f sha="$COMMIT_SHA"
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --verify-tag --prerelease --title "TicketBunker Mac hub $VERSION — signed and notarised testing" --notes 'Mac organiser testing installers. Developer ID signing, Apple notarization, stapled offline tickets and quarantined-app Gatekeeper checks passed. Use a dedicated test event; physical multi-phone/venue testing is still required. See MAC-GATEKEEPER-VERIFIED.json for verification evidence.' *.dmg SHA256SUMS.txt MAC-GATEKEEPER-VERIFIED.json

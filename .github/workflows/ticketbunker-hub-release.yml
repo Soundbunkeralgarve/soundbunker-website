@@ -50,7 +50,7 @@ jobs:
           printf 'APPLE_API_KEY=%s/hub-apple-key.p8\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
       - name: Build signed and notarized Mac installers
         if: runner.os == 'macOS'
-        run: npx electron-builder --mac --publish never --config.forceCodeSigning=true --config.mac.notarize=true
+        run: npx electron-builder --mac --publish never --config.forceCodeSigning=true --config.mac.notarize=true --config.dmg.sign=true
         working-directory: ticketbunker-hub-desktop
         env:
           CSC_LINK: ${{ secrets.HUB_MAC_CSC_LINK }}
@@ -64,12 +64,14 @@ jobs:
         env:
           CSC_LINK: ${{ secrets.HUB_WIN_CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.HUB_WIN_CSC_KEY_PASSWORD }}
-      - name: Verify Mac notarization is stapled for offline installation
+      - name: Verify final Mac notarization and downloaded-app Gatekeeper acceptance
         if: runner.os == 'macOS'
-        shell: bash
-        run: |
-          set -euo pipefail
-          for image in ticketbunker-hub-desktop/dist/*.dmg; do xcrun stapler validate "$image"; done
+        working-directory: ticketbunker-hub-desktop
+        env:
+          APPLE_API_KEY_ID: ${{ secrets.HUB_APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.HUB_APPLE_API_ISSUER }}
+          TB_APPLE_TEAM_ID: '488DLN54MP'
+        run: node verify-mac-release.cjs
       - name: Verify Windows signature
         if: runner.os == 'Windows'
         shell: pwsh

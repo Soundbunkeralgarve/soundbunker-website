@@ -52,3 +52,11 @@ An already-submitted binary does not change when source changes. If the current 
 ## Current release status
 
 This source is prepared in PR #51. The production database migration was applied successfully on 19 October 2026 through the same deployment tool after the organiser authorised continuing. Hub table RLS, restricted RPC permissions, ticket guard and attendance-report columns were verified. Unsigned Windows/Mac QA installers and both real Electron startup/renderer checks pass. API/organiser publication, signed desktop distribution and scanner store uploads are separate release steps; record their verified status in the release notes. Real hardware validation remains required before operational use.
+
+## Mac download acceptance gate
+
+The ad-hoc Mac QA packages 1.0.0 and 1.0.1 were withdrawn after a real browser download was rejected by Gatekeeper. Passing `codesign --verify` and direct executable startup is insufficient for distribution. Do not restore those download links or suggest disabling Gatekeeper/removing quarantine.
+
+The manual **Publish Gatekeeper-Verified TicketBunker Mac Hub** workflow runs only from main. It requires the existing Mac signing/notarization secret names, uses Developer ID signing for both app and DMG, notarizes the final DMGs, staples both distribution and app tickets, adds browser-style quarantine to a fresh copy, and requires `syspolicy_check distribution` plus Gatekeeper assessment before artifact upload/publication. A native-architecture packaged startup test also passes before publication. It can publish Mac testing installers independently of Windows signing. It does not activate the complete public desktop release gate.
+
+The same verification script also protects the full signed desktop release workflow. Credentials must be configured through the authorised Apple account and encrypted GitHub Actions secrets; the unsigned/ad-hoc QA workflow cannot substitute for this release gate.
