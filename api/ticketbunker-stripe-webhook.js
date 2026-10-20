@@ -7,6 +7,8 @@ import {fulfilCapacityCheckout} from './lib/event-capacity.js';
 import {fulfilPremiumPlacementCheckout} from './lib/ticketbunker-premium-autosend.js';
 import {fetchConnectStatus} from './organiser-connect.js';
 import {ticketBunkerStripe} from './lib/ticketbunker-stripe.js';
+import {fulfilPostponementCheckout} from './lib/ticketbunker-postponements.js';
+import {fulfilCancellationCheckout,queueCancelledPaidOrder} from './lib/ticketbunker-cancellations.js';
 export const config={api:{bodyParser:false}};
 export default async function handler(req,res){
  if(req.method!=='POST')return json(res,{error:'Method not allowed'},405);
@@ -36,10 +38,13 @@ export default async function handler(req,res){
    const type=object.metadata?.purchase_type;
    if(type==='event_ticket'){
     if(object.metadata?.ticketbunker_flow!=='separate_v1')throw Error('Unsupported ticket charge flow');
-    await chargeForTicketCheckout(db,object);await fulfillEventCheckout(object,db);
+    await chargeForTicketCheckout(db,object);
+    if(!await queueCancelledPaidOrder(db,object.metadata.event_order_id))await fulfillEventCheckout(object,db);
    }else if(type==='event_listing_fee')await fulfilListingCheckout(object,db);
    else if(type==='event_capacity_upgrade')await fulfilCapacityCheckout(object,db);
    else if(type==='event_featured_promotion')await fulfilPremiumPlacementCheckout(object,db);
+   else if(type==='event_cancellation')await fulfilCancellationCheckout(db,object);
+   else if(type==='event_postponement')await fulfilPostponementCheckout(db,object);
   }else if(event.type==='checkout.session.expired'||event.type==='checkout.session.async_payment_failed'){
    if(object.metadata?.purchase_type==='event_ticket'){
     const saved=await db.from('sb_event_orders').update({status:'cancelled'}).eq('id',object.metadata.event_order_id).eq('stripe_session_id',object.id).eq('status','reserved');if(saved.error)throw saved.error;

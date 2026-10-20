@@ -29,6 +29,7 @@ export async function releaseEvent(db,eventId){
  const group='tb_event_'+eventId,remote=await stripeList('/v1/transfers?transfer_group='+encodeURIComponent(group));
  const prior=new Map();for(const t of remote){const id=t.metadata?.order_id;if(id){if(prior.has(id))throw Error('Duplicate transfer requires review');prior.set(id,t);}}
  const save=await db.from('tb_event_settlements').update({processing_fee_cents:f.totals.processingCents,refunds_cents:f.totals.refundCents,adjustments_cents:f.totals.usageCents+plan.feeCents,usage_fee_cents:f.totals.usageCents,fast_fee_cents:plan.deductFee?plan.feeCents:f.settlement?.fast_fee_cents??null,payout_amount_cents:plan.amount,reconciled_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq('event_id',eventId).eq('release_token',token);if(save.error)throw save.error;
+ const credits=await db.rpc('tb_credit_refund_processing',{p_event:eventId});if(credits.error)throw credits.error;
  for(const p of plan.transfers){
   if(!p.amount)continue;
   const state=await db.from('tb_ticket_payments').select('refunded_cents,disputed').eq('order_id',p.order_id).single();if(state.error||state.data.disputed||state.data.refunded_cents!==p.refunded_cents)throw Error('Payment changed during settlement');

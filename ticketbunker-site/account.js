@@ -1,4 +1,4 @@
-import {$,api,authClient,escapeHtml as esc,date,safeUrl,safeNext} from './shared.js';
+import {$,api,authClient,escapeHtml as esc,date,safeUrl,safeNext,money} from './shared.js';
 import {preferenceFields,readPreferences} from './promo-options.js';
 preferenceFields(document.querySelector('#weekly-fields'));
 const params=new URLSearchParams(location.search);
@@ -47,7 +47,7 @@ async function enter(s){
  $('#boot-status').hidden=true;$('#auth').hidden=true;$('#account').hidden=false;
  $('#account-email').textContent=user.data.user.email;
  document.title='My tickets | TicketBunker';
- await Promise.allSettled([loadTickets(),loadPreferences(),loadWeekly()]);
+ await Promise.allSettled([loadTickets(),loadPreferences(),loadWeekly(),loadCancellationRefunds(),loadPostponements()]);
 }
 async function currentToken(){const {data,error}=await sb.auth.getSession();if(error||!data.session){showAuth();throw Error('Your session expired. Please sign in.');}session=data.session;return session.access_token;}
 async function loadTickets(){
@@ -59,6 +59,29 @@ async function loadTickets(){
  }catch(e){$('#tickets-status').textContent=e.message;}
  finally{$('#refresh-tickets').disabled=false;}
 }
+async function loadPostponements(){
+ const target=$('#postponed-bookings');
+ try{
+  const r=await api('event-postponement',null,await currentToken());target.hidden=!r.choices?.length;
+  target.innerHTML=r.choices?.length?'<h2>Postponed & rescheduled bookings</h2>'+r.choices.map(x=>{const p=x.tb_event_postponements,newDate=p.new_starts_at?date(p.new_starts_at,x.sb_events.venue_timezone):'New date being arranged',state=x.choice==='refund'?'Full refund selected. Your tickets cannot be used.':x.choice==='rollover'?'Booking kept. Your original ticket and QR remain linked to the reposted event.':'Choose what to do with this booking. Admission is paused until you keep it.';return '<article class="ticket-card"><div><h3>'+esc(x.sb_events.title)+'</h3><p>'+esc(newDate)+'</p><p>'+esc(state)+'</p><p>'+esc(money(x.sb_event_orders.total_cents,x.sb_event_orders.currency))+' · choice applies to all tickets in this booking.</p>'+(x.canChoose&&x.choice!=='refund'?'<div class="button-row"><button class="secondary" data-postponement="'+esc(x.postponement_id)+'" data-order="'+esc(x.order_id)+'" data-choice="rollover">Keep booking / roll over</button><button class="secondary" data-postponement="'+esc(x.postponement_id)+'" data-order="'+esc(x.order_id)+'" data-choice="refund">Full refund</button></div>':'<p>The original purchaser controls this booking and receives any refund.</p>')+'<p class="postponement-choice-status" role="status"></p></div></article>';}).join(''):'';
+ }catch{target.hidden=false;target.textContent='Postponement choices could not load. Refresh or contact bookings@theticketbunker.com.';}
+}
+$('#postponed-bookings').onclick=async e=>{
+ const b=e.target.closest('[data-postponement]');if(!b)return;
+ const card=b.closest('article'),buttons=card.querySelectorAll('button');buttons.forEach(x=>x.disabled=true);
+ try{const r=await api('event-postponement',{action:'choose',postponementId:b.dataset.postponement,orderId:b.dataset.order,choice:b.dataset.choice},await currentToken());card.querySelector('.postponement-choice-status').textContent=r.message;await Promise.allSettled([loadTickets(),loadPostponements(),loadCancellationRefunds()]);}
+ catch(err){card.querySelector('.postponement-choice-status').textContent=err.message;buttons.forEach(x=>x.disabled=false);}
+};
+
+async function loadCancellationRefunds(){
+ const target=$('#cancellation-bookings');
+ try{
+  const r=await api('event-cancellation',null,await currentToken());
+  target.hidden=!r.refunds?.length;
+  target.innerHTML=r.refunds?.length?'<h2>Cancelled events & refunds</h2>'+r.refunds.map(x=>'<article class="ticket-card"><div><h3>'+esc(x.sb_events?.title||'Cancelled event')+'</h3><p>'+esc(money(x.sb_event_orders?.total_cents||0,x.sb_event_orders?.currency||'eur'))+' full booking refund</p><p>'+esc(x.refund_status==='refunded'?'Stripe has confirmed the refund to the original purchaser. Bank processing normally takes 5–10 working days.':x.refund_status==='review'?'Your cancellation refund is being checked. Support is monitoring this booking; no new request is needed.':'Your refund is queued or processing automatically. No refund request is needed.')+'</p><small>Transferred tickets are refunded to the original purchaser.</small></div></article>').join(''):'';
+ }catch{target.hidden=false;target.textContent='Cancellation and refund status could not load. Refresh your tickets or contact bookings@theticketbunker.com.';}
+}
+
 async function loadPreferences(){try{const d=await api('client-marketing-consent',null,await currentToken());$('#marketing-consent').checked=d.optedIn===true;}catch(e){$('#preferences-status').textContent=e.message;}}
 async function loadWeekly(){try{const {preferences:p}=await api('promo-preferences',null,await currentToken());if(p){preferenceFields($('#weekly-fields'),p);$('#weekly-consent').checked=p.opted_in;}if(location.hash==='#weekly-picks')$('#weekly-picks').scrollIntoView();}catch(e){$('#weekly-status').textContent=e.message;}}
 $('#weekly-form').onsubmit=async e=>{e.preventDefault();const b=e.submitter;b.disabled=true;try{const optedIn=$('#weekly-consent').checked;await api('promo-preferences',{...(optedIn?readPreferences($('#weekly-fields')):{}),optedIn},await currentToken());$('#weekly-status').textContent=optedIn?'Saved. Weekly picks will match your locations and interests. You can unsubscribe in every email.':'Weekly TicketBunker picks are switched off.';}catch(err){$('#weekly-status').textContent=err.message;}finally{b.disabled=false;}};
@@ -88,7 +111,7 @@ $('#auth-form').addEventListener('submit',async e=>{
  finally{busy=false;$('#auth-submit').disabled=false;}
 });
 $('#sign-out').onclick=async()=>{await sb.auth.signOut();tickets=[];$('#ticket-list').replaceChildren();showAuth();};
-$('#refresh-tickets').onclick=loadTickets;
+$('#refresh-tickets').onclick=()=>Promise.allSettled([loadTickets(),loadCancellationRefunds(),loadPostponements()]);
 $('#preferences-form').onsubmit=async e=>{e.preventDefault();const b=e.submitter;b.disabled=true;try{await api('client-marketing-consent',{source:'account',consent:$('#marketing-consent').checked},await currentToken());$('#preferences-status').textContent='Your preference is saved.';}catch(err){$('#preferences-status').textContent=err.message;}finally{b.disabled=false;}};
 $('#ticket-list').onclick=e=>{
  const b=e.target.closest('[data-change]');if(!b)return;

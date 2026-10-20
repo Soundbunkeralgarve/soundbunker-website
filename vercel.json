@@ -159,6 +159,18 @@
     },
     "api/*.js": {
       "includeFiles": "assets/soundbunker-email-footer.png"
+    },
+    "api/event-cancellation.js": {
+      "maxDuration": 60
+    },
+    "api/ticketbunker-cancellations.js": {
+      "maxDuration": 300
+    },
+    "api/ticketbunker-stripe-webhook.js": {
+      "maxDuration": 60
+    },
+    "api/event-postponement.js": {
+      "maxDuration": 60
     }
   },
   "crons": [
@@ -172,6 +184,10 @@
     },
     {
       "path": "/api/ticketbunker-settle",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/ticketbunker-cancellations",
       "schedule": "* * * * *"
     }
   ],

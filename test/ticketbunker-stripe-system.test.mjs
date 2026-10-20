@@ -82,6 +82,8 @@ async function webhookFixture({recipient=false,payoutStatus='paid',payoutFails=f
  const context=vm.createContext({console:{error(){}},process:{env:{TICKETBUNKER_STRIPE_WEBHOOK_SECRET:secret}}});
  const exports={
  './organiser-connect.js':{fetchConnectStatus:async()=>{calls.push('fresh-status');return {ready:recipient}}},
+ './lib/ticketbunker-postponements.js':{fulfilPostponementCheckout:async()=>calls.push('postpone')},
+ './lib/ticketbunker-cancellations.js':{fulfilCancellationCheckout:async()=>calls.push('cancel'),queueCancelledPaidOrder:async()=>false},
  './lib/ticketbunker-stripe.js':{ticketBunkerStripe:async(path,options)=>{calls.push({path,account:options.account});if(payoutFails)throw Error('Stripe unavailable');return {id:'po_synthetic',status:payoutStatus,livemode:true,arrival_date:2000000000}}},
  './lib/stripe.js':{verifyStripeSignature},'./lib/http.js':{json:(r,data,status=200)=>({data,status}),readRawBody:async r=>r.body},
  './lib/events.js':{eventsDatabase:()=>db,fulfillEventCheckout:async()=>calls.push('fulfill')},

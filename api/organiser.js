@@ -72,7 +72,7 @@ export default async function handler(req,res){
    }
    if(!organisation)return json(res,{error:'Create your organiser account first'},403);
    if(organisation.status==='suspended')return json(res,{error:'Organiser account suspended'},403);
-   if(action==='event'){
+   if(action==='event'||action==='editEvent'){
      const title=safeText(body.title,160),venue=safeText(body.venue,180);
      const category=safeText(body.kind,20),description=safeText(body.description,4000);
      const charityEvent=body.charityEvent===true||body.charityEvent==='on';
@@ -103,6 +103,13 @@ export default async function handler(req,res){
        image_url:/^https:\/\/[^\s]+$/i.test(body.imageUrl||'')?safeText(body.imageUrl,900):null,
        status:'draft'
      };
+     if(action==='editEvent'){
+       if(!uuid(body.eventId))return json(res,{error:'Choose the existing draft.'},400);
+       if(!body.imageUrl)delete details.image_url;
+       const changed=await db.from('sb_events').update(details).eq('id',body.eventId).eq('organiser_profile_id',organisation.id).eq('status','draft').select('id,slug,title,status').maybeSingle();
+       if(changed.error||!changed.data)return json(res,{error:'Only your existing draft can be edited. Published events must use Postpone first.'},409);
+       return json(res,{event:changed.data});
+     }
      // Event titles are untouched. A duplicate title may have a distinct URL.
      // Only retry when PostgreSQL confirms a URL uniqueness conflict.
      let saved;

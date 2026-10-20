@@ -39,7 +39,7 @@ export default async function handler(req,res){
   const base=(process.env.SITE_URL||'https://www.soundbunker.pt').replace(/\/$/,'');
   const owned=(tickets.data||[]).filter(t=>{
    const order=allowed.get(t.order_id),holder=(t.holder_email||order?.customer_email||'').toLowerCase();
-   return holder===email;
+   const e=events.data.find(e=>e.id===t.event_id);return holder===email&&(e?.status==='published'||walletTestEvent(e));
   });
   return json(res,{tickets:owned.map(t=>{
    const event=events.data.find(e=>e.id===t.event_id),tier=tiers.data.find(e=>e.id===t.tier_id),

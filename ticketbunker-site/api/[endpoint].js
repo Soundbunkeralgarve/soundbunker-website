@@ -3,7 +3,7 @@
 const UPSTREAM = 'https://www.soundbunker.pt';
 const PUBLIC = new Set(['supabase-config', 'events', 'event-checkout','event-checkout-status', 'event-ticket', 'event-wallet','ticketbunker-password-reset']);
 const METHODS = {
-  'event-checkout':['POST'], 'event-checkout-status':['GET'], 'organiser-listing':['POST'], 'ticketbunker-finance':['GET','POST'],
+  'event-postponement':['GET','POST'], 'event-cancellation':['GET','POST'], 'event-checkout':['POST'], 'event-checkout-status':['GET'], 'organiser-listing':['POST'], 'ticketbunker-finance':['GET','POST'],
   'ticketbunker-password-reset':['POST'],
   'event-prebookings':['GET','POST'], 'ticketbunker-admin':['GET','POST'],
   'promo-preferences':['GET','POST'], 'event-promotion':['GET','POST'],
@@ -40,7 +40,7 @@ function localLink(value) {
 export function cleanResponse(endpoint, data) {
   if (endpoint === 'events') data.events = (data.events || []).filter(e => e.status === 'published' && !e.public_beta_test && !e.internal_free_test && Date.parse(e.starts_at) > Date.now());
   if (endpoint === 'my-event-tickets') data.tickets = (data.tickets || []).filter(t => !t.test || t.walletTest === true).map(t => ({...t, url:localLink(t.url)}));
-  if (endpoint === 'organiser') data.events = (data.events || []).filter(e => e.status !== 'cancelled' && ((!e.internal_free_test && !/^ticketBunker REAL TEST/.test(e.title || '')) || e.wallet_test === true));
+  if (endpoint === 'organiser') data.events = (data.events || []).filter(e => ((!e.internal_free_test && !/^ticketBunker REAL TEST/.test(e.title || '')) || e.wallet_test === true));
   if (endpoint === 'event-staff' && data.events) data.events = data.events.filter(e => e.status === 'published' && !e.public_beta_test);
   if (data.invitationUrl) data.invitationUrl = localLink(data.invitationUrl);
   if (data.link) data.link = localLink(data.link);
