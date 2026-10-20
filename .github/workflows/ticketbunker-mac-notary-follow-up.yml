@@ -1,0 +1,33 @@
+name: Follow up TicketBunker first Mac notarisation
+on:
+  schedule:
+    - cron: '17,47 * * * *'
+  workflow_run:
+    workflows: ['Publish Gatekeeper-Verified TicketBunker Mac Hub']
+    types: [completed]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: ticketbunker-first-mac-notary-follow-up
+  cancel-in-progress: false
+jobs:
+  follow-up:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check the original release and resume only an Apple timeout
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HUB_APPLE_API_KEY_P8: ${{ secrets.HUB_APPLE_API_KEY_P8 }}
+          HUB_APPLE_API_KEY_ID: ${{ secrets.HUB_APPLE_API_KEY_ID }}
+          HUB_APPLE_API_ISSUER: ${{ secrets.HUB_APPLE_API_ISSUER }}
+        run: node .github/scripts/mac-notary-follow-up.cjs
