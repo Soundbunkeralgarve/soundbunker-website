@@ -10,7 +10,7 @@ export default async function handler(req,res){
  if(req.method!=='GET'&&req.method!=='HEAD'){res.setHeader('Allow','GET, HEAD');return res.status(405).end();}
  const slug=typeof req.query.slug==='string'?req.query.slug:'';
  try{
-  const [shell,response]=await Promise.all([readFile(new URL('../event.html',import.meta.url),'utf8'),fetch('https://www.soundbunker.pt/api/events',{signal:AbortSignal.timeout(10000)})]);
+  const [shell,response]=await Promise.all([readFile(new URL('../event.html',import.meta.url),'utf8'),fetch('https://www.soundbunker.pt/api/events?slug='+encodeURIComponent(slug),{signal:AbortSignal.timeout(10000)})]);
   if(!response.ok)throw Error('Event catalogue unavailable');
   const data=await response.json();
   const event=(data.events||[]).find(e=>e.slug===slug&&e.status==='published'&&!e.public_beta_test&&!e.internal_free_test&&Date.parse(e.starts_at)>Date.now());

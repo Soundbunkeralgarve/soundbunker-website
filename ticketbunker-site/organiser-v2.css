@@ -30,3 +30,4 @@
 
 /* Keep action feedback in the form, clear of the sticky header. */
 .notice{scroll-margin-top:100px;width:100%;overflow-wrap:anywhere}.field-error{color:#8b2338;font-weight:700}[aria-invalid=true]{border-color:#b72443!important;scroll-margin-top:100px}
+.ticket-next-actions{padding:22px;border:1px solid #9fd9bb;border-radius:7px;background:#ecf9f1;margin:20px 0}.ticket-next-actions>strong{font-size:17px}.ticket-next-actions p{margin:6px 0 0}.ticket-next-actions .button-row{margin-top:14px}@media(max-width:650px){.ticket-next-actions .button-row{flex-direction:column;align-items:stretch}.ticket-next-actions .primary{width:100%}}

@@ -15,7 +15,7 @@ test('promotional email uses TicketBunker footer, event poster, organiser logo a
   when:'25 Oct 2026 21:00',poster:'https://example.com/event-poster.jpg',
   logo:'https://example.com/promoter-logo.png',bio:'Artist lineup &\nMore details',slug:'night-special',
   organiser:'The Promoter'});
- assert.match(e.html,/lh3\.googleusercontent\.com\/d\/1l0WTM8jHq8VQwKWcF6tUYFicpxT2QFIr/);
+ assert.match(e.html,/bookings@theticketbunker\.com/);
  assert.match(e.html,/ticketbunker-email-logo\.png/);
  assert.match(e.html,/event-poster\.jpg/);
  assert.match(e.html,/promoter-logo\.png/);
@@ -50,7 +50,8 @@ test('BETA cannot trigger premium email campaigns or debit the organiser',async(
  }finally{for(const [key,value] of previous){if(value===undefined)delete process.env[key];else process.env[key]=value;}}
  const checkout=read('api/organiser-premium-checkout.js');
  assert.match(checkout,/EVENT_PREMIUM_PAYMENTS_ENABLED/);
- assert.match(checkout,/EVENTS_MARKETPLACE_PAYMENTS_ENABLED/);
+ assert.match(checkout,/ticketBunkerPaymentsEnabled\(\)/);
+ assert.match(read('api/lib/ticketbunker-stripe.js'),/EVENTS_MARKETPLACE_PAYMENTS_ENABLED/);
  const webhook=read('api/stripe-webhook.js');
  assert.match(webhook,/verifyStripeSignature/);
  assert.match(webhook,/metadata\.purchase_type === 'event_featured_promotion'/);

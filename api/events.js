@@ -5,12 +5,15 @@ export default async function handler(req,res) {
   if(req.method!=='GET') return json(res,{error:'Method not allowed'},405);
   try {
     const db=eventsDatabase();
-    const event=await db.from('sb_events').select('id,slug,title,description,organiser,venue,image_url,event_logo_url,headline_artist,venue_city,starts_at,ends_at,country_code,currency,venue_timezone,event_kind,status,public_beta_test,beta_test_expires_at,organiser_profile_id')
+    const now=Date.now(),slug=typeof req.query?.slug==='string'?req.query.slug.trim():'';
+    if(slug&&!/^[a-z0-9-]{1,160}$/.test(slug))return json(res,{error:'Invalid event link'},400);
+    let query=db.from('sb_events').select('id,slug,title,description,organiser,venue,image_url,event_logo_url,headline_artist,venue_city,starts_at,ends_at,country_code,currency,venue_timezone,event_kind,status,public_beta_test,beta_test_expires_at,organiser_profile_id')
       .eq('internal_free_test',false)
       .or('status.eq.published,public_beta_test.eq.true')
-      .order('starts_at',{ascending:true}).limit(60);
+      .gt('starts_at',new Date(now).toISOString()).order('starts_at',{ascending:true});
+    if(slug)query=query.eq('slug',slug);
+    const event=await query.limit(slug?1:60);
     if(event.error) throw event.error;
-    const now=Date.now();
     const visible=event.data.filter(e=>
       (e.status==='published'&&Date.parse(e.starts_at)>now)||
       (e.status==='draft'&&e.public_beta_test&&Date.parse(e.beta_test_expires_at)>now));

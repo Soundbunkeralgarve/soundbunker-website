@@ -34,7 +34,7 @@ test('private test mode remains present, separate from commercial ticket publish
  assert.match(organiser,/href="\/events-admin"/);
  assert.match(read('api/event-free-test.js'),/sb_issue_internal_free_test/);
  assert.match(read('api/events.js'),/eq\('internal_free_test',false\)/);
- assert.match(admin,/Checkout and payments are not live/);
+ assert.match(admin,/!ticketBunkerPaymentsEnabled\(\)/);
 });
 test('organiser has real upload bytes progress and indeterminate status for database operations',()=>{
  for(const id of ['operationStatus','operationTitle','operationDetail','operationTrack','operationBar','operationPercent'])assert.ok(organiser.includes('id="'+id+'"'));
@@ -54,5 +54,5 @@ test('Review & publish replaces publication request and clearly shows flat fee a
  assert.doesNotMatch(organiser,/Submit for publication review/);
  assert.match(organiserJS,/\/api\/organiser-listing/);
  assert.match(organiserJS,/No payment was taken/);
- assert.match(admin,/return json\(res,\{error:'SoundBunker Events is in BETA/);
+ assert.match(admin,/!ticketBunkerPaymentsEnabled\(\)/);
 });

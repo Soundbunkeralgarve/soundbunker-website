@@ -52,7 +52,8 @@ test('large-event requests reach admin safely for review',()=>{
 });
 test('existing checkout controls and quote trigger stay intact',()=>{
  const pay=read('api/organiser-listing.js');
- assert.match(pay,/return json\(res,\{error:'SoundBunker Events is in BETA/);
+ assert.match(pay,/!ticketBunkerPaymentsEnabled\(\)/);
+ assert.match(pay,/EVENT_LISTING_PAYMENTS_ENABLED/);
  const schema=read('SUPABASE_TICKETBUNKER_FESTIVAL_QUOTES.sql');
  assert.match(schema,/expected_tickets>=2001/);
  assert.match(schema,/CHECK \(\(tier_code='festival'/);
@@ -74,7 +75,7 @@ test('flexible deposit is offered only on tier three Event Plus and bespoke cust
 });
 test('Event Plus deposit enquiries are owner-scoped, not Stripe payments',()=>{
  assert.match(orgApi,/if\(action==='eventPlusTerms'\)/);
- assert.match(orgApi,/capacity<501\|\|capacity>2000/);
+ assert.match(orgApi,/capacity<1001\|\|capacity>2000/);
  assert.match(orgApi,/sb_event_payment_terms_requests/);
  assert.match(orgApi,/paymentPreference!=='deposit_sales'/);
  assert.match(orgApi,/proposed_listing_fee_cents:amount/);

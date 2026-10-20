@@ -19,7 +19,7 @@ export async function organiserForUser(admin,id){
  return result.data;
 }
 export default async function handler(req,res){
- const ctx=await requireUser(req);
+ const ctx=await requireUser(req,{loadProfile:false});
  if(ctx.error)return json(res,{error:ctx.error},ctx.status);
  const db=ctx.admin;
  try {
@@ -30,30 +30,24 @@ export default async function handler(req,res){
        .eq('organiser_profile_id',organisation.id).order('starts_at',{ascending:false}).limit(200);
      if(ev.error)throw ev.error;
      const ids=ev.data.map(v=>v.id);
-     const tiers=ids.length?await db.from('sb_event_tiers').select('id,event_id,name,price_cents,quantity_total').in('event_id',ids):{data:[],error:null};
-     if(tiers.error)throw tiers.error;
-     const fees=ids.length?await db.from('sb_event_listing_fees').select('event_id,status,tier_code,amount_cents,currency').in('event_id',ids):{data:[],error:null};
-     if(fees.error)throw fees.error;
-     const showcases=ids.length
-       ?await db.from('sb_event_showcase_requests').select('event_id,status,currency,proposed_amount_cents,requested_at').in('event_id',ids)
-       :{data:[],error:null};
-     if(showcases.error)throw showcases.error;
-     const festivalQuotes=ids.length
-       ?await db.from('sb_event_festival_quotes').select('event_id,tier_code,expected_tickets,status,currency,quoted_amount_cents').in('event_id',ids)
-       :{data:[],error:null};
-     if(festivalQuotes.error)throw festivalQuotes.error;
-     const charities=ids.length
-       ?await db.from('sb_event_charity_claims').select('event_id,registration_number,status,country_code,created_at').in('event_id',ids)
-       :{data:[],error:null};
-     if(charities.error)throw charities.error;
-     const paymentTerms=ids.length
-       ?await db.from('sb_event_payment_terms_requests').select('event_id,status,payment_preference,ticket_capacity').in('event_id',ids)
-       :{data:[],error:null};
-     if(paymentTerms.error)throw paymentTerms.error;
+     // Independent account sections load concurrently instead of seven serial round trips.
+     const queries=[
+       ['sb_event_tiers','id,event_id,name,price_cents,quantity_total'],
+       ['sb_event_listing_fees','event_id,status,tier_code,amount_cents,currency'],
+       ['sb_event_showcase_requests','event_id,status,currency,proposed_amount_cents,requested_at'],
+       ['sb_event_festival_quotes','event_id,tier_code,expected_tickets,status,currency,quoted_amount_cents'],
+       ['sb_event_charity_claims','event_id,registration_number,status,country_code,created_at'],
+       ['sb_event_payment_terms_requests','event_id,status,payment_preference,ticket_capacity']
+     ];
+     const [tiers,fees,showcases,festivalQuotes,charities,paymentTerms,listingOffer]=await Promise.all([
+       ...queries.map(([table,columns])=>ids.length?db.from(table).select(columns).in('event_id',ids):{data:[],error:null}),
+       clientControl(db,organisation.id)
+     ]);
+     for(const result of [tiers,fees,showcases,festivalQuotes,charities,paymentTerms])if(result.error)throw result.error;
      return json(res,{organiser:{
        id:organisation.id,display_name:organisation.display_name,country_code:organisation.country_code,
        status:organisation.status,stripe_connected:!!organisation.stripe_account_id,
-       stripe_capabilities_ready:organisation.stripe_capabilities_ready,tax_review_complete:organisation.tax_review_complete,logo_url:organisation.logo_url||null,listingOffer:await clientControl(db,organisation.id)
+       stripe_capabilities_ready:organisation.stripe_capabilities_ready,tax_review_complete:organisation.tax_review_complete,logo_url:organisation.logo_url||null,listingOffer
      },events:ev.data.map(e=>({...e,wallet_test:walletTestEvent(e),tiers:tiers.data.filter(t=>t.event_id===e.id),fees:fees.data.filter(f=>f.event_id===e.id),showcase:showcases.data.find(f=>f.event_id===e.id)||null,festivalQuote:festivalQuotes.data.find(f=>f.event_id===e.id)||null,
        flexibleTerms:paymentTerms.data.find(f=>f.event_id===e.id)||null,charity:charities.data.find(f=>f.event_id===e.id)||null}))});
    }
@@ -200,11 +194,15 @@ export default async function handler(req,res){
      const unique=new Set(items.map(item=>item.name.toLocaleLowerCase()));
      if(unique.size!==items.length)
        return json(res,{error:'You have chosen the same ticket type more than once. Each name must be unique.'},409);
-     const existing=await db.from('sb_event_tiers').select('name,quantity_total').eq('event_id',ev.data.id);
+     const existing=await db.from('sb_event_tiers').select('id,name,price_cents,quantity_total').eq('event_id',ev.data.id);
      if(existing.error)throw existing.error;
      const already=new Set(existing.data.map(item=>item.name.toLocaleLowerCase()));
      const duplicate=items.find(item=>already.has(item.name.toLocaleLowerCase()));
-     if(duplicate)return json(res,{error:duplicate.name+' is already saved for this event. Pick a different ticket type.'},409);
+     if(duplicate){
+       const identical=items.every(item=>existing.data.some(t=>t.name.toLocaleLowerCase()===item.name.toLocaleLowerCase()&&t.price_cents===item.price_cents&&t.quantity_total===item.quantity_total));
+       if(identical)return json(res,{tiers:existing.data,alreadySaved:true,total:existing.data.reduce((n,t)=>n+Number(t.quantity_total||0),0)});
+       return json(res,{error:duplicate.name+' is already saved. Choose Review draft to continue, or use a different name for a new ticket type.'},409);
+     }
      const currentCount=existing.data.reduce((total,item)=>total+Number(item.quantity_total||0),0);
      const addedCount=items.reduce((total,item)=>total+item.quantity_total,0);
      if(currentCount+addedCount>2000)

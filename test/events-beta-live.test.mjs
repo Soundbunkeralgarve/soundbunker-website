@@ -10,28 +10,14 @@ test('ticket checkout is hard-disabled with no Stripe call',async()=>{
  const response=mock();
  await ticketCheckout({method:'POST'},response);
  assert.equal(response.statusCode,503);
- assert.match(response.data.error,/BETA/);
+ assert.match(response.data.error,/awaiting payment activation/);
 });
-test('organiser listing fees are hard-disabled',async()=>{
- const response=mock();
- await listingCheckout({method:'POST'},response);
- assert.equal(response.statusCode,503);
- assert.match(response.data.error,/BETA/);
-});
+test('listing checkout requires authentication before any paid operation',async()=>{const response=mock();await listingCheckout({method:'POST',headers:{}},response);assert.equal(response.statusCode,401);assert.match(response.data.error,/signed in/);});
+
 test('Connect onboarding requires authentication while ticket payments stay disabled',async()=>{
  const response=mock();
  await connectOnboarding({method:'POST',headers:{}},response);
  assert.equal(response.statusCode,401);
  assert.match(response.data.error,/signed in/);
 });
-test('real Events and organiser pages display beta warning and no checkout dialog',()=>{
- const events=file('events.html'),organiser=file('organiser.html'),home=file('index.html'),client=file('events.js');
- assert.match(events,/LIVE €0 TESTING · PAID SALES OFF/);
- assert.match(organiser,/LIVE €0 TESTING · PAID SALES OFF/);
- assert.match(home,/header-beta-pill/);
- assert.doesNotMatch(events,/<dialog id="checkout">/);
- assert.doesNotMatch(client,/\/api\/event-checkout|checkout\.stripe\.com/);
- assert.doesNotMatch(events,/id="tb-demo-dialog"/);
- assert.match(client,/real event/i);
- assert.match(client,/\/event\?slug=/);
-});
+test('current storefront labels unbookable demos and keeps payment gates on the server',()=>{const page=file('ticketbunker-site/index.html'),booking=file('ticketbunker-site/booking-form.js');assert.match(page,/Cards marked DEMO/);assert.match(page,/They cannot be booked/);assert.match(booking,/event.preview\|\|!event.paymentsEnabled/);assert.match(file('api/event-checkout.js'),/!ticketBunkerPaymentsEnabled\(\)/);});

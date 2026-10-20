@@ -64,5 +64,5 @@ test('Real signed ticket page keeps QR and all sharing actions',()=>{
  assert.match(css,/\.tb-ticket-actions-grid/);
  assert.match(ticket,/event-ticket\.js/);
  assert.match(ticket,/qrcode\.min\.js/);
- assert.match(read('api/event-checkout.js'),/Checkout and payments are not live/);
+ assert.match(read('api/event-checkout.js'),/!ticketBunkerPaymentsEnabled\(\)/);
 });
