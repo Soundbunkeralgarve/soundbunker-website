@@ -193,8 +193,6 @@ async function loadAvailability(){
 }
 
 document.querySelectorAll(".lang").forEach(btn=>btn.addEventListener("click",()=>applyLanguage(btn.dataset.lang)));
-document.querySelector(".menu-toggle").addEventListener("click",event=>{const nav=document.querySelector("#site-nav"),open=nav.classList.toggle("open");event.currentTarget.setAttribute("aria-expanded",String(open))});
-document.querySelectorAll(".site-nav a").forEach(link=>link.addEventListener("click",()=>{document.querySelector("#site-nav").classList.remove("open");document.querySelector(".menu-toggle").setAttribute("aria-expanded","false")}));
 document.querySelectorAll("[data-service]").forEach(link=>link.addEventListener("click",()=>renderServices(link.dataset.service)));
 document.querySelector("#service").addEventListener("change",updateTotals);
 document.querySelector('#promoCode')?.addEventListener('input',()=>{updateTotals();});
