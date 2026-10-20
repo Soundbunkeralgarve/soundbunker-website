@@ -13,6 +13,6 @@ test('staged npm links stay relative and resolve inside the shipped resource tre
   vm.runInNewContext(source,{require,__dirname:desktop,console:{log(){}}});
   const link=path.join(desktop,'.resources/ticketbunker-hub/node_modules/.bin/qrcode');
   assert.equal(fs.readlinkSync(link),'../qrcode/cli.js');
-  assert.equal(fs.realpathSync(link),path.join(desktop,'.resources/ticketbunker-hub/node_modules/qrcode/cli.js'));
+  assert.equal(fs.realpathSync(link),fs.realpathSync(path.join(desktop,'.resources/ticketbunker-hub/node_modules/qrcode/cli.js')));
  }finally{fs.rmSync(root,{recursive:true,force:true});}
 });
