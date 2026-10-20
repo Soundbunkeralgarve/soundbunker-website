@@ -1,0 +1,66 @@
+name: Upload verified TicketBunker iOS build 10
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ticketbunker-ios-upload-existing-build10
+  cancel-in-progress: false
+jobs:
+  upload:
+    if: github.repository == 'Soundbunkeralgarve/soundbunker-website' && github.ref == 'refs/heads/main'
+    runs-on: macos-latest
+    timeout-minutes: 25
+    steps:
+      - name: Download the existing signed Expo build without rebuilding
+        env:
+          IPA_URL: https://expo.dev/artifacts/eas/7s2602TSHjNVLozWahF9IfE7SmNtYrMqbFWeOVxOYlQ.ipa
+        run: |
+          set -euo pipefail
+          curl --fail --location --proto '=https' --proto-redir '=https' --retry 3 --connect-timeout 30 --max-time 180 --output "$RUNNER_TEMP/TicketBunker-1.0.1-10.ipa" "$IPA_URL"
+      - name: Verify bundle, version, build and existing Apple signature
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os, pathlib, zipfile, plistlib, hashlib
+          archive=pathlib.Path(os.environ['RUNNER_TEMP'])/'TicketBunker-1.0.1-10.ipa'
+          with zipfile.ZipFile(archive) as z:
+              assert all(not pathlib.PurePosixPath(n).is_absolute() and '..' not in pathlib.PurePosixPath(n).parts for n in z.namelist()), 'Unsafe archive path'
+              paths=[n for n in z.namelist() if n.startswith('Payload/') and n.endswith('.app/Info.plist') and n.count('/')==2]
+              assert len(paths)==1, 'Expected exactly one app'
+              d=plistlib.loads(z.read(paths[0]))
+              assert (d.get('CFBundleIdentifier'),d.get('CFBundleShortVersionString'),d.get('CFBundleVersion'))==('pt.soundbunker.ticketbunkerscanner','1.0.1','10'), 'Unexpected scanner artifact'
+              with open(os.environ['GITHUB_ENV'],'a') as f: f.write('SCANNER_APP='+str(archive.parent/'scanner-verify'/str(pathlib.PurePosixPath(paths[0]).parent))+'\n')
+          with archive.open('rb') as f: print('Verified scanner 1.0.1 (10), SHA256 '+hashlib.file_digest(f,'sha256').hexdigest())
+          PY
+          ditto -x -k "$RUNNER_TEMP/TicketBunker-1.0.1-10.ipa" "$RUNNER_TEMP/scanner-verify"
+      - name: Check signed app belongs to SoundBunker
+        run: |
+          set -euo pipefail
+          codesign --verify --deep --strict "$SCANNER_APP"
+          python3 - <<'PY'
+          import os, subprocess
+          r=subprocess.run(['codesign','--display','--verbose=4',os.environ['SCANNER_APP']],capture_output=True,text=True,check=True)
+          assert 'TeamIdentifier=488DLN54MP' in r.stdout+r.stderr, 'Unexpected Apple signing team'
+          print('Existing Apple signature verified for the intended team.')
+          PY
+      - name: Upload the verified binary to the existing Apple app
+        env:
+          APPLE_KEY_P8: ${{ secrets.HUB_APPLE_API_KEY_P8 }}
+          APPLE_API_KEY_ID: ${{ secrets.HUB_APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.HUB_APPLE_API_ISSUER }}
+        run: |
+          set -euo pipefail
+          test -n "$APPLE_KEY_P8" && test -n "$APPLE_API_KEY_ID" && test -n "$APPLE_API_ISSUER"
+          umask 077
+          cd "$RUNNER_TEMP"
+          mkdir -p private_keys
+          trap 'rm -f private_keys/AuthKey_*.p8' EXIT
+          printf '%s' "$APPLE_KEY_P8" > "private_keys/AuthKey_${APPLE_API_KEY_ID}.p8"
+          xcrun altool --upload-app --type ios --file "$RUNNER_TEMP/TicketBunker-1.0.1-10.ipa" --apiKey "$APPLE_API_KEY_ID" --apiIssuer "$APPLE_API_ISSUER" --output-format json
+          printf 'Scanner 1.0.1 build 10 upload completed. Apple processing and App Review submission must be verified separately.\n' >> "$GITHUB_STEP_SUMMARY"
+      - name: Remove temporary signing material and verification files
+        if: always()
+        run: |
+          rm -rf "$RUNNER_TEMP/private_keys" "$RUNNER_TEMP/scanner-verify"
+          rm -f "$RUNNER_TEMP/TicketBunker-1.0.1-10.ipa"
