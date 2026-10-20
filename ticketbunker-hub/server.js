@@ -3,6 +3,7 @@ import {randomBytes,randomUUID} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import nacl from 'tweetnacl';
 import QRCode from 'qrcode';
+import {wifiPayload,connectionStatus} from './network.js';
 import {createHubProtocol,privateHubOrigin} from '../ticketbunker-scanner-native/lib/hubProtocol.js';
 const protocol=createHubProtocol(nacl,n=>new Uint8Array(randomBytes(n)));
 const UUID=/^[a-f0-9-]{36}$/i;
@@ -47,18 +48,22 @@ export function createHubServers({store,cloud,addresses=[],lanPort=8787,adminPor
   if(!allowedHosts.has(req.headers.host)||!['127.0.0.1','::ffff:127.0.0.1','::1'].includes(req.socket.remoteAddress))return reply(res,403,{error:'Local access only'});
   res.setHeader('Content-Security-Policy',"default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'");
   res.setHeader('Referrer-Policy','no-referrer');
-  if(req.method==='GET'&&['/','/app.js','/styles.css'].includes(req.url)){
-   const file=req.url==='/'?'index.html':req.url.slice(1);res.writeHead(200,{'content-type':file.endsWith('.js')?'application/javascript':file.endsWith('.css')?'text/css':'text/html','cache-control':'no-store'});res.end(await readFile(new URL('./public/'+file,import.meta.url)));return;
+  if(req.method==='GET'&&['/','/app.js','/styles.css','/brand.png'].includes(req.url)){
+   const file=req.url==='/'?'index.html':req.url.slice(1);res.writeHead(200,{'content-type':file.endsWith('.png')?'image/png':file.endsWith('.js')?'application/javascript':file.endsWith('.css')?'text/css':'text/html','cache-control':'no-store'});res.end(await readFile(new URL('./public/'+file,import.meta.url)));return;
   }
   if(req.headers.authorization!=='Bearer '+adminKey||req.headers.origin&&req.headers.origin!==`http://${req.headers.host}`)return reply(res,403,{error:'Open the private organiser link shown in the hub terminal.'});
   try{
-   if(req.method==='GET'&&req.url==='/admin/status')return reply(res,200,{...store.status(),cloud:cloud.message,addresses:currentAddresses(),account:store.get('session')?.user?.email||''});
+   if(req.method==='GET'&&req.url==='/admin/status'){
+    const status=store.status(),addresses=currentAddresses();
+    return reply(res,200,{...status,...connectionStatus(status,addresses),cloud:cloud.message,syncStatus:{state:cloud.state||'unknown',syncing:cloud.operations>0,lastContactAt:cloud.lastContactAt||null,lastDownloadAt:status.eventId?store.get('lastRefresh'):null,lastUploadedAt:status.eventId?store.get('lastUpload'):null},addresses,account:store.get('session')?.user?.email||''});
+   }
    if(req.method==='GET'&&req.url==='/admin/events')return reply(res,200,await cloud.events());
    if(req.method!=='POST')return reply(res,404,{error:'Unavailable'});
    const data=await body(req);
+   if(req.url==='/admin/wifi-qr')return reply(res,200,{qr:await QRCode.toDataURL(wifiPayload(data),{width:420,margin:3})});
    if(req.url==='/admin/login'){if(typeof data.email!=='string'||typeof data.password!=='string')throw Error('Enter organiser email and password.');return reply(res,200,await cloud.login(data.email,data.password));}
    if(req.url==='/admin/prepare')return reply(res,200,await cloud.prepare(data.eventId));
-   if(req.url==='/admin/sync'){await cloud.sync();return reply(res,200,store.status());}
+   if(req.url==='/admin/sync'){await cloud.sync({forceRefresh:true});return reply(res,200,store.status());}
    if(req.url==='/admin/finish'){await cloud.finish();return reply(res,200,store.status());}
    if(req.url==='/admin/revoke'){store.revoke(data.deviceId);return reply(res,200,{revoked:true});}
    if(req.url==='/admin/invite'){

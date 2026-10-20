@@ -3,26 +3,29 @@ import {createClient} from '@supabase/supabase-js';
 import {PUBLIC_CONFIG} from '../ticketbunker-scanner-native/lib/publicConfig.js';
 const BASE='https://www.soundbunker.pt';
 export class HubCloud{
- constructor(store,{fetcher=fetch}={}){this.store=store;this.fetcher=fetcher;this.queue=Promise.resolve();this.message='';this.abort=new AbortController();}
- serial(fn){const run=()=>{this.abort.signal.throwIfAborted();return fn();};const p=this.queue.then(run,run);this.queue=p.catch(()=>{});return p;}
+ constructor(store,{fetcher=fetch}={}){this.store=store;this.fetcher=fetcher;this.queue=Promise.resolve();this.message='';this.abort=new AbortController();this.state='unknown';this.lastContactAt=null;this.operations=0;}
+ serial(fn){this.operations++;const run=()=>{this.abort.signal.throwIfAborted();return fn();};const p=this.queue.then(run,run).finally(()=>{this.operations--;});this.queue=p.catch(()=>{});return p;}
  async shutdown(){this.abort.abort();await this.queue;}
  async login(email,password){
   const client=createClient(PUBLIC_CONFIG.url,PUBLIC_CONFIG.key,{global:{fetch:(url,opts)=>this.fetcher(url,{...opts,signal:AbortSignal.timeout(15000)})},auth:{persistSession:false,autoRefreshToken:false}});
   const {data,error}=await client.auth.signInWithPassword({email,password});
   if(error||!data.user?.email_confirmed_at)throw Error('Sign in with a verified organiser account.');
   const owner=this.store.get('claimUserId');if(this.store.get('manifest')&&owner&&owner!==data.user.id)throw Error('Reconnect the original organiser account while this event is active.');
-  this.store.set('session',data.session);return {email:data.user.email};
+  this.store.set('session',data.session);this.state='online';this.lastContactAt=Date.now();return {email:data.user.email};
  }
  async api(body,path='/api/event-scanner-offline'){
   this.abort.signal.throwIfAborted();
-  let session=this.store.get('session');if(!session)throw Error('Sign in on this laptop before downloading or syncing.');
+  let session=this.store.get('session');if(!session){this.state='attention';throw Error('Sign in on this laptop before downloading or syncing.');}
   if(session.expires_at*1000<Date.now()+60000){
    const client=createClient(PUBLIC_CONFIG.url,PUBLIC_CONFIG.key,{global:{fetch:(url,opts)=>this.fetcher(url,{...opts,signal:AbortSignal.timeout(15000)})},auth:{persistSession:false,autoRefreshToken:false}});
-   const {data,error}=await client.auth.refreshSession({refresh_token:session.refresh_token});if(error||!data.session)throw Error('Reconnect your organiser account to sync. Local entries remain safe.');
+   const {data,error}=await client.auth.refreshSession({refresh_token:session.refresh_token});if(error||!data.session){this.state='attention';throw Error('Reconnect your organiser account to sync. Local entries remain safe.');}
    session=data.session;this.store.set('session',session);
   }
-  const response=await this.fetcher(BASE+path,{method:body?'POST':'GET',headers:{authorization:'Bearer '+session.access_token,...(body?{'content-type':'application/json'}:{})},body:body?JSON.stringify(body):undefined,redirect:'error',signal:AbortSignal.any([this.abort.signal,AbortSignal.timeout(15000)])});
-  const data=await response.json();if(!response.ok)throw Error(data.error||'Cloud sync unavailable.');return data;
+  let response,data;
+  try{response=await this.fetcher(BASE+path,{method:body?'POST':'GET',headers:{authorization:'Bearer '+session.access_token,...(body?{'content-type':'application/json'}:{})},body:body?JSON.stringify(body):undefined,redirect:'error',signal:AbortSignal.any([this.abort.signal,AbortSignal.timeout(15000)])});data=await response.json();}
+  catch{this.state='unavailable';throw Error('Internet sync is unavailable. Downloaded tickets and saved entries remain on this laptop. Reconnect and try again.');}
+  if(!response.ok){this.state='attention';throw Error(data.error||'Cloud sync unavailable.');}
+  this.state='online';this.lastContactAt=Date.now();return data;
  }
  events(){return this.api(null,'/api/event-staff?mode=my');}
  async upload(){
@@ -31,6 +34,7 @@ export class HubCloud{
    const result=await this.api({action:'sync',claimId:m.claimId,deviceKey:this.store.get('deviceKey'),entries});
    if(!Array.isArray(result.accepted)||entries.some(e=>!result.accepted.includes(e.id)))throw Error('Some entries were not acknowledged. They remain saved on this laptop.');
    this.store.ack(result.accepted);
+   this.store.set('lastUpload',Date.now());
   }
   if(this.store.get('stopped')){
    const result=await this.api({action:'sync',claimId:m.claimId,deviceKey:this.store.get('deviceKey'),entries:[],release:true});
@@ -45,8 +49,8 @@ export class HubCloud{
   if(pending&&pending.eventId!==eventId)throw Error('Complete the previous event download first.');
   this.store.set('claimUserId',this.store.get('session')?.user?.id||null);
   const m=await this.api({action:'prepare',mode:'hub',eventId,laneCount:1,deviceKey:this.store.get('deviceKey'),claimId:old?.claimId||pending.id});
-  this.store.install(m);this.store.set('lastRefresh',Date.now());this.message='Cloud connected · event download refreshed';return this.store.status();
+  this.store.install(m);this.store.set('lastRefresh',Date.now());if(!old)this.store.set('lastUpload',null);this.message='Cloud connected · event download refreshed';return this.store.status();
  });}
- sync(){return this.serial(async()=>{try{await this.upload();const m=this.store.get('manifest');if(m&&!this.store.get('stopped')&&Date.now()-(this.store.get('lastRefresh')||0)>60000){const fresh=await this.api({action:'prepare',mode:'hub',eventId:m.eventId,laneCount:1,deviceKey:this.store.get('deviceKey'),claimId:m.claimId});this.store.install(fresh);this.store.set('lastRefresh',Date.now());}this.message='Saved entries synced';}catch(e){this.message='Cloud unavailable · entries saved locally';throw e;}});}
+ sync({forceRefresh=false}={}){return this.serial(async()=>{try{await this.upload();const m=this.store.get('manifest');if(m&&!this.store.get('stopped')&&(forceRefresh||Date.now()-(this.store.get('lastRefresh')||0)>60000)){const fresh=await this.api({action:'prepare',mode:'hub',eventId:m.eventId,laneCount:1,deviceKey:this.store.get('deviceKey'),claimId:m.claimId});this.store.install(fresh);this.store.set('lastRefresh',Date.now());}this.message=m?'Tickets up to date · saved entries uploaded':'Download an event to prepare offline entry.';}catch(e){this.message='Internet sync unavailable · entries saved on this laptop';throw e;}});}
  finish(){this.store.stop();return this.serial(async()=>{await this.upload();this.message='All entries synced. Offline ownership released.';});}
 }

@@ -28,6 +28,14 @@ jobs:
         working-directory: ticketbunker-hub-desktop
       - run: npm test
         working-directory: ticketbunker-hub-desktop
+      - uses: actions/setup-dotnet@v4
+        if: runner.os == 'Windows'
+        with:
+          dotnet-version: '8.0.x'
+      - name: Build native local Wi-Fi helper for Windows testing
+        if: runner.os == 'Windows'
+        run: dotnet publish network-helper/TicketBunker.Network.csproj -c Release -o network-helper/publish
+        working-directory: ticketbunker-hub-desktop
       - run: npm run prepare:resources
         working-directory: ticketbunker-hub-desktop
       - name: Test real desktop startup, renderer and SQLite
