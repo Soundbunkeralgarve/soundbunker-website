@@ -38,6 +38,8 @@
     "files": [
       "main.cjs",
       "policy.cjs",
+      "network.cjs",
+      "preload.cjs",
       "package.json",
       "launcher.cjs",
       "smoke.cjs"

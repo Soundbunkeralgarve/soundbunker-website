@@ -73,6 +73,29 @@ test('finishing closes local admissions before a failed cloud release and retrie
 test('cloud sync failure keeps local entry working, then uploads staff attribution once connected',async()=>{
  const {store,cloud}=setup();try{const i=store.invitation(staff[0],'Door'),d=store.pair(i.id,{requestId:randomUUID(),staffId:staff[0],deviceBinding:'b'.repeat(64)});cloud.api=async()=>{throw Error('No internet');};assert.equal(store.scan(d.deviceId,randomUUID(),code).status,'valid');await assert.rejects(cloud.sync(),/No internet/);assert.equal(store.status().ready,true);let actor;cloud.api=async body=>{actor=body.entries[0].staffId;return {accepted:body.entries.map(e=>e.id)};};await cloud.sync();assert.equal(actor,staff[0]);assert.equal(store.pending().length,0);}finally{store.close();}
 });
+test('manual sync uploads check-ins before refreshing tickets, even when the previous download is recent',async()=>{
+ const {store,cloud}=setup();try{
+  const i=store.invitation(staff[0],'Door'),d=store.pair(i.id,{requestId:randomUUID(),staffId:staff[0],deviceBinding:'b'.repeat(64)});store.scan(d.deviceId,randomUUID(),code);
+  const calls=[];cloud.api=async body=>{calls.push(body.action);if(body.action==='sync')return {accepted:body.entries.map(e=>e.id)};assert.equal(store.pending().length,0);return {...manifest(),claimId:store.get('manifest').claimId};};
+  const sync=cloud.sync({forceRefresh:true});assert.equal(cloud.operations,1);await sync;
+  assert.deepEqual(calls,['sync','prepare']);assert.equal(cloud.operations,0);assert.ok(store.get('lastUpload'));assert.equal(store.status().admitted,1);assert.equal(store.scan(d.deviceId,randomUUID(),code).status,'used');
+ }finally{store.close();}
+});
+test('internet sync state reflects real API results and failed uploads keep local tickets usable',async()=>{
+ const {store,cloud}=setup();try{
+  store.set('session',{access_token:'local-test-token',expires_at:Math.floor(Date.now()/1000)+3600});
+  cloud.fetcher=async()=>{throw Error('Connection lost');};
+  await assert.rejects(cloud.api({action:'prepare'}),/Internet sync is unavailable/);assert.equal(cloud.state,'unavailable');assert.equal(cloud.lastContactAt,null);assert.equal(store.status().ready,true);
+  cloud.fetcher=async()=>({ok:true,json:async()=>({events:[]})});assert.deepEqual(await cloud.events(),{events:[]});assert.equal(cloud.state,'online');assert.ok(cloud.lastContactAt);
+  cloud.fetcher=async()=>({ok:false,json:async()=>({error:'Reconnect organiser sign-in'})});await assert.rejects(cloud.events(),/Reconnect organiser/);assert.equal(cloud.state,'attention');
+ }finally{store.close();}
+});
+test('empty background sync does not claim internet connectivity; a new event clears previous upload timestamps',async()=>{
+ const store=new HubStore(':memory:'),cloud=new HubCloud(store);try{
+  await cloud.sync();assert.equal(cloud.state,'unknown');assert.equal(cloud.lastContactAt,null);assert.match(cloud.message,/Download an event/);
+  store.set('lastUpload',12345);cloud.api=async()=>manifest();await cloud.prepare('event');assert.equal(store.get('lastUpload'),null);
+ }finally{store.close();}
+});
 test('first-download response loss uses a persisted claim ID for safe retry',async()=>{
  const store=new HubStore(':memory:'),cloud=new HubCloud(store);let claimId,first=true;cloud.api=async body=>{if(!claimId)claimId=body.claimId;assert.equal(body.claimId,claimId);if(first){first=false;throw Error('Lost first response');}return {...manifest(),claimId};};try{await assert.rejects(cloud.prepare('event'),/Lost first response/);assert.ok(store.get('pendingClaimId'));await cloud.prepare('event');assert.equal(store.get('manifest').claimId,claimId);}finally{store.close();}
 });
