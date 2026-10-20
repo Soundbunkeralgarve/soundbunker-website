@@ -1,5 +1,6 @@
 import { collectionFor, displayProductTitle, validateCouplesCombo } from './shop-collections.js';
 import { campaignImages, campaignBackViews } from './shop-artwork.js';
+import { shopSizeLabel, kidsAge } from './shop-sizes.js';
 import { supplierCost, deliveryRetailPrice, retailPrice, productCategory, productLabel, marginCheck, minimumShopPrice, applyShopDiscount, loadShopDiscount, isOwnerCostCode, applyOwnerCost } from './shop-pricing.js';
 import { randomUUID, randomBytes, timingSafeEqual } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
@@ -109,7 +110,8 @@ export function publicVariant(v, productName = v.name) {
   if (price === undefined) { try { price = cents(v.retail_price); } catch { return null; } }
   if (price < 50) return null;
   const views=(v.files||[]).filter(f=>f.type==='preview'||/^(front|back|sleeve_left|sleeve_right)$/.test(f.type)).map(f=>({url:httpsURL(f.preview_url),label:(f.type==='preview'?'Garment preview':({front:'Front print detail',back:'Back print detail',sleeve_left:'Left sleeve print detail',sleeve_right:'Right sleeve print detail'}[f.type]))+(v.color?' · '+v.color:'')})).filter(f=>f.url);
-  return { views, id: v.id, name: [productLabel(productName), v.color, v.size].filter(Boolean).join(' / '), size: v.size, color: v.color, price, image: httpsURL(v.files?.find(f => f.type === 'preview')?.preview_url ) };
+  const sizeLabel = shopSizeLabel(productName, v.size);
+  return { views, id: v.id, name: [productLabel(productName), v.color, sizeLabel].filter(Boolean).join(' / '), size: v.size, size_label: sizeLabel, age: kidsAge(productName, v.size), color: v.color, price, image: httpsURL(v.files?.find(f => f.type === 'preview')?.preview_url ) };
 }
 const text = (v, n = 150) => typeof v === 'string' ? v.trim().slice(0, n) : '';
 export function cleanRecipient(value = {}) {
