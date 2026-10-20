@@ -159,16 +159,6 @@
     },
     "api/*.js": {
       "includeFiles": "assets/soundbunker-email-footer.png"
-    },
-    "api/organiser.js": {
-      "regions": [
-        "dub1"
-      ]
-    },
-    "api/supabase-config.js": {
-      "regions": [
-        "dub1"
-      ]
     }
   },
   "crons": [
@@ -184,5 +174,8 @@
       "path": "/api/ticketbunker-settle",
       "schedule": "* * * * *"
     }
+  ],
+  "regions": [
+    "dub1"
   ]
 }
