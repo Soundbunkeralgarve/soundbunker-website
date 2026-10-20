@@ -1,0 +1,18 @@
+TicketBunker Check-in Hub — Mac testing build
+
+Choose arm64 for Apple silicon (M1, M2, M3 or later), or x64 for Intel.
+Open the disk image and drag TicketBunker Check-in Hub to Applications.
+Eject the disk image, then open the app from Applications.
+
+This test app has an ad-hoc integrity signature, not an Apple Developer ID
+signature or Apple notarization. macOS may require an explicit one-time
+approval in System Settings > Privacy & Security. Only approve it if you
+trust this TicketBunker test release. Do not disable Gatekeeper, remove
+quarantine attributes or turn off other Mac security protections.
+
+If macOS says the app is damaged, will damage your computer or must be
+deleted, stop and report the exact message. Do not override that warning.
+
+Use a dedicated test event. Prepare it online before testing offline.
+Connect the hub and scanner phones to the same private Wi-Fi.
+Real venue and multi-phone testing is still required before live entry.
