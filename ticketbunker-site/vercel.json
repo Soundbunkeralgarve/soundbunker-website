@@ -3,7 +3,10 @@
   "trailingSlash": false,
   "functions": {
     "api/[endpoint].js": {
-      "maxDuration": 60
+      "maxDuration": 60,
+      "regions": [
+        "dub1"
+      ]
     },
     "api/event-page.js": {
       "maxDuration": 30,
