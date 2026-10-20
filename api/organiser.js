@@ -19,7 +19,7 @@ export async function organiserForUser(admin,id){
  return result.data;
 }
 export default async function handler(req,res){
- const ctx=await requireUser(req);
+ const ctx=await requireUser(req,{loadProfile:false});
  if(ctx.error)return json(res,{error:ctx.error},ctx.status);
  const db=ctx.admin;
  try {
@@ -30,30 +30,21 @@ export default async function handler(req,res){
        .eq('organiser_profile_id',organisation.id).order('starts_at',{ascending:false}).limit(200);
      if(ev.error)throw ev.error;
      const ids=ev.data.map(v=>v.id);
-     const tiers=ids.length?await db.from('sb_event_tiers').select('id,event_id,name,price_cents,quantity_total').in('event_id',ids):{data:[],error:null};
-     if(tiers.error)throw tiers.error;
-     const fees=ids.length?await db.from('sb_event_listing_fees').select('event_id,status,tier_code,amount_cents,currency').in('event_id',ids):{data:[],error:null};
-     if(fees.error)throw fees.error;
-     const showcases=ids.length
-       ?await db.from('sb_event_showcase_requests').select('event_id,status,currency,proposed_amount_cents,requested_at').in('event_id',ids)
-       :{data:[],error:null};
-     if(showcases.error)throw showcases.error;
-     const festivalQuotes=ids.length
-       ?await db.from('sb_event_festival_quotes').select('event_id,tier_code,expected_tickets,status,currency,quoted_amount_cents').in('event_id',ids)
-       :{data:[],error:null};
-     if(festivalQuotes.error)throw festivalQuotes.error;
-     const charities=ids.length
-       ?await db.from('sb_event_charity_claims').select('event_id,registration_number,status,country_code,created_at').in('event_id',ids)
-       :{data:[],error:null};
-     if(charities.error)throw charities.error;
-     const paymentTerms=ids.length
-       ?await db.from('sb_event_payment_terms_requests').select('event_id,status,payment_preference,ticket_capacity').in('event_id',ids)
-       :{data:[],error:null};
-     if(paymentTerms.error)throw paymentTerms.error;
+     // These lookups depend only on the owned event IDs, not on one another.
+     const [tiers,fees,showcases,festivalQuotes,charities,paymentTerms,listingOffer]=await Promise.all([
+       ids.length?db.from('sb_event_tiers').select('id,event_id,name,price_cents,quantity_total').in('event_id',ids):{data:[]},
+       ids.length?db.from('sb_event_listing_fees').select('event_id,status,tier_code,amount_cents,currency').in('event_id',ids):{data:[]},
+       ids.length?db.from('sb_event_showcase_requests').select('event_id,status,currency,proposed_amount_cents,requested_at').in('event_id',ids):{data:[]},
+       ids.length?db.from('sb_event_festival_quotes').select('event_id,tier_code,expected_tickets,status,currency,quoted_amount_cents').in('event_id',ids):{data:[]},
+       ids.length?db.from('sb_event_charity_claims').select('event_id,registration_number,status,country_code,created_at').in('event_id',ids):{data:[]},
+       ids.length?db.from('sb_event_payment_terms_requests').select('event_id,status,payment_preference,ticket_capacity').in('event_id',ids):{data:[]},
+       clientControl(db,organisation.id)
+     ]);
+     for(const result of [tiers,fees,showcases,festivalQuotes,charities,paymentTerms])if(result.error)throw result.error;
      return json(res,{organiser:{
        id:organisation.id,display_name:organisation.display_name,country_code:organisation.country_code,
        status:organisation.status,stripe_connected:!!organisation.stripe_account_id,
-       stripe_capabilities_ready:organisation.stripe_capabilities_ready,tax_review_complete:organisation.tax_review_complete,logo_url:organisation.logo_url||null,listingOffer:await clientControl(db,organisation.id)
+       stripe_capabilities_ready:organisation.stripe_capabilities_ready,tax_review_complete:organisation.tax_review_complete,logo_url:organisation.logo_url||null,listingOffer
      },events:ev.data.map(e=>({...e,wallet_test:walletTestEvent(e),tiers:tiers.data.filter(t=>t.event_id===e.id),fees:fees.data.filter(f=>f.event_id===e.id),showcase:showcases.data.find(f=>f.event_id===e.id)||null,festivalQuote:festivalQuotes.data.find(f=>f.event_id===e.id)||null,
        flexibleTerms:paymentTerms.data.find(f=>f.event_id===e.id)||null,charity:charities.data.find(f=>f.event_id===e.id)||null}))});
    }
