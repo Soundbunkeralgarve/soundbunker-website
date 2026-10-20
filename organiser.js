@@ -294,8 +294,8 @@ async function refresh(){
   else if(selector==='#reportEvent'&&defaultActiveReport)el.value=defaultActiveReport.id;
  }
  const streetTeamEvent=$('#streetTeamEvent').value;
- if(streetTeamEvent)await loadStreetTeam().catch(error=>{$('#streetTeamStatus').textContent=error.message;});
- if($('#reportEvent').value)await loadReport().catch(error=>{$('#reportStatus').textContent=error.message;});
+ if(streetTeamEvent)void loadStreetTeam().catch(error=>{$('#streetTeamStatus').textContent=error.message;});
+ if($('#reportEvent').value)void loadReport().catch(error=>{$('#reportStatus').textContent=error.message;});
  // Door-scanner invites belong to the dashboard after the event has been published.
  const staffEvents=list.filter(scannerCrewEventIsLive);
  const staffOptions=staffEvents.map(ev=>'<option value="'+esc(ev.id)+'">'+esc(ev.title)+'</option>').join('');
@@ -316,7 +316,7 @@ async function refresh(){
    '<div><span class="tb-owned-status">'+esc(e.status==='draft'?'DRAFT · NOT PUBLISHED':e.status.toUpperCase())+'</span>'+
    (e.status==='draft'&&!e.tiers.length?'<button type="button" class="outline tb-add-tickets" data-add-tickets="'+esc(e.id)+'">+ Add tickets to this event →</button>':'')+(e.public_beta_test&&Date.parse(e.beta_test_expires_at)>Date.now()?'<a class="tb-event-live-link" href="/event?slug='+encodeURIComponent(e.slug)+'" target="_blank" rel="noopener noreferrer">LIVE €0 TEST — VIEW EVENT ↗</a>':'')+(e.publish_requested_at?'<small class="tb-owned-charity">PUBLICATION REVIEW REQUESTED</small>':'')+(e.charity?'<small class="tb-owned-charity">'+(e.charity.status==='verified'?'Charity verified · Free listing':e.charity.status==='rejected'?'Charity claim not approved':'Charity number received · Review pending')+'</small>':'')+'</div></article>';
  }).join(''):'<div class="tb-no-events"><strong>Nothing here yet</strong><p>Create an event above to see your drafts in this workspace.</p></div>';
- if(staffEvents.length)await loadStaff().catch(error=>{$('#staffRoster').textContent=error.message;});
+ if(staffEvents.length)void loadStaff().catch(error=>{$('#staffRoster').textContent=error.message;});
  else $('#staffRoster').textContent='Publish an event to invite staff.';
  notify('Organiser dashboard loaded. Events remain private until verification and publishing.');
 }
@@ -865,5 +865,5 @@ async function boot(){
  }else openLargeEventQuoteFromLink();
  }catch(e){notify(e.message,true);}
 }
-window.addEventListener('load',boot);
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
