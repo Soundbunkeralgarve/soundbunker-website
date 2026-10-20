@@ -1,0 +1,15 @@
+/* Organiser test downloads: intentionally separate from signed public releases. */
+.hub-testing{background:#f4f9f5!important;border:1px solid #b7d5c1!important;color:#173b28!important;scroll-margin-top:100px;padding:24px!important;margin-block:24px}
+.hub-testing h2,.hub-testing h3{color:#143b29!important;line-height:1.2}
+.hub-testing h2{margin:14px 0 12px;font-size:28px}
+.hub-testing p,.hub-testing li{color:#355340!important;line-height:1.65;overflow-wrap:anywhere}
+.hub-test-badge{display:inline-block;background:#fff0bf;color:#704800;padding:6px 10px;border-radius:4px;font-size:11px;font-weight:900;letter-spacing:.08em}
+.hub-test-status{border-left:3px solid #ab7721;background:#fff9e9;padding:12px 14px;font-size:13px}
+.hub-test-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:22px 0}
+.hub-test-card{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:20px;background:#fff;border:1px solid #c9dcd0;border-radius:8px;min-width:0}
+.hub-test-card h3{margin:0;font-size:19px}.hub-test-card p{margin:0;font-size:13px}
+a.hub-test-link{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:11px 15px;border:1px solid #0a5138;border-radius:5px;background:#0a5138!important;color:#fff!important;text-decoration:none!important;font-size:13px;font-weight:800;line-height:1.4;margin-top:auto;max-width:100%;text-align:center;box-sizing:border-box}
+a.hub-test-link:hover{background:#073c29!important}a.hub-test-link:focus-visible,.hub-test-notes a:focus-visible{outline:3px solid #a46a00;outline-offset:3px}
+.hub-test-ios{font-size:13px}.hub-test-steps{padding-left:23px;margin:14px 0}.hub-test-steps li{padding-left:4px;margin:9px 0;font-size:14px}
+.hub-test-notes{font-size:12px}.hub-test-notes a{color:#0a5138!important;text-decoration:underline!important}
+@media(max-width:620px){.hub-testing{padding:18px!important}.hub-testing h2{font-size:25px}.hub-test-grid{grid-template-columns:1fr}.hub-test-card{padding:17px}a.hub-test-link{width:100%}}
