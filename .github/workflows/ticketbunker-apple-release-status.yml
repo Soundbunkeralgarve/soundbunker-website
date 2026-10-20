@@ -1,0 +1,37 @@
+name: Inspect TicketBunker Apple release
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [.github/workflows/ticketbunker-apple-release-status.yml]
+permissions:
+  contents: read
+jobs:
+  inspect:
+    if: github.repository == 'Soundbunkeralgarve/soundbunker-website' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Read processing and review status for the existing scanner app
+        env:
+          APPLE_KEY_P8: ${{ secrets.HUB_APPLE_API_KEY_P8 }}
+          APPLE_API_KEY_ID: ${{ secrets.HUB_APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.HUB_APPLE_API_ISSUER }}
+        run: |
+          node <<'JS'
+          const crypto=require('node:crypto'),fs=require('node:fs');
+          const {APPLE_KEY_P8:key,APPLE_API_KEY_ID:kid,APPLE_API_ISSUER:iss}=process.env;
+          if(!key||!kid||!iss)throw Error('Existing Apple release credentials are required');
+          const enc=x=>Buffer.from(JSON.stringify(x)).toString('base64url');
+          const now=Math.floor(Date.now()/1000),unsigned=enc({alg:'ES256',kid,typ:'JWT'})+'.'+enc({iss,iat:now,exp:now+300,aud:'appstoreconnect-v1'});
+          const token=unsigned+'.'+crypto.sign('sha256',Buffer.from(unsigned),{key,dsaEncoding:'ieee-p1363'}).toString('base64url');
+          async function get(path){const r=await fetch('https://api.appstoreconnect.apple.com/v1/'+path,{headers:{Authorization:'Bearer '+token},signal:AbortSignal.timeout(30000)});const d=await r.json();if(!r.ok)throw Error('Apple HTTP '+r.status+': '+JSON.stringify(d.errors?.map(e=>({code:e.code,detail:e.detail}))));return d;}
+          (async()=>{
+            const app=await get('apps/6823316315');
+            if(app.data?.attributes?.bundleId!=='pt.soundbunker.ticketbunkerscanner')throw Error('Wrong Apple app');
+            const [builds,versions]=await Promise.all([get('builds?filter[app]=6823316315&filter[version]=10&include=preReleaseVersion&limit=5'),get('apps/6823316315/appStoreVersions?filter[platform]=IOS&limit=5')]);
+            const result={app:'TicketBunker Scanner',builds:builds.data.map(b=>({id:b.id,version:b.attributes.version,processingState:b.attributes.processingState,usesNonExemptEncryption:b.attributes.usesNonExemptEncryption,expired:b.attributes.expired,preReleaseVersion:builds.included?.find(v=>v.id===b.relationships?.preReleaseVersion?.data?.id)?.attributes?.version})),versions:versions.data.map(v=>({id:v.id,version:v.attributes.versionString,state:v.attributes.appStoreState}))};
+            console.log(JSON.stringify(result,null,2));
+            if(process.env.GITHUB_STEP_SUMMARY)fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'```json\n'+JSON.stringify(result,null,2)+'\n```\n');
+          })().catch(e=>{console.error(e.message);process.exitCode=1});
+          JS
