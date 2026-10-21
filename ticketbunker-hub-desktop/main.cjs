@@ -48,10 +48,13 @@ onStage('instance-lock');if(!app.requestSingleInstanceLock()){app.quit();}else{
   Menu.setApplicationMenu(Menu.buildFromTemplate([{label:'Hub',submenu:[{label:'Show check-in hub',click:show},{type:'separator'},{label:'Close hub',click:requestQuit}]},{label:'Edit',submenu:[{role:'undo'},{role:'redo'},{type:'separator'},{role:'cut'},{role:'copy'},{role:'paste'},{role:'selectAll'}]}]));
   powerId=powerSaveBlocker.start('prevent-app-suspension');
   const root=resourceRoot||(app.isPackaged?process.resourcesPath:path.resolve(__dirname,'..'));
-  network=createNetworkController({resourceRoot:root,openSettings:url=>shell.openExternal(url)});
+  network=createNetworkController({resourceRoot:root,openSettings:url=>shell.openExternal(url),confirmMacSetup:async()=>{
+   const {response}=await dialog.showMessageBox(window,{type:'info',title:'Prepare Mac Wi-Fi',message:'Prepare this Mac for Wi-Fi without internet?',detail:'TicketBunker will add a virtual network connection named TicketBunker Offline. macOS will ask for administrator permission. Then switch on Internet Sharing using the choices shown in the Hub. This setup method needs testing on your Mac; it does not start or verify Wi-Fi automatically. To stop broadcasting later, switch off Internet Sharing in Mac settings.',buttons:['Cancel','Prepare Mac'],defaultId:1,cancelId:0,noLink:true});
+   return response===1;
+  }});
   ipcMain.handle('hub-network',async(event,operation)=>{
    if(event.sender!==window.webContents||event.senderFrame!==window.webContents.mainFrame||!localWindowUrl(event.senderFrame.url))throw Error('Local organiser window only.');
-   if(!['status','start','stop','settings'].includes(operation))throw Error('Unknown network action.');
+   if(!['status','start','stop','settings','prepareMac'].includes(operation))throw Error('Unknown network action.');
    return network[operation]();
   });
   onStage('start-worker');worker=utilityProcess.fork(path.join(root,'ticketbunker-hub','start.js'),[],{serviceName:'TicketBunker entry ledger',stdio:'ignore',env:{...process.env,TB_HUB_DATA_DIR:dataDirectory}});

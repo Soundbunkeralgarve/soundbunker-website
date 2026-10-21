@@ -14,7 +14,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 35
     env:
-      TB_HUB_QA_VERSION: '1.0.3'
+      TB_HUB_QA_VERSION: '1.0.4'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

@@ -2,11 +2,12 @@ const {spawn}=require('node:child_process');
 const {existsSync}=require('node:fs');
 const {randomBytes}=require('node:crypto');
 const path=require('node:path');
-function createNetworkController({platform=process.platform,resourceRoot,launch=spawn,exists=existsSync,openSettings,timeoutMs=20000}={}){
+const {createMacOfflineSetup}=require('./mac-network.cjs');
+function createNetworkController({platform=process.platform,resourceRoot,launch=spawn,exists=existsSync,openSettings,confirmMacSetup,macSetup=createMacOfflineSetup({confirm:confirmMacSetup}),timeoutMs=20000}={}){
  const executable=path.join(resourceRoot,'network-helper','TicketBunker.Network.exe');
  const available=platform==='win32'&&exists(executable);
  let child=null,state='idle',ssid='',password='',message='',starting=null;
- const status=()=>({platform,available,state,ssid:state==='started'?ssid:'',password:state==='started'?password:'',message});
+ const status=()=>({platform,available,state,ssid:state==='started'?ssid:'',password:state==='started'?password:'',message,macSetup:platform==='darwin'?macSetup.status():null});
  const fail=text=>{state='failed';message=text;ssid='';password='';};
  async function stop(){
   if(starting)throw Error('Wait for network setup to finish before stopping it.');
@@ -50,7 +51,11 @@ function createNetworkController({platform=process.platform,resourceRoot,launch=
   if(!url||!openSettings)throw Error('Open the computer’s Wi-Fi settings and connect to a private network.');
   await openSettings(url);return status();
  }
- const dispose=()=>{if(child){const old=child;child=null;old.kill();}state='idle';ssid='';password='';};
- return {status,start,stop,settings,dispose};
+ async function prepareMac(){
+  if(platform!=='darwin')throw Error('Mac setup is only available on a Mac.');
+  await macSetup.prepare();return status();
+ }
+ const dispose=()=>{macSetup.dispose?.();if(child){const old=child;child=null;old.kill();}state='idle';ssid='';password='';};
+ return {status,start,stop,settings,prepareMac,dispose};
 }
 module.exports={createNetworkController};
