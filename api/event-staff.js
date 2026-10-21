@@ -16,6 +16,10 @@ async function eventManager(db,ctx,id) {
  return !org.error && org.data?.owner_user_id===ctx.user.id;
 }
 export function scannerEventIsOpen(event,now=Date.now()){
+ if(event?.internal_free_test===true&&event.public_beta_test!==true&&event.status==='published'){
+  const expires=Date.parse(event.test_expires_at||'');
+  return Number.isFinite(expires)&&expires>now;
+ }
  const starts=Date.parse(event?.starts_at||'');
  const ends=Date.parse(event?.beta_test_expires_at||'');
  if(event?.public_beta_test===true&&event.status==='draft')
@@ -39,7 +43,7 @@ async function myEvents(db,ctx,requestedId=''){
  // Admins may service active events across organisers, but never see drafts
  // that do not accept ticket scans. Invited staff only get assigned events.
  const q=db.from('sb_events')
-  .select('id,title,starts_at,status,venue,venue_timezone,event_logo_url,image_url,public_beta_test,beta_test_expires_at')
+  .select('id,title,starts_at,status,venue,venue_timezone,event_logo_url,image_url,internal_free_test,test_expires_at,public_beta_test,beta_test_expires_at')
   .order('starts_at',{ascending:false}).limit(300);
  let events;
  if(requestedId){
