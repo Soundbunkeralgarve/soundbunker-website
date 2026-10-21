@@ -172,6 +172,9 @@
     "api/invoice-reconcile.js": {
       "maxDuration": 300
     },
+    "api/invoice-payment.js": {
+      "maxDuration": 90
+    },
     "api/*.js": {
       "includeFiles": "assets/soundbunker-email-footer.png"
     }

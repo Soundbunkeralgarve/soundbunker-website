@@ -2,6 +2,7 @@ import {invoiceDB} from './lib/invoice-journal.js';
 import {validInvoicePaymentToken} from './lib/invoice-payment-link.js';
 import {invoiceOutstanding,createBalanceCheckout} from './lib/invoice-balance.js';
 import {ixRequest} from './lib/invoicexpress.js';
+export const config={maxDuration:90};
 
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function paymentPage({row,balance,token,message}){
@@ -9,7 +10,7 @@ export function paymentPage({row,balance,token,message}){
 }
 export default async function handler(req,res){
  res.setHeader('Cache-Control','private, no-store');res.setHeader('Referrer-Policy','no-referrer');res.setHeader('X-Robots-Tag','noindex, nofollow');
- res.setHeader('Content-Security-Policy',"default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'");
+ res.setHeader('Content-Security-Policy',"default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; form-action 'self' https://checkout.stripe.com; frame-ancestors 'none'; base-uri 'none'");
  const send=(body,status=200)=>{res.statusCode=status;res.setHeader('Content-Type','text/html; charset=utf-8');res.end(body);};
  if(!['GET','POST'].includes(req.method))return send('Method not allowed',405);
  const url=new URL(req.url,'https://www.soundbunker.pt'),id=url.searchParams.get('id'),token=url.searchParams.get('token');

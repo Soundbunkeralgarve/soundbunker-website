@@ -20,7 +20,7 @@ returns setof public.sb_invoice_balance_payments language plpgsql set search_pat
 begin
  if not exists(select 1 from public.sb_website_invoice_jobs j where j.id=p_id and j.brand='soundbunker' and j.document_type='invoices' and j.email_sent_at is not null and j.balance_paid_cents=0 and p_amount>0 and p_amount<=j.amount_cents-coalesce((j.request_payload->>'paid_cents')::bigint,0)) then raise exception 'Invoice balance is unavailable';end if;
  insert into public.sb_invoice_balance_payments(invoice_id,amount_cents) values(p_id,p_amount) on conflict(invoice_id) do nothing;
- return query update public.sb_invoice_balance_payments set lease_token=p_token,lease_until=now()+interval '90 seconds'
+ return query update public.sb_invoice_balance_payments set lease_token=p_token,lease_until=now()+interval '2 minutes'
  where invoice_id=p_id and paid_at is null and (lease_until is null or lease_until<now()) returning *;
 end $$;
 
