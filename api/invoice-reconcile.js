@@ -36,5 +36,6 @@ export default async function handler(req,res) {
       finally{await db.from('tb_organiser_invoices').update({lease_token:null,lease_until:null}).eq('id',row.id).eq('lease_token',token);}
     }
   }
+  console.info('Invoice reconciliation completed',{sent,pending,organiserSent,organiserPending});
   return json(res,{sent,pending,organiserSent,organiserPending});
 }
