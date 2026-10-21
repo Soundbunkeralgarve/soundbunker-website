@@ -40,6 +40,8 @@ export async function queueWebsiteInvoice({brand,sessionId,body,paidCents,docume
 
 export async function processInvoiceJob(row,{db,request,table=TABLE,brand=row.brand}) {
   const payload=structuredClone(row.request_payload||{});
+  const fiscalTotal=Number(payload.fiscal_total_cents??row.amount_cents);
+  if(!Number.isSafeInteger(fiscalTotal)||fiscalTotal<=0)throw Error('Invoice accounting amount requires review');
   const type=row.document_type, key=type==='invoices'?'invoice':'invoice_receipt';
   if(!['invoices','invoice_receipts'].includes(type)||!payload.body?.[key])throw Error('Invoice payload requires review');
   const expected=payload.body[key];
@@ -63,7 +65,7 @@ export async function processInvoiceJob(row,{db,request,table=TABLE,brand=row.br
       const q=new URLSearchParams({text:expected.reference,per_page:'30','type[]':type==='invoices'?'Invoice':'InvoiceReceipt'});
       for(const status of ['draft','sent','settled'])q.append('status[]',status);
       const data=await api('/invoices.json?'+q);
-      const matches=(data?.invoices||[]).filter(d=>d.reference===expected.reference && String(d.sequence_id)===String(expected.sequence_id) && Math.round(Number(d.total)*100)===Number(row.amount_cents));
+      const matches=(data?.invoices||[]).filter(d=>d.reference===expected.reference && String(d.sequence_id)===String(expected.sequence_id) && Math.round(Number(d.total)*100)===fiscalTotal);
       if(matches.length!==1)throw Error('Invoice creation status uncertain; reconcile the payment reference before retrying');
       await write({ix_document_id:matches[0].id});
     } else {
@@ -81,7 +83,7 @@ export async function processInvoiceJob(row,{db,request,table=TABLE,brand=row.br
     }
   }
   let invoice=extract(await api('/'+type+'/'+row.ix_document_id+'.json'));
-  if(!invoice?.id||Math.round(Number(invoice.total)*100)!==Number(row.amount_cents)||invoice.reference!==expected.reference||String(invoice.sequence_id)!==String(expected.sequence_id))throw Error('Invoice contents do not match the paid order');
+  if(!invoice?.id||Math.round(Number(invoice.total)*100)!==fiscalTotal||invoice.reference!==expected.reference||String(invoice.sequence_id)!==String(expected.sequence_id))throw Error('Invoice contents do not match the paid order');
   if(invoice.status==='draft') {
     await api('/'+type+'/'+invoice.id+'/change-state.json',{method:'PUT',body:{invoice:{state:'finalized'}}});
     invoice=extract(await api('/'+type+'/'+invoice.id+'.json'));
@@ -95,7 +97,8 @@ export async function processInvoiceJob(row,{db,request,table=TABLE,brand=row.br
     if(!receipt) {
       if(payload.payment_attempted_at)throw Error('Payment recording status uncertain; reconcile the Stripe receipt before retrying');
       payload.payment_attempted_at=new Date().toISOString();await write({request_payload:payload});
-      const payment=await api('/documents/'+invoice.id+'/partial_payments.json',{method:'POST',body:{partial_payment:{payment_mechanism:'CC',serie:brand==='soundbunker'?'SoundBunker':'Crude-City',note,amount:payload.paid_cents/100,payment_date:expected.date}}});
+      if(payload.fx)throw Error('Foreign-currency partial payment requires accounting review');
+      const payment=await api('/documents/'+invoice.id+'/partial_payments.json',{method:'POST',body:{partial_payment:{payment_mechanism:'CC',serie:({soundbunker:'SoundBunker','crude-city':'Crude-City',ticketbunker:'TicketBunker001'})[brand],note,amount:payload.paid_cents/100,payment_date:expected.date}}});
       receipt=payment?.receipt;
       if(!receipt?.id)throw Error('InvoiceXpress returned no payment receipt');
     }
@@ -107,8 +110,9 @@ export async function processInvoiceJob(row,{db,request,table=TABLE,brand=row.br
     const email=String(row.recipient?.email||expected.client?.email||'').trim().toLowerCase();
     if(!/^\S+@\S+\.\S+$/.test(email))throw Error('Invoice recipient requires review');
     const balance=Number(row.amount_cents)-(payload.paid_cents||0);
+    const currency=String(row.currency||'eur').toUpperCase();
     const message={message:{client:{email,save:'0'},subject:names[brand]+' invoice '+row.document_number,
-      body:(payload.paid_cents>0?'Thank you for your payment. Your ':'Your ')+names[brand]+' invoice is attached.\n'+(balance>0?'Payment received: EUR '+(payload.paid_cents/100).toFixed(2)+'. Remaining balance: EUR '+(balance/100).toFixed(2)+'.':'Paid in full. No further payment is due.')+'\n\n'+link+(payLink?'\n\nPay outstanding balance securely: '+payLink:'')+'\n\nSoundBunker Algarve Sociedade Unipessoal Lda | NIF 517757478',logo:'1'}};
+      body:(payload.paid_cents>0?'Thank you for your payment. Your ':'Your ')+names[brand]+' invoice is attached.\n'+(balance>0?'Payment received: '+currency+' '+(payload.paid_cents/100).toFixed(2)+'. Remaining balance: '+currency+' '+(balance/100).toFixed(2)+'.':'Paid in full. No further payment is due.')+(payload.fx?'\nOriginal payment: '+currency+' '+(Number(row.amount_cents)/100).toFixed(2)+'. Portuguese accounting total: EUR '+(fiscalTotal/100).toFixed(2)+'.':'')+'\n\n'+link+(payLink?'\n\nPay outstanding balance securely: '+payLink:'')+'\n\nSoundBunker Algarve Sociedade Unipessoal Lda | NIF 517757478',logo:'1'}};
     await write({email_payload:message});
     await api('/'+type+'/'+invoice.id+'/email-document.json',{method:'PUT',body:message});
     // Email may be retried if the process dies here; the fiscal document is reused.

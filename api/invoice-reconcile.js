@@ -1,4 +1,4 @@
-import {processOrganiserInvoice} from './lib/organiser-invoicing.js';
+import {processOrganiserInvoice,checkOrganiserInvoicing} from './lib/organiser-invoicing.js';
 import {randomUUID,timingSafeEqual} from 'node:crypto';
 import {json} from './lib/http.js';
 import {invoiceDB,processInvoiceJob} from './lib/invoice-journal.js';
@@ -26,16 +26,19 @@ export default async function handler(req,res) {
   }
   let organiserSent=0,organiserPending=0;
   if(process.env.TICKET_BUNKER_INVOICING_ENABLED==='true'){
+    try{
+    await checkOrganiserInvoicing({db,request:ixRequest});
     const scan=await db.rpc('tb_scan_organiser_invoices');
-    if(scan.error)return json(res,{sent,pending,error:'Organiser invoice reconciliation is unavailable'},503);
+    if(scan.error)throw Error('Organiser invoice reconciliation is unavailable');
     const jobs=await db.rpc('tb_claim_organiser_invoices',{p_token:token});
-    if(jobs.error)return json(res,{sent,pending,error:'Organiser invoice processing is unavailable'},503);
+    if(jobs.error)throw Error('Organiser invoice processing is unavailable');
     for(const row of jobs.data||[]){
       if(Date.now()>deadline)break;
       try{await processOrganiserInvoice(row,{db,request:ixRequest});organiserSent++;await db.from('tb_organiser_invoices').update({status:'emailed'}).eq('id',row.id).eq('lease_token',token);}
       catch(error){organiserPending++;await db.from('tb_organiser_invoices').update({status:'review',last_error:String(error.message).slice(0,300),next_attempt_at:new Date(Date.now()+3600000).toISOString()}).eq('id',row.id).eq('lease_token',token);}
       finally{await db.from('tb_organiser_invoices').update({lease_token:null,lease_until:null}).eq('id',row.id).eq('lease_token',token);}
     }
+    }catch{organiserPending++;await db.from('tb_invoice_brands').update({last_error:'Ticket Bunker invoice configuration requires review'}).eq('brand','ticketbunker');console.warn('Ticket Bunker invoicing requires configuration review');}
   }
   let balanceReceipts=0,balancePending=0;
   const balances=await db.rpc('sb_claim_invoice_balance_receipts',{p_token:token});

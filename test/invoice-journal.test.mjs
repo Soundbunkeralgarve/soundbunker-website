@@ -22,13 +22,13 @@ function fixture(type='invoice_receipts'){
  const body={[key]:{date:'21/10/2026',sequence_id:'123',reference:'order',client:{email:'client@example.com',name:'Client',code:'client'},items:[{name:'Service',unit_price:10,quantity:1}]},proprietary_uid:'uid'};
  return {brand:'soundbunker',sessionId:'cs_live_one',body,paidCents:type==='invoices'?500:1230,documentType:type};
 }
-function provider({failEmail=false,uncertainCreate=false,uncertainPayment=false}={}){
+function provider({failEmail=false,uncertainCreate=false,uncertainPayment=false,total=12.30}={}){
  const calls=[];let invoice=null,receipt=null,emailFailure=failEmail,creationFailure=uncertainCreate,paymentFailure=uncertainPayment;
  const request=async(path,options={})=>{
   calls.push([path,options.method||'GET']);let data;
   if(path.startsWith('/invoices.json?'))data={invoices:invoice?[invoice]:[]};
   else if(['/invoices.json','/invoice_receipts.json'].includes(path)&&options.method==='POST'){
-   const d=options.body.invoice||options.body.invoice_receipt;invoice={...d,id:42,status:'draft',total:12.30,sequence_number:'1/SoundBunker',permalink:'https://www.app.invoicexpress.com/documents/example'};
+   const d=options.body.invoice||options.body.invoice_receipt;invoice={...d,id:42,status:'draft',total,sequence_number:'1/SoundBunker',permalink:'https://www.app.invoicexpress.com/documents/example'};
    if(creationFailure){creationFailure=false;throw Error('Network timeout after create');}
    data=options.body.invoice?{invoice}:{invoice_receipt:invoice};
   }else if(path.endsWith('/change-state.json')){invoice.status='final';data={invoice};}
@@ -85,5 +85,11 @@ test('long booking notes cannot overflow invoice observations or truncate the pa
    if(type==='invoices'){const link=new URL(observations.split('Pay balance: ')[1]);assert.equal(link.pathname,'/api/invoice-payment');assert.match(link.searchParams.get('token'),/^[a-f0-9]{64}$/);}
   }
  }finally{if(old===undefined)delete process.env.CRON_SECRET;else process.env.CRON_SECRET=old;}
+});
+test('GBP invoice recovery checks the EUR accounting total and emails the original paid currency',async()=>{
+ const input=fixture(),body=input.body;body.invoice_receipt.reference='ticketbunker:payment';
+ const row={id:'tb-job',lease_token:'lease',brand:'ticketbunker',document_type:'invoice_receipts',amount_cents:1230,currency:'gbp',recipient:{email:'client@example.com'},request_payload:{body,paid_cents:1230,fiscal_total_cents:1447,accounting_currency:'eur',fx:{rate:0.85}}};
+ const db=database([row]),api=provider({total:14.47,uncertainCreate:true});await assert.rejects(processInvoiceJob(db.rows[0],{db,request:api.request}),/timeout/);await processInvoiceJob(db.rows[0],{db,request:api.request});
+ assert.equal(count(api,'/invoice_receipts.json','POST'),1);assert.match(db.rows[0].email_payload.message.body,/GBP 12.30/);assert.match(db.rows[0].email_payload.message.body,/EUR 14.47/);assert.ok(db.rows[0].email_sent_at);
 });
 
