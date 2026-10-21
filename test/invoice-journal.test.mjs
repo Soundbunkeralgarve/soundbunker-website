@@ -75,3 +75,15 @@ test('portal results are restricted to the verified email and requested brand',a
 test('only official HTTPS invoice document links are exposed',()=>{
  assert.equal(documentLink('javascript:alert(1)'),null);assert.equal(documentLink('https://evil.example/documents/123'),null);assert.equal(documentLink('https://www.app.invoicexpress.com/documents/123'),'https://www.app.invoicexpress.com/documents/123');
 });
+test('long booking notes cannot overflow invoice observations or truncate the payment link',async()=>{
+ const old=process.env.CRON_SECRET;process.env.CRON_SECRET='test-only-secret';
+ try{
+  for(const type of ['invoices','invoice_receipts']){
+   const db=database(),input=fixture(type),key=type==='invoices'?'invoice':'invoice_receipt';input.body[key].observations='Payment received. Notes: '+'Long note '.repeat(100);
+   await queueWebsiteInvoice(input,db);const api=provider();await processInvoiceJob(db.rows[0],{db,request:api.request});
+   const observations=db.rows[0].request_payload.body[key].observations;assert.ok(observations.length<=400);assert.match(observations,/Payment received/);
+   if(type==='invoices'){const link=new URL(observations.split('Pay balance: ')[1]);assert.equal(link.pathname,'/api/invoice-payment');assert.match(link.searchParams.get('token'),/^[a-f0-9]{64}$/);}
+  }
+ }finally{if(old===undefined)delete process.env.CRON_SECRET;else process.env.CRON_SECRET=old;}
+});
+

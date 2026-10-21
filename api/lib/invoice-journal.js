@@ -45,8 +45,11 @@ export async function processInvoiceJob(row,{db,request,table=TABLE,brand=row.br
   const expected=payload.body[key];
   const payLink=invoicePaymentLink(row);
   // The signed URL opens a confirmation page. A GET never starts a payment.
-  if(payLink&&!payload.creation_attempted_at){
-    expected.observations=(expected.observations||'')+'\nPay outstanding balance securely: '+payLink;
+  if(!payload.creation_attempted_at){
+    const tail=payLink?'\nPay balance: '+payLink:'';
+    // Keep the link intact within InvoiceXpress's 400-character field limit.
+    // Full booking notes remain in the booking and original journal record.
+    expected.observations=String(expected.observations||'').slice(0,400-tail.length).trimEnd()+tail;
   }
   const write=async values=>{
     const saved=await checked(db.from(table).update({...values,updated_at:new Date().toISOString()}).eq('id',row.id).eq('lease_token',row.lease_token).select('id').maybeSingle());
