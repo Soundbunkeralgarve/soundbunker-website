@@ -171,6 +171,9 @@
     },
     "api/*.js": {
       "includeFiles": "assets/soundbunker-email-footer.png"
+    },
+    "api/invoice-reconcile.js": {
+      "maxDuration": 300
     }
   },
   "crons": [
@@ -188,6 +191,10 @@
     },
     {
       "path": "/api/ticketbunker-cancellations",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/invoice-reconcile",
       "schedule": "* * * * *"
     }
   ],

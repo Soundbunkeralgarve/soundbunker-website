@@ -1,3 +1,4 @@
+import {queueWebsiteInvoice,invoiceDB} from './invoice-journal.js';
 function ixDate(value = new Date()) {
   const date = value instanceof Date ? value : new Date(value);
   const parts = new Intl.DateTimeFormat("en-GB", {
@@ -16,7 +17,7 @@ function bookingDate(value) {
   return `${day}/${month}/${year}`;
 }
 
-async function ixRequest(path, { method = "GET", body } = {}) {
+export async function ixRequest(path, { method = "GET", body } = {}) {
   const account = process.env.INVOICEXPRESS_ACCOUNT_NAME;
   const apiKey = process.env.INVOICEXPRESS_API_KEY;
   if (!account || !apiKey) throw new Error("InvoiceXpress is not configured");
@@ -26,6 +27,7 @@ async function ixRequest(path, { method = "GET", body } = {}) {
   const response = await fetch(url, {
     method,
     headers: { accept: "application/json", "content-type": "application/json; charset=utf-8" },
+    signal: AbortSignal.timeout(15000),
     body: body ? JSON.stringify(body) : undefined
   });
 
@@ -103,52 +105,7 @@ export async function sendToInvoiceXpressAutomation(metadata, stripeSessionId) {
     proprietary_uid: `stripe-${stripeSessionId}`
   };
 
-  const created = await ixRequest("/invoices.json", { method: "POST", body: createBody });
-  if (created.response.status === 409) return { duplicate: true, stripe_session_id: stripeSessionId };
-  if (!created.response.ok) {
-    console.error("InvoiceXpress create failed", created.response.status, created.data);
-    throw new Error(`InvoiceXpress create failed (${created.response.status})`);
-  }
-
-  const invoice = created.data?.invoice;
-  if (!invoice?.id) throw new Error("InvoiceXpress returned no invoice id");
-
-  if (invoice.status === "draft") {
-    const finalized = await ixRequest(`/invoices/${invoice.id}/change-state.json`, {
-      method: "PUT",
-      body: { invoice: { state: "finalized" } }
-    });
-    if (!finalized.response.ok) {
-      console.error("InvoiceXpress finalize failed", finalized.response.status, finalized.data);
-      throw new Error(`InvoiceXpress finalize failed (${finalized.response.status})`);
-    }
-  }
-
-  const payment = await ixRequest(`/documents/${invoice.id}/partial_payments.json`, {
-    method: "POST",
-    body: {
-      partial_payment: {
-        payment_mechanism: "CC",
-        note: `Stripe payment ${stripeSessionId}`,
-        amount: paid,
-        payment_date: today
-      }
-    }
-  });
-  if (!payment.response.ok) {
-    console.error("InvoiceXpress payment failed", payment.response.status, payment.data);
-    throw new Error(`InvoiceXpress payment failed (${payment.response.status})`);
-  }
-
-  return {
-    created: true,
-    invoice_id: invoice.id,
-    invoice_number: invoice.sequence_number || null,
-    invoice_total: total,
-    payment_recorded: paid,
-    balance_due: balance,
-    receipt_id: payment.data?.receipt?.id || null
-  };
+  return queueWebsiteInvoice({brand:'soundbunker',sessionId:stripeSessionId,body:createBody,paidCents:Math.round(paid*100),documentType:'invoices'});
 }
 
 
@@ -269,34 +226,24 @@ export async function sendCrudeCityInvoice(payload) {
     proprietary_uid: `crude-city-stripe-${stripeSessionId}`
   };
 
-  const created = await ixRequest("/invoice_receipts.json", { method: "POST", body });
-  if (created.response.status === 409) {
-    return { duplicate: true, stripe_session_id: stripeSessionId, series: "Crude City" };
-  }
-  if (!created.response.ok) {
-    console.error("Crude City InvoiceXpress create failed", created.response.status, created.data);
-    throw new Error(`InvoiceXpress Crude City create failed (${created.response.status})`);
-  }
+  return queueWebsiteInvoice({brand:'crude-city',sessionId:stripeSessionId,body,paidCents:totalCents});
+}
 
-  const invoice = created.data?.invoice_receipt;
-  if (!invoice?.id) throw new Error("InvoiceXpress returned no Crude City invoice id");
-
-  if (invoice.status === "draft") {
-    const finalized = await ixRequest(`/invoice_receipts/${invoice.id}/change-state.json`, {
-      method: "PUT",
-      body: { invoice: { state: "finalized" } }
-    });
-    if (!finalized.response.ok) {
-      console.error("Crude City InvoiceXpress finalize failed", finalized.response.status, finalized.data);
-      throw new Error(`InvoiceXpress Crude City finalize failed (${finalized.response.status})`);
-    }
-  }
-
-  return {
-    created: true,
-    invoice_id: invoice.id,
-    invoice_number: invoice.sequence_number || null,
-    invoice_total: gross,
-    series: "Crude City"
-  };
+export async function sendSoundBunkerShopInvoice(checkout, db=invoiceDB()) {
+  if(checkout.livemode!==true)return {skipped:true,reason:'Test payment'};
+  const found=await db.from('shop_orders').select('*').eq('id',checkout.metadata?.shop_order_id).single();
+  const row=found.data;
+  if(found.error||!row||checkout.metadata?.purchase_type!=='merchandise'||checkout.client_reference_id!==row.id||checkout.payment_status!=='paid'||checkout.currency!=='eur'||checkout.amount_total!==row.total_cents||(row.stripe_session_id&&row.stripe_session_id!==checkout.id))throw Error('Shop invoice payment mismatch');
+  const sequences=await ixRequest('/sequences.json');
+  if(!sequences.response.ok)throw Error('Invoice sequence lookup failed');
+  const sequence=(sequences.data?.sequences||[]).find(s=>s.serie==='SoundBunker');
+  if(!sequence?.current_invoice_receipt_sequence_id)throw Error('SoundBunker invoice-receipt sequence is not registered');
+  const recipient=row.recipient||{},today=ixDate();
+  const body={invoice_receipt:{date:today,due_date:today,sequence_id:String(sequence.current_invoice_receipt_sequence_id),reference:'SoundBunker shop '+row.id,
+    observations:'SoundBunker shop order '+row.id+'\nPaid via Stripe: EUR '+(row.total_cents/100).toFixed(2),
+    client:{name:recipient.name||'SoundBunker customer',code:String(recipient.email||row.id).slice(0,100),email:recipient.email,
+      ...(recipient.address1?{address:[recipient.address1,recipient.address2].filter(Boolean).join(', ').slice(0,255)}:{}),
+      ...(recipient.city?{city:recipient.city}:{}),...(recipient.zip?{postal_code:recipient.zip}:{})},
+    items:[{name:'SoundBunker online order',description:(row.items||[]).map(i=>i.name+' x'+i.quantity).join('; ').slice(0,200),unit_price:Number((row.total_cents/123).toFixed(6)),quantity:1,unit:'unit',tax:{name:'IVA23'}}]},proprietary_uid:'soundbunker-shop-'+checkout.id};
+  return queueWebsiteInvoice({brand:'soundbunker',sessionId:checkout.id,body,paidCents:row.total_cents},db);
 }

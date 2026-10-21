@@ -3,6 +3,7 @@
 const UPSTREAM = 'https://www.soundbunker.pt';
 const PUBLIC = new Set(['supabase-config', 'events', 'event-checkout','event-checkout-status', 'event-ticket', 'event-wallet','ticketbunker-password-reset']);
 const METHODS = {
+  'organiser-invoices':['GET'],
   'event-postponement':['GET','POST'], 'event-cancellation':['GET','POST'], 'event-checkout':['POST'], 'event-checkout-status':['GET'], 'organiser-listing':['POST'], 'ticketbunker-finance':['GET','POST'],
   'ticketbunker-password-reset':['POST'],
   'event-prebookings':['GET','POST'], 'ticketbunker-admin':['GET','POST'],
@@ -84,3 +85,4 @@ export default async function handler(req, res) {
     return reply(upstream.status,upstream.ok?cleanResponse(endpoint,data):data);
   } catch {return reply(502,{error:'We could not reach the ticket service. Your saved data is safe. Please try again.'});}
 }
+

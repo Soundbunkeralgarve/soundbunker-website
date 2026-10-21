@@ -29,3 +29,20 @@ $('#featured-event').onchange=()=>{
 $('#featured-form').onsubmit=async e=>{e.preventDefault();const b=e.submitter;b.disabled=true;try{const eventId=$('#featured-event').value;if(!eventId)throw Error('Choose an event first.');const d=await api('event-promotion',{...readPreferences($('#promotion-fields')),eventId,requestFeatured:$('#request-featured').checked},await token());$('#featured-status').textContent=d.message;const savedId=eventId;await promotions();$('#featured-event').value=savedId;$('#featured-event').dispatchEvent(new Event('change'));$('#featured-status').textContent=d.message;}catch(err){$('#featured-status').textContent=err.message;}finally{b.disabled=false;}};
 window.addEventListener('ticketbunker:ready',()=>{profile();if(!$('#page-promotions').hidden)promotions();});
 window.addEventListener('ticketbunker:page',e=>{if(e.detail==='profile'&&!profileLoaded)profile();if(e.detail==='promotions')promotions();});
+
+
+async function invoices(){
+ const root=$('#organiser-invoice-list');if(!root)return;root.textContent='Loading invoices…';
+ try{
+  const data=await api('organiser-invoices',null,await token());root.replaceChildren();
+  if(!data.invoices.length)root.textContent='Your organiser invoices appear here after a service payment is processed.';
+  for(const invoice of data.invoices){
+   const row=document.createElement('p'),title=document.createElement('strong');title.textContent=(invoice.document_number||invoice.description)+' · '+new Intl.NumberFormat('en-GB',{style:'currency',currency:invoice.currency.toUpperCase()}).format(invoice.amount_cents/100);row.append(title,document.createElement('br'));
+   row.append(document.createTextNode(invoice.issued?(invoice.paid_cents>=invoice.amount_cents?'Paid. ':'Payment due. '):'Invoice being prepared. '));
+   if(invoice.url){const u=new URL(invoice.url);if(u.protocol==='https:'&&u.hostname.endsWith('.invoicexpress.com')&&u.pathname.startsWith('/documents/')){const a=document.createElement('a');a.className='ghost';a.textContent='View / download invoice ↗';a.href=u.href;a.target='_blank';a.rel='noopener noreferrer';row.append(a);}}
+   root.append(row);
+  }
+ }catch(error){root.textContent=error.message;}
+}
+window.addEventListener('ticketbunker:page',e=>{if(e.detail==='invoices')invoices();});
+window.addEventListener('ticketbunker:ready',()=>{if(!$('#page-invoices')?.hidden)invoices();});

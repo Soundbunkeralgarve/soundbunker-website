@@ -5,7 +5,7 @@ import { fulfilListingCheckout } from './lib/event-listings.js';
 import { fulfilPremiumPlacementCheckout } from './lib/ticketbunker-premium-autosend.js';
 import { verifyStripeSignature } from "./lib/stripe.js";
 import { createCalendarEvent } from "./lib/google-calendar.js";
-import { sendToInvoiceXpressAutomation } from "./lib/invoicexpress.js";
+import { sendToInvoiceXpressAutomation,sendSoundBunkerShopInvoice } from "./lib/invoicexpress.js";
 import { persistVoucherFromCheckout } from "./lib/vouchers.js";
 import { sendBookingConfirmations, sendVoucherConfirmations } from './lib/notify.js';
 import { json, readRawBody } from "./lib/http.js";
@@ -38,10 +38,11 @@ export default async function handler(request, response) {
       return json(response, { received: true, event_ticket: result.status });
     }
     if (metadata.purchase_type === "merchandise") {
+      await sendSoundBunkerShopInvoice(checkout);
       await fulfillShopCheckout(checkout);
       return json(response, { received: true, merchandise: true });
     }
-    if (event.type !== "checkout.session.completed") return json(response, { received: true });
+    if (checkout.livemode !== true) return json(response, { received: true, test: true });
     const admin = process.env.SUPABASE_URL && process.env.SUPABASE_SECRET_KEY
       ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SECRET_KEY, { auth: { persistSession: false } }) : null;
     let booking = null;
@@ -66,6 +67,8 @@ export default async function handler(request, response) {
         if (marked.error) throw new Error('Could not mark paid booking for fulfilment');
       }
     }
+    const paidCents=Math.round(Number(metadata.paid_now||metadata.deposit)*100);
+    if(checkout.currency!=='eur'||!Number.isSafeInteger(paidCents)||paidCents!==checkout.amount_total)throw Error('Invoice total does not match the Stripe payment');
     const tasks = [createCalendarEvent(metadata, checkout.id), sendToInvoiceXpressAutomation(metadata, checkout.id)];
     if (metadata.purchase_type === "gift_voucher") tasks.push(persistVoucherFromCheckout(checkout));
     const [calendar, invoice, voucher] = await Promise.all(tasks);
@@ -85,3 +88,4 @@ export default async function handler(request, response) {
     return json(response, { error: "Booking fulfilment failed" }, 500);
   }
 }
+

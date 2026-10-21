@@ -1,3 +1,4 @@
+import {invoiceDB,listWebsiteInvoices} from './lib/invoice-journal.js';
 import { timingSafeEqual } from "node:crypto";
 import { json, parseJson } from "./lib/http.js";
 import { probeCrudeCityInvoiceXpress, sendCrudeCityInvoice } from "./lib/invoicexpress.js";
@@ -15,6 +16,11 @@ export default async function handler(request, response) {
   try {
     const input = await parseJson(request);
     if (input?.action === "probe") return json(response, await probeCrudeCityInvoiceXpress());
+    if(input?.action==='list'){
+      if(typeof input.email!=='string'||!/^\S+@\S+\.\S+$/.test(input.email))return json(response,{error:'Invalid email'},400);
+      response.setHeader('Cache-Control','private, no-store');
+      return json(response,{invoices:await listWebsiteInvoices(invoiceDB(),'crude-city',input.email)});
+    }
     if (input?.action !== "invoice") return json(response, { error: "Invalid action" }, 400);
     return json(response, await sendCrudeCityInvoice(input));
   } catch (error) {
@@ -22,3 +28,4 @@ export default async function handler(request, response) {
     return json(response, { error: "Crude City invoice generation failed" }, 500);
   }
 }
+

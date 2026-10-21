@@ -132,7 +132,7 @@ async function enterPortal(session) {
   if (safeAccountReturn(next).startsWith('/event-scanner?')) { location.replace(next); return; }
   if (next === '/client#my-tickets') history.replaceState(null,'','/client#my-tickets');
   if (profile.role === 'admin' && !['#inbox','#notifications','#my-tickets'].includes(location.hash)) { location.replace('/admin'); return; }
-  await Promise.all([loadProjects(session), loadGalleries(session), loadVouchers(session), loadBookings(), loadNotifications(), loadInbox(), loadMyEventTickets(), loadMarketingPreferences(session)]);
+  await Promise.all([loadInvoices(session), loadProjects(session), loadGalleries(session), loadVouchers(session), loadBookings(), loadNotifications(), loadInbox(), loadMyEventTickets(), loadMarketingPreferences(session)]);
   if(location.hash==='#my-files') document.querySelector('#my-files')?.scrollIntoView({block:'start'});
   if(location.hash==='#my-tickets') document.querySelector('#my-tickets')?.scrollIntoView({block:'start'});
   if(location.hash==='#session-upload') document.querySelector('#session-upload')?.scrollIntoView({block:'start'});
@@ -624,3 +624,21 @@ document.addEventListener('DOMContentLoaded', () => {
   setMode('login');
   boot();
 });
+
+
+async function loadInvoices(session){
+ const root=document.querySelector('#myInvoices');if(!root)return;
+ try{
+  const r=await fetch('/api/client-invoices',{headers:{authorization:'Bearer '+session.access_token},cache:'no-store'}),d=await r.json();
+  if(!r.ok)throw Error(d.error||'Invoices are temporarily unavailable.');
+  root.replaceChildren();
+  if(!d.invoices.length)root.textContent='Your invoices will appear here after a payment is processed.';
+  for(const invoice of d.invoices){
+   const panel=document.createElement('p'),title=document.createElement('strong');title.textContent=(invoice.document_number||invoice.description)+' · '+new Intl.NumberFormat('en-GB',{style:'currency',currency:invoice.currency.toUpperCase()}).format(invoice.amount_cents/100);panel.append(title,document.createElement('br'));
+   const balance=invoice.amount_cents-invoice.paid_cents;
+   panel.append(document.createTextNode(!invoice.issued?'Invoice being prepared. ':balance>0?'Balance remaining: €'+(balance/100).toFixed(2)+'. ':'Paid in full. '));
+   if(invoice.url){const u=new URL(invoice.url);if(u.protocol==='https:'&&u.hostname.endsWith('.invoicexpress.com')&&u.pathname.startsWith('/documents/')){const link=document.createElement('a');link.textContent='View / download invoice ↗';link.href=u.href;link.target='_blank';link.rel='noopener noreferrer';panel.append(link);}}
+   root.append(panel);
+  }
+ }catch(error){root.textContent=error.message;}
+}
