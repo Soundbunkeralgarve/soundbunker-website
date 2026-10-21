@@ -31,8 +31,8 @@ export default async function handler(req,res) {
     if(jobs.error)return json(res,{sent,pending,error:'Organiser invoice processing is unavailable'},503);
     for(const row of jobs.data||[]){
       if(Date.now()>deadline)break;
-      try{await processOrganiserInvoice(row,{db,request:ixRequest});organiserSent++;await db.from('tb_organiser_invoices').update({status:'sent'}).eq('id',row.id).eq('lease_token',token);}
-      catch(error){organiserPending++;await db.from('tb_organiser_invoices').update({status:'needs_review',last_error:String(error.message).slice(0,300),next_attempt_at:new Date(Date.now()+3600000).toISOString()}).eq('id',row.id).eq('lease_token',token);}
+      try{await processOrganiserInvoice(row,{db,request:ixRequest});organiserSent++;await db.from('tb_organiser_invoices').update({status:'emailed'}).eq('id',row.id).eq('lease_token',token);}
+      catch(error){organiserPending++;await db.from('tb_organiser_invoices').update({status:'review',last_error:String(error.message).slice(0,300),next_attempt_at:new Date(Date.now()+3600000).toISOString()}).eq('id',row.id).eq('lease_token',token);}
       finally{await db.from('tb_organiser_invoices').update({lease_token:null,lease_until:null}).eq('id',row.id).eq('lease_token',token);}
     }
   }
