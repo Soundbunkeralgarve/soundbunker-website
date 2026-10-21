@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import {invoicePaymentLink} from './invoice-payment-link.js';
 
 const TABLE = 'sb_website_invoice_jobs';
 const names = {soundbunker:'SoundBunker', 'crude-city':'Crude City', ticketbunker:'The Ticket Bunker'};
@@ -15,7 +16,9 @@ export function publicInvoice(row) {
     amount_cents:Number(row.amount_cents),currency:row.currency,document_type:row.document_type,
     document_number:row.document_number,url:row.finalized_at?documentLink(row.document_url):null,
     created_at:row.created_at,issued:!!row.finalized_at,email_sent:!!row.email_sent_at,
-    paid_cents:row.request_payload?.paid_cents??(row.paid?Number(row.amount_cents):0)};
+    paid_cents:Number(row.request_payload?.paid_cents??(row.paid?Number(row.amount_cents):0))+Number(row.balance_paid_cents||0),
+    pay_url:row.finalized_at&&row.email_sent_at?invoicePaymentLink(row):null,
+    receipt_url:documentLink(row.balance_receipt_url)};
 }
 export async function queueWebsiteInvoice({brand,sessionId,body,paidCents,documentType='invoice_receipts'},db=invoiceDB()) {
   const key=documentType==='invoices'?'invoice':'invoice_receipt', document=body?.[key];
@@ -40,6 +43,11 @@ export async function processInvoiceJob(row,{db,request,table=TABLE,brand=row.br
   const type=row.document_type, key=type==='invoices'?'invoice':'invoice_receipt';
   if(!['invoices','invoice_receipts'].includes(type)||!payload.body?.[key])throw Error('Invoice payload requires review');
   const expected=payload.body[key];
+  const payLink=invoicePaymentLink(row);
+  // The signed URL opens a confirmation page. A GET never starts a payment.
+  if(payLink&&!payload.creation_attempted_at){
+    expected.observations=(expected.observations||'')+'\nPay outstanding balance securely: '+payLink;
+  }
   const write=async values=>{
     const saved=await checked(db.from(table).update({...values,updated_at:new Date().toISOString()}).eq('id',row.id).eq('lease_token',row.lease_token).select('id').maybeSingle());
     if(!saved)throw Error('Invoice processing lease expired');Object.assign(row,values);
@@ -97,7 +105,7 @@ export async function processInvoiceJob(row,{db,request,table=TABLE,brand=row.br
     if(!/^\S+@\S+\.\S+$/.test(email))throw Error('Invoice recipient requires review');
     const balance=Number(row.amount_cents)-(payload.paid_cents||0);
     const message={message:{client:{email,save:'0'},subject:names[brand]+' invoice '+row.document_number,
-      body:(payload.paid_cents>0?'Thank you for your payment. Your ':'Your ')+names[brand]+' invoice is attached.\n'+(balance>0?'Payment received: EUR '+(payload.paid_cents/100).toFixed(2)+'. Remaining balance: EUR '+(balance/100).toFixed(2)+'.':'Paid in full. No further payment is due.')+'\n\n'+link+'\n\nSoundBunker Algarve Sociedade Unipessoal Lda | NIF 517757478',logo:'1'}};
+      body:(payload.paid_cents>0?'Thank you for your payment. Your ':'Your ')+names[brand]+' invoice is attached.\n'+(balance>0?'Payment received: EUR '+(payload.paid_cents/100).toFixed(2)+'. Remaining balance: EUR '+(balance/100).toFixed(2)+'.':'Paid in full. No further payment is due.')+'\n\n'+link+(payLink?'\n\nPay outstanding balance securely: '+payLink:'')+'\n\nSoundBunker Algarve Sociedade Unipessoal Lda | NIF 517757478',logo:'1'}};
     await write({email_payload:message});
     await api('/'+type+'/'+invoice.id+'/email-document.json',{method:'PUT',body:message});
     // Email may be retried if the process dies here; the fiscal document is reused.
@@ -110,3 +118,4 @@ export async function listWebsiteInvoices(db,brand,email) {
   const rows=await checked(db.from(TABLE).select('*').eq('brand',brand).eq('recipient->>email',email.trim().toLowerCase()).order('created_at',{ascending:false}).limit(100));
   return (rows||[]).map(publicInvoice);
 }
+

@@ -10,6 +10,8 @@ import { persistVoucherFromCheckout } from "./lib/vouchers.js";
 import { sendBookingConfirmations, sendVoucherConfirmations } from './lib/notify.js';
 import { json, readRawBody } from "./lib/http.js";
 import { createClient } from '@supabase/supabase-js';
+import {recordInvoiceBalance} from './lib/invoice-balance.js';
+import {invoiceDB} from './lib/invoice-journal.js';
 
 export const config = { api: { bodyParser: false } };
 
@@ -24,6 +26,10 @@ export default async function handler(request, response) {
   try {
     const metadata = checkout.metadata || {};
     if(metadata.ticketbunker_flow==='separate_v1')return json(response,{error:'TicketBunker payments require their dedicated signed webhook'},400);
+    if(metadata.purchase_type==='invoice_balance'){
+      if(checkout.livemode!==true)return json(response,{received:true,test:true});
+      await recordInvoiceBalance(checkout,invoiceDB());return json(response,{received:true,invoice_balance:true});
+    }
     if(metadata.purchase_type==='event_capacity_upgrade'){const result=await fulfilCapacityCheckout(checkout);return json(response,{received:true,capacity:result.status});}
     if (metadata.purchase_type === 'event_listing_fee') {
       const result = await fulfilListingCheckout(checkout);

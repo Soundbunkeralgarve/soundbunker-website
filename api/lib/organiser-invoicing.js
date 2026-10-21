@@ -3,12 +3,12 @@ import {processInvoiceJob} from './invoice-journal.js';
 
 async function one(query){const r=await query;if(r.error)throw Error('Organiser billing lookup failed');return r.data;}
 export async function prepareOrganiserInvoice(row,{db,request}){
-  if(row.request_payload?.body)return row;
   const [organiser,billing,rule]=await Promise.all([
     one(db.from('sb_event_organisers').select('id,tax_review_complete').eq('id',row.organiser_id).single()),
     one(db.from('tb_organiser_billing').select('*').eq('organiser_profile_id',row.organiser_id).single()),
     one(db.from('tb_invoice_tax_rules').select('*').eq('organiser_id',row.organiser_id).eq('category',row.category).maybeSingle())
   ]);
+  if(String(billing?.vat_number||'').replace(/[^0-9]/g,'')==='517757478')throw Error('SoundBunker cannot invoice itself for organiser services');
   if(!organiser?.tax_review_complete||!rule?.approved_at||!rule.approved_by||!rule.tax_name)throw Error('Approved organiser tax treatment is required');
   const percent=Number(rule.percent),gross=Number(row.amount_cents);
   if(!Number.isFinite(percent)||percent<0||percent>100||!Number.isSafeInteger(gross)||gross<=0||(percent===0&&!rule.exemption_code))throw Error('Organiser tax rule requires review');
@@ -23,6 +23,7 @@ export async function prepareOrganiserInvoice(row,{db,request}){
     const payment=await ticketBunkerStripe('/v1/payment_intents/'+encodeURIComponent(pi)+'?expand[]=latest_charge');
     if(payment.status!=='succeeded'||payment.latest_charge?.refunded||payment.latest_charge?.amount_refunded>0)throw Error('Refunded organiser payment requires credit-note reconciliation');
   }
+  if(row.request_payload?.body){row.recipient={email:billing.billing_email.trim().toLowerCase()};return row;}
   const sequences=await request('/sequences.json');if(!sequences.response.ok)throw Error('Ticket Bunker sequence lookup failed');
   const sequence=(sequences.data?.sequences||[]).find(s=>s.serie==='TicketBunker001');
   const id=row.document_type==='invoice_receipts'?sequence?.current_invoice_receipt_sequence_id:sequence?.current_invoice_sequence_id;

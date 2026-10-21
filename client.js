@@ -638,6 +638,8 @@ async function loadInvoices(session){
    const balance=invoice.amount_cents-invoice.paid_cents;
    panel.append(document.createTextNode(!invoice.issued?'Invoice being prepared. ':balance>0?'Balance remaining: €'+(balance/100).toFixed(2)+'. ':'Paid in full. '));
    if(invoice.url){const u=new URL(invoice.url);if(u.protocol==='https:'&&u.hostname.endsWith('.invoicexpress.com')&&u.pathname.startsWith('/documents/')){const link=document.createElement('a');link.textContent='View / download invoice ↗';link.href=u.href;link.target='_blank';link.rel='noopener noreferrer';panel.append(link);}}
+   if(balance>0&&invoice.pay_url){const u=new URL(invoice.pay_url);if(u.origin==='https://www.soundbunker.pt'&&u.pathname==='/api/invoice-payment'){const pay=document.createElement('a');pay.textContent='Pay remaining balance with Stripe ↗';pay.href=u.href;pay.target='_blank';pay.rel='noopener noreferrer';panel.append(document.createElement('br'),pay);}}
+   if(invoice.receipt_url){const u=new URL(invoice.receipt_url);if(u.protocol==='https:'&&u.hostname.endsWith('.invoicexpress.com')&&u.pathname.startsWith('/documents/')){const receipt=document.createElement('a');receipt.textContent='View / download payment receipt ↗';receipt.href=u.href;receipt.target='_blank';receipt.rel='noopener noreferrer';panel.append(document.createElement('br'),receipt);}}
    root.append(panel);
   }
  }catch(error){root.textContent=error.message;}

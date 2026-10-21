@@ -3,6 +3,7 @@ import {randomUUID,timingSafeEqual} from 'node:crypto';
 import {json} from './lib/http.js';
 import {invoiceDB,processInvoiceJob} from './lib/invoice-journal.js';
 import {ixRequest} from './lib/invoicexpress.js';
+import {processBalanceReceipt} from './lib/invoice-balance.js';
 export const config={maxDuration:300};
 export default async function handler(req,res) {
   if(req.method!=='GET')return json(res,{error:'Method not allowed'},405);
@@ -36,6 +37,15 @@ export default async function handler(req,res) {
       finally{await db.from('tb_organiser_invoices').update({lease_token:null,lease_until:null}).eq('id',row.id).eq('lease_token',token);}
     }
   }
-  console.info('Invoice reconciliation completed',{sent,pending,organiserSent,organiserPending});
-  return json(res,{sent,pending,organiserSent,organiserPending});
+  let balanceReceipts=0,balancePending=0;
+  const balances=await db.rpc('sb_claim_invoice_balance_receipts',{p_token:token});
+  if(balances.error)return json(res,{sent,pending,error:'Balance receipt processing is unavailable'},503);
+  for(const payment of balances.data||[]){
+    if(Date.now()>deadline)break;
+    try{await processBalanceReceipt(payment,{db,request:ixRequest});balanceReceipts++;}
+    catch(error){balancePending++;await db.from('sb_invoice_balance_payments').update({last_error:String(error.message).slice(0,300),next_attempt_at:new Date(Date.now()+3600000).toISOString()}).eq('invoice_id',payment.invoice_id).eq('lease_token',token);}
+    finally{await db.from('sb_invoice_balance_payments').update({lease_token:null,lease_until:null}).eq('invoice_id',payment.invoice_id).eq('lease_token',token);}
+  }
+  console.info('Invoice reconciliation completed',{sent,pending,organiserSent,organiserPending,balanceReceipts,balancePending});
+  return json(res,{sent,pending,organiserSent,organiserPending,balanceReceipts,balancePending});
 }
