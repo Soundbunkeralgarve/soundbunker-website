@@ -169,11 +169,11 @@
     "api/event-postponement.js": {
       "maxDuration": 60
     },
-    "api/*.js": {
-      "includeFiles": "assets/soundbunker-email-footer.png"
-    },
     "api/invoice-reconcile.js": {
       "maxDuration": 300
+    },
+    "api/*.js": {
+      "includeFiles": "assets/soundbunker-email-footer.png"
     }
   },
   "crons": [
