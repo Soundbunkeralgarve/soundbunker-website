@@ -48,6 +48,9 @@ export default async function handler(request, response) {
       await fulfillShopCheckout(checkout);
       return json(response, { received: true, merchandise: true });
     }
+    // Stripe sends every subscribed event to both sites' endpoints when an
+    // account is shared. Crude City has its own signed fulfilment/invoice lane.
+    if(metadata.purchase_type!=='gift_voucher'&&(metadata.purchase_type||!metadata.booking_ref))return json(response,{received:true,ignored:true});
     if (checkout.livemode !== true) return json(response, { received: true, test: true });
     const admin = process.env.SUPABASE_URL && process.env.SUPABASE_SECRET_KEY
       ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SECRET_KEY, { auth: { persistSession: false } }) : null;
