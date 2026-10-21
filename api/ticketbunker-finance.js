@@ -15,12 +15,13 @@ export default async function handler(req,res){
   const db=ctx.admin,admin=await ticketBunkerAdmin(ctx),b=req.method==='GET'?req.query:await parseJson(req);
   if(req.method==='POST'&&b.action==='reviewTax'){
    if(!admin||!ID.test(String(b.organiserId||''))||typeof b.confirmed!=='boolean')return json(res,{error:'Owner review required'},403);
-   const review=await db.rpc('tb_review_organiser_tax',{p_actor:ctx.user.id,p_organiser:b.organiserId,p_confirm:b.confirmed,p_reason:String(b.reason||'').slice(0,1000)});if(review.error)return json(res,{error:'Complete the saved billing details and add a review note of at least ten characters.'},400);if(b.confirmed)await deliverOrganiserMailFor(db,b.organiserId);return json(res,{message:'Billing and tax review recorded. Stripe verification still applies.'});
+   const review=await db.rpc('tb_review_organiser_invoice_tax',{p_actor:ctx.user.id,p_organiser:b.organiserId,p_confirm:b.confirmed,p_reason:String(b.reason||'').slice(0,1000),p_treatment:String(b.invoiceTaxTreatment||''),p_business_confirmed:b.businessConfirmed===true});if(review.error)return json(res,{error:'Complete billing details, choose the invoice VAT treatment, confirm UK business evidence when applicable, and add a review note of at least ten characters.'},400);if(b.confirmed)await deliverOrganiserMailFor(db,b.organiserId);return json(res,{message:'Billing and tax review recorded. Stripe verification still applies.'});
   }
   if(req.method==='GET'&&!b.eventId){
    if(!admin)return json(res,{error:'Owner admin access required'},403);
    const readiness=await ticketBunkerPlatformReadiness().catch(()=>({configured:true,ready:false,reason:'stripe_unavailable'}));
-   return json(res,{platform:readiness,webhooksConfigured:!!process.env.TICKETBUNKER_STRIPE_WEBHOOK_SECRET&&!!process.env.TICKETBUNKER_CONNECT_WEBHOOK_SECRET,paidBookingEnabled:ticketBunkerPaymentsEnabled(),settlementEnabled:process.env.EVENTS_SETTLEMENTS_ENABLED==='true',accountUrl:'https://dashboard.stripe.com/acct_1UPS7EPD23Cl917s/settings',connectUrl:'https://dashboard.stripe.com/acct_1UPS7EPD23Cl917s/connect'});
+   const rules=await db.from('tb_invoice_tax_rules').select('organiser_id,category,percent,exemption_code');if(rules.error)throw rules.error;
+   return json(res,{invoiceTaxReviewVersion:2,invoiceTaxRules:rules.data||[],platform:readiness,webhooksConfigured:!!process.env.TICKETBUNKER_STRIPE_WEBHOOK_SECRET&&!!process.env.TICKETBUNKER_CONNECT_WEBHOOK_SECRET,paidBookingEnabled:ticketBunkerPaymentsEnabled(),settlementEnabled:process.env.EVENTS_SETTLEMENTS_ENABLED==='true',accountUrl:'https://dashboard.stripe.com/acct_1UPS7EPD23Cl917s/settings',connectUrl:'https://dashboard.stripe.com/acct_1UPS7EPD23Cl917s/connect'});
   }
   const eventId=String(b.eventId||'');if(!ID.test(eventId))return json(res,{error:'Choose an event'},400);
   const event=await db.from('sb_events').select('id,organiser_profile_id').eq('id',eventId).single();if(event.error)return json(res,{error:'Event unavailable'},404);
@@ -79,3 +80,4 @@ export default async function handler(req,res){
   return json(res,{message:refund.status==='succeeded'?'Stripe confirmed the refund. The refunded order no longer admits entry.':'Stripe is processing the refund. Its final status will update after confirmation.'});
  }catch(error){console.error('TicketBunker finance failed',{code:error.code||'finance_review'});return json(res,{error:error.message?.startsWith('Event is not due')?error.message:'Financial action could not be confirmed. Refresh its status before retrying; no duplicate action will be started.'},503);}
 }
+
