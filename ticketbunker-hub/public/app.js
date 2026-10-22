@@ -85,7 +85,14 @@ $('finish').onclick=()=>{if(confirm('Finish this event? This stops local entry, 
 async function showWifi(ssid,password){const r=await request('wifi-qr',{ssid,password});$('wifiQr').src=r.qr;$('wifiCaption').textContent='Join '+ssid;$('wifiJoin').hidden=false;}
 async function refreshNetwork(){
  if(!window.hubNetwork)return;
- nativeNetwork=await window.hubNetwork.status();
+ try{nativeNetwork=await window.hubNetwork.status();}
+ catch{
+  nativeNetwork=undefined;
+  for(const id of ['createNetwork','stopNetwork','showNetworkQr','networkSettings','macWifiSetup'])$(id).hidden=true;
+  $('networkState').textContent='Wi-Fi setup controls unavailable. Reopen the Hub to use them. Check scanner connection status below before continuing entry.';
+  $('wifiJoin').hidden=true;$('wifiQr').removeAttribute('src');lastWifi='';
+  return;
+ }
  $('createNetwork').hidden=!nativeNetwork.available||nativeNetwork.state==='started';$('stopNetwork').hidden=nativeNetwork.state!=='started';$('showNetworkQr').hidden=nativeNetwork.state!=='started';$('networkSettings').hidden=false;
  $('networkState').textContent=nativeNetwork.message;
  const isMac=nativeNetwork.platform==='darwin';$('macWifiSetup').hidden=!isMac;
