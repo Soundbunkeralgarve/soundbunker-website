@@ -39,6 +39,7 @@
       "main.cjs",
       "policy.cjs",
       "network.cjs",
+      "mac-network.cjs",
       "preload.cjs",
       "package.json",
       "launcher.cjs",

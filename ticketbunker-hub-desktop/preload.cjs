@@ -4,5 +4,6 @@ contextBridge.exposeInMainWorld('hubNetwork',{
  status:()=>ipcRenderer.invoke('hub-network','status'),
  start:()=>ipcRenderer.invoke('hub-network','start'),
  stop:()=>ipcRenderer.invoke('hub-network','stop'),
+ prepareMac:()=>ipcRenderer.invoke('hub-network','prepareMac'),
  settings:()=>ipcRenderer.invoke('hub-network','settings')
 });

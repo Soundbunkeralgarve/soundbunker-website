@@ -85,15 +85,34 @@ $('finish').onclick=()=>{if(confirm('Finish this event? This stops local entry, 
 async function showWifi(ssid,password){const r=await request('wifi-qr',{ssid,password});$('wifiQr').src=r.qr;$('wifiCaption').textContent='Join '+ssid;$('wifiJoin').hidden=false;}
 async function refreshNetwork(){
  if(!window.hubNetwork)return;
- nativeNetwork=await window.hubNetwork.status();
+ try{nativeNetwork=await window.hubNetwork.status();}
+ catch{
+  nativeNetwork=undefined;
+  for(const id of ['createNetwork','stopNetwork','showNetworkQr','networkSettings','macWifiSetup'])$(id).hidden=true;
+  $('networkState').textContent='Wi-Fi setup controls unavailable. Reopen the Hub to use them. Check scanner connection status below before continuing entry.';
+  $('wifiJoin').hidden=true;$('wifiQr').removeAttribute('src');lastWifi='';
+  return;
+ }
  $('createNetwork').hidden=!nativeNetwork.available||nativeNetwork.state==='started';$('stopNetwork').hidden=nativeNetwork.state!=='started';$('showNetworkQr').hidden=nativeNetwork.state!=='started';$('networkSettings').hidden=false;
  $('networkState').textContent=nativeNetwork.message;
- if(nativeNetwork.platform==='darwin')$('networkHelp').textContent='On Mac, open network setup to configure Internet Sharing with a suitable separate source connection, or use a private router. Keep this laptop and every scanner on the same local Wi-Fi. The Hub cannot automatically create Wi-Fi on this Mac.';
+ const isMac=nativeNetwork.platform==='darwin';$('macWifiSetup').hidden=!isMac;
+ if(isMac){
+  $('networkHelp').textContent='Keep the Mac and scanner phones on the same private Wi-Fi. For Wi-Fi without internet, follow the three steps below. If you already have a private router, join its Wi-Fi on every device instead.';
+  $('networkSettings').textContent='Open Mac Sharing settings';
+  const setup=nativeNetwork.macSetup;
+  if(setup?.message)$('macSetupState').textContent=setup.message;
+  $('prepareMac').textContent=setup?.state==='prepared'?'Mac prepared · Open Sharing settings':setup?.state==='preparing'?'Preparing Mac…':'Prepare Mac Wi-Fi';
+ }
  if(nativeNetwork.state!=='started'&&lastWifi){$('wifiJoin').hidden=true;$('wifiQr').removeAttribute('src');lastWifi='';}
 }
 $('createNetwork').onclick=()=>action(async()=>{nativeNetwork=await window.hubNetwork.start();await showWifi(nativeNetwork.ssid,nativeNetwork.password);lastWifi=nativeNetwork.ssid;message('Wi-Fi created. Scan its join QR using each phone’s Camera, then pair the scanner app.');},'Creating your private TicketBunker Wi-Fi…');
 $('showNetworkQr').onclick=()=>action(async()=>{const network=await window.hubNetwork.status();if(network.state!=='started')throw Error('Create the Hub Wi-Fi first.');await showWifi(network.ssid,network.password);lastWifi=network.ssid;},'Preparing your Wi-Fi join QR…');
-$('networkSettings').onclick=()=>action(async()=>{await window.hubNetwork.settings();message('Set up the private network, then return here to connect your scanners.');});
+$('prepareMac').onclick=()=>action(async()=>{
+ if(nativeNetwork?.macSetup?.state!=='prepared')nativeNetwork=await window.hubNetwork.prepareMac();
+ if(nativeNetwork.macSetup?.state!=='prepared'){message(nativeNetwork.macSetup?.message||'Mac setup cancelled.');return;}
+ await window.hubNetwork.settings();message('Mac prepared. In Internet Sharing, choose TicketBunker Offline → Wi-Fi, set your network name and password, then switch sharing on. Join each phone before pairing its scanner.');
+},'Preparing Mac Wi-Fi…');
+$('networkSettings').onclick=()=>action(async()=>{await window.hubNetwork.settings();message(nativeNetwork?.platform==='darwin'?'Follow “Switch on sharing” above. After saving, check Internet Sharing is ON, then join each phone.':'Set up the private network, then return here to connect your scanners.');});
 $('stopNetwork').onclick=()=>{if(confirm('Stop the Hub’s Wi-Fi? Connected scanners will lose contact and entry will pause.'))action(async()=>{await window.hubNetwork.stop();$('wifiJoin').hidden=true;message('Hub Wi-Fi stopped. Connect all devices to a private network before continuing entry.');});};
 $('wifiForm').onsubmit=e=>{e.preventDefault();action(async()=>{await showWifi($('wifiName').value,$('wifiPassword').value);$('wifiPassword').value='';$('wifiDetails').open=false;message('Wi-Fi join QR ready. Pair a scanner afterwards to verify it can reach the Hub.');},'Preparing your Wi-Fi join QR…');};
 $('hideWifi').onclick=()=>{$('wifiJoin').hidden=true;$('wifiQr').removeAttribute('src');};
