@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>One to One Music Production | SoundBunker Live Sessions</title>
+  <meta name="description" content="Private online music production workshops with SoundBunker. Work on your own song with live video, screen sharing, personal feedback and lesson notes.">
+  <link rel="icon" href="favicon.svg"><link rel="stylesheet" href="live-sessions.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.js" defer></script>
+  <script src="live-sessions.js" type="module"></script>
+</head>
+<body>
+<header class="topbar"><a href="/" aria-label="SoundBunker home"><img src="assets/soundbunker-logo.png" alt="SoundBunker Algarve"></a><nav aria-label="Main"><a href="/client">Client area</a><a href="#course">The course</a><a class="button small" href="#workspace">My sessions</a></nav></header>
+<main>
+  <section class="hero">
+    <div><p class="eyebrow">SOUNDBUNKER / LIVE SESSIONS</p><h1>Your music.<br>Your next step.</h1><p class="intro">Two hours, one to one. Build a song, get unstuck and learn the production skills you can keep using.</p><div class="actions"><a class="button" href="#workspace">Open my sessions <span aria-hidden="true">↗</span></a><a href="mailto:bookings@soundbunker.pt?subject=One%20to%20one%20online%20production%20workshop">Enquire about a workshop</a></div><p class="fine">Your own project · Live guidance · Personal notes</p></div>
+    <div class="hero-image"><img src="hero-studio.webp" alt="SoundBunker recording studio"><div class="hero-label"><span class="signal" aria-hidden="true"></span><span>ALGARVE STUDIO<br><strong>Worldwide connections.</strong></span></div><div class="hero-number">1:1<span>Music production<br>120 minutes</span></div></div>
+  </section>
+  <section class="intro-grid" aria-label="How it works"><article><span>01 / BEFORE</span><h2>Bring your track.</h2><p>Upload your music, tell us your goals and check your connection before the lesson.</p></article><article><span>02 / TOGETHER</span><h2>Make it work.</h2><p>Talk face to face, share your screens in turn and apply each idea to your song.</p></article><article><span>03 / AFTER</span><h2>Keep moving.</h2><p>Return to your files, personal feedback and practical next steps in your account.</p></article></section>
+  <section id="workspace" class="workspace">
+    <div class="section-heading"><div><p class="eyebrow">YOUR PRIVATE STUDIO</p><h2>Live Sessions.</h2></div><p id="accountLabel">One SoundBunker login.</p></div>
+    <p id="status" role="status" aria-live="polite">Checking your account…</p>
+    <div id="signedOut" class="signin-card" hidden><h3>Come on in.</h3><p>Use your SoundBunker account to open lessons, share music and read your feedback.</p><a class="button" href="/client?next=%2Flive-sessions">Sign in or create an account</a></div>
+    <div id="signedIn" hidden>
+      <div class="workspace-toolbar"><label for="lessonSelect">Your lessons<select id="lessonSelect"><option value="">Choose a lesson</option></select></label><button id="refresh" class="secondary" type="button">Refresh</button><button id="signOut" class="secondary" type="button">Sign out</button></div>
+      <p id="emptyLessons" hidden>No lessons are attached to your account yet. Contact the studio using your account email to arrange one.</p>
+      <details id="tutorPanel" class="tutor-panel" hidden><summary>Tutor desk — schedule a lesson</summary><p id="integrationStatus"></p><form id="createForm" class="form-grid">
+        <label>Student account email<input name="student_email" type="email" required autocomplete="off"></label><label>Lesson title<input name="title" maxlength="160" value="One to one production workshop" required></label>
+        <label>Start date and time<input name="local_start" type="datetime-local" required></label><label>DAW<input name="daw" maxlength="100" placeholder="Cubase, Logic, Ableton…"></label>
+        <label class="wide">Student goal<textarea name="goal" maxlength="2000" rows="2"></textarea></label><p class="fine wide" id="timezoneLabel"></p><button class="button" type="submit">Create lesson</button>
+      </form></details>
+      <section id="lessonView" hidden>
+        <div class="lesson-header"><div><p id="lessonDate" class="eyebrow"></p><h3 id="lessonTitle"></h3><p id="lessonGoal"></p></div><span id="lessonState" class="pill"></span></div>
+        <div class="session-layout">
+          <section class="room-card"><div class="room-heading"><h4>The live room</h4><button id="fullscreen" class="secondary" type="button">Full screen</button></div>
+            <div id="roomPlaceholder"><span class="room-mark" aria-hidden="true">↔</span><h4>A little preparation.<br>A better session.</h4><p>Use headphones and open your project. The room opens 15 minutes before your lesson.</p></div><div id="zoomRoot"></div>
+            <div class="room-actions"><button id="join" class="button" type="button" disabled>Join live lesson</button><button id="leave" class="secondary" type="button" hidden>Leave lesson</button><button id="audioLink" class="secondary" type="button" hidden>Open studio audio</button><a id="fallback" target="_blank" rel="noopener noreferrer" hidden>Open in Zoom ↗</a></div>
+            <p id="roomStatus" class="fine" role="status"></p><p class="fine">For screen sharing use a supported desktop browser. You and your tutor share in turn. If using the separate studio audio stream, mute duplicate music playback. Internet delay varies; monitor your own playing locally.</p>
+          </section>
+          <aside class="prep-card"><p class="eyebrow">READY WHEN YOU ARE</p><h4>Before we start.</h4><label class="check"><input type="checkbox"> Headphones connected</label><label class="check"><input type="checkbox"> Project open and saved</label><label class="check"><input type="checkbox"> Rough mix uploaded</label><button id="testDevices" class="secondary" type="button">Test camera and mic</button><button id="stopDevices" class="secondary" type="button" hidden>Stop device test</button><video id="devicePreview" autoplay muted playsinline hidden></video><p id="deviceStatus" class="fine" role="status">Device permission is only requested when you start the test.</p><a href="/client#my-files" target="_blank" rel="noopener">Open my existing music ↗</a></aside>
+        </div>
+        <div class="lesson-columns">
+          <section class="panel"><div class="panel-heading"><h4>Notes &amp; feedback</h4><button id="exportNotes" class="secondary small" type="button">Save notes</button></div><p class="fine">Shared with your tutor. Updates refresh every 15 seconds while this page is open.</p><div id="notes" class="notes-list"></div>
+            <form id="noteForm"><div class="form-grid"><label>Type<select name="kind" id="noteKind"><option value="note">Lesson note</option><option value="question">Question</option><option value="review">Music for review</option></select></label><label>Track or version<input name="track_name" maxlength="180" placeholder="My song v2.wav"></label><label>Track timestamp<input name="timestamp" placeholder="01:23" pattern="[0-9]{1,3}:[0-5][0-9]"></label></div><label>Your note<textarea name="body" rows="4" maxlength="5000" required placeholder="What would you like to work on?"></textarea></label><button class="button" type="submit">Add note</button></form>
+          </section>
+          <section class="panel"><h4>Music &amp; lesson files</h4><p>Rough mixes, stems, project ZIPs and your tutor’s resources in one place.</p><p class="fine">Up to 50 MB per file. For larger project folders, use My Music in your Client Area. Plugin installers run on your computer.</p><form id="uploadForm"><label id="resourceKindWrap" hidden>File type<select id="resourceKind"><option value="music">Music or project</option><option value="resource">Tutor resource or plugin</option></select></label><label class="upload-area">Choose a file<input id="lessonFile" type="file" required accept=".wav,.mp3,.aif,.aiff,.flac,.m4a,.ogg,.pdf,.txt,.zip"></label><button class="secondary" type="submit">Upload to lesson</button></form><p id="uploadStatus" class="fine" role="status"></p><ul id="files" class="file-list"></ul><audio id="filePlayer" controls preload="none" hidden></audio></section>
+        </div>
+        <details id="editPanel" class="tutor-panel" hidden><summary>Tutor desk — room and lesson settings</summary><form id="editForm" class="form-grid"><label>Title<input name="title" required maxlength="160"></label><label>Start time<input name="local_start" type="datetime-local" required></label><label>DAW<input name="daw" maxlength="100"></label><label>Status<select name="status"><option value="scheduled">Scheduled</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select></label><label class="wide">Goal<textarea name="goal" maxlength="2000"></textarea></label><label class="wide">Optional separate studio audio link<input name="audio_url" type="url" placeholder="https://…"></label><button class="button" type="submit">Save lesson settings</button></form><p class="fine">Create the room after the date is agreed. A provisioned room cannot be rescheduled here. Recording is off by default.</p><button id="provision" class="secondary" type="button">Create private Zoom room</button><p id="provisionStatus" role="status"></p></details>
+      </section>
+    </div>
+  </section>
+  <section id="course" class="course-section"><div class="section-heading"><div><p class="eyebrow">TWO HOURS / YOUR OWN PROJECT</p><h2>From an idea<br>to a way forward.</h2></div><p>Practical foundations, taught through your music. Tailored to your experience and DAW.</p></div><div id="courseModules" class="course-modules"></div><p class="course-outcome" id="courseOutcome"></p></section>
+</main><footer><img src="assets/soundbunker-logo.png" alt="SoundBunker Algarve"><p>One to one music production. From the Algarve to wherever you make music.</p><a href="mailto:bookings@soundbunker.pt">bookings@soundbunker.pt</a><a href="/privacy.html">Privacy</a></footer>
+</body></html>

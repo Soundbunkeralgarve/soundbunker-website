@@ -1,0 +1,96 @@
+{
+  "title": "SoundBunker One to One Music Production",
+  "duration": 120,
+  "promise": "Build a stronger song in your own project and understand how to keep working on it after the lesson.",
+  "outcome": "A saved project with a clear musical idea, a working arrangement or arrangement sketch, an improved rough mix, a stereo bounce and three personal next steps. A finished commercial master is not the expected outcome of a first two-hour lesson.",
+  "preparation": [
+    "Ask the student for their DAW and version, Mac or Windows version, experience level, preferred genre and one clear goal.",
+    "Upload one original rough mix and, if useful, a second version. Add tempo, key if known, a short description and up to three questions with track timestamps.",
+    "Ask for reference song links rather than distributing someone else's recording. Use the student's own music or licensed lesson material.",
+    "If exchanging the native project, collect all audio into the project folder and ZIP it. If the tutor uses a different DAW or plugins, export consolidated stems from the same start point, plus MIDI and a rough mix. Freeze or render instruments that will not transfer.",
+    "Have the DAW installed, activated and open. Use existing stock instruments and effects so setup does not consume the lesson. Plugin installers must be installed locally in advance.",
+    "Use headphones, a laptop or desktop, power connected and a stable connection. Ethernet is preferred. Close cloud backups and unnecessary apps during the call.",
+    "Arrange a short technical check before the paid lesson: sign in, test camera and speech, share each screen in turn, and hear the student's DAW and tutor's DAW. Confirm there is one music playback route and no feedback loop.",
+    "A complete beginner can start with a supplied drum, bass and chord template. Ask about accessibility needs, learning pace and musical interests before choosing material."
+  ],
+  "modules": [
+    {
+      "start": 0, "end": 10, "title": "Listen and choose a direction",
+      "objective": "Agree one achievable result and identify what the song needs most.",
+      "teach": "Listen to 60 to 90 seconds of the student's track without changing anything. Discuss genre, audience, the main musical idea and a reference. Name one strength and one priority, such as a weak groove, unclear bass or a loop that needs an arrangement.",
+      "exercise": "The student shares their project, points to the section they want to improve and saves a new lesson version. Write the goal together in the session notes.",
+      "check": "The student can explain the goal in one sentence and has a recoverable original project.",
+      "adapt": "If starting from scratch, choose a tempo, mood and a simple eight-bar loop. If the student is experienced, replace basic orientation with a focused diagnosis."
+    },
+    {
+      "start": 10, "end": 25, "title": "Understand the project and signal flow",
+      "objective": "Know how MIDI, audio and levels move through the DAW.",
+      "teach": "Show the difference between an audio track and a MIDI or instrument track. Explain tempo, bars, grid, looping, track output, buses and the master. Demonstrate track gain versus fader level and how inserts change sound. Explain that headroom prevents accidental clipping; a particular peak target is not a universal rule.",
+      "exercise": "The student names and colours the key tracks, sets a useful loop, routes a drum group where appropriate, checks input and output devices, and lowers any overloaded channels. Save again.",
+      "check": "The student can follow one sound from its source to the master and can solo, mute and loop it without help.",
+      "adapt": "Use the student's DAW vocabulary. Teach only the shortcuts needed today; avoid a tour of every menu."
+    },
+    {
+      "start": 25, "end": 45, "title": "Build the groove",
+      "objective": "Create a drum pattern that supports the musical style.",
+      "teach": "Demonstrate the role of kick, snare or clap and hats. Explain timing, velocity, swing and the space between hits. Compare one appropriate sample choice with one that competes with the bass. Keep processing simple and make changes at comparable listening levels.",
+      "exercise": "The student edits or builds an eight-bar drum loop, adjusts velocities, removes unnecessary hits and adds one fill or small variation. Listen with the existing musical parts, not only in solo.",
+      "check": "The loop has a clear pulse, purposeful accents and a variation the student can explain.",
+      "adapt": "For an acoustic, vocal-led or ambient project, work on rhythmic phrasing, edits and supporting percussion instead of imposing an electronic drum pattern."
+    },
+    {
+      "start": 45, "end": 65, "title": "Connect bass harmony and melody",
+      "objective": "Create musical parts that work together without crowding the idea.",
+      "teach": "Use the song's key or tonal centre to explain root notes, a simple scale and a short chord progression. Demonstrate bass note length and how bass timing relates to the kick. Show one melodic motif or counterline and when leaving space is more effective than adding another layer.",
+      "exercise": "The student writes or improves the bass part and one chord, melodic or vocal-support part. Compare the new section with the starting version and remove one layer if it distracts from the hook.",
+      "check": "The student can identify the root note, describe the main motif and hear how the bass and rhythm connect.",
+      "adapt": "If harmony is already strong, spend this block on sound selection, register and hook development. Keep unfamiliar theory tied to notes in the actual project."
+    },
+    {
+      "start": 65, "end": 85, "title": "Turn the loop into a song",
+      "objective": "Give the idea structure and a clear change in energy.",
+      "teach": "Show how sections create expectation and contrast. Use a structure that suits the genre: verse and chorus, intro and drop, or another clear progression. Demonstrate subtraction, a transition and one automation move rather than duplicating the same loop unchanged.",
+      "exercise": "The student places section markers, arranges at least three contrasting sections and adds one transition. If time is tight, complete a 60 to 90 second arrangement sketch rather than stretching the work into an unfinished full song.",
+      "check": "The student can describe what changes between sections and why a listener would notice the main moment.",
+      "adapt": "For an existing full arrangement, choose the weakest transition or section and improve it. Avoid replacing a strong personal style with a generic structure."
+    },
+    {
+      "start": 85, "end": 105, "title": "Make the rough mix clearer",
+      "objective": "Use balance and a few purposeful tools to make the song easier to hear.",
+      "teach": "Start with faders and panning. Explain EQ as a way to make room, compression as control of dynamics, and reverb or delay as a sense of space. Demonstrate high-pass filtering only where useful, a small corrective EQ move and an optional kick-to-bass sidechain. Check mono and compare the reference at a matched listening level.",
+      "exercise": "The student balances the main elements, makes two justified processing changes, checks the master for clipping and performs a short bypass comparison. Write down what improved and what still needs attention.",
+      "check": "The main musical idea is clear, the low end is controlled enough for a rough mix and the student can explain each effect used.",
+      "adapt": "Do not chase loudness or apply a limiter simply to make the comparison seem better. If the arrangement is the real issue, fix that before adding processing."
+    },
+    {
+      "start": 105, "end": 115, "title": "Solve their main project problem",
+      "objective": "Let the student apply the lesson to the issue they most wanted to fix.",
+      "teach": "Return to the original goal. Choose one specific issue and show a short diagnosis: listen, isolate the cause, change one thing and compare. Suitable topics include a buried vocal, muddy bass, harsh lead, weak drop or confusing routing.",
+      "exercise": "Hand the decision back to the student. They make the change while explaining their reasoning; the tutor guides only when needed. Save a before and after version and attach a timestamped feedback note.",
+      "check": "The student can repeat the useful change without copying a sequence of unexplained clicks.",
+      "adapt": "If the issue needs more than ten minutes, complete the most valuable first step and define the next task. Do not promise to repair an entire difficult mix in this block."
+    },
+    {
+      "start": 115, "end": 120, "title": "Export and set the next steps",
+      "objective": "Leave with something to hear and a clear way to continue.",
+      "teach": "Confirm the export range, stereo output, suitable sample rate and bit depth for the intended use. Explain why the student should retain a high-quality WAV and a convenient listening copy. Check the exported file rather than assuming the bounce is correct.",
+      "exercise": "Save the project, export the worked section or full rough mix, and play the start and end of the bounce. Note three personal actions and upload the export to the lesson folder when the bounce finishes.",
+      "check": "The saved project, listening bounce and three next steps are available to the student. A slow render can finish after the live session; the settings and task are agreed before it ends.",
+      "adapt": "Offer a follow-up lesson only if it matches the student's goal. Do not make completion depend on buying a plugin or another session."
+    }
+  ],
+  "teaching_method": [
+    "Use a short demonstrate, student tries, compare cycle. Keep the student operating their project for most of the workshop.",
+    "Take turns playing music and sharing screens. Internet audio is not a shared zero-latency performance space. The student monitors their own playing directly through their local interface or DAW.",
+    "If a connection problem occurs, stop music playback, keep speech connected, reduce video demand and use the uploaded rough mix or stems. Preserve the musical goal and record what remains to do.",
+    "Use stock tools first. Supply only SoundBunker software you may distribute, licensed materials or official third-party download links. Explain installation and compatibility before the lesson.",
+    "Keep recording off by default. If offering a recording, agree consent, access and retention first. Confirm that the captured music stream is actually included in any test recording."
+  ],
+  "homework": [
+    "Finish or refine the arrangement using the section markers from the lesson.",
+    "Apply one technique from the workshop to another section and explain the change in a short note.",
+    "Upload a new rough mix with a version name, plus up to three timestamped questions for review."
+  ],
+  "review_template": "Track and version | Timestamp | What works | Priority issue | Suggested change | Student action | Next version",
+  "follow_up": "The tutor posts the agreed notes, useful files and three personal actions in the private lesson area. Any later review or recording access must follow the service terms agreed for that booking; unlimited review is not included automatically."
+}
