@@ -55,7 +55,7 @@ async function boot() {
 }
 
 function safeAccountReturn(next){
- if(['/redeem','/organiser','/client#my-tickets'].includes(next))return next;
+ if(['/redeem','/organiser','/client#my-tickets','/live-sessions'].includes(next))return next;
  if(/^\/event-scanner\?(?:invite=[a-f0-9]{64}|eventId=[a-f0-9-]{36})$/i.test(String(next||'')))return next;
  return '';
 }
@@ -129,6 +129,7 @@ async function enterPortal(session) {
   const next = new URLSearchParams(location.search).get('next');
   if (next === '/redeem') { location.replace('/redeem'); return; }
   if (next === '/organiser') { location.replace('/organiser'); return; }
+  if (next === '/live-sessions') { location.replace('/live-sessions'); return; }
   if (safeAccountReturn(next).startsWith('/event-scanner?')) { location.replace(next); return; }
   if (next === '/client#my-tickets') history.replaceState(null,'','/client#my-tickets');
   if (profile.role === 'admin' && !['#inbox','#notifications','#my-tickets'].includes(location.hash)) { location.replace('/admin'); return; }

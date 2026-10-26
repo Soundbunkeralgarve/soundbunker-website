@@ -83,6 +83,10 @@
   ],
   "rewrites": [
     {
+      "source": "/live-sessions",
+      "destination": "/live-sessions.html"
+    },
+    {
       "source": "/retreats",
       "destination": "/retreats.html"
     },
@@ -136,6 +140,9 @@
     }
   ],
   "functions": {
+    "api/production-lessons.js": {
+      "maxDuration": 60
+    },
     "api/event-scan.js": {
       "regions": [
         "dub1"
