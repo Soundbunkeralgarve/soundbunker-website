@@ -73,7 +73,7 @@
     const one = Math.min(...s.map((x) => x.addon_price_cents));
     return `<div class="plugin-offer"><p class="eyebrow">Your key is on its way</p>
       <h3>Add more to your Armoury</h3>
-      <p>Armoury users only: any SoundBunker plug-in for ${price(one)}${b ? `, or every one of them for ${price(b.addon_price_cents)} (normally ${price(b.price_cents)})` : ''}.</p>
+      <p>Add any SoundBunker plug-in for ${price(one)}${b ? `, or every one of them for ${price(b.addon_price_cents)}${b.addon_price_cents < b.price_cents ? ` (Armoury users only, normally ${price(b.price_cents)})` : ''}` : ''}.</p>
       <div class="plugin-actions">
         ${b ? `<button type="button" class="plugin-buy" data-buy="${esc(b.id)}" data-with-free="${esc(freeId)}">Get everything · ${price(b.addon_price_cents)}</button>` : ''}
         <a class="plugin-download" href="?offer=${esc(freeId)}#${esc(freeId)}" data-reopen="${esc(freeId)}">Choose one · ${price(one)}</a>

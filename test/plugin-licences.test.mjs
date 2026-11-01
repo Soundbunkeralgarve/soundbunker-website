@@ -192,14 +192,14 @@ test('browsers cannot read or call the licence tables', async () => {
   } finally { await db.close(); }
 });
 
-test('prices: Armoury free; plug-ins EUR 25 (EUR 19 add-on); everything EUR 69 (EUR 49 add-on)', async () => {
+test('prices: Armoury free; plug-ins EUR 25 everywhere; everything EUR 69 (EUR 49 add-on)', async () => {
   const db = await database({ asShipped: true });
   try {
     const products = Object.fromEntries((await listProducts(client(db))).map((p) => [p.id, p]));
     assert.equal(products.armoury.free, true); assert.equal(products.armoury.for_sale, true);
     for (const id of ['nuclear', 'napalm', 'shrapnel', 'fallout', 'sentinel', 'recon']) {
       assert.equal(products[id].price_cents, 2500, id);
-      assert.equal(products[id].addon_price_cents, 1900, id);
+      assert.equal(products[id].addon_price_cents, 2500, id);
     }
     assert.equal(products.napalm.for_sale, true);
     assert.equal(products.napalm.price_cents, 2500);

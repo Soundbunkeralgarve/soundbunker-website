@@ -176,8 +176,9 @@ async function upsellText(db, freeId) {
   if (!single.length) return '';
   const one = Math.min(...single.map(addonPrice));
   const separately = single.reduce((sum, p) => sum + p.price_cents, 0);
-  return `\n\nWant more? As an Armoury user you can add any SoundBunker plug-in for ${money(one)}: ${single.map((p) => p.name).join(', ')}.` +
-    (complete ? ` Or get every one of them for ${money(addonPrice(complete))} (${money(separately)} separately).` : '') +
+  const deal = complete && addonPrice(complete) < complete.price_cents;
+  return `\n\nWant more? Add any SoundBunker plug-in for ${money(one)}: ${single.map((p) => p.name).join(', ')}.` +
+    (complete ? ` Or get every one of them for ${money(addonPrice(complete))}${deal ? `, an Armoury-user price (normally ${money(complete.price_cents)}, ${money(separately)} separately)` : ` (${money(separately)} separately)`}.` : '') +
     ` ${base()}/plugins.html?offer=${freeId}#${freeId}`;
 }
 
