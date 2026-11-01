@@ -105,3 +105,12 @@
 .home-plugins-copy h2 { margin: 6px 0 10px; }
 .home-plugins-copy p { line-height: 1.6; }
 .home-plugins .button-outline { color: #f3efe4; border-color: rgba(243, 239, 228, .6); }
+/* TicketBunker advert: brand photo with the real logo, linking out to theticketbunker.com. */
+.home-tb-advert{position:relative;display:block;overflow:hidden;min-height:380px;padding:0;border-color:#2c4d42;background:#050807;isolation:isolate}
+.home-tb-advert-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:70% center;z-index:-2}
+.home-tb-advert:before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(5,8,7,.95) 0%,rgba(5,8,7,.78) 42%,rgba(5,8,7,.1) 78%)}
+.home-tb-advert-copy{max-width:520px;padding:46px 44px}
+.home-tb-advert-logo{width:min(300px,80%);height:auto;margin-bottom:26px}
+.home-tb-advert h2{font-size:clamp(30px,4vw,44px)}
+.home-tb-advert .home-event-actions{flex-direction:row;flex-wrap:wrap;align-items:center;gap:22px;margin-top:26px}
+@media (max-width:700px){.home-tb-advert{min-height:0}.home-tb-advert:before{background:linear-gradient(0deg,rgba(5,8,7,.96) 35%,rgba(5,8,7,.55))}.home-tb-advert-copy{padding:30px 22px}.home-tb-advert .home-event-actions{flex-direction:column;align-items:flex-start}}

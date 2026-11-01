@@ -1,6 +1,56 @@
 {
   "redirects": [
     {
+      "source": "/events",
+      "destination": "https://theticketbunker.com/events",
+      "permanent": false
+    },
+    {
+      "source": "/events.html",
+      "destination": "https://theticketbunker.com/events",
+      "permanent": false
+    },
+    {
+      "source": "/organiser",
+      "destination": "https://theticketbunker.com/organiser",
+      "permanent": false
+    },
+    {
+      "source": "/organiser.html",
+      "destination": "https://theticketbunker.com/organiser",
+      "permanent": false
+    },
+    {
+      "source": "/event",
+      "destination": "https://theticketbunker.com/event",
+      "permanent": false
+    },
+    {
+      "source": "/event-public.html",
+      "destination": "https://theticketbunker.com/event",
+      "permanent": false
+    },
+    {
+      "source": "/event-test",
+      "destination": "https://theticketbunker.com/",
+      "permanent": false
+    },
+    {
+      "source": "/event-free-test.html",
+      "destination": "https://theticketbunker.com/",
+      "permanent": false
+    },
+    {
+      "source": "/ticketbunker-dry-run",
+      "destination": "https://theticketbunker.com/",
+      "permanent": false
+    },
+    {
+      "source": "/ticketbunker-dry-run.html",
+      "destination": "https://theticketbunker.com/",
+      "permanent": false
+    },
+    {
       "source": "/event-ticket",
       "destination": "https://theticketbunker.com/event-ticket",
       "permanent": false
@@ -107,10 +157,6 @@
       "destination": "/redeem.html"
     },
     {
-      "source": "/events",
-      "destination": "/events.html"
-    },
-    {
       "source": "/events-admin",
       "destination": "/events-admin.html"
     },
@@ -121,22 +167,6 @@
     {
       "source": "/event-ticket",
       "destination": "/event-ticket.html"
-    },
-    {
-      "source": "/event",
-      "destination": "/event-public.html"
-    },
-    {
-      "source": "/organiser",
-      "destination": "/organiser.html"
-    },
-    {
-      "source": "/event-test",
-      "destination": "/event-free-test.html"
-    },
-    {
-      "source": "/ticketbunker-dry-run",
-      "destination": "/ticketbunker-dry-run.html"
     }
   ],
   "functions": {
