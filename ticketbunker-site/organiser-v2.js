@@ -6,6 +6,8 @@ let sb,session,token,profile,events=[],currentDraft=null,currentPage=new URLSear
 let savedEventInput=null,posterUploaded=false;
 let billingComplete=false,billingRecord=null,connectState=null,connectBusy=false;
 let connectComponent=null;
+let pendingEmail='',signupMode=/[?&](signup|start)\b/.test(location.search)?'signup':'signin';
+const SIGNUP_RETURN='/login?role=organiser&next='+encodeURIComponent('/organiser');
 let feedbackAnchor=null;
 document.addEventListener('submit',e=>{feedbackAnchor=e.submitter||e.target.querySelector('button[type=submit],button:not([type])');},true);
 document.addEventListener('click',e=>{const button=e.target.closest('button');if(button)feedbackAnchor=button;},true);
@@ -35,7 +37,7 @@ function clearEventError(){
 }
 
 async function api(url,body){const liveSession=await sb.auth.getSession();if(!liveSession.data.session)throw Error('Your session expired. Please sign in again.');token=liveSession.data.session.access_token;const r=await fetch(url,{method:body?'POST':'GET',cache:'no-store',headers:{authorization:'Bearer '+token,...body?{'content-type':'application/json'}:{}},body:body?JSON.stringify(body):undefined,signal:AbortSignal.timeout(60000)});let d;try{d=await r.json()}catch{throw Error('The service returned an unreadable response. Please retry.')}if(!r.ok){const error=Error(d.error||'Request failed ('+r.status+')');error.code=d.code;error.details=d;throw error;}return d;}
-function page(name){if(!profile&&name!=='branding'){return showOnboarding();}currentPage=name;$('#notice').hidden=true;$$('.page').forEach(x=>x.hidden=x.id!=='page-'+name);$('#onboarding').hidden=true;$$('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.page===name));$('#sidebar').classList.remove('open');window.scrollTo(0,0);if(name==='create')renderBranding();if(name==='overview')renderOverview();if(name==='events')renderEvents();if(name==='branding')renderBranding();if(name==='profile')renderBillingForms();if(name==='verification')loadStripeStatus();if(name==='reports')loadReportPage();if(name==='staff')loadStaffPage();if(name==='hub')loadHubPage();if(name==='street')loadStreetPage();if(name==='guests')loadGuestPage();if(name==='capacity')loadCapacityPage();window.dispatchEvent(new CustomEvent('ticketbunker:page',{detail:name}));}
+function page(name){if(!profile&&name!=='branding'){return showOnboarding();}dockVerification(false);$('#section-nav').hidden=false;$('#sign-out').hidden=false;$('#account-status').hidden=false;currentPage=name;$('#notice').hidden=true;$$('.page').forEach(x=>x.hidden=x.id!=='page-'+name);$('#onboarding').hidden=true;$$('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.page===name));$('#sidebar').classList.remove('open');window.scrollTo(0,0);if(name==='create')renderBranding();if(name==='overview')renderOverview();if(name==='events')renderEvents();if(name==='branding')renderBranding();if(name==='profile')renderBillingForms();if(name==='verification')loadStripeStatus();if(name==='reports')loadReportPage();if(name==='staff')loadStaffPage();if(name==='hub')loadHubPage();if(name==='street')loadStreetPage();if(name==='guests')loadGuestPage();if(name==='capacity')loadCapacityPage();window.dispatchEvent(new CustomEvent('ticketbunker:page',{detail:name}));}
 $$('[data-page]').forEach(x=>x.onclick=()=>{if(x.dataset.page==='create')startNewEvent();page(x.dataset.page)});$$('[data-go]').forEach(x=>x.onclick=()=>{if(x.dataset.go==='create')startNewEvent();page(x.dataset.go)});$('#menu-btn').onclick=()=>{const yes=$('#sidebar').classList.toggle('open');$('#menu-btn').setAttribute('aria-expanded',String(yes))};
 function money(n,c='eur'){return new Intl.NumberFormat('en-GB',{style:'currency',currency:c==='gbp'?'GBP':'EUR'}).format(Number(n||0)/100);}
 function safeEvents(){return events.filter(e=>(e.internal_free_test!==true||e.wallet_test===true)&&(!e.created_at||Date.parse(e.created_at)>=Date.parse(LEGACY_CUTOFF)));}
@@ -77,13 +79,74 @@ async function refresh(){
 function showOnboarding(){
  $('#page-app').hidden=false;$('#loading').hidden=true;$$('.page').forEach(x=>x.hidden=true);
  $('#onboarding').hidden=false;
- $('#register-form').hidden=!!profile;
- $('#onboarding-logo').hidden=!profile||!!profile.logo_url;
- $('#onboarding-billing').hidden=!profile||!profile.logo_url||billingComplete;
- $('#setup-profile-panel').hidden=!!profile?.logo_url;
+ const signedIn=!!session&&!pendingEmail,verify=!!profile?.logo_url&&billingComplete;
+ $('#setup-login-panel').hidden=signedIn;
+ $('#signup-form').hidden=!!pendingEmail;$('#signup-confirm').hidden=!pendingEmail;
+ $('#register-form').hidden=!signedIn||!!profile;
+ $('#onboarding-logo').hidden=!signedIn||!profile||!!profile.logo_url;
+ $('#onboarding-billing').hidden=!signedIn||!profile||!profile.logo_url||billingComplete;
+ $('#setup-profile-panel').hidden=!signedIn||!!profile?.logo_url;
+ $('#onboarding-verify').hidden=!signedIn||!verify;
+ if(signedIn&&verify)dockVerification(true);
+ $('#sign-out').hidden=!session;$('#section-nav').hidden=!signedIn;$('#account-status').hidden=!signedIn;
  $('#sidebar-name').textContent=profile?.display_name||'New organiser';
  renderBillingForms();
 }
+// The same verification panel serves the setup page (step 05) and the standalone Verification page.
+function dockVerification(inSetup){
+ const panel=$('#verification-panel'),slot=inSetup?$('#onboarding-verify-slot'):$('#page-verification');
+ if(!panel||panel.parentElement===slot)return;
+ if(inSetup)slot.append(panel);else slot.querySelector('.page-lead').after(panel);
+}
+function renderSetupSteps(){
+ const s=connectState||{},done={login:!!session&&!pendingEmail,profile:!!profile,logo:!!profile?.logo_url,billing:!!profile?.logo_url&&billingComplete,verify:s.ready===true};
+ const current=Object.keys(done).find(key=>!done[key]);
+ $$('#setup-steps li').forEach(li=>{const key=li.dataset.step;li.dataset.state=done[key]?'done':key===current?'current':'todo';if(key===current)li.setAttribute('aria-current','step');else li.removeAttribute('aria-current');});
+}
+async function showVerificationStep(){
+ showOnboarding();$('#onboarding-verify').scrollIntoView({behavior:'smooth',block:'start'});
+ await loadStripeStatus();
+ if(connectState?.canOnboard===true&&!connectState.ready&&!connectComponent)await startStripeOnboarding();
+}
+function setSignupMode(mode){
+ signupMode=mode;const form=$('#signup-form'),signup=mode==='signup';
+ $('#signup-heading').textContent=signup?'01 / Create your organiser login':'01 / Sign in to continue';
+ $('#signup-intro').firstChild.textContent=signup?'Registration is free. Already use SoundBunker or TicketBunker? ':'New to TicketBunker? Registration is free. ';
+ $('#signup-switch').textContent=signup?'Sign in instead':'Create a login';
+ $('#signup-name-field').hidden=!signup;$('#signup-options').hidden=!signup;$('#signup-forgot').hidden=signup;
+ form.elements.password.autocomplete=signup?'new-password':'current-password';
+ $('#signup-submit').textContent=signup?'Create login & continue →':'Sign in & continue →';
+ $('#signup-status').textContent='';
+}
+function showSignupStep(){profile=null;billingComplete=false;billingRecord=null;showOnboarding();setSignupMode(signupMode);}
+$('#signup-switch').onclick=()=>setSignupMode(signupMode==='signup'?'signin':'signup');
+$('#signup-form').onsubmit=async e=>{
+ e.preventDefault();const form=e.currentTarget,button=$('#signup-submit'),status=$('#signup-status');
+ if(button.disabled)return;
+ const signup=signupMode==='signup',email=form.elements.email.value.trim(),password=form.elements.password.value,name=form.elements.fullName.value.trim();
+ const problem=!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)?'Enter a valid email address.':password.length<8?'Use a password with at least 8 characters.':signup&&name.length<2?'Enter your full name.':signup&&!form.elements.acceptTerms.checked?'Accept the terms and privacy policy to create your login.':'';
+ if(problem){status.textContent=problem;return;}
+ button.disabled=true;status.textContent='Please wait…';
+ try{
+  const result=signup?await sb.auth.signUp({email,password,options:{emailRedirectTo:location.origin+SIGNUP_RETURN,data:{full_name:name,name,ticketbunker_marketing_signup_pending:form.elements.marketing.checked}}}):await sb.auth.signInWithPassword({email,password});
+  if(result.error)throw result.error;
+  if(!result.data.session){pendingEmail=email;$('#signup-confirm-text').textContent='We have sent a confirmation link to '+email+'. Open it on this device and you will come straight back here to continue setup.';showOnboarding();renderSetupSteps();return;}
+  status.textContent='';await startPortal(result.data.session);
+ }catch(err){status.textContent=err.message||'Unable to continue. Please try again.';}
+ finally{button.disabled=false;}
+};
+$('#signup-forgot').onclick=async()=>{
+ const email=$('#signup-form').elements.email.value.trim(),status=$('#signup-status');
+ if(!email){status.textContent='Enter your email address first.';return;}
+ const result=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+SIGNUP_RETURN+'&recovery=1'});
+ status.textContent=result.error?result.error.message:'If there is an account for that email, a password reset link is on its way.';
+};
+$('#signup-resend').onclick=async()=>{
+ const button=$('#signup-resend');button.disabled=true;
+ try{const result=await sb.auth.resend({type:'signup',email:pendingEmail,options:{emailRedirectTo:location.origin+SIGNUP_RETURN}});$('#signup-confirm-status').textContent=result.error?result.error.message:'Confirmation email sent again. Check your inbox and spam folder.';}
+ finally{button.disabled=false;}
+};
+$('#signup-restart').onclick=async()=>{pendingEmail='';if(session)await sb.auth.signOut({scope:'local'}).catch(()=>{});session=null;setSignupMode('signup');showOnboarding();renderSetupSteps();};
 
 $('#register-form').onsubmit=async e=>{
  e.preventDefault();const form=e.currentTarget,button=e.submitter||form.querySelector('button[type=submit]');
@@ -123,6 +186,7 @@ function renderBillingForms(){
  renderConnectStatus();
 }
 function renderConnectStatus(){
+ renderSetupSteps();
  const s=connectState||{state:'checking'};
  let text={checking:'Checking your Stripe account…',not_started:'Your organiser account is saved. Verify your business and payout details here in TicketBunker using Stripe’s secure form.',action_required:'Action needed. Continue verification here to finish or update your details.',under_review:'Under review. Stripe is checking your submitted information. Check again later for the result.',verified:'Verified by Stripe for receiving transfers and bank payouts. Ticket sales and post-show payment release are activated separately.',restricted:'This Stripe connection needs support before it can receive payouts.',platform_blocked:'Your organiser details are saved. Verification is waiting for TicketBunker’s Stripe setup. You can continue preparing your events.',unavailable:'Live Stripe verification is temporarily unavailable. Your company details are saved.',error:'We could not check your Stripe verification. Please try Check verification status.'}[s.state]||'Check your Stripe verification status.';
  if(!profile)text='Create your organiser profile first.';
@@ -143,6 +207,7 @@ function renderConnectStatus(){
  $('#account-status').textContent=s.ticketSalesEnabled?'Ready to publish':s.ready?'Stripe verified':s.state==='under_review'?'Stripe reviewing':s.state==='platform_blocked'?'Verification unavailable':'Validation needed';
  $('#verification-banner-title').textContent=s.ready?(s.billingReviewComplete?'Ticket payment activation pending':'Billing review pending'):s.state==='platform_blocked'?'Stripe verification is not available yet':'Verify your business and payout details';
  if(currentDraft)renderListingPayment();
+ $('#onboarding-finish').hidden=!(s.ready||s.state==='under_review');
  $('#verification-banner-action').textContent=s.ready?'View account status →':s.state==='platform_blocked'?'View setup status →':'Validate your account →';
 }
 let stripeStatusPromise;
@@ -197,7 +262,7 @@ async function saveBilling(event){
   const saved=await sb.from('tb_organiser_billing').upsert(record,{onConflict:'organiser_profile_id'}).select('organiser_profile_id').single();
   if(saved.error)throw Error('Unable to save billing details: '+saved.error.message);
   billingRecord=record;billingComplete=true;renderBillingForms();
-  if(form.id==='billing-form')page('verification');
+  if(form.id==='billing-form')void showVerificationStep();
   else $('#billing-edit-status').textContent='Billing details updated successfully.';
   notice('Company and billing details saved. No registration or membership charge.',false,form.id==='billing-form'?$('[data-connect-start]'):btn);
  }catch(err){
@@ -422,9 +487,16 @@ $('#staff-form').onsubmit=async e=>{e.preventDefault();const b=e.submitter;b.dis
 function loadStreetPage(){let arr=safeEvents(),s=$('#street-event');s.innerHTML='<option value="">Choose an event</option>'+options(arr);$('#street-form').hidden=!arr.length;$('#street-list').innerHTML=arr.length?empty('Select an event to manage promoters and their rewards.'):empty('Create an event first.');}
 $('#street-event').onchange=async()=>{let id=$('#street-event').value;if(!id)return;try{let r=await api('/api/event-street-team?eventId='+encodeURIComponent(id));$('#street-list').innerHTML=r.team?.length?r.team.map(p=>'<div class="roster-line"><b>'+esc(p.name)+'</b> — '+Number(p.paidTickets||0)+' paid ticket sales <br><a href="'+esc(p.link)+'" target="_blank" rel="noopener">'+esc(p.link)+'</a></div>').join(''):empty('No street-team members yet.');}catch(err){notice(err.message,true)}};
 $('#street-form').onsubmit=async e=>{e.preventDefault();const btn=e.submitter;btn.disabled=true;try{const id=$('#street-event').value;if(!id)throw Error('Choose an event first.');const f=new FormData(e.target),r=await api('/api/event-street-team',{action:'create',eventId:id,name:f.get('name'),email:f.get('email'),rewardType:f.get('rewardType'),rewardGoal:Number(f.get('rewardGoal')),rewardDescription:f.get('rewardDescription'),rewardValueCents:Math.round(Number(f.get('rewardValue')||0)*100)});notice('Promoter link created: '+r.link);$('#street-event').dispatchEvent(new Event('change'));e.target.reset();}catch(err){notice(err.message,true)}finally{btn.disabled=false;}};
-$('#sign-out').onclick=async()=>{try{await sb.auth.signOut();location.replace('/login.html?next=%2Forganiser.html')}catch(err){notice(err.message,true)}};
+$('#sign-out').onclick=async()=>{try{await sb.auth.signOut();location.replace('/organiser')}catch(err){notice(err.message,true)}};
 window.addEventListener('hashchange',()=>{const target={'#featured-placement':'promotions','#business-details':'profile','#verification':'verification'}[location.hash];if(target&&profile)page(target);});
-async function boot(){try{const r=await fetch('/api/supabase-config',{cache:'no-store',signal:AbortSignal.timeout(15000)});if(!r.ok)throw Error('Shared login service is unavailable');const cfg=await r.json();if(!window.supabase)throw Error('Authentication library failed to load');sb=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true}});let auth=await sb.auth.getSession();session=auth.data?.session;if(!session){location.replace('/login?role=organiser&next='+encodeURIComponent(location.pathname+location.search+location.hash));return;}const verified=await sb.auth.getUser();if(verified.error||!verified.data.user)throw Error('Please sign in again.');token=session.access_token;window.ticketbunkerAuth=sb;window.ticketbunkerRefresh=refresh;sb.auth.onAuthStateChange((event,s)=>{if(event==='TOKEN_REFRESHED')token=s.access_token;if(event==='SIGNED_OUT')location.replace('/login?role=organiser');});if(!verified.data.user.email_confirmed_at)throw Error('Please confirm your account email before opening the Organiser Portal.');await refresh();window.dispatchEvent(new Event('ticketbunker:ready'));await checkCancellationReturn();const paidEvent=new URLSearchParams(location.search).get('event');if(paidEvent&&new URLSearchParams(location.search).has('listing')){currentDraft=events.find(e=>e.id===paidEvent)||null;if(currentDraft){page('create');drawReview();nextStep(3);}}if(['#featured-placement','#promotions'].includes(location.hash))page('promotions');if(location.hash==='#business-details')page('profile');if(location.hash==='#verification')page('verification');const onboarding=new URLSearchParams(location.search).get('onboarding');if(onboarding){history.replaceState(null,'','/organiser#verification');page('verification');await loadStripeStatus();if(onboarding==='refresh'&&connectState?.canOnboard)await startStripeOnboarding();else if(onboarding==='returned')notice(connectState?.ready?'Stripe has confirmed your account verification.':'You have returned from Stripe. Check the current verification status below.');}}catch(err){$('#loading').classList.add('error');$('#loading-text').textContent=err.message;const a=document.createElement('a');a.href='/login?role=organiser';a.textContent='Return to sign-in →';a.style.color='#00e0a6';$('#loading').append(a);}}
+async function boot(){try{const r=await fetch('/api/supabase-config',{cache:'no-store',signal:AbortSignal.timeout(15000)});if(!r.ok)throw Error('Shared login service is unavailable');const cfg=await r.json();if(!window.supabase)throw Error('Authentication library failed to load');sb=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true}});let auth=await sb.auth.getSession();session=auth.data?.session;window.ticketbunkerAuth=sb;window.ticketbunkerRefresh=refresh;sb.auth.onAuthStateChange((event,s)=>{if(event==='TOKEN_REFRESHED')token=s.access_token;if(event==='SIGNED_OUT')location.replace('/organiser');});if(!session){showSignupStep();return;}await startPortal(session);}catch(err){bootError(err);}}
+async function startPortal(s){
+ session=s;const verified=await sb.auth.getUser();if(verified.error||!verified.data.user)throw Error('Please sign in again.');
+ if(!verified.data.user.email_confirmed_at){pendingEmail=verified.data.user.email||'';showOnboarding();renderSetupSteps();return;}
+ pendingEmail='';token=session.access_token;
+ if(verified.data.user.user_metadata?.ticketbunker_marketing_signup_pending===true)api('/api/client-marketing-consent',{source:'signup'}).catch(()=>{});
+ await refresh();window.dispatchEvent(new Event('ticketbunker:ready'));await checkCancellationReturn();const paidEvent=new URLSearchParams(location.search).get('event');if(paidEvent&&new URLSearchParams(location.search).has('listing')){currentDraft=events.find(e=>e.id===paidEvent)||null;if(currentDraft){page('create');drawReview();nextStep(3);}}if(['#featured-placement','#promotions'].includes(location.hash))page('promotions');if(location.hash==='#business-details')page('profile');if(location.hash==='#verification')page('verification');const onboarding=new URLSearchParams(location.search).get('onboarding');if(onboarding){history.replaceState(null,'','/organiser#verification');page('verification');await loadStripeStatus();if(onboarding==='refresh'&&connectState?.canOnboard)await startStripeOnboarding();else if(onboarding==='returned')notice(connectState?.ready?'Stripe has confirmed your account verification.':'You have returned from Stripe. Check the current verification status below.');}}
+function bootError(err){$('#loading').classList.add('error');$('#loading-text').textContent=err.message;const a=document.createElement('a');a.href='/login?role=organiser';a.textContent='Return to sign-in →';a.style.color='#00e0a6';$('#loading').append(a);}
 
 let cancellationEvent=null;
 async function openCancellation(id){
