@@ -138,7 +138,9 @@ test('checkout, fulfilment, e-mail and refunds', async () => {
   const db = await database();
   const sb = client(db);
   try {
+    await db.exec("update plugin_products set active = false where id = 'napalm'");
     assert.match((await createCheckout({ productId: 'napalm' }, sb, async () => assert.fail('no Stripe call'))).error, /not on sale/);
+    await db.exec("update plugin_products set active = true where id = 'napalm'");
     assert.match((await createCheckout({ productId: 'armoury' }, sb, async () => assert.fail('no Stripe call'))).error, /free/);
     let form;
     const made = await createCheckout({ productId: 'fallout', email: 'buyer@example.com' }, sb, async (path, f) => { form = f; return { url: 'https://checkout.stripe.com/x' }; });
@@ -195,11 +197,12 @@ test('prices: Armoury free; plug-ins EUR 25 (EUR 19 add-on); everything EUR 69 (
   try {
     const products = Object.fromEntries((await listProducts(client(db))).map((p) => [p.id, p]));
     assert.equal(products.armoury.free, true); assert.equal(products.armoury.for_sale, true);
-    for (const id of ['nuclear', 'shrapnel', 'fallout', 'sentinel', 'recon']) {
+    for (const id of ['nuclear', 'napalm', 'shrapnel', 'fallout', 'sentinel', 'recon']) {
       assert.equal(products[id].price_cents, 2500, id);
       assert.equal(products[id].addon_price_cents, 1900, id);
     }
-    assert.equal(products.napalm.for_sale, false, 'NAPALM waits for its release');
+    assert.equal(products.napalm.for_sale, true);
+    assert.equal(products.napalm.price_cents, 2500);
     assert.equal(products.complete.price_cents, 6900);
     assert.equal(products.complete.addon_price_cents, 4900);
     assert.equal(products.complete.includes.length, 7);
@@ -225,7 +228,7 @@ test('free Armoury: e-mailed key, one licence per address, upsell in the e-mail'
     assert.match(sent[0].subject, /free SoundBunker Armoury/);
     assert.ok(sent[0].text.includes(rows[0].licence_key));
     assert.match(sent[0].text, /any SoundBunker plug-in for €25\.00/, 'no add-on price set: normal price');
-    assert.match(sent[0].text, /every one of them for €49\.00 \(€125\.00 separately\)/);
+    assert.match(sent[0].text, /every one of them for €49\.00 \(€150\.00 separately\)/);
     assert.match(sent[0].text, /plugins\.html\?offer=armoury#armoury/);
     const key = rows[0].licence_key;
     assert.equal((await ask(sb, { action: 'activate', product: 'armoury', machine: m(1), key })).ok, true, 'free key activates the Armoury');

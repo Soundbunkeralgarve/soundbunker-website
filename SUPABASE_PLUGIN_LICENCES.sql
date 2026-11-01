@@ -25,11 +25,10 @@ create table if not exists plugin_products (
   constraint plugin_products_includes check (cardinality(includes) >= 1)
 );
 
--- NAPALM starts switched off (version 0.1.0); turn it on when its installers are published.
 insert into plugin_products (id, name, tagline, price_cents, addon_price_cents, free, includes, sort, active) values
   ('armoury',  'SoundBunker Armoury', '11 mix and master effects',               0,    null, true,  array['armoury'], 10, true),
   ('nuclear',  'NUCLEAR',             'Wavetable synthesiser',                   2500, 1900, false, array['nuclear'], 20, true),
-  ('napalm',   'NAPALM',              'Virtual analogue synthesiser',            2500, 1900, false, array['napalm'], 30, false),
+  ('napalm',   'NAPALM',              'Virtual analogue synthesiser',            2500, 1900, false, array['napalm'], 30, true),
   ('shrapnel', 'SHRAPNEL',            'Drum machine and sample instrument',      2500, 1900, false, array['shrapnel'], 40, true),
   ('fallout',  'FALLOUT',             'Extreme saturation',                      2500, 1900, false, array['fallout'], 50, true),
   ('sentinel', 'SENTINEL',            'Precision mastering console',             2500, 1900, false, array['sentinel'], 60, true),
