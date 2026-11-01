@@ -1,6 +1,6 @@
 const REPO='Soundbunkeralgarve/soundbunker-website';
-const VERSION='1.0.3',TAG='ticketbunker-mac-v'+VERSION;
-const COMMIT='67cd0a3f32fd942b33bca1fe20d67bcccc752116';
+const VERSION='1.0.4',TAG='ticketbunker-mac-v'+VERSION;
+const COMMIT='24eeaa9057cd3ee7ec5af280aaca130e7e17fa3d';
 const BASE='https://github.com/'+REPO+'/releases/download/'+TAG+'/';
 const headers={accept:'application/json','user-agent':'TicketBunker-Hub-Downloads'};
 export async function lookupMacTestingRelease(fetcher=fetch){
