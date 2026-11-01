@@ -41,6 +41,18 @@ insert into plugin_products (id, name, tagline, price_cents, free, pick, include
      array['nuclear','napalm','shrapnel','fallout','sentinel'], 6, true)
 on conflict (id) do nothing;
 
+-- Installers (public GitHub releases in Soundbunkeralgarve/SoundBunker-Downloads). Re-running this script updates them.
+update plugin_products p set mac_download = d.mac, windows_download = d.win, updated_at = now()
+from (values
+  ('armoury', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/armoury-1.0.0/SoundBunker-Armoury-1.0.0-macOS.pkg', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/armoury-1.0.0/SoundBunker-Armoury-1.0.0-Windows-x64-Setup.exe'),
+  ('nuclear', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/nuclear-1.0.0/NUCLEAR-1.0.0-macOS.pkg', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/nuclear-1.0.0/NUCLEAR-1.0.0-Windows-x64-Setup.exe'),
+  ('napalm', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/napalm-1.0.0/NAPALM-1.0.0-macOS.pkg', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/napalm-1.0.0/NAPALM-1.0.0-Windows-x64-Setup.exe'),
+  ('shrapnel', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/shrapnel-1.0.0/SHRAPNEL-1.0.0-macOS.pkg', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/shrapnel-1.0.0/SHRAPNEL-1.0.0-Windows-x64-Setup.exe'),
+  ('fallout', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/fallout-1.0.0/FALLOUT-1.0.0-macOS.pkg', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/fallout-1.0.0/FALLOUT-1.0.0-Windows-x64-Setup.exe'),
+  ('sentinel', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/sentinel-1.0.0/SENTINEL-1.0.0-macOS.pkg', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/sentinel-1.0.0/SENTINEL-1.0.0-Windows-Setup.exe')
+) as d(id, mac, win)
+where p.id = d.id;
+
 create table if not exists plugin_licences (
   id uuid primary key default gen_random_uuid(),
   licence_key text not null unique check (licence_key ~ '^SB(-[0-9A-HJKMNP-TV-Z]{5}){4}$'),
