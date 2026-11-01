@@ -209,14 +209,14 @@
     "api/invoice-payment.js": {
       "maxDuration": 90
     },
-    "api/*.js": {
-      "includeFiles": "assets/soundbunker-email-footer.png"
-    },
     "api/ask-studio.js": {
       "maxDuration": 60
     },
     "api/whatsapp-webhook.js": {
       "maxDuration": 60
+    },
+    "api/*.js": {
+      "includeFiles": "assets/soundbunker-email-footer.png"
     }
   },
   "crons": [
