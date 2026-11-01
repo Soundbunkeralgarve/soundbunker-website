@@ -11,7 +11,7 @@
  }
  toggle.addEventListener('click',()=>setOpen(toggle.getAttribute('aria-expanded')!=='true'));
  groups.forEach(group=>group.querySelector('.navigation-group-toggle').addEventListener('click',()=>{const open=!group.classList.contains('is-open');closeGroups();setGroup(group,open);}));
- nav.addEventListener('click',event=>{if(event.target.closest('a'))setOpen(false);});
+ nav.addEventListener('click',event=>{if(event.target.closest('a'))setOpen(false);else if(event.target.closest('.lang'))closeGroups();});
  document.addEventListener('click',event=>{if(!header.contains(event.target)){setOpen(false);}});
  document.addEventListener('keydown',event=>{
   if(event.key==='Escape'){const open=toggle.getAttribute('aria-expanded')==='true';const group=groups.find(group=>group.classList.contains('is-open'));if(open){event.preventDefault();setOpen(false,{restoreFocus:true});}else if(group){event.preventDefault();setGroup(group,false);group.querySelector('button').focus();}return;}
@@ -22,8 +22,8 @@
  });
  narrow.addEventListener('change',()=>setOpen(false));
  // Keep the navigation labels consistent with the existing page translator.
- const labels={en:{home:'Home',services:'Services',academy:'Academy',shop:'Shop',more:'More',client:'Client area',book:'Book now'},pt:{home:'Início',services:'Serviços',academy:'Academia',shop:'Loja',more:'Mais',client:'Área de cliente',book:'Reservar'},fr:{home:'Accueil',services:'Services',academy:'Académie',shop:'Boutique',more:'Plus',client:'Espace client',book:'Réserver'},de:{home:'Start',services:'Leistungen',academy:'Akademie',shop:'Shop',more:'Mehr',client:'Kundenbereich',book:'Buchen'}};
- function localise(){const copy=labels[document.documentElement.lang]||labels.en;header.querySelectorAll('[data-nav-label]').forEach(node=>{node.textContent=copy[node.dataset.navLabel]||node.textContent;});}
+ const labels={en:{home:'Home',services:'Services',academy:'Academy',retreats:'Retreats',shop:'Shop',plugins:'Plug-ins',more:'More',client:'Client area',book:'Book now'},pt:{home:'Início',services:'Serviços',academy:'Academia',retreats:'Retiros',shop:'Loja',plugins:'Plug-ins',more:'Mais',client:'Área de cliente',book:'Reservar'},fr:{home:'Accueil',services:'Services',academy:'Académie',retreats:'Retraites',shop:'Boutique',plugins:'Plug-ins',more:'Plus',client:'Espace client',book:'Réserver'},de:{home:'Start',services:'Leistungen',academy:'Akademie',retreats:'Retreats',shop:'Shop',plugins:'Plug-ins',more:'Mehr',client:'Kundenbereich',book:'Buchen'}};
+ function localise(){const copy=labels[document.documentElement.lang]||labels.en;header.querySelectorAll('[data-nav-label]').forEach(node=>{node.textContent=copy[node.dataset.navLabel]||node.textContent;});const code=header.querySelector('.nav-language-code'),active=header.querySelector('.lang.active');if(code)code.textContent=(document.documentElement.lang||active?.dataset.lang||'en').slice(0,2).toUpperCase();}
  new MutationObserver(localise).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});localise();
  const current=location.pathname.replace(/\/$/,'/index.html').split('/').pop();nav.querySelectorAll('a').forEach(link=>{const destination=new URL(link.href,location.href);if(destination.pathname.split('/').pop()===current&&!destination.hash)link.setAttribute('aria-current','page');});
 })();
