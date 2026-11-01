@@ -7,7 +7,7 @@ import { json, parseJson, safeText } from './lib/http.js';
 
 const STUDIO_WHATSAPP = '351964895908';
 const DAILY_MESSAGE_LIMIT = 40;
-const allowedOrigin = origin => !origin || /^https:\/\/(www\.)?soundbunker\.pt$/.test(origin) || /^https:\/\/[a-z0-9-]+-soundbunkeralgarve\.vercel\.app$/.test(origin) || /^http:\/\/localhost(:\d+)?$/.test(origin);
+const allowedOrigin = origin => !origin || /^https:\/\/(www\.)?soundbunker\.pt$/.test(origin) || /^https:\/\/soundbunker-website-[a-z0-9-]+-sound-bunker\.vercel\.app$/.test(origin) || /^http:\/\/localhost(:\d+)?$/.test(origin);
 
 export default async function handler(request, response) {
   if (request.method !== 'POST') return json(response, { error: 'Method not allowed' }, 405);
