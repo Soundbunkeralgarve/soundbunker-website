@@ -1,4 +1,5 @@
 import { fulfillShopCheckout } from './lib/printful-shop.js';
+import { fulfilPluginCheckout, revokeForPayment } from './lib/plugin-licences.js';
 import { fulfillEventCheckout } from './lib/events.js';
 import { fulfilCapacityCheckout } from './lib/event-capacity.js';
 import { fulfilListingCheckout } from './lib/event-listings.js';
@@ -20,6 +21,18 @@ export default async function handler(request, response) {
   const rawBody = await readRawBody(request);
   if (!verifyStripeSignature(rawBody, request.headers["stripe-signature"])) return json(response, { error: "Invalid signature" }, 400);
   const event = JSON.parse(rawBody);
+  // Plug-in licences end when their payment is fully refunded or disputed (the plug-ins notice at their next check).
+  if (event.type === "charge.refunded" || event.type === "charge.dispute.created") {
+    const object = event.data?.object || {};
+    if (event.type === "charge.refunded" && object.refunded !== true) return json(response, { received: true, partial_refund: true });
+    try {
+      const paymentIntent = typeof object.payment_intent === "string" ? object.payment_intent : object.payment_intent?.id;
+      return json(response, { received: true, ...(await revokeForPayment(paymentIntent, event.type === "charge.refunded" ? "refund" : "dispute")) });
+    } catch (error) {
+      console.error('Plug-in licence revoke failed', error);
+      return json(response, { error: "Licence revoke failed" }, 500);
+    }
+  }
   if (!["checkout.session.completed", "checkout.session.async_payment_succeeded"].includes(event.type)) return json(response, { received: true });
   const checkout = event.data?.object;
   if (!checkout || checkout.payment_status !== "paid") return json(response, { received: true });
@@ -42,6 +55,10 @@ export default async function handler(request, response) {
     if (metadata.purchase_type === 'event_ticket') {
       const result = await fulfillEventCheckout(checkout);
       return json(response, { received: true, event_ticket: result.status });
+    }
+    if (metadata.purchase_type === "plugin_licence") {
+      const result = await fulfilPluginCheckout(checkout);
+      return json(response, { received: true, plugin_licence: result.status });
     }
     if (metadata.purchase_type === "merchandise") {
       await sendSoundBunkerShopInvoice(checkout);

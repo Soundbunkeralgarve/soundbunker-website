@@ -132,7 +132,7 @@ async function enterPortal(session) {
   if (safeAccountReturn(next).startsWith('/event-scanner?')) { location.replace(next); return; }
   if (next === '/client#my-tickets') history.replaceState(null,'','/client#my-tickets');
   if (profile.role === 'admin' && !['#inbox','#notifications','#my-tickets'].includes(location.hash)) { location.replace('/admin'); return; }
-  await Promise.all([loadInvoices(session), loadProjects(session), loadGalleries(session), loadVouchers(session), loadBookings(), loadNotifications(), loadInbox(), loadMyEventTickets(), loadMarketingPreferences(session)]);
+  await Promise.all([loadInvoices(session), loadProjects(session), loadGalleries(session), loadVouchers(session), loadPluginLicences(session), loadBookings(), loadNotifications(), loadInbox(), loadMyEventTickets(), loadMarketingPreferences(session)]);
   if(location.hash==='#my-files') document.querySelector('#my-files')?.scrollIntoView({block:'start'});
   if(location.hash==='#my-tickets') document.querySelector('#my-tickets')?.scrollIntoView({block:'start'});
   if(location.hash==='#session-upload') document.querySelector('#session-upload')?.scrollIntoView({block:'start'});
@@ -347,6 +347,58 @@ async function loadVouchers(session) {
     status.textContent = error.message;
   }
 }
+
+function renderPluginLicences(licences) {
+  const list = $('#pluginLicenceList');
+  if (!licences.length) {
+    list.innerHTML = '<article class="client-voucher-empty"><div><span>NO PLUG-INS YET</span><h3>Your plug-in licences will appear here.</h3><p>Buy with the same e-mail address as this account, and the licence shows up automatically.</p></div><a href="plugins.html">Browse the plug-ins</a></article>';
+    return;
+  }
+  list.innerHTML = licences.map(l => {
+    const downloads = l.plugins.map(p => [p.mac_download && `<a href="${escapeHtml(p.mac_download)}" rel="noopener">${escapeHtml(p.name)} for macOS ↓</a>`,
+      p.windows_download && `<a href="${escapeHtml(p.windows_download)}" rel="noopener">${escapeHtml(p.name)} for Windows ↓</a>`].filter(Boolean).join(' · ')).filter(Boolean).join('<br>');
+    const computers = l.computers.length
+      ? `<ul class="client-plugin-computers">${l.computers.map(c => `<li><span>${escapeHtml(c.name || 'Computer')} · ${escapeHtml(c.os)} · last seen ${escapeHtml(String(c.last_seen_at).slice(0, 10))}</span><button type="button" data-release-licence="${escapeHtml(l.id)}" data-release-machine="${escapeHtml(c.machine)}">Remove</button></li>`).join('')}</ul>`
+      : '<p class="client-plugin-status">Not activated on any computer yet.</p>';
+    return `<article class="client-plugin-card"><h3>${escapeHtml(l.product)}</h3>
+      <code>${escapeHtml(l.key)}</code>
+      <p class="client-plugin-status">${l.status === 'active' ? `Active · ${l.computers.length} of ${l.seats} computers in use` : 'This licence is no longer active.'}</p>
+      ${computers}${downloads ? `<p>${downloads}</p>` : ''}</article>`;
+  }).join('');
+}
+
+async function loadPluginLicences(session) {
+  const list = $('#pluginLicenceList');
+  if (!list) return;
+  try {
+    const response = await fetch('/api/licence?action=mine', { headers: { authorization: `Bearer ${session.access_token}` }, cache: 'no-store' });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Could not load licences');
+    $('#pluginLicenceMessage').textContent = '';
+    renderPluginLicences(data.licences || []);
+  } catch (error) {
+    list.innerHTML = '<article class="client-voucher-empty"><div><span>PLUG-INS</span><h3>Your licences could not be loaded just now.</h3><p>Nothing has been lost. Please refresh in a moment.</p></div></article>';
+    $('#pluginLicenceMessage').textContent = error.message;
+  }
+}
+
+document.addEventListener('click', async event => {
+  const button = event.target.closest('[data-release-licence]');
+  if (!button) return;
+  button.disabled = true;
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  try {
+    const response = await fetch('/api/licence?action=release', { method: 'POST', headers: { authorization: `Bearer ${session.access_token}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ licence: button.dataset.releaseLicence, machine: button.dataset.releaseMachine }) });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Could not remove the computer');
+    $('#pluginLicenceMessage').textContent = 'Computer removed. Its seat is free again (the plug-in on that computer stops at its next licence check).';
+    await loadPluginLicences(session);
+  } catch (error) {
+    $('#pluginLicenceMessage').textContent = error.message;
+    button.disabled = false;
+  }
+});
 
 async function portalApi(path, payload) {
   const { data: { session } } = await supabaseClient.auth.getSession();

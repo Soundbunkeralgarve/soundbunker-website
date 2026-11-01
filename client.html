@@ -13,9 +13,10 @@
   <link rel="stylesheet" href="client-portal.css">
   <link rel="stylesheet" href="client-dashboard.css">
   <link rel="stylesheet" href="client-tickets.css">
+  <link rel="stylesheet" href="plugins.css?v=20261101">
   <link rel="stylesheet" href="client-mobile-app.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="client.js?v=20261010-tickets" defer></script>
+  <script src="client.js?v=20261101-plugins" defer></script>
 <link rel="stylesheet" href="calendar-picker.css">
 <script defer src="calendar-picker.js"></script>
   <link rel="stylesheet" href="client-music.css?v=1">
@@ -176,6 +177,14 @@
         </div>
         <div id="voucherList" class="client-voucher-list"><div class="client-loading-card">Loading your gift vouchers...</div></div>
         <p id="voucherMessage" class="client-inline-message" role="status"></p>
+      </section>
+      <section class="client-plugins-section" id="my-plugins">
+        <div class="client-voucher-head">
+          <div><p class="eyebrow">My Plug-ins</p><h2>Your SoundBunker licences.</h2><p>Licences bought with this account's e-mail appear here. Remove an old computer to free its seat.</p></div>
+          <div><a href="plugins.html">Browse the plug-ins →</a></div>
+        </div>
+        <div id="pluginLicenceList" class="client-plugin-list"><div class="client-loading-card">Loading your licences...</div></div>
+        <p id="pluginLicenceMessage" class="client-inline-message" role="status"></p>
       </section>
 
       <section class="client-community-feature">
