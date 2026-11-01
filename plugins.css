@@ -47,6 +47,24 @@
 .plugin-offer { margin-top: 10px; padding: 16px; border-radius: 12px; border: 1px solid rgba(200, 162, 74, .6); background: rgba(200, 162, 74, .1); display: grid; gap: 6px; }
 .plugin-offer h3 { margin: 0; font-family: 'Space Grotesk', sans-serif; }
 
+.plugin-hero-image img { display: block; width: 100%; height: auto; border-radius: 14px; margin: 18px 0; }
+.plugin-hero { max-width: 1180px; }
+.plugin-hero h1, .plugin-hero .plugin-lead { max-width: 760px; }
+.plugin-card-image img { display: block; width: calc(100% + 44px); height: auto; margin: -22px -22px 6px; border-radius: 14px 14px 0 0; }
+.plugin-bundle .plugin-card-image img { max-height: 520px; object-fit: contain; background: #0b0b0a; }
+.plugin-tagline { font-weight: 600; }
+.plugin-best { opacity: .85; font-size: .95rem; }
+.plugin-card a:not(.plugin-download):not(.plugin-buy) { color: #c8a24a; }
+.armoury-effects { margin-top: 64px; }
+.armoury-effects h2 { font-family: 'Space Grotesk', sans-serif; font-size: clamp(1.6rem, 3.6vw, 2.4rem); margin: 6px 0 10px; }
+.armoury-effect-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; margin: 22px 0; }
+.armoury-effect { background: rgba(255, 255, 255, .04); border: 1px solid rgba(255, 255, 255, .1); border-radius: 14px; overflow: hidden; scroll-margin-top: 120px; }
+.armoury-effect img { display: block; width: 100%; height: auto; }
+.armoury-effect > div { padding: 16px 18px 18px; }
+.armoury-effect h3 { margin: 4px 0 8px; font-family: 'Space Grotesk', sans-serif; }
+.armoury-effect p { margin: 0 0 8px; line-height: 1.55; font-size: .95rem; }
+.plugin-actions a.plugin-buy { text-decoration: none; display: inline-block; }
+
 /* Client Area */
 .client-plugins-section { margin-top: 32px; }
 .client-plugin-list { display: grid; gap: 14px; }
@@ -58,3 +76,13 @@
 .client-plugin-computers li { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; }
 .client-plugin-computers button { background: none; border: 1px solid rgba(255, 255, 255, .35); color: inherit; border-radius: 999px; padding: 4px 12px; cursor: pointer; }
 @media (max-width: 600px) { .plugin-hero { padding-top: 40px; } .plugin-download-row strong { min-width: 100%; } }
+
+/* Layout: hidden forms stay hidden; free Armoury card wider; bundle card side by side */
+.plugin-claim[hidden], .plugin-buy[hidden] { display: none; }
+#armoury { grid-column: span 2; }
+@media (min-width: 860px) {
+  .plugin-bundle { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); column-gap: 26px; align-items: start; }
+  .plugin-bundle .plugin-card-image { grid-row: 1 / span 12; }
+  .plugin-bundle .plugin-card-image img { width: 100%; margin: 0; border-radius: 10px; max-height: none; }
+}
+@media (max-width: 620px) { #armoury { grid-column: auto; } }

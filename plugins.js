@@ -12,10 +12,16 @@
     const download = (url, label) => url ? `<a class="plugin-download" href="${esc(url)}" rel="noopener">${label} ↓</a>` : '';
     const downloads = p.includes.length > 1 ? '' : (download(p.mac_download, 'macOS') + download(p.windows_download, 'Windows')) ||
       '<span class="plugin-soon">Download coming soon</span>';
+    const copy = (window.SB_PLUGIN_COPY || {})[p.id] || {};
     return `<article class="plugin-card${p.includes.length > 1 ? ' plugin-bundle' : ''}" id="${esc(p.id)}">
-      <p class="eyebrow">${p.includes.length > 1 ? 'Bundle' : 'Plug-in'}</p>
+      <picture class="plugin-card-image"><source srcset="assets/plugins/${esc(p.id)}.webp" type="image/webp">
+        <img src="assets/plugins/${esc(p.id)}.jpg" alt="${esc(copy.alt || p.name)}" width="1600" height="1000" loading="lazy" decoding="async"></picture>
+      <p class="eyebrow">${esc(copy.category || (p.includes.length > 1 ? 'Bundle' : 'Plug-in'))}</p>
       <h2>${esc(p.name)}</h2>
-      <p>${esc(p.tagline)}</p>
+      <p class="plugin-tagline">${esc(copy.tagline || p.tagline)}</p>
+      ${copy.description ? `<p>${esc(copy.description)}</p>` : ''}
+      ${copy.best_for ? `<p class="plugin-best"><b>Best for:</b> ${esc(copy.best_for)}</p>` : ''}
+      ${p.free ? '<p><a href="#armoury-effects">See all 11 effects ↓</a></p>' : ''}
       ${names.length ? `<p class="plugin-includes">${esc(names.join(' · '))}</p>` : ''}
       <p class="plugin-price">${p.free ? 'Free' : p.for_sale ? price(p.price_cents) : 'Coming soon'}<span>${p.for_sale ? ` · ${p.seats} computers${p.free ? '' : ' · VAT included'}` : ''}</span></p>
       ${p.includes.length > 1 && p.for_sale ? saving(p) : ''}
@@ -123,8 +129,9 @@
       if (!r.ok) throw new Error(d.error);
       products = d.products || [];
       $('#pluginGrid').innerHTML = products.map(card).join('');
-      const offerFor = new URLSearchParams(location.search).get('offer');
-      if (offerFor) openFree(offerFor, true);
+      const params = new URLSearchParams(location.search);
+      if (params.get('offer')) openFree(params.get('offer'), true);
+      else if (params.get('get')) openFree(params.get('get'), false);   // "Download Armoury free" links
       else if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView({ block: 'center' });
     } catch {
       $('#pluginGrid').innerHTML = '<article class="plugin-card plugin-loading">The plug-ins could not be loaded just now. Please refresh in a moment.</article>';
@@ -134,6 +141,8 @@
   document.addEventListener('click', (e) => {
     const b = e.target.closest('[data-buy]');
     if (b) buy(b.dataset.buy, b, b.dataset.withFree);
+    const get = e.target.closest('[data-get-free]');
+    if (get) { e.preventDefault(); openFree(get.dataset.getFree, false); }
     const again = e.target.closest('[data-reopen]');
     if (again) { e.preventDefault(); openFree(again.dataset.reopen, true); }
     const c = e.target.closest('[data-claim]');
