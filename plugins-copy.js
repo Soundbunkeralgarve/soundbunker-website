@@ -45,7 +45,7 @@ window.SB_PLUGIN_COPY = {
  "recon": {
   "category": "Field recorder + sampler",
   "tagline": "Capture. Transform. Create.",
-  "description": "A field recorder and companion sampler workflow for turning recordings into musical material. Capture an idea, explore pitch and creative effects, then work with dry or processed audio in your production.",
+  "description": "Coming soon. A field recorder and companion sampler workflow for turning recordings into musical material. Capture an idea on your phone, loop it with pitch, stutter and creative effects, then play it across the keyboard in your DAW.",
   "best_for": "Vocal ideas, found sounds, textures and recordings captured away from the studio.",
   "alt": "Recon — SoundBunker Field recorder + sampler product artwork."
  },
@@ -59,7 +59,7 @@ window.SB_PLUGIN_COPY = {
  "pack3": {
   "category": "Pick any 3",
   "tagline": "Your three, your way.",
-  "description": "Choose any three of NUCLEAR, NAPALM, SHRAPNEL, FALLOUT, SENTINEL and RECON. Each works on 2 computers, Mac and Windows mixed.",
+  "description": "Choose any three of NUCLEAR, NAPALM, SHRAPNEL, FALLOUT and SENTINEL. Each works on 2 computers, Mac and Windows mixed.",
   "best_for": "",
   "alt": "",
   "image": false

@@ -2,7 +2,8 @@
 -- Run once in the Supabase SQL editor (safe to run again). Only the website's service role can read or write these tables;
 -- the plug-ins and the Client Area go through /api/licence. Prices include IVA and are the same everywhere: the Armoury
 -- is free (claimed with an e-mail address, and added free to every paid order), each other plug-in is EUR 25, the 3-Pack
--- (any 3) is EUR 45 and SoundBunker Complete (every plug-in) is EUR 59. Change prices or switch a product off in
+-- (any 3) is EUR 45 and SoundBunker Complete (every plug-in on sale) is EUR 59. RECON is listed as coming soon
+-- (active = false) and is not in the bundles yet; when it launches, set it active and add 'recon' to both bundles. Change prices or switch a product off in
 -- Table editor > plugin_products (active = false hides the Buy button).
 
 create table if not exists plugin_products (
@@ -33,11 +34,11 @@ insert into plugin_products (id, name, tagline, price_cents, free, pick, include
   ('shrapnel', 'SHRAPNEL',             'Drum machine and sample instrument',      2500, false, null, array['shrapnel'], 40, true),
   ('fallout',  'FALLOUT',              'Extreme saturation',                      2500, false, null, array['fallout'], 50, true),
   ('sentinel', 'SENTINEL',             'Precision mastering console',             2500, false, null, array['sentinel'], 60, true),
-  ('recon',    'RECON',                'Sampler with iPhone and Android capture', 2500, false, null, array['recon'], 70, true),
+  ('recon',    'RECON',                'Sampler with iPhone and Android capture', 2500, false, null, array['recon'], 70, false),
   ('complete', 'SoundBunker Complete', 'Every SoundBunker plug-in',               5900, false, null,
-     array['armoury','nuclear','napalm','shrapnel','fallout','sentinel','recon'], 5, true),
+     array['armoury','nuclear','napalm','shrapnel','fallout','sentinel'], 5, true),
   ('pack3',    'SoundBunker 3-Pack',   'Any 3 SoundBunker plug-ins',              4500, false, 3,
-     array['nuclear','napalm','shrapnel','fallout','sentinel','recon'], 6, true)
+     array['nuclear','napalm','shrapnel','fallout','sentinel'], 6, true)
 on conflict (id) do nothing;
 
 create table if not exists plugin_licences (

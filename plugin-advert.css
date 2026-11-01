@@ -1,0 +1,10 @@
+/* Plug-in advert shown at the foot of the studio service pages and the shop; links to plugins.html. */
+.plugin-advert { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); align-items: center; margin: 56px auto; border-radius: 18px; overflow: hidden; background: #0d0d0b; color: #f3efe4; text-decoration: none; }
+.plugin-advert picture, .plugin-advert img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.plugin-advert-copy { padding: 28px clamp(18px, 3vw, 36px); }
+.plugin-advert-copy .eyebrow { color: #c8a24a; }
+.plugin-advert-copy h2 { margin: 6px 0 10px; font-size: clamp(24px, 3vw, 34px); color: #f3efe4; }
+.plugin-advert-copy p { margin: 0 0 18px; line-height: 1.55; color: rgba(243, 239, 228, .85); }
+.plugin-advert-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.plugin-advert .button-outline { color: #f3efe4; border-color: rgba(243, 239, 228, .6); }
+@media (max-width: 760px) { .plugin-advert { grid-template-columns: 1fr; } .plugin-advert picture { aspect-ratio: 16 / 9; } }

@@ -197,14 +197,17 @@ test('prices: Armoury free; plug-ins EUR 25; any 3 EUR 45; everything EUR 59', a
   try {
     const products = Object.fromEntries((await listProducts(client(db))).map((p) => [p.id, p]));
     assert.equal(products.armoury.free, true); assert.equal(products.armoury.for_sale, true);
-    for (const id of ['nuclear', 'napalm', 'shrapnel', 'fallout', 'sentinel', 'recon']) {
+    for (const id of ['nuclear', 'napalm', 'shrapnel', 'fallout', 'sentinel']) {
       assert.equal(products[id].price_cents, 2500, id);
       assert.equal(products[id].for_sale, true, id);
     }
+    // RECON is listed as coming soon: not on sale and in neither bundle.
+    assert.equal(products.recon.for_sale, false);
     assert.equal(products.pack3.price_cents, 4500); assert.equal(products.pack3.pick, 3);
-    assert.equal(products.pack3.includes.length, 6);
+    assert.deepEqual(products.pack3.includes, ['nuclear', 'napalm', 'shrapnel', 'fallout', 'sentinel']);
     assert.equal(products.complete.price_cents, 5900);
-    assert.equal(products.complete.includes.length, 7);
+    assert.ok(!products.complete.includes.includes('recon'));
+    assert.equal(products.complete.includes.length, 6);
   } finally { await db.close(); }
 });
 
@@ -224,7 +227,7 @@ test('free Armoury: e-mailed key, one licence per address, bundles offered in th
     assert.equal(sent.length, 2);
     assert.match(sent[0].subject, /free SoundBunker Armoury/);
     assert.ok(sent[0].text.includes(rows[0].licence_key));
-    assert.match(sent[0].text, /is €25\.00, or any 3 for €45\.00 \(instead of €75\.00\), or all 6 for €59\.00 \(instead of €150\.00\)/);
+    assert.match(sent[0].text, /is €25\.00, or any 3 for €45\.00 \(instead of €75\.00\), or all 5 for €59\.00 \(instead of €125\.00\)/);
     assert.match(sent[0].text, /plugins\.html\?offer=armoury#armoury/);
     const key = rows[0].licence_key;
     assert.equal((await ask(sb, { action: 'activate', product: 'armoury', machine: m(1), key })).ok, true, 'free key activates the Armoury');

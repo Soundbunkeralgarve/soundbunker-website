@@ -27,11 +27,13 @@
     const free = freeProduct();
     const names = isBundle && !p.pick ? products.filter((x) => p.includes.includes(x.id) && x.id !== p.id).map((x) => x.name) : [];
     const download = (url, label) => url ? `<a class="plugin-download" href="${esc(url)}" rel="noopener">${label} ↓</a>` : '';
-    const downloads = isBundle ? '' : (download(p.mac_download, 'macOS') + download(p.windows_download, 'Windows')) ||
+    const downloads = isBundle || !p.for_sale ? '' : (download(p.mac_download, 'macOS') + download(p.windows_download, 'Windows')) ||
       '<span class="plugin-soon">Download coming soon</span>';
     const saved = isBundle && p.for_sale && separately(p) > p.price_cents
       ? `<p class="plugin-saving">${price(separately(p))} separately · save ${price(separately(p) - p.price_cents)}</p>` : '';
-    return `<article class="plugin-card${isBundle ? ' plugin-bundle' : ''}${p.pick ? ' plugin-pick' : ''}" id="${esc(p.id)}">
+    const soon = !p.for_sale;
+    return `<article class="plugin-card${isBundle ? ' plugin-bundle' : ''}${p.pick ? ' plugin-pick' : ''}${soon ? ' plugin-coming' : ''}" id="${esc(p.id)}">
+      ${soon ? '<span class="plugin-badge">Coming soon</span>' : ''}
       ${copy.image === false ? '' : `<picture class="plugin-card-image"><source srcset="assets/plugins/${esc(p.id)}.webp" type="image/webp">
         <img src="assets/plugins/${esc(p.id)}.jpg" alt="${esc(copy.alt || p.name)}" width="1600" height="1000" loading="lazy" decoding="async"></picture>`}
       <p class="eyebrow">${esc(copy.category || (isBundle ? 'Bundle' : 'Plug-in'))}</p>
@@ -51,7 +53,7 @@
         ${downloads}
       </div>
       ${p.free && p.for_sale ? freeCheckout(p) : ''}
-      ${isBundle || p.free ? '' : '<p class="plugin-trial">Free 14-day trial in the download.</p>'}
+      ${isBundle || p.free || !p.for_sale ? '' : '<p class="plugin-trial">Free 14-day trial in the download.</p>'}
     </article>`;
   }
 
