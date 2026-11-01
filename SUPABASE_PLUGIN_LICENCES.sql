@@ -50,7 +50,7 @@ create table if not exists plugin_licences (
   email text not null,
   user_id uuid,
   status text not null default 'active' check (status in ('active', 'revoked', 'refunded')),
-  source text not null default 'stripe' check (source in ('stripe', 'stripe-test', 'admin', 'free')),
+  source text not null default 'stripe' check (source in ('stripe', 'stripe-test', 'admin', 'free', 'code')),
   stripe_session_id text unique,
   stripe_payment_intent text,
   amount_cents integer,
@@ -85,11 +85,41 @@ create table if not exists plugin_trials (
   primary key (product_id, machine_id)
 );
 
+-- Producer codes: a code anyone can type on the plug-ins page to get a free licence for its product (normally
+-- SoundBunker Complete), up to max_uses different e-mail addresses. Create one in the SQL editor, e.g.
+--   insert into plugin_codes (code, product_id, max_uses, note) values ('SBPRODUCER', 'complete', 50, 'Producers');
+-- Switch it off with active = false. Each address gets its own licence; using the code again re-sends the same key.
+create table if not exists plugin_codes (
+  code text primary key check (code ~ '^[A-Z0-9-]{4,40}$'),
+  product_id text not null references plugin_products(id),
+  max_uses integer not null default 50 check (max_uses >= 1),
+  uses integer not null default 0 check (uses >= 0),
+  active boolean not null default true,
+  expires_at timestamptz,
+  note text not null default '',
+  created_at timestamptz not null default now()
+);
+create table if not exists plugin_code_redemptions (
+  code text not null references plugin_codes(code) on delete cascade,
+  email text not null,
+  licence_id uuid not null references plugin_licences(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (code, email)
+);
+
+-- Licences made by an earlier copy of this script: allow the 'code' source.
+alter table plugin_licences drop constraint if exists plugin_licences_source_check;
+alter table plugin_licences add constraint plugin_licences_source_check
+  check (source in ('stripe', 'stripe-test', 'admin', 'free', 'code'));
+
 alter table plugin_products enable row level security;
 alter table plugin_licences enable row level security;
 alter table plugin_activations enable row level security;
 alter table plugin_trials enable row level security;
-revoke all on plugin_products, plugin_licences, plugin_activations, plugin_trials from anon, authenticated;
+alter table plugin_codes enable row level security;
+alter table plugin_code_redemptions enable row level security;
+revoke all on plugin_products, plugin_licences, plugin_activations, plugin_trials, plugin_codes, plugin_code_redemptions
+  from anon, authenticated;
 
 -- Activate one product on one computer. A computer counts once per licence, whichever of the licence's plug-ins it runs,
 -- so a SoundBunker Complete licence on 2 computers covers every plug-in on both. Row lock keeps the seat count exact
@@ -168,7 +198,35 @@ begin
   return jsonb_build_object('ok', true, 'started', extract(epoch from started)::bigint);
 end $$;
 
+-- Redeem a producer code for one e-mail address. The code row is locked, so max_uses holds when several people
+-- redeem at once; an address that already used the code gets its existing licence back without using it up.
+-- p_key is a fresh licence key from the website (used only when a new licence is made).
+create or replace function sb_plugin_redeem_code(p_code text, p_email text, p_key text)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  c plugin_codes;
+  p plugin_products;
+  existing uuid;
+  l plugin_licences;
+begin
+  select * into c from plugin_codes where code = upper(btrim(p_code)) for update;
+  if not found or not c.active then return jsonb_build_object('ok', false, 'error', 'invalid_code'); end if;
+  if c.expires_at is not null and c.expires_at <= now() then return jsonb_build_object('ok', false, 'error', 'expired'); end if;
+  select licence_id into existing from plugin_code_redemptions where code = c.code and email = lower(btrim(p_email));
+  if found then return jsonb_build_object('ok', true, 'id', existing, 'new', false); end if;
+  if c.uses >= c.max_uses then return jsonb_build_object('ok', false, 'error', 'used_up'); end if;
+  select * into p from plugin_products where id = c.product_id;
+  insert into plugin_licences (licence_key, product_id, includes, seats, email, source, note)
+  values (p_key, p.id, p.includes, p.seats, lower(btrim(p_email)), 'code', 'Code ' || c.code)
+  returning * into l;
+  insert into plugin_code_redemptions (code, email, licence_id) values (c.code, lower(btrim(p_email)), l.id);
+  update plugin_codes set uses = uses + 1 where code = c.code;
+  return jsonb_build_object('ok', true, 'id', l.id, 'new', true);
+end $$;
+
 revoke all on function sb_plugin_activate(text, text, text, text, text, text), sb_plugin_refresh(uuid, text, text, text),
-  sb_plugin_deactivate(uuid, text, text), sb_plugin_trial(text, text, integer) from public, anon, authenticated;
+  sb_plugin_deactivate(uuid, text, text), sb_plugin_trial(text, text, integer), sb_plugin_redeem_code(text, text, text)
+  from public, anon, authenticated;
 grant execute on function sb_plugin_activate(text, text, text, text, text, text), sb_plugin_refresh(uuid, text, text, text),
-  sb_plugin_deactivate(uuid, text, text), sb_plugin_trial(text, text, integer) to service_role;
+  sb_plugin_deactivate(uuid, text, text), sb_plugin_trial(text, text, integer), sb_plugin_redeem_code(text, text, text)
+  to service_role;

@@ -171,6 +171,31 @@ export async function claimFree({ productId, email, userId }, db = licenceDB(), 
   return { ok: true };
 }
 
+// Producer codes (plugin_codes): a code typed on the plug-ins page gives that address its own free licence for the
+// code's product. Using the code again from the same address re-sends the same key and does not count again.
+const CODE_ERRORS = {
+  invalid_code: 'That code is not valid.',
+  expired: 'That code has expired.',
+  used_up: 'That code has been used the maximum number of times.',
+};
+
+export async function redeemCode({ code, email }, db = licenceDB(), opts = {}) {
+  email = String(email || '').trim();
+  code = String(code || '').trim().toUpperCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 200) return { error: 'Enter a valid e-mail address.' };
+  if (!/^[A-Z0-9-]{4,40}$/.test(code)) return { error: CODE_ERRORS.invalid_code };
+  const r = await rpc(db, 'sb_plugin_redeem_code', { p_code: code, p_email: email, p_key: newLicenceKey() });
+  if (!r.ok) return { error: CODE_ERRORS[r.error] || CODE_ERRORS.invalid_code };
+  const licence = await checked(db.from('plugin_licences').select('*').eq('id', r.id).single(), 'load the licence');
+  const { send = sendTransactionalEmail } = opts;
+  await sendLicenceEmail(licence, db, { send, key: `plugin-code-${licence.id}-${new Date().toISOString().slice(0, 13)}` });
+  if (r.new) {
+    await send({ to: studio(), key: `plugin-code-studio-${licence.id}`, subject: `Producer code used · ${code}`,
+      text: `${email} used the code ${code}.\n\nKey: ${licence.licence_key}\n\nAdmin: ${base()}/plugin-admin.html` });
+  }
+  return { ok: true };
+}
+
 // The offer in the free product's e-mail: the bundles, against buying the plug-ins one by one.
 async function upsellText(db, freeId) {
   const rows = await checked(db.from('plugin_products').select('*').eq('active', true).order('sort'), 'load the plug-ins');
@@ -230,14 +255,14 @@ export async function sendLicenceEmail(licence, db = licenceDB(), opts = {}) {
   const [product] = await productRows(db, [licence.product_id]);
   const plugins = await productRows(db, licence.includes);
   const downloads = plugins.map((p) => `${p.name}\n   macOS:   ${p.mac_download || `${base()}/plugins.html#${p.id}`}\n   Windows: ${p.windows_download || `${base()}/plugins.html#${p.id}`}`).join('\n\n');
-  const body = `Hi,\n\n${product.free ? `Here is your free copy of ${product.name}.` : `Thank you for buying ${product.name}.`}\n\nYour licence key:\n\n    ${licence.licence_key}\n\n` +
+  const body = `Hi,\n\n${product.free ? `Here is your free copy of ${product.name}.` : licence.source === 'code' ? `Here is your free ${product.name} licence, with our compliments.` : `Thank you for buying ${product.name}.`}\n\nYour licence key:\n\n    ${licence.licence_key}\n\n` +
     `It works on ${licence.seats} computers (macOS and Windows, mixed as you like)${plugins.length > 1 ? ` and unlocks ${plugins.map((p) => p.name).join(', ')}` : ''}.\n\n` +
     `1. Download and install:\n\n${downloads}\n\n` +
     `2. Open the plug-in in your DAW (or the standalone app), paste the key into the activation window and press ACTIVATE. It needs the internet once; after that it works offline.\n\n` +
     `Moving to a new computer? Press DEACTIVATE THIS COMPUTER in the plug-in first, or remove the old computer in your Client Area: ${base()}/client#my-plugins\n\n` +
     `Your key is also saved in your Client Area (sign in or register with ${licence.email}).` +
     (product.free && opts.upsell !== false ? await upsellText(db, product.id) : '') + `\n\nSoundBunker Algarve`;
-  await send({ to: licence.email, key: key || `plugin-licence-resend-${licence.id}-${Date.now()}`, subject: product.free ? `Your free ${product.name} licence key` : `Your ${product.name} licence key`, text: body });
+  await send({ to: licence.email, key: key || `plugin-licence-resend-${licence.id}-${Date.now()}`, subject: product.free || licence.source === 'code' ? `Your free ${product.name} licence key` : `Your ${product.name} licence key`, text: body });
   await db.from('plugin_licences').update({ email_sent_at: new Date().toISOString() }).eq('id', licence.id);
 }
 

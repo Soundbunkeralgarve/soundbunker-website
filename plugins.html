@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="client-gifts.css">
-  <link rel="stylesheet" href="plugins.css?v=20261101-3">
+  <link rel="stylesheet" href="plugins.css?v=20261101-4">
   <link rel="canonical" href="https://www.soundbunker.pt/plugins.html">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="SoundBunker Algarve">
@@ -52,6 +52,17 @@
       <article class="plugin-card plugin-loading">Loading the plug-ins...</article>
     </section>
     <p id="pluginMessage" class="plugin-message" role="status"></p>
+
+    <section class="plugin-code" id="producer-code" aria-labelledby="producer-code-title">
+      <div><p class="eyebrow">Producers</p><h2 id="producer-code-title">Got a producer code?</h2>
+        <p>Enter it with your e-mail and we will send your own licence key and the download links.</p></div>
+      <form id="codeForm">
+        <label>Code <input name="code" required autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="40" placeholder="CODE"></label>
+        <label>Your e-mail <input type="email" name="email" required autocomplete="email" placeholder="you@example.com"></label>
+        <button type="submit" class="plugin-buy">Get my key</button>
+        <p class="plugin-trial" id="codeMessage" role="status"></p>
+      </form>
+    </section>
 
     <section class="armoury-effects" id="armoury-effects" aria-labelledby="armoury-effects-title">
       <p class="eyebrow">Included in the free Armoury bundle</p>
@@ -140,6 +151,6 @@
     <div><a href="mailto:bookings@soundbunker.pt">bookings@soundbunker.pt</a><a href="https://wa.me/351964895908">WhatsApp +351 964 895 908</a></div>
   </footer>
   <script src="plugins-copy.js?v=20261101-3" defer></script>
-  <script src="plugins.js?v=20261101-3" defer></script>
+  <script src="plugins.js?v=20261101-4" defer></script>
 </body>
 </html>

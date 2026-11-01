@@ -7,7 +7,7 @@ import { PGlite } from '@electric-sql/pglite';
 const { privateKey } = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
 const pem = privateKey.export({ type: 'pkcs8', format: 'pem' });
 process.env.LICENCE_PRIVATE_KEY_B64 = Buffer.from(pem).toString('base64');
-const { pluginRequest, fulfilPluginCheckout, revokeForPayment, createCheckout, claimFree, listProducts } = await import('../api/lib/plugin-licences.js');
+const { pluginRequest, fulfilPluginCheckout, revokeForPayment, createCheckout, claimFree, listProducts, redeemCode } = await import('../api/lib/plugin-licences.js');
 const { verifyToken } = await import('../api/lib/licence-token.js');
 const publicPem = crypto.createPublicKey(pem).export({ type: 'spki', format: 'pem' });
 
@@ -187,6 +187,8 @@ test('browsers cannot read or call the licence tables', async () => {
       await assert.rejects(db.query('select * from plugin_licences'), /permission denied/);
       await assert.rejects(db.query('select * from plugin_activations'), /permission denied/);
       await assert.rejects(db.query(`select sb_plugin_trial('fallout', '${m(1)}')`), /permission denied/);
+      await assert.rejects(db.query('select * from plugin_codes'), /permission denied/);
+      await assert.rejects(db.query(`select sb_plugin_redeem_code('SBPRODUCER', 'a@example.com', 'x')`), /permission denied/);
       await db.exec('reset role;');
     }
   } finally { await db.close(); }
@@ -274,5 +276,44 @@ test('every paid order includes the free Armoury; the 3-Pack unlocks the chosen 
     assert.ok(sent.some((x) => /SoundBunker 3-Pack licence key/.test(x.subject) && /unlocks NUCLEAR, NAPALM, FALLOUT/.test(x.text)));
     await assert.rejects(fulfilPluginCheckout({ ...checkout, id: 'cs_live_x', metadata: { ...checkout.metadata, choice: 'nuclear,sentinel' } }, sb, opts), /choice is invalid/);
     await assert.rejects(fulfilPluginCheckout({ ...checkout, id: 'cs_live_y', amount_subtotal: 2500 }, sb, opts), /does not match/);
+  } finally { await db.close(); }
+});
+
+test('producer codes: free Complete licence per address, limited uses, off and expired codes refused', async () => {
+  const db = await database({ asShipped: true });
+  const sb = client(db);
+  try {
+    const sent = [];
+    const opts = { send: async (mail) => { sent.push(mail); } };
+    await db.exec(`insert into plugin_codes (code, product_id, max_uses) values ('SBPRODUCER', 'complete', 2);
+      insert into plugin_codes (code, product_id, active) values ('OLDCODE', 'complete', false);
+      insert into plugin_codes (code, product_id, expires_at) values ('LASTYEAR', 'complete', now() - interval '1 day');`);
+    assert.match((await redeemCode({ code: 'SBPRODUCER', email: 'nope' }, sb, opts)).error, /valid e-mail/);
+    assert.match((await redeemCode({ code: 'WRONG', email: 'a@example.com' }, sb, opts)).error, /not valid/);
+    assert.match((await redeemCode({ code: 'OLDCODE', email: 'a@example.com' }, sb, opts)).error, /not valid/);
+    assert.match((await redeemCode({ code: 'LASTYEAR', email: 'a@example.com' }, sb, opts)).error, /expired/);
+
+    assert.deepEqual(await redeemCode({ code: ' sbproducer ', email: 'Beat@Maker.com' }, sb, opts), { ok: true });
+    assert.deepEqual(await redeemCode({ code: 'SBPRODUCER', email: 'beat@maker.com' }, sb, opts), { ok: true }, 'same address again');
+    let rows = (await db.query('select * from plugin_licences')).rows;
+    assert.equal(rows.length, 1, 'the same address keeps one licence');
+    assert.equal(rows[0].source, 'code'); assert.equal(rows[0].product_id, 'complete'); assert.equal(rows[0].email, 'beat@maker.com');
+    assert.equal((await db.query("select uses from plugin_codes where code = 'SBPRODUCER'")).rows[0].uses, 1);
+    const toProducer = sent.filter((x) => x.to === 'beat@maker.com');
+    assert.equal(toProducer.length, 2, 're-sent the second time');
+    assert.match(toProducer[0].subject, /free SoundBunker Complete/);
+    assert.match(toProducer[0].text, /with our compliments/);
+    assert.ok(toProducer[0].text.includes(rows[0].licence_key));
+    assert.equal(sent.filter((x) => /Producer code used/.test(x.subject)).length, 1, 'the studio hears about each new producer once');
+
+    const key = rows[0].licence_key;
+    for (const product of ['nuclear', 'sentinel', 'armoury'])
+      assert.equal((await ask(sb, { action: 'activate', product, machine: m(1), key })).ok, true, product);
+    assert.equal((await ask(sb, { action: 'activate', product: 'recon', machine: m(1), key })).error, 'wrong_product', 'RECON is not in Complete yet');
+
+    assert.deepEqual(await redeemCode({ code: 'SBPRODUCER', email: 'second@maker.com' }, sb, opts), { ok: true });
+    assert.match((await redeemCode({ code: 'SBPRODUCER', email: 'third@maker.com' }, sb, opts)).error, /maximum/);
+    rows = (await db.query('select * from plugin_licences')).rows;
+    assert.equal(rows.length, 2);
   } finally { await db.close(); }
 });

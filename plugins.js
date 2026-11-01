@@ -164,7 +164,11 @@
       products = d.products || [];
       $('#pluginGrid').innerHTML = products.map(card).join('');
       const params = new URLSearchParams(location.search);
-      if (params.get('offer')) openFree(params.get('offer'), true);
+      if (params.get('code')) {   // a producer link: plugins.html?code=XXXX#producer-code
+        $('#codeForm').code.value = params.get('code').slice(0, 40);
+        $('#producer-code').scrollIntoView({ block: 'center' });
+        $('#codeForm').email.focus();
+      } else if (params.get('offer')) openFree(params.get('offer'), true);
       else if (params.get('get')) openFree(params.get('get'), false);   // "Download Armoury free" links
       else if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView({ block: 'center' });
     } catch {
@@ -200,7 +204,30 @@
     if (form) label(form);
   });
 
+  // Producer codes: the code and e-mail go to /api/licence?action=redeem, which e-mails a licence key.
+  async function redeem(form) {
+    const button = form.querySelector('button[type=submit]'), note = $('#codeMessage');
+    const email = form.email.value;
+    button.disabled = true;
+    button.textContent = 'Sending...';
+    note.textContent = '';
+    try {
+      const r = await fetch('/api/licence?action=redeem', { method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ code: form.code.value, email }) });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || 'That did not work. Please try again.');
+      form.reset();
+      note.textContent = `Done: check ${email} for your key and the downloads (and the spam folder, just in case).`;
+    } catch (err) {
+      note.textContent = err.message;
+    } finally {
+      button.disabled = false;
+      button.textContent = 'Get my key';
+    }
+  }
+
   document.addEventListener('submit', (e) => {
+    if (e.target.id === 'codeForm') { e.preventDefault(); redeem(e.target); return; }
     const form = e.target.closest('[data-claim-form]');
     if (!form) return;
     e.preventDefault();
