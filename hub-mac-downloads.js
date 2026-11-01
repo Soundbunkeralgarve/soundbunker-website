@@ -1,6 +1,6 @@
 (()=>{
  'use strict';
- const version='1.0.3',base='https://github.com/Soundbunkeralgarve/soundbunker-website/releases/download/ticketbunker-mac-v'+version+'/';
+ const version='1.0.4',base='https://github.com/Soundbunkeralgarve/soundbunker-website/releases/download/ticketbunker-mac-v'+version+'/';
  let ready=false,busy=false,timer;
  async function refresh(){
   if(ready||busy||document.hidden||navigator.onLine===false)return;
