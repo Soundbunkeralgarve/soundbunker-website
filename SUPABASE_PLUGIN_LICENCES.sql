@@ -1,9 +1,9 @@
 -- SoundBunker plug-in licences: products, licences, computer activations and trials.
 -- Run once in the Supabase SQL editor (safe to run again). Only the website's service role can read or write these tables;
--- the plug-ins and the Client Area go through /api/licence. Prices include IVA. The Armoury is free (claimed with an
--- e-mail address); each other plug-in is EUR 25 everywhere; SoundBunker Complete (every plug-in) is EUR 69 in the shop
--- and EUR 49 as an add-on in the free Armoury's checkout (addon_price_cents). Change prices or switch a
--- product off in Table editor > plugin_products (active = false hides the Buy button).
+-- the plug-ins and the Client Area go through /api/licence. Prices include IVA and are the same everywhere: the Armoury
+-- is free (claimed with an e-mail address, and added free to every paid order), each other plug-in is EUR 25, the 3-Pack
+-- (any 3) is EUR 45 and SoundBunker Complete (every plug-in) is EUR 59. Change prices or switch a product off in
+-- Table editor > plugin_products (active = false hides the Buy button).
 
 create table if not exists plugin_products (
   id text primary key check (id ~ '^[a-z0-9-]{2,40}$'),
@@ -11,7 +11,7 @@ create table if not exists plugin_products (
   tagline text not null default '',
   price_cents integer not null default 0 check (price_cents >= 0),
   free boolean not null default false,          -- claimed with an e-mail address instead of bought
-  addon_price_cents integer check (addon_price_cents > 0),   -- price when added in the free Armoury's checkout (null: price_cents)
+  pick integer check (pick between 2 and 10),   -- "pick N" bundle: the buyer chooses this many from includes
   currency text not null default 'eur' check (currency = 'eur'),
   seats integer not null default 2 check (seats between 1 and 10),
   includes text[] not null,                      -- plug-in ids this purchase unlocks (a bundle lists several)
@@ -22,19 +22,22 @@ create table if not exists plugin_products (
   active boolean not null default false,
   updated_at timestamptz not null default now(),
   constraint plugin_products_sellable check (not active or free or price_cents > 0),
-  constraint plugin_products_includes check (cardinality(includes) >= 1)
+  constraint plugin_products_includes check (cardinality(includes) >= 1),
+  constraint plugin_products_pick check (pick is null or pick < cardinality(includes))
 );
 
-insert into plugin_products (id, name, tagline, price_cents, addon_price_cents, free, includes, sort, active) values
-  ('armoury',  'SoundBunker Armoury', '11 mix and master effects',               0,    null, true,  array['armoury'], 10, true),
-  ('nuclear',  'NUCLEAR',             'Wavetable synthesiser',                   2500, null, false, array['nuclear'], 20, true),
-  ('napalm',   'NAPALM',              'Virtual analogue synthesiser',            2500, null, false, array['napalm'], 30, true),
-  ('shrapnel', 'SHRAPNEL',            'Drum machine and sample instrument',      2500, null, false, array['shrapnel'], 40, true),
-  ('fallout',  'FALLOUT',             'Extreme saturation',                      2500, null, false, array['fallout'], 50, true),
-  ('sentinel', 'SENTINEL',            'Precision mastering console',             2500, null, false, array['sentinel'], 60, true),
-  ('recon',    'RECON',               'Sampler with iPhone and Android capture', 2500, null, false, array['recon'], 70, true),
-  ('complete', 'SoundBunker Complete', 'Every SoundBunker plug-in',              6900, 4900, false,
-     array['armoury','nuclear','napalm','shrapnel','fallout','sentinel','recon'], 5, true)
+insert into plugin_products (id, name, tagline, price_cents, free, pick, includes, sort, active) values
+  ('armoury',  'SoundBunker Armoury',  '11 mix and master effects',               0,    true,  null, array['armoury'], 10, true),
+  ('nuclear',  'NUCLEAR',              'Wavetable synthesiser',                   2500, false, null, array['nuclear'], 20, true),
+  ('napalm',   'NAPALM',               'Virtual analogue synthesiser',            2500, false, null, array['napalm'], 30, true),
+  ('shrapnel', 'SHRAPNEL',             'Drum machine and sample instrument',      2500, false, null, array['shrapnel'], 40, true),
+  ('fallout',  'FALLOUT',              'Extreme saturation',                      2500, false, null, array['fallout'], 50, true),
+  ('sentinel', 'SENTINEL',             'Precision mastering console',             2500, false, null, array['sentinel'], 60, true),
+  ('recon',    'RECON',                'Sampler with iPhone and Android capture', 2500, false, null, array['recon'], 70, true),
+  ('complete', 'SoundBunker Complete', 'Every SoundBunker plug-in',               5900, false, null,
+     array['armoury','nuclear','napalm','shrapnel','fallout','sentinel','recon'], 5, true),
+  ('pack3',    'SoundBunker 3-Pack',   'Any 3 SoundBunker plug-ins',              4500, false, 3,
+     array['nuclear','napalm','shrapnel','fallout','sentinel','recon'], 6, true)
 on conflict (id) do nothing;
 
 create table if not exists plugin_licences (

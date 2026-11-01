@@ -3,20 +3,38 @@
   const $ = (s) => document.querySelector(s);
   const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const price = (cents) => `€${(cents / 100).toFixed(cents % 100 ? 2 : 0)}`;
+  const SYNTHS = ['nuclear', 'napalm'];   // listed first wherever people choose plug-ins
   let products = [];
-  const singles = () => products.filter((p) => !p.free && p.for_sale && p.includes.length === 1);
-  const bundle = () => products.find((p) => p.for_sale && p.includes.length > 1);
+  const singles = () => products.filter((p) => !p.free && p.for_sale && p.includes.length === 1)
+    .sort((a, b) => SYNTHS.includes(b.id) - SYNTHS.includes(a.id));
+  const bundles = () => products.filter((p) => !p.free && p.for_sale && p.includes.length > 1).sort((a, b) => a.price_cents - b.price_cents);
+  const freeProduct = () => products.find((p) => p.free && p.for_sale);
+  const each = () => Math.min(...singles().map((s) => s.price_cents));
+  // What a bundle would cost bought one by one.
+  const separately = (b) => (b.pick ? b.pick * each() : singles().filter((s) => b.includes.includes(s.id)).length * each());
+
+  // Tick boxes for a "pick N" bundle (the 3-Pack).
+  function picker(b, scope) {
+    return `<fieldset class="plugin-picker" data-pick="${esc(b.pick)}" data-scope="${esc(scope)}"><legend>Choose ${esc(b.pick)}</legend>
+      ${singles().filter((s) => b.includes.includes(s.id)).map((s) => `<label><input type="checkbox" value="${esc(s.id)}"> ${esc(s.name)}</label>`).join('')}
+    </fieldset>`;
+  }
+  const pickedIn = (root) => [...root.querySelectorAll('.plugin-picker input:checked')].map((i) => i.value);
 
   function card(p) {
-    const names = p.includes.length > 1 ? products.filter((x) => p.includes.includes(x.id) && x.id !== p.id).map((x) => x.name) : [];
-    const download = (url, label) => url ? `<a class="plugin-download" href="${esc(url)}" rel="noopener">${label} ↓</a>` : '';
-    const downloads = p.includes.length > 1 ? '' : (download(p.mac_download, 'macOS') + download(p.windows_download, 'Windows')) ||
-      '<span class="plugin-soon">Download coming soon</span>';
     const copy = (window.SB_PLUGIN_COPY || {})[p.id] || {};
-    return `<article class="plugin-card${p.includes.length > 1 ? ' plugin-bundle' : ''}" id="${esc(p.id)}">
-      <picture class="plugin-card-image"><source srcset="assets/plugins/${esc(p.id)}.webp" type="image/webp">
-        <img src="assets/plugins/${esc(p.id)}.jpg" alt="${esc(copy.alt || p.name)}" width="1600" height="1000" loading="lazy" decoding="async"></picture>
-      <p class="eyebrow">${esc(copy.category || (p.includes.length > 1 ? 'Bundle' : 'Plug-in'))}</p>
+    const isBundle = p.includes.length > 1;
+    const free = freeProduct();
+    const names = isBundle && !p.pick ? products.filter((x) => p.includes.includes(x.id) && x.id !== p.id).map((x) => x.name) : [];
+    const download = (url, label) => url ? `<a class="plugin-download" href="${esc(url)}" rel="noopener">${label} ↓</a>` : '';
+    const downloads = isBundle ? '' : (download(p.mac_download, 'macOS') + download(p.windows_download, 'Windows')) ||
+      '<span class="plugin-soon">Download coming soon</span>';
+    const saved = isBundle && p.for_sale && separately(p) > p.price_cents
+      ? `<p class="plugin-saving">${price(separately(p))} separately · save ${price(separately(p) - p.price_cents)}</p>` : '';
+    return `<article class="plugin-card${isBundle ? ' plugin-bundle' : ''}${p.pick ? ' plugin-pick' : ''}" id="${esc(p.id)}">
+      ${copy.image === false ? '' : `<picture class="plugin-card-image"><source srcset="assets/plugins/${esc(p.id)}.webp" type="image/webp">
+        <img src="assets/plugins/${esc(p.id)}.jpg" alt="${esc(copy.alt || p.name)}" width="1600" height="1000" loading="lazy" decoding="async"></picture>`}
+      <p class="eyebrow">${esc(copy.category || (isBundle ? 'Bundle' : 'Plug-in'))}</p>
       <h2>${esc(p.name)}</h2>
       <p class="plugin-tagline">${esc(copy.tagline || p.tagline)}</p>
       ${copy.description ? `<p>${esc(copy.description)}</p>` : ''}
@@ -24,60 +42,66 @@
       ${p.free ? '<p><a href="#armoury-effects">See all 11 effects ↓</a></p>' : ''}
       ${names.length ? `<p class="plugin-includes">${esc(names.join(' · '))}</p>` : ''}
       <p class="plugin-price">${p.free ? 'Free' : p.for_sale ? price(p.price_cents) : 'Coming soon'}<span>${p.for_sale ? ` · ${p.seats} computers${p.free ? '' : ' · VAT included'}` : ''}</span></p>
-      ${p.includes.length > 1 && p.for_sale ? saving(p) : ''}
+      ${saved}
+      ${!p.free && free && !p.includes.includes(free.id) && p.for_sale ? `<p class="plugin-free-note">+ ${esc(free.name)} free</p>` : ''}
+      ${p.pick && p.for_sale ? picker(p, 'card') : ''}
       <div class="plugin-actions">
         ${p.free && p.for_sale ? `<button type="button" class="plugin-buy" data-claim="${esc(p.id)}">Get it free</button>` : ''}
-        ${!p.free && p.for_sale ? `<button type="button" class="plugin-buy" data-buy="${esc(p.id)}">Buy licence</button>` : ''}
+        ${!p.free && p.for_sale ? `<button type="button" class="plugin-buy" data-buy="${esc(p.id)}"${p.pick ? ' disabled' : ''}>${p.pick ? `Choose ${esc(p.pick)}` : 'Buy licence'}</button>` : ''}
         ${downloads}
       </div>
       ${p.free && p.for_sale ? freeCheckout(p) : ''}
-      ${p.includes.length > 1 || p.free ? '' : '<p class="plugin-trial">Free 14-day trial in the download.</p>'}
+      ${isBundle || p.free ? '' : '<p class="plugin-trial">Free 14-day trial in the download.</p>'}
     </article>`;
   }
 
-  // The free product's checkout: e-mail, plus the add-on offer (everything, or one plug-in) at the add-on price.
-  const SYNTHS = ['nuclear', 'napalm'];
+  // The free product's checkout: e-mail, and the bundles on offer.
   function freeCheckout(p) {
-    const s = singles().sort((a, b) => (SYNTHS.includes(b.id) - SYNTHS.includes(a.id))), b = bundle();
-    const separately = b ? singles().filter((x) => b.includes.includes(x.id)).reduce((sum, x) => sum + x.price_cents, 0) : 0;
+    const options = bundles().map((b) => `<label class="plugin-addon-best"><input type="radio" name="addon" value="${esc(b.id)}" data-price="${b.price_cents}">
+        <strong>${b.pick ? `Any ${esc(b.pick)} plug-ins for ${price(b.price_cents)}` : `Every plug-in for ${price(b.price_cents)}`}</strong>
+        <span>(${price(separately(b))} separately)</span></label>
+        ${b.pick ? `<div class="plugin-addon-pick" data-for="${esc(b.id)}" hidden>${picker(b, 'free')}</div>` : ''}`).join('');
     return `<form class="plugin-claim" data-claim-form="${esc(p.id)}" hidden>
       <label>Your e-mail <input type="email" name="email" required autocomplete="email" placeholder="you@example.com"></label>
-      <fieldset class="plugin-addons"><legend>Add to your free ${esc(p.name)}?</legend>
+      ${options ? `<fieldset class="plugin-addons"><legend>Want more with your free ${esc(p.name)}?</legend>
         <label><input type="radio" name="addon" value="" checked> No thanks, just the free ${esc(p.name)}</label>
-        ${b ? `<label class="plugin-addon-best"><input type="radio" name="addon" value="${esc(b.id)}" data-price="${b.addon_price_cents}">
-          <strong>Every plug-in for ${price(b.addon_price_cents)}</strong>${separately > b.addon_price_cents ? ` <span>(${price(separately)} separately)</span>` : ''}</label>` : ''}
-        ${s.length ? `<label><input type="radio" name="addon" value="single"> Add a synth or any plug-in for
-          <select name="single">${s.map((x) => `<option value="${esc(x.id)}" data-price="${x.addon_price_cents}">${esc(x.name)} · ${price(x.addon_price_cents)}</option>`).join('')}</select></label>` : ''}
-      </fieldset>
+        ${options}
+      </fieldset>` : ''}
       <button type="submit" class="plugin-buy">Get it free</button>
-      <p class="plugin-trial">Your licence key and download links arrive by e-mail. Add-ons are paid securely by card, Apple Pay or Google Pay.</p></form>`;
+      <p class="plugin-trial">Your licence key and download links arrive by e-mail. Bundles are paid securely by card, Apple Pay or Google Pay.</p></form>`;
   }
 
   function chosen(form) {
-    const pick = form.querySelector('[name=addon]:checked')?.value || '';
-    if (pick !== 'single') return pick ? { id: pick, cents: Number(form.querySelector(`[name=addon][value="${pick}"]`).dataset.price) } : null;
-    const option = form.querySelector('[name=single]').selectedOptions[0];
-    return { id: option.value, cents: Number(option.dataset.price) };
+    const id = form.querySelector('[name=addon]:checked')?.value || '';
+    if (!id) return null;
+    const b = products.find((p) => p.id === id);
+    return { id, cents: b.price_cents, pick: b.pick, choice: b.pick ? pickedIn(form.querySelector(`[data-for="${id}"]`)) : [] };
   }
 
-  function saving(p) {
-    const list = singles().filter((s) => p.includes.includes(s.id));
-    const separately = list.reduce((sum, s) => sum + s.price_cents, 0);
-    return separately > p.price_cents ? `<p class="plugin-saving">${price(separately)} separately · save ${price(separately - p.price_cents)}</p>` : '';
+  function label(form) {
+    const addon = chosen(form);
+    const button = form.querySelector('button[type=submit]');
+    form.querySelectorAll('.plugin-addon-pick').forEach((d) => { d.hidden = d.dataset.for !== addon?.id; });
+    const waiting = addon?.pick && addon.choice.length !== addon.pick;
+    button.disabled = Boolean(waiting);
+    button.textContent = !addon ? 'Get it free' : waiting ? `Choose ${addon.pick}` : `Continue · ${price(addon.cents)}`;
   }
 
-  // After the free Armoury: one plug-in at the single price, or everything for the bundle price.
+  // After the free product: offer the bundles again (they reopen its checkout).
   function offer(freeId) {
-    const s = singles(), b = bundle();
-    if (!s.length) return '';
-    const one = Math.min(...s.map((x) => x.addon_price_cents));
+    const list = bundles();
+    if (!list.length) return '';
     return `<div class="plugin-offer"><p class="eyebrow">Your key is on its way</p>
-      <h3>Add more to your Armoury</h3>
-      <p>Add any SoundBunker plug-in for ${price(one)}${b ? `, or every one of them for ${price(b.addon_price_cents)}${b.addon_price_cents < b.price_cents ? ` (Armoury users only, normally ${price(b.price_cents)})` : ''}` : ''}.</p>
-      <div class="plugin-actions">
-        ${b ? `<button type="button" class="plugin-buy" data-buy="${esc(b.id)}" data-with-free="${esc(freeId)}">Get everything · ${price(b.addon_price_cents)}</button>` : ''}
-        <a class="plugin-download" href="?offer=${esc(freeId)}#${esc(freeId)}" data-reopen="${esc(freeId)}">Choose one · ${price(one)}</a>
-      </div></div>`;
+      <h3>Want the rest for less?</h3>
+      <p>${list.map((b) => `${b.pick ? `Any ${b.pick} plug-ins` : 'Every plug-in'} for ${price(b.price_cents)} (${price(separately(b))} separately)`).join(', or ')}.</p>
+      <div class="plugin-actions"><a class="plugin-buy" href="?offer=${esc(freeId)}#${esc(freeId)}" data-reopen="${esc(freeId)}">See the bundles</a></div></div>`;
+  }
+
+  async function checkout(body) {
+    const r = await fetch('/api/licence?action=checkout', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+    const d = await r.json();
+    if (!r.ok || !d.url) throw new Error(d.error || 'Checkout is not available right now.');
+    location.href = d.url;
   }
 
   async function claim(form) {
@@ -85,15 +109,9 @@
     const addon = chosen(form);
     button.disabled = true;
     button.textContent = addon ? 'Opening checkout...' : 'Sending...';
+    $('#pluginMessage').textContent = '';
     try {
-      if (addon) {
-        const r = await fetch('/api/licence?action=checkout', { method: 'POST', headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ product: addon.id, with_free: id, email: input.value }) });
-        const d = await r.json();
-        if (!r.ok || !d.url) throw new Error(d.error || 'Checkout is not available right now.');
-        location.href = d.url;
-        return;
-      }
+      if (addon) return await checkout({ product: addon.id, choice: addon.choice, email: input.value });
       const r = await fetch('/api/licence?action=claim', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ product: id, email: input.value }) });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || 'That did not work. Please try again.');
@@ -101,25 +119,39 @@
       form.insertAdjacentHTML('afterend', `<div data-claimed><p class="plugin-trial">Done: check ${esc(input.value)} for your key and downloads (and the spam folder, just in case).</p>${offer(id)}</div>`);
     } catch (e) {
       $('#pluginMessage').textContent = e.message;
-      button.disabled = false;
       label(form);
     }
   }
 
-  async function buy(id, button, withFree) {
+  async function buy(id, button) {
+    const cardEl = button.closest('.plugin-card');
+    const choice = cardEl ? pickedIn(cardEl) : [];
     button.disabled = true;
     button.textContent = 'Opening checkout...';
     $('#pluginMessage').textContent = '';
     try {
-      const r = await fetch('/api/licence?action=checkout', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ product: id, ...(withFree ? { with_free: withFree } : {}) }) });
-      const d = await r.json();
-      if (!r.ok || !d.url) throw new Error(d.error || 'Checkout is not available right now.');
-      location.href = d.url;
+      await checkout({ product: id, ...(choice.length ? { choice } : {}) });
     } catch (e) {
       $('#pluginMessage').textContent = e.message;
       button.disabled = false;
       button.textContent = 'Buy licence';
     }
+  }
+
+  // Opens the free product's checkout; withOffer pre-selects the first bundle (from the offer or the e-mail link).
+  function openFree(id, withOffer) {
+    const form = document.querySelector(`[data-claim-form="${id}"]`);
+    if (!form) return;
+    document.querySelector(`[data-claim="${id}"]`)?.setAttribute('hidden', '');
+    form.parentElement.querySelector('[data-claimed]')?.remove();
+    form.hidden = false;
+    if (withOffer) {
+      const best = form.querySelector('.plugin-addon-best input');
+      if (best) best.checked = true;
+    }
+    label(form);
+    form.scrollIntoView({ block: 'center' });
+    form.querySelector('[name=email]').focus();
   }
 
   async function load() {
@@ -140,7 +172,7 @@
 
   document.addEventListener('click', (e) => {
     const b = e.target.closest('[data-buy]');
-    if (b) buy(b.dataset.buy, b, b.dataset.withFree);
+    if (b && !b.disabled) buy(b.dataset.buy, b);
     const get = e.target.closest('[data-get-free]');
     if (get) { e.preventDefault(); openFree(get.dataset.getFree, false); }
     const again = e.target.closest('[data-reopen]');
@@ -148,37 +180,30 @@
     const c = e.target.closest('[data-claim]');
     if (c) openFree(c.dataset.claim, false);
   });
-  // Opens the free product's checkout; withAddon pre-selects the first paid add-on (from the offer or the e-mail link).
-  function openFree(id, withAddon) {
-    const form = document.querySelector(`[data-claim-form="${id}"]`);
-    if (!form) return;
-    document.querySelector(`[data-claim="${id}"]`)?.setAttribute('hidden', '');
-    form.parentElement.querySelector('[data-claimed]')?.remove();
-    form.hidden = false;
-    if (withAddon) {
-      const best = form.querySelector('.plugin-addon-best input') || form.querySelector('[name=addon][value=single]');
-      if (best) best.checked = true;
-      label(form);
-    }
-    form.scrollIntoView({ block: 'center' });
-    form.querySelector('[name=email]').focus();
-  }
 
-  function label(form) {
-    const addon = chosen(form);
-    form.querySelector('button[type=submit]').textContent = addon ? `Continue · ${price(addon.cents)}` : 'Get it free';
-  }
   document.addEventListener('change', (e) => {
+    const set = e.target.closest('.plugin-picker');
+    if (set) {
+      // At most N ticks; the card's buy button wakes up at exactly N.
+      const n = Number(set.dataset.pick), ticked = set.querySelectorAll('input:checked');
+      if (ticked.length > n) e.target.checked = false;
+      if (set.dataset.scope === 'card') {
+        const button = set.closest('.plugin-card').querySelector('[data-buy]');
+        const count = set.querySelectorAll('input:checked').length;
+        button.disabled = count !== n;
+        button.textContent = count === n ? 'Buy licence' : `Choose ${n - count} more`;
+      }
+    }
     const form = e.target.closest('[data-claim-form]');
-    if (!form) return;
-    if (e.target.name === 'single') form.querySelector('[name=addon][value=single]').checked = true;
-    label(form);
+    if (form) label(form);
   });
+
   document.addEventListener('submit', (e) => {
     const form = e.target.closest('[data-claim-form]');
     if (!form) return;
     e.preventDefault();
     claim(form);
   });
+
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', load, { once: true }); else load();
 })();

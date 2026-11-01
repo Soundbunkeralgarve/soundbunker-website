@@ -84,15 +84,21 @@ export async function pluginRequest(body, db = licenceDB()) {
 
 //------------------------------------------------------------------------------------------------------------------
 // Shop
-const addonPrice = (p) => (p.addon_price_cents > 0 ? p.addon_price_cents : p.price_cents);
 const publicProduct = (p) => ({ id: p.id, name: p.name, tagline: p.tagline, price_cents: p.price_cents, free: p.free === true,
-  addon_price_cents: addonPrice(p), seats: p.seats,
+  pick: p.pick || null, seats: p.seats,
   includes: p.includes, version: p.version, mac_download: p.mac_download || null, windows_download: p.windows_download || null,
   for_sale: p.active === true });
 
 export async function listProducts(db = licenceDB()) {
   const rows = await checked(db.from('plugin_products').select('*').order('sort'), 'load the plug-ins');
   return rows.map(publicProduct);
+}
+
+// What a licence for product p unlocks: its own list, or for a "pick N" bundle the buyer's choice from that list.
+function pickedPlugins(p, choice) {
+  if (!p.pick) return p.includes;
+  const ids = [...new Set(String(choice || '').split(',').map((s) => s.trim()).filter(Boolean))];
+  return ids.length === p.pick && ids.every((id) => p.includes.includes(id)) ? ids : null;
 }
 
 async function stripe(path, form, idempotencyKey) {
@@ -108,20 +114,18 @@ async function stripe(path, form, idempotencyKey) {
   return data;
 }
 
-// withFree: a free product claimed in the same checkout (the Armoury's checkout offers a paid add-on). Stripe only sees
-// the paid item; the free licence is created with it after payment.
-export async function createCheckout({ productId, email, userId, withFree }, db = licenceDB(), stripeCall = stripe) {
+// Every paid order also gets the free product (the Armoury), unless the order already includes it. Stripe only sees the
+// paid item; the free licence is created with it after payment.
+export async function createCheckout({ productId, email, userId, choice }, db = licenceDB(), stripeCall = stripe) {
   if (!PRODUCT.test(productId || '')) return { error: 'Unknown plug-in' };
   const p = await checked(db.from('plugin_products').select('*').eq('id', productId).maybeSingle(), 'load the plug-in');
   if (p?.free) return { error: `${p.name} is free: enter your e-mail address to get it.` };
-  let free = null;
-  const addon = Boolean(withFree);   // bought from the free Armoury's checkout: add-on price
-  if (withFree) {
-    free = PRODUCT.test(withFree) ? await checked(db.from('plugin_products').select('*').eq('id', withFree).maybeSingle(), 'load the plug-in') : null;
-    if (!free?.free || !free.active) return { error: 'Unknown free plug-in' };
-    if (p?.includes?.includes(free.id)) free = null;   // the bundle already contains it
-  }
   if (!p || !p.active || !(p.price_cents > 0)) return { error: `${p?.name || 'This plug-in'} is not on sale yet.` };
+  const picked = pickedPlugins(p, Array.isArray(choice) ? choice.join(',') : choice);
+  if (!picked) return { error: `Choose ${p.pick} different plug-ins for the ${p.name}.` };
+  const free = (await checked(db.from('plugin_products').select('*').eq('free', true).eq('active', true), 'load the plug-ins'))
+    .find((f) => !picked.includes(f.id)) || null;
+  const names = p.pick ? (await productRows(db, picked)).map((x) => x.name).join(', ') + '. ' : '';
   const form = new URLSearchParams({
     mode: 'payment',
     success_url: `${base()}/plugin-success.html?session_id={CHECKOUT_SESSION_ID}`,
@@ -131,14 +135,14 @@ export async function createCheckout({ productId, email, userId, withFree }, db 
     customer_creation: 'always',
     'line_items[0][quantity]': '1',
     'line_items[0][price_data][currency]': 'eur',
-    'line_items[0][price_data][unit_amount]': String(addon ? addonPrice(p) : p.price_cents),
+    'line_items[0][price_data][unit_amount]': String(p.price_cents),
     'line_items[0][price_data][product_data][name]': `${p.name} licence`,
-    'line_items[0][price_data][product_data][description]': `${p.tagline}. macOS and Windows, ${p.seats} computers.${free ? ` Includes your free ${free.name}.` : ''} Licence key e-mailed instantly. VAT included.`,
+    'line_items[0][price_data][product_data][description]': `${names}${p.tagline}. macOS and Windows, ${p.seats} computers.${free ? ` ${free.name} included free.` : ''} Licence keys e-mailed instantly. VAT included.`,
     'custom_text[submit][message]': 'Your licence key is delivered by e-mail as soon as you pay. By paying you ask for immediate delivery and accept that the right of withdrawal ends once the licence is activated.',
     'metadata[purchase_type]': 'plugin_licence',
     'metadata[plugin_product]': p.id,
+    'metadata[choice]': p.pick ? picked.join(',') : '',
     'metadata[free_product]': free?.id || '',
-    'metadata[addon]': addon ? '1' : '',
     'metadata[user_id]': userId || '',
     'payment_intent_data[metadata][purchase_type]': 'plugin_licence',
     'payment_intent_data[metadata][plugin_product]': p.id
@@ -167,19 +171,18 @@ export async function claimFree({ productId, email, userId }, db = licenceDB(), 
   return { ok: true };
 }
 
-// The offer shown to people who took the free Armoury: any one plug-in, or every plug-in, at the add-on prices. The link
-// reopens the free product's checkout, where those prices apply.
+// The offer in the free product's e-mail: the bundles, against buying the plug-ins one by one.
 async function upsellText(db, freeId) {
   const rows = await checked(db.from('plugin_products').select('*').eq('active', true).order('sort'), 'load the plug-ins');
   const single = rows.filter((p) => !p.free && p.includes.length === 1);
-  const complete = rows.find((p) => p.includes.length > 1);
+  const bundles = rows.filter((p) => !p.free && p.includes.length > 1).sort((a, b) => a.price_cents - b.price_cents);
   if (!single.length) return '';
-  const one = Math.min(...single.map(addonPrice));
-  const separately = single.reduce((sum, p) => sum + p.price_cents, 0);
-  const deal = complete && addonPrice(complete) < complete.price_cents;
-  return `\n\nWant more? Add any SoundBunker plug-in for ${money(one)}: ${single.map((p) => p.name).join(', ')}.` +
-    (complete ? ` Or get every one of them for ${money(addonPrice(complete))}${deal ? `, an Armoury-user price (normally ${money(complete.price_cents)}, ${money(separately)} separately)` : ` (${money(separately)} separately)`}.` : '') +
-    ` ${base()}/plugins.html?offer=${freeId}#${freeId}`;
+  const each = Math.min(...single.map((p) => p.price_cents));
+  const offers = bundles.map((b) => b.pick
+    ? `any ${b.pick} for ${money(b.price_cents)} (instead of ${money(b.pick * each)})`
+    : `all ${single.length} for ${money(b.price_cents)} (instead of ${money(single.length * each)})`);
+  return `\n\nWant more? Every other SoundBunker plug-in (${single.map((p) => p.name).join(', ')}) is ${money(each)}` +
+    (offers.length ? `, or ${offers.join(', or ')}` : '') + `: ${base()}/plugins.html?offer=${freeId}#${freeId}`;
 }
 
 //------------------------------------------------------------------------------------------------------------------
@@ -189,14 +192,15 @@ export async function fulfilPluginCheckout(checkout, db = licenceDB(), { send = 
   if (meta.purchase_type !== 'plugin_licence' || checkout.payment_status !== 'paid') throw new Error('Not a paid plug-in checkout');
   const p = await checked(db.from('plugin_products').select('*').eq('id', meta.plugin_product).maybeSingle(), 'load the plug-in');
   if (!p) throw new Error('Paid plug-in not found');
-  const expected = meta.addon === '1' ? addonPrice(p) : p.price_cents;
-  if (checkout.currency !== 'eur' || checkout.amount_subtotal !== expected) throw new Error('Plug-in payment does not match the price');
+  if (checkout.currency !== 'eur' || checkout.amount_subtotal !== p.price_cents) throw new Error('Plug-in payment does not match the price');
+  const picked = pickedPlugins(p, meta.choice);
+  if (!picked) throw new Error('Plug-in bundle choice is invalid');
   const email = checkout.customer_details?.email || checkout.customer_email;
   if (!email) throw new Error('Plug-in buyer e-mail missing');
 
   let licence = await checked(db.from('plugin_licences').select('*').eq('stripe_session_id', checkout.id).maybeSingle(), 'look up the licence');
   if (!licence) {
-    const row = { licence_key: newLicenceKey(), product_id: p.id, includes: p.includes, seats: p.seats, email,
+    const row = { licence_key: newLicenceKey(), product_id: p.id, includes: picked, seats: p.seats, email,
       user_id: /^[0-9a-f-]{36}$/.test(meta.user_id || '') ? meta.user_id : null,
       source: checkout.livemode === true ? 'stripe' : 'stripe-test', stripe_session_id: checkout.id,
       stripe_payment_intent: typeof checkout.payment_intent === 'string' ? checkout.payment_intent : checkout.payment_intent?.id || null,

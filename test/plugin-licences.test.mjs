@@ -192,28 +192,26 @@ test('browsers cannot read or call the licence tables', async () => {
   } finally { await db.close(); }
 });
 
-test('prices: Armoury free; plug-ins EUR 25 everywhere; everything EUR 69 (EUR 49 add-on)', async () => {
+test('prices: Armoury free; plug-ins EUR 25; any 3 EUR 45; everything EUR 59', async () => {
   const db = await database({ asShipped: true });
   try {
     const products = Object.fromEntries((await listProducts(client(db))).map((p) => [p.id, p]));
     assert.equal(products.armoury.free, true); assert.equal(products.armoury.for_sale, true);
     for (const id of ['nuclear', 'napalm', 'shrapnel', 'fallout', 'sentinel', 'recon']) {
       assert.equal(products[id].price_cents, 2500, id);
-      assert.equal(products[id].addon_price_cents, 2500, id);
+      assert.equal(products[id].for_sale, true, id);
     }
-    assert.equal(products.napalm.for_sale, true);
-    assert.equal(products.napalm.price_cents, 2500);
-    assert.equal(products.complete.price_cents, 6900);
-    assert.equal(products.complete.addon_price_cents, 4900);
+    assert.equal(products.pack3.price_cents, 4500); assert.equal(products.pack3.pick, 3);
+    assert.equal(products.pack3.includes.length, 6);
+    assert.equal(products.complete.price_cents, 5900);
     assert.equal(products.complete.includes.length, 7);
   } finally { await db.close(); }
 });
 
-test('free Armoury: e-mailed key, one licence per address, upsell in the e-mail', async () => {
-  const db = await database();
+test('free Armoury: e-mailed key, one licence per address, bundles offered in the e-mail', async () => {
+  const db = await database({ asShipped: true });
   const sb = client(db);
   try {
-    await db.exec("update plugin_products set price_cents = 2500, addon_price_cents = null where id <> 'complete' and not free; update plugin_products set price_cents = 4900, addon_price_cents = null where id = 'complete';");
     const sent = [];
     const opts = { send: async (mail) => { sent.push(mail); } };
     assert.match((await claimFree({ productId: 'armoury', email: 'nope' }, sb, opts)).error, /valid e-mail/);
@@ -224,11 +222,9 @@ test('free Armoury: e-mailed key, one licence per address, upsell in the e-mail'
     assert.equal(rows.length, 1, 'claiming again re-sends the same key');
     assert.equal(rows[0].source, 'free'); assert.equal(rows[0].email, 'fan@example.com');
     assert.equal(sent.length, 2);
-    assert.equal(sent[0].to, 'fan@example.com');
     assert.match(sent[0].subject, /free SoundBunker Armoury/);
     assert.ok(sent[0].text.includes(rows[0].licence_key));
-    assert.match(sent[0].text, /any SoundBunker plug-in for €25\.00/, 'no add-on price set: normal price');
-    assert.match(sent[0].text, /every one of them for €49\.00 \(€150\.00 separately\)/);
+    assert.match(sent[0].text, /is €25\.00, or any 3 for €45\.00 \(instead of €75\.00\), or all 6 for €59\.00 \(instead of €150\.00\)/);
     assert.match(sent[0].text, /plugins\.html\?offer=armoury#armoury/);
     const key = rows[0].licence_key;
     assert.equal((await ask(sb, { action: 'activate', product: 'armoury', machine: m(1), key })).ok, true, 'free key activates the Armoury');
@@ -236,34 +232,44 @@ test('free Armoury: e-mailed key, one licence per address, upsell in the e-mail'
   } finally { await db.close(); }
 });
 
-test('free Armoury checkout with an add-on: add-on price, both licences', async () => {
-  const db = await database();
+test('every paid order includes the free Armoury; the 3-Pack unlocks the chosen three', async () => {
+  const db = await database({ asShipped: true });
   const sb = client(db);
   try {
-    await db.exec("update plugin_products set price_cents = 2500, addon_price_cents = 1900 where id = 'nuclear'; update plugin_products set price_cents = 6900, addon_price_cents = 4900 where id = 'complete';");
     let form;
     const stripe = async (path, f) => { form = f; return { url: 'https://checkout.stripe.com/x' }; };
-    await createCheckout({ productId: 'nuclear', email: 'fan@example.com', withFree: 'armoury' }, sb, stripe);
-    assert.equal(form.get('line_items[0][price_data][unit_amount]'), '1900');
+    await createCheckout({ productId: 'nuclear', email: 'fan@example.com' }, sb, stripe);
+    assert.equal(form.get('line_items[0][price_data][unit_amount]'), '2500');
+    assert.equal(form.get('metadata[free_product]'), 'armoury', 'single plug-in: Armoury added free');
+    assert.match(form.get('line_items[0][price_data][product_data][description]'), /SoundBunker Armoury included free/);
+    await createCheckout({ productId: 'complete' }, sb, stripe);
+    assert.equal(form.get('line_items[0][price_data][unit_amount]'), '5900');
+    assert.equal(form.get('metadata[free_product]'), '', 'Complete already contains the Armoury');
+
+    assert.match((await createCheckout({ productId: 'pack3', choice: ['nuclear', 'napalm'] }, sb, stripe)).error, /Choose 3/);
+    assert.match((await createCheckout({ productId: 'pack3', choice: ['nuclear', 'nuclear', 'napalm'] }, sb, stripe)).error, /Choose 3/);
+    assert.match((await createCheckout({ productId: 'pack3', choice: ['nuclear', 'napalm', 'armoury'] }, sb, stripe)).error, /Choose 3/);
+    await createCheckout({ productId: 'pack3', choice: ['nuclear', 'napalm', 'fallout'] }, sb, stripe);
+    assert.equal(form.get('line_items[0][price_data][unit_amount]'), '4500');
+    assert.equal(form.get('metadata[choice]'), 'nuclear,napalm,fallout');
     assert.equal(form.get('metadata[free_product]'), 'armoury');
-    assert.equal(form.get('metadata[addon]'), '1');
-    await createCheckout({ productId: 'nuclear' }, sb, stripe);
-    assert.equal(form.get('line_items[0][price_data][unit_amount]'), '2500', 'normal price outside the free checkout');
-    await createCheckout({ productId: 'complete', withFree: 'armoury' }, sb, stripe);
-    assert.equal(form.get('line_items[0][price_data][unit_amount]'), '4900');
-    assert.equal(form.get('metadata[free_product]'), '', 'the bundle already contains the Armoury');
-    assert.match((await createCheckout({ productId: 'nuclear', withFree: 'fallout' }, sb, stripe)).error, /free plug-in/);
+    assert.match(form.get('line_items[0][price_data][product_data][description]'), /^NUCLEAR, NAPALM, FALLOUT\./);
 
     const sent = [];
     const opts = { send: async (mail) => { sent.push(mail); }, invoice: async () => ({ queued: true }) };
-    const checkout = { id: 'cs_live_addon', livemode: true, payment_status: 'paid', currency: 'eur', amount_subtotal: 1900, amount_total: 1900,
-      payment_intent: 'pi_addon', customer_details: { email: 'fan@example.com' },
-      metadata: { purchase_type: 'plugin_licence', plugin_product: 'nuclear', free_product: 'armoury', addon: '1' } };
+    const checkout = { id: 'cs_live_pack', livemode: true, payment_status: 'paid', currency: 'eur', amount_subtotal: 4500, amount_total: 4500,
+      payment_intent: 'pi_pack', customer_details: { email: 'fan@example.com' },
+      metadata: { purchase_type: 'plugin_licence', plugin_product: 'pack3', choice: 'nuclear,napalm,fallout', free_product: 'armoury' } };
     await fulfilPluginCheckout(checkout, sb, opts);
-    const rows = (await db.query('select product_id, source from plugin_licences order by product_id')).rows;
-    assert.deepEqual(rows.map((r) => `${r.product_id}:${r.source}`), ['armoury:free', 'nuclear:stripe']);
-    const freeMail = sent.find((m) => /free SoundBunker Armoury/.test(m.subject));
-    assert.ok(freeMail && !/Want more/.test(freeMail.text), 'no upsell right after buying');
-    await assert.rejects(fulfilPluginCheckout({ ...checkout, id: 'cs_live_x', metadata: { ...checkout.metadata, addon: '' } }, sb, opts), /does not match/);
+    const rows = (await db.query('select product_id, source, includes from plugin_licences order by product_id')).rows;
+    assert.deepEqual(rows.map((r) => `${r.product_id}:${r.source}:${r.includes.join('+')}`), ['armoury:free:armoury', 'pack3:stripe:nuclear+napalm+fallout']);
+    const key = (await db.query("select licence_key from plugin_licences where product_id = 'pack3'")).rows[0].licence_key;
+    assert.equal((await ask(sb, { action: 'activate', product: 'napalm', machine: m(1), key })).ok, true, 'a chosen plug-in activates');
+    assert.equal((await ask(sb, { action: 'activate', product: 'sentinel', machine: m(1), key })).error, 'wrong_product', 'an unchosen one does not');
+    const freeMail = sent.find((x) => /free SoundBunker Armoury/.test(x.subject));
+    assert.ok(freeMail && !/Want more/.test(freeMail.text), 'no sales pitch right after buying');
+    assert.ok(sent.some((x) => /SoundBunker 3-Pack licence key/.test(x.subject) && /unlocks NUCLEAR, NAPALM, FALLOUT/.test(x.text)));
+    await assert.rejects(fulfilPluginCheckout({ ...checkout, id: 'cs_live_x', metadata: { ...checkout.metadata, choice: 'nuclear,sentinel' } }, sb, opts), /choice is invalid/);
+    await assert.rejects(fulfilPluginCheckout({ ...checkout, id: 'cs_live_y', amount_subtotal: 2500 }, sb, opts), /does not match/);
   } finally { await db.close(); }
 });

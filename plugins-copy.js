@@ -50,10 +50,18 @@ window.SB_PLUGIN_COPY = {
   "alt": "Recon — SoundBunker Field recorder + sampler product artwork."
  },
  "complete": {
-  "category": "Every SoundBunker plug-in",
-  "tagline": "The full SoundBunker range.",
+  "category": "Everything",
+  "tagline": "Every SoundBunker plug-in, for less than three.",
   "description": "Explore the full SoundBunker audio plugin range.",
   "best_for": "",
   "alt": "Overview of the SoundBunker audio plugin range."
+ },
+ "pack3": {
+  "category": "Pick any 3",
+  "tagline": "Your three, your way.",
+  "description": "Choose any three of NUCLEAR, NAPALM, SHRAPNEL, FALLOUT, SENTINEL and RECON. Each works on 2 computers, Mac and Windows mixed.",
+  "best_for": "",
+  "alt": "",
+  "image": false
  }
 };

@@ -86,3 +86,13 @@
   .plugin-bundle .plugin-card-image img { width: 100%; margin: 0; border-radius: 10px; max-height: none; }
 }
 @media (max-width: 620px) { #armoury { grid-column: auto; } }
+
+/* 3-Pack picker and the free Armoury note */
+.plugin-picker { border: 1px solid rgba(255, 255, 255, .15); border-radius: 10px; padding: 10px 12px; margin: 4px 0 0; display: flex; flex-wrap: wrap; gap: 8px 14px; }
+.plugin-picker legend { padding: 0 6px; font-weight: 600; }
+.plugin-picker label { display: inline-flex; gap: 6px; align-items: center; }
+.plugin-buy:disabled { opacity: .55; cursor: not-allowed; }
+.plugin-free-note { color: #c8a24a; font-weight: 600; font-size: .95rem; }
+.plugin-addon-pick { padding-left: 24px; }
+.plugin-pick { border-color: rgba(200, 162, 74, .5); }
+@media (min-width: 860px) { .plugin-bundle.plugin-pick { display: flex; flex-direction: column; } }

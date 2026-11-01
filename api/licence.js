@@ -43,7 +43,7 @@ export default async function handler(request, response) {
       const user = await optionalUser(request);
       const email = validEmail(body.email) ? String(body.email).trim() : user?.email;
       const result = await createCheckout({ productId: String(body.product || ''), email, userId: user?.id,
-        withFree: body.with_free ? String(body.with_free) : undefined });
+        choice: Array.isArray(body.choice) ? body.choice.map(String).slice(0, 10) : undefined });
       return json(response, result, result.error ? 400 : 200);
     }
     if (action === 'claim') {
