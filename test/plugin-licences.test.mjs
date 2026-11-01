@@ -7,7 +7,7 @@ import { PGlite } from '@electric-sql/pglite';
 const { privateKey } = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
 const pem = privateKey.export({ type: 'pkcs8', format: 'pem' });
 process.env.LICENCE_PRIVATE_KEY_B64 = Buffer.from(pem).toString('base64');
-const { pluginRequest, fulfilPluginCheckout, revokeForPayment, createCheckout } = await import('../api/lib/plugin-licences.js');
+const { pluginRequest, fulfilPluginCheckout, revokeForPayment, createCheckout, claimFree, listProducts } = await import('../api/lib/plugin-licences.js');
 const { verifyToken } = await import('../api/lib/licence-token.js');
 const publicPem = crypto.createPublicKey(pem).export({ type: 'spki', format: 'pem' });
 
@@ -37,6 +37,7 @@ function client(db) {
       let op = 'select', values = null, single = false, maybe = false;
       const q = {
         select() { return q; },
+        order() { return q; },
         eq(c, v) { params.push(v); where.push(`${c} = $${params.length}`); return q; },
         in(c, v) { params.push(v); where.push(`${c} = any($${params.length})`); return q; },
         is(c) { where.push(`${c} is null`); return q; },
@@ -137,7 +138,8 @@ test('checkout, fulfilment, e-mail and refunds', async () => {
   const db = await database();
   const sb = client(db);
   try {
-    assert.match((await createCheckout({ productId: 'nuclear' }, sb, async () => assert.fail('no Stripe call'))).error, /not on sale/);
+    assert.match((await createCheckout({ productId: 'napalm' }, sb, async () => assert.fail('no Stripe call'))).error, /not on sale/);
+    assert.match((await createCheckout({ productId: 'armoury' }, sb, async () => assert.fail('no Stripe call'))).error, /free/);
     let form;
     const made = await createCheckout({ productId: 'fallout', email: 'buyer@example.com' }, sb, async (path, f) => { form = f; return { url: 'https://checkout.stripe.com/x' }; });
     assert.equal(made.url, 'https://checkout.stripe.com/x');
@@ -185,5 +187,76 @@ test('browsers cannot read or call the licence tables', async () => {
       await assert.rejects(db.query(`select sb_plugin_trial('fallout', '${m(1)}')`), /permission denied/);
       await db.exec('reset role;');
     }
+  } finally { await db.close(); }
+});
+
+test('prices: Armoury free, plug-ins EUR 25, everything EUR 49', async () => {
+  const db = await database();
+  try {
+    await db.exec("update plugin_products set price_cents = 2500 where id = 'fallout'; update plugin_products set price_cents = 4900 where id = 'complete';");
+    const products = Object.fromEntries((await listProducts(client(db))).map((p) => [p.id, p]));
+    assert.equal(products.armoury.free, true); assert.equal(products.armoury.for_sale, true);
+    for (const id of ['nuclear', 'shrapnel', 'fallout', 'sentinel', 'recon']) assert.equal(products[id].price_cents, 2500, id);
+    assert.equal(products.napalm.for_sale, false, 'NAPALM waits for its release');
+    assert.equal(products.complete.price_cents, 4900);
+    assert.equal(products.complete.includes.length, 7);
+  } finally { await db.close(); }
+});
+
+test('free Armoury: e-mailed key, one licence per address, upsell in the e-mail', async () => {
+  const db = await database();
+  const sb = client(db);
+  try {
+    await db.exec("update plugin_products set price_cents = 2500 where id <> 'complete' and not free; update plugin_products set price_cents = 4900 where id = 'complete';");
+    const sent = [];
+    const opts = { send: async (mail) => { sent.push(mail); } };
+    assert.match((await claimFree({ productId: 'armoury', email: 'nope' }, sb, opts)).error, /valid e-mail/);
+    assert.match((await claimFree({ productId: 'fallout', email: 'a@example.com' }, sb, opts)).error, /not free/);
+    assert.deepEqual(await claimFree({ productId: 'armoury', email: ' Fan@Example.com ' }, sb, opts), { ok: true });
+    assert.deepEqual(await claimFree({ productId: 'armoury', email: 'fan@example.com' }, sb, opts), { ok: true });
+    const rows = (await db.query("select * from plugin_licences")).rows;
+    assert.equal(rows.length, 1, 'claiming again re-sends the same key');
+    assert.equal(rows[0].source, 'free'); assert.equal(rows[0].email, 'fan@example.com');
+    assert.equal(sent.length, 2);
+    assert.equal(sent[0].to, 'fan@example.com');
+    assert.match(sent[0].subject, /free SoundBunker Armoury/);
+    assert.ok(sent[0].text.includes(rows[0].licence_key));
+    assert.match(sent[0].text, /any SoundBunker plug-in for €25\.00/);
+    assert.match(sent[0].text, /every one of them for €49\.00 \(€125\.00 separately\)/);
+    const key = rows[0].licence_key;
+    assert.equal((await ask(sb, { action: 'activate', product: 'armoury', machine: m(1), key })).ok, true, 'free key activates the Armoury');
+    assert.equal((await ask(sb, { action: 'activate', product: 'fallout', machine: m(1), key })).error, 'wrong_product');
+  } finally { await db.close(); }
+});
+
+test('free Armoury checkout with an add-on: add-on price, both licences', async () => {
+  const db = await database();
+  const sb = client(db);
+  try {
+    await db.exec("update plugin_products set price_cents = 2500, addon_price_cents = 1900 where id = 'nuclear'; update plugin_products set price_cents = 6900, addon_price_cents = 4900 where id = 'complete';");
+    let form;
+    const stripe = async (path, f) => { form = f; return { url: 'https://checkout.stripe.com/x' }; };
+    await createCheckout({ productId: 'nuclear', email: 'fan@example.com', withFree: 'armoury' }, sb, stripe);
+    assert.equal(form.get('line_items[0][price_data][unit_amount]'), '1900');
+    assert.equal(form.get('metadata[free_product]'), 'armoury');
+    assert.equal(form.get('metadata[addon]'), '1');
+    await createCheckout({ productId: 'nuclear' }, sb, stripe);
+    assert.equal(form.get('line_items[0][price_data][unit_amount]'), '2500', 'normal price outside the free checkout');
+    await createCheckout({ productId: 'complete', withFree: 'armoury' }, sb, stripe);
+    assert.equal(form.get('line_items[0][price_data][unit_amount]'), '4900');
+    assert.equal(form.get('metadata[free_product]'), '', 'the bundle already contains the Armoury');
+    assert.match((await createCheckout({ productId: 'nuclear', withFree: 'fallout' }, sb, stripe)).error, /free plug-in/);
+
+    const sent = [];
+    const opts = { send: async (mail) => { sent.push(mail); }, invoice: async () => ({ queued: true }) };
+    const checkout = { id: 'cs_live_addon', livemode: true, payment_status: 'paid', currency: 'eur', amount_subtotal: 1900, amount_total: 1900,
+      payment_intent: 'pi_addon', customer_details: { email: 'fan@example.com' },
+      metadata: { purchase_type: 'plugin_licence', plugin_product: 'nuclear', free_product: 'armoury', addon: '1' } };
+    await fulfilPluginCheckout(checkout, sb, opts);
+    const rows = (await db.query('select product_id, source from plugin_licences order by product_id')).rows;
+    assert.deepEqual(rows.map((r) => `${r.product_id}:${r.source}`), ['armoury:free', 'nuclear:stripe']);
+    const freeMail = sent.find((m) => /free SoundBunker Armoury/.test(m.subject));
+    assert.ok(freeMail && !/Want more/.test(freeMail.text), 'no upsell right after buying');
+    await assert.rejects(fulfilPluginCheckout({ ...checkout, id: 'cs_live_x', metadata: { ...checkout.metadata, addon: '' } }, sb, opts), /does not match/);
   } finally { await db.close(); }
 });

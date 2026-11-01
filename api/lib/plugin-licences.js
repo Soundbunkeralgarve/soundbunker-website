@@ -84,7 +84,9 @@ export async function pluginRequest(body, db = licenceDB()) {
 
 //------------------------------------------------------------------------------------------------------------------
 // Shop
-const publicProduct = (p) => ({ id: p.id, name: p.name, tagline: p.tagline, price_cents: p.price_cents, seats: p.seats,
+const addonPrice = (p) => (p.addon_price_cents > 0 ? p.addon_price_cents : p.price_cents);
+const publicProduct = (p) => ({ id: p.id, name: p.name, tagline: p.tagline, price_cents: p.price_cents, free: p.free === true,
+  addon_price_cents: addonPrice(p), seats: p.seats,
   includes: p.includes, version: p.version, mac_download: p.mac_download || null, windows_download: p.windows_download || null,
   for_sale: p.active === true });
 
@@ -106,9 +108,19 @@ async function stripe(path, form, idempotencyKey) {
   return data;
 }
 
-export async function createCheckout({ productId, email, userId }, db = licenceDB(), stripeCall = stripe) {
+// withFree: a free product claimed in the same checkout (the Armoury's checkout offers a paid add-on). Stripe only sees
+// the paid item; the free licence is created with it after payment.
+export async function createCheckout({ productId, email, userId, withFree }, db = licenceDB(), stripeCall = stripe) {
   if (!PRODUCT.test(productId || '')) return { error: 'Unknown plug-in' };
   const p = await checked(db.from('plugin_products').select('*').eq('id', productId).maybeSingle(), 'load the plug-in');
+  if (p?.free) return { error: `${p.name} is free: enter your e-mail address to get it.` };
+  let free = null;
+  const addon = Boolean(withFree);   // bought from the free Armoury's checkout: add-on price
+  if (withFree) {
+    free = PRODUCT.test(withFree) ? await checked(db.from('plugin_products').select('*').eq('id', withFree).maybeSingle(), 'load the plug-in') : null;
+    if (!free?.free || !free.active) return { error: 'Unknown free plug-in' };
+    if (p?.includes?.includes(free.id)) free = null;   // the bundle already contains it
+  }
   if (!p || !p.active || !(p.price_cents > 0)) return { error: `${p?.name || 'This plug-in'} is not on sale yet.` };
   const form = new URLSearchParams({
     mode: 'payment',
@@ -119,12 +131,14 @@ export async function createCheckout({ productId, email, userId }, db = licenceD
     customer_creation: 'always',
     'line_items[0][quantity]': '1',
     'line_items[0][price_data][currency]': 'eur',
-    'line_items[0][price_data][unit_amount]': String(p.price_cents),
+    'line_items[0][price_data][unit_amount]': String(addon ? addonPrice(p) : p.price_cents),
     'line_items[0][price_data][product_data][name]': `${p.name} licence`,
-    'line_items[0][price_data][product_data][description]': `${p.tagline}. macOS and Windows, ${p.seats} computers. Licence key e-mailed instantly. VAT included.`,
+    'line_items[0][price_data][product_data][description]': `${p.tagline}. macOS and Windows, ${p.seats} computers.${free ? ` Includes your free ${free.name}.` : ''} Licence key e-mailed instantly. VAT included.`,
     'custom_text[submit][message]': 'Your licence key is delivered by e-mail as soon as you pay. By paying you ask for immediate delivery and accept that the right of withdrawal ends once the licence is activated.',
     'metadata[purchase_type]': 'plugin_licence',
     'metadata[plugin_product]': p.id,
+    'metadata[free_product]': free?.id || '',
+    'metadata[addon]': addon ? '1' : '',
     'metadata[user_id]': userId || '',
     'payment_intent_data[metadata][purchase_type]': 'plugin_licence',
     'payment_intent_data[metadata][plugin_product]': p.id
@@ -134,6 +148,36 @@ export async function createCheckout({ productId, email, userId }, db = licenceD
   return { url: session.url };
 }
 
+// Free products (the Armoury): the key goes by e-mail, which proves the address. One licence per address and product;
+// claiming again re-sends the same key.
+export async function claimFree({ productId, email, userId }, db = licenceDB(), opts) {
+  email = String(email || '').trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 200) return { error: 'Enter a valid e-mail address.' };
+  if (!PRODUCT.test(productId || '')) return { error: 'Unknown plug-in' };
+  const p = await checked(db.from('plugin_products').select('*').eq('id', productId).maybeSingle(), 'load the plug-in');
+  if (!p || !p.free || !p.active) return { error: 'This plug-in is not free.' };
+  const address = email.trim().toLowerCase();
+  let licence = (await checked(db.from('plugin_licences').select('*').eq('product_id', p.id).eq('source', 'free').eq('email', address), 'look up the licence'))[0];
+  if (!licence) {
+    licence = await checked(db.from('plugin_licences').insert({ licence_key: newLicenceKey(), product_id: p.id, includes: p.includes,
+      seats: p.seats, email: address, source: 'free', user_id: /^[0-9a-f-]{36}$/.test(userId || '') ? userId : null })
+      .select('*').single(), 'create the licence');
+  }
+  await sendLicenceEmail(licence, db, { ...opts, key: `plugin-free-${licence.id}-${new Date().toISOString().slice(0, 13)}` });
+  return { ok: true };
+}
+
+// The offer shown to people who took the free Armoury: any one plug-in, or every plug-in for less than two.
+async function upsellText(db) {
+  const rows = await checked(db.from('plugin_products').select('*').eq('active', true).order('sort'), 'load the plug-ins');
+  const single = rows.filter((p) => !p.free && p.includes.length === 1);
+  const complete = rows.find((p) => p.includes.length > 1);
+  if (!single.length) return '';
+  const price = Math.min(...single.map((p) => p.price_cents));
+  return `\n\nWant more? Add any SoundBunker plug-in for ${money(price)}: ${single.map((p) => p.name).join(', ')}.` +
+    (complete ? ` Or get every one of them for ${money(complete.price_cents)} (${money(single.length * price)} separately): ${base()}/plugins.html#${complete.id}` : ` ${base()}/plugins.html`);
+}
+
 //------------------------------------------------------------------------------------------------------------------
 // After payment (Stripe webhook). Safe to run again for the same checkout: one licence per checkout, e-mails keyed.
 export async function fulfilPluginCheckout(checkout, db = licenceDB(), { send = sendTransactionalEmail, invoice = sendPluginLicenceInvoice } = {}) {
@@ -141,7 +185,8 @@ export async function fulfilPluginCheckout(checkout, db = licenceDB(), { send = 
   if (meta.purchase_type !== 'plugin_licence' || checkout.payment_status !== 'paid') throw new Error('Not a paid plug-in checkout');
   const p = await checked(db.from('plugin_products').select('*').eq('id', meta.plugin_product).maybeSingle(), 'load the plug-in');
   if (!p) throw new Error('Paid plug-in not found');
-  if (checkout.currency !== 'eur' || checkout.amount_subtotal !== p.price_cents) throw new Error('Plug-in payment does not match the price');
+  const expected = meta.addon === '1' ? addonPrice(p) : p.price_cents;
+  if (checkout.currency !== 'eur' || checkout.amount_subtotal !== expected) throw new Error('Plug-in payment does not match the price');
   const email = checkout.customer_details?.email || checkout.customer_email;
   if (!email) throw new Error('Plug-in buyer e-mail missing');
 
@@ -160,6 +205,7 @@ export async function fulfilPluginCheckout(checkout, db = licenceDB(), { send = 
   }
 
   await sendLicenceEmail(licence, db, { send, key: `plugin-licence-${checkout.id}` });
+  if (meta.free_product) await claimFree({ productId: meta.free_product, email, userId: licence.user_id }, db, { send, upsell: false });
   await send({ to: studio(), key: `plugin-licence-studio-${checkout.id}`, subject: `Plug-in sold · ${p.name} · ${money(checkout.amount_total)}`,
     text: `${p.name} licence sold${checkout.livemode === true ? '' : ' (Stripe TEST payment)'}.\n\nBuyer: ${email}\nPaid: ${money(checkout.amount_total)}\nKey: ${licence.licence_key}\n\nAdmin: ${base()}/plugin-admin.html` });
   const invoiced = checkout.livemode === true ? await invoice(checkout, p, email) : { skipped: true, reason: 'Test payment' };
@@ -171,17 +217,19 @@ async function productRows(db, ids) {
   return ids.map((id) => rows.find((r) => r.id === id)).filter(Boolean);
 }
 
-export async function sendLicenceEmail(licence, db = licenceDB(), { send = sendTransactionalEmail, key } = {}) {
+export async function sendLicenceEmail(licence, db = licenceDB(), opts = {}) {
+  const { send = sendTransactionalEmail, key } = opts;
   const [product] = await productRows(db, [licence.product_id]);
   const plugins = await productRows(db, licence.includes);
   const downloads = plugins.map((p) => `${p.name}\n   macOS:   ${p.mac_download || `${base()}/plugins.html#${p.id}`}\n   Windows: ${p.windows_download || `${base()}/plugins.html#${p.id}`}`).join('\n\n');
-  const body = `Hi,\n\nThank you for buying ${product.name}.\n\nYour licence key:\n\n    ${licence.licence_key}\n\n` +
+  const body = `Hi,\n\n${product.free ? `Here is your free copy of ${product.name}.` : `Thank you for buying ${product.name}.`}\n\nYour licence key:\n\n    ${licence.licence_key}\n\n` +
     `It works on ${licence.seats} computers (macOS and Windows, mixed as you like)${plugins.length > 1 ? ` and unlocks ${plugins.map((p) => p.name).join(', ')}` : ''}.\n\n` +
     `1. Download and install:\n\n${downloads}\n\n` +
     `2. Open the plug-in in your DAW (or the standalone app), paste the key into the activation window and press ACTIVATE. It needs the internet once; after that it works offline.\n\n` +
     `Moving to a new computer? Press DEACTIVATE THIS COMPUTER in the plug-in first, or remove the old computer in your Client Area: ${base()}/client#my-plugins\n\n` +
-    `Your key is also saved in your Client Area (sign in or register with ${licence.email}).\n\nSoundBunker Algarve`;
-  await send({ to: licence.email, key: key || `plugin-licence-resend-${licence.id}-${Date.now()}`, subject: `Your ${product.name} licence key`, text: body });
+    `Your key is also saved in your Client Area (sign in or register with ${licence.email}).` +
+    (product.free && opts.upsell !== false ? await upsellText(db) : '') + `\n\nSoundBunker Algarve`;
+  await send({ to: licence.email, key: key || `plugin-licence-resend-${licence.id}-${Date.now()}`, subject: product.free ? `Your free ${product.name} licence key` : `Your ${product.name} licence key`, text: body });
   await db.from('plugin_licences').update({ email_sent_at: new Date().toISOString() }).eq('id', licence.id);
 }
 

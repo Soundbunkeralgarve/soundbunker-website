@@ -1,13 +1,16 @@
 -- SoundBunker plug-in licences: products, licences, computer activations and trials.
 -- Run once in the Supabase SQL editor (safe to run again). Only the website's service role can read or write these tables;
--- the plug-ins and the Client Area go through /api/licence. Prices start at 0 with active = false: set each price and
--- active = true (Table editor > plugin_products) before that product can be sold.
+-- the plug-ins and the Client Area go through /api/licence. Prices include IVA: the Armoury is free (claimed with an
+-- e-mail address), each other plug-in is EUR 25 and SoundBunker Complete (every plug-in) is EUR 49. Change prices or
+-- switch a product off in Table editor > plugin_products (active = false hides the Buy button).
 
 create table if not exists plugin_products (
   id text primary key check (id ~ '^[a-z0-9-]{2,40}$'),
   name text not null,
   tagline text not null default '',
   price_cents integer not null default 0 check (price_cents >= 0),
+  free boolean not null default false,          -- claimed with an e-mail address instead of bought
+  addon_price_cents integer check (addon_price_cents > 0),   -- price when added in the free Armoury's checkout (null: price_cents)
   currency text not null default 'eur' check (currency = 'eur'),
   seats integer not null default 2 check (seats between 1 and 10),
   includes text[] not null,                      -- plug-in ids this purchase unlocks (a bundle lists several)
@@ -17,20 +20,21 @@ create table if not exists plugin_products (
   sort integer not null default 100,
   active boolean not null default false,
   updated_at timestamptz not null default now(),
-  constraint plugin_products_sellable check (not active or price_cents > 0),
+  constraint plugin_products_sellable check (not active or free or price_cents > 0),
   constraint plugin_products_includes check (cardinality(includes) >= 1)
 );
 
-insert into plugin_products (id, name, tagline, includes, sort) values
-  ('armoury',  'SoundBunker Armoury', '11 mix and master effects',                  array['armoury'], 10),
-  ('nuclear',  'NUCLEAR',             'Wavetable synthesiser',                      array['nuclear'], 20),
-  ('napalm',   'NAPALM',              'Virtual analogue synthesiser',               array['napalm'], 30),
-  ('shrapnel', 'SHRAPNEL',            'Drum machine and sample instrument',         array['shrapnel'], 40),
-  ('fallout',  'FALLOUT',             'Extreme saturation',                         array['fallout'], 50),
-  ('sentinel', 'SENTINEL',            'Precision mastering console',                array['sentinel'], 60),
-  ('recon',    'RECON',               'Sampler with iPhone and Android capture',    array['recon'], 70),
-  ('complete', 'SoundBunker Complete', 'Every SoundBunker plug-in',
-     array['armoury','nuclear','napalm','shrapnel','fallout','sentinel','recon'], 5)
+-- NAPALM starts switched off (version 0.1.0); turn it on when its installers are published.
+insert into plugin_products (id, name, tagline, price_cents, free, includes, sort, active) values
+  ('armoury',  'SoundBunker Armoury', '11 mix and master effects',               0,    true,  array['armoury'], 10, true),
+  ('nuclear',  'NUCLEAR',             'Wavetable synthesiser',                   2500, false, array['nuclear'], 20, true),
+  ('napalm',   'NAPALM',              'Virtual analogue synthesiser',            2500, false, array['napalm'], 30, false),
+  ('shrapnel', 'SHRAPNEL',            'Drum machine and sample instrument',      2500, false, array['shrapnel'], 40, true),
+  ('fallout',  'FALLOUT',             'Extreme saturation',                      2500, false, array['fallout'], 50, true),
+  ('sentinel', 'SENTINEL',            'Precision mastering console',             2500, false, array['sentinel'], 60, true),
+  ('recon',    'RECON',               'Sampler with iPhone and Android capture', 2500, false, array['recon'], 70, true),
+  ('complete', 'SoundBunker Complete', 'Every SoundBunker plug-in',              4900, false,
+     array['armoury','nuclear','napalm','shrapnel','fallout','sentinel','recon'], 5, true)
 on conflict (id) do nothing;
 
 create table if not exists plugin_licences (
@@ -42,7 +46,7 @@ create table if not exists plugin_licences (
   email text not null,
   user_id uuid,
   status text not null default 'active' check (status in ('active', 'revoked', 'refunded')),
-  source text not null default 'stripe' check (source in ('stripe', 'stripe-test', 'admin')),
+  source text not null default 'stripe' check (source in ('stripe', 'stripe-test', 'admin', 'free')),
   stripe_session_id text unique,
   stripe_payment_intent text,
   amount_cents integer,
