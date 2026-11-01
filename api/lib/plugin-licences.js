@@ -167,15 +167,18 @@ export async function claimFree({ productId, email, userId }, db = licenceDB(), 
   return { ok: true };
 }
 
-// The offer shown to people who took the free Armoury: any one plug-in, or every plug-in for less than two.
-async function upsellText(db) {
+// The offer shown to people who took the free Armoury: any one plug-in, or every plug-in, at the add-on prices. The link
+// reopens the free product's checkout, where those prices apply.
+async function upsellText(db, freeId) {
   const rows = await checked(db.from('plugin_products').select('*').eq('active', true).order('sort'), 'load the plug-ins');
   const single = rows.filter((p) => !p.free && p.includes.length === 1);
   const complete = rows.find((p) => p.includes.length > 1);
   if (!single.length) return '';
-  const price = Math.min(...single.map((p) => p.price_cents));
-  return `\n\nWant more? Add any SoundBunker plug-in for ${money(price)}: ${single.map((p) => p.name).join(', ')}.` +
-    (complete ? ` Or get every one of them for ${money(complete.price_cents)} (${money(single.length * price)} separately): ${base()}/plugins.html#${complete.id}` : ` ${base()}/plugins.html`);
+  const one = Math.min(...single.map(addonPrice));
+  const separately = single.reduce((sum, p) => sum + p.price_cents, 0);
+  return `\n\nWant more? As an Armoury user you can add any SoundBunker plug-in for ${money(one)}: ${single.map((p) => p.name).join(', ')}.` +
+    (complete ? ` Or get every one of them for ${money(addonPrice(complete))} (${money(separately)} separately).` : '') +
+    ` ${base()}/plugins.html?offer=${freeId}#${freeId}`;
 }
 
 //------------------------------------------------------------------------------------------------------------------
@@ -228,7 +231,7 @@ export async function sendLicenceEmail(licence, db = licenceDB(), opts = {}) {
     `2. Open the plug-in in your DAW (or the standalone app), paste the key into the activation window and press ACTIVATE. It needs the internet once; after that it works offline.\n\n` +
     `Moving to a new computer? Press DEACTIVATE THIS COMPUTER in the plug-in first, or remove the old computer in your Client Area: ${base()}/client#my-plugins\n\n` +
     `Your key is also saved in your Client Area (sign in or register with ${licence.email}).` +
-    (product.free && opts.upsell !== false ? await upsellText(db) : '') + `\n\nSoundBunker Algarve`;
+    (product.free && opts.upsell !== false ? await upsellText(db, product.id) : '') + `\n\nSoundBunker Algarve`;
   await send({ to: licence.email, key: key || `plugin-licence-resend-${licence.id}-${Date.now()}`, subject: product.free ? `Your free ${product.name} licence key` : `Your ${product.name} licence key`, text: body });
   await db.from('plugin_licences').update({ email_sent_at: new Date().toISOString() }).eq('id', licence.id);
 }

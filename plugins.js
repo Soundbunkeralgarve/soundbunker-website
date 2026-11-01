@@ -61,16 +61,16 @@
   }
 
   // After the free Armoury: one plug-in at the single price, or everything for the bundle price.
-  function offer() {
+  function offer(freeId) {
     const s = singles(), b = bundle();
     if (!s.length) return '';
-    const one = Math.min(...s.map((x) => x.price_cents));
+    const one = Math.min(...s.map((x) => x.addon_price_cents));
     return `<div class="plugin-offer"><p class="eyebrow">Your key is on its way</p>
       <h3>Add more to your Armoury</h3>
-      <p>Any SoundBunker plug-in for ${price(one)}${b ? `, or every one of them for ${price(b.price_cents)}` : ''}.</p>
+      <p>Armoury users only: any SoundBunker plug-in for ${price(one)}${b ? `, or every one of them for ${price(b.addon_price_cents)} (normally ${price(b.price_cents)})` : ''}.</p>
       <div class="plugin-actions">
-        ${b ? `<button type="button" class="plugin-buy" data-buy="${esc(b.id)}">Get everything · ${price(b.price_cents)}</button>` : ''}
-        <a class="plugin-download" href="#pluginGrid" data-pick>Choose one · ${price(one)}</a>
+        ${b ? `<button type="button" class="plugin-buy" data-buy="${esc(b.id)}" data-with-free="${esc(freeId)}">Get everything · ${price(b.addon_price_cents)}</button>` : ''}
+        <a class="plugin-download" href="?offer=${esc(freeId)}#${esc(freeId)}" data-reopen="${esc(freeId)}">Choose one · ${price(one)}</a>
       </div></div>`;
   }
 
@@ -91,7 +91,8 @@
       const r = await fetch('/api/licence?action=claim', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ product: id, email: input.value }) });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || 'That did not work. Please try again.');
-      form.outerHTML = `<p class="plugin-trial">Done: check ${esc(input.value)} for your key and downloads (and the spam folder, just in case).</p>${offer()}`;
+      form.hidden = true;
+      form.insertAdjacentHTML('afterend', `<div data-claimed><p class="plugin-trial">Done: check ${esc(input.value)} for your key and downloads (and the spam folder, just in case).</p>${offer(id)}</div>`);
     } catch (e) {
       $('#pluginMessage').textContent = e.message;
       button.disabled = false;
@@ -99,12 +100,12 @@
     }
   }
 
-  async function buy(id, button) {
+  async function buy(id, button, withFree) {
     button.disabled = true;
     button.textContent = 'Opening checkout...';
     $('#pluginMessage').textContent = '';
     try {
-      const r = await fetch('/api/licence?action=checkout', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ product: id }) });
+      const r = await fetch('/api/licence?action=checkout', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ product: id, ...(withFree ? { with_free: withFree } : {}) }) });
       const d = await r.json();
       if (!r.ok || !d.url) throw new Error(d.error || 'Checkout is not available right now.');
       location.href = d.url;
@@ -122,7 +123,9 @@
       if (!r.ok) throw new Error(d.error);
       products = d.products || [];
       $('#pluginGrid').innerHTML = products.map(card).join('');
-      if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView({ block: 'center' });
+      const offerFor = new URLSearchParams(location.search).get('offer');
+      if (offerFor) openFree(offerFor, true);
+      else if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView({ block: 'center' });
     } catch {
       $('#pluginGrid').innerHTML = '<article class="plugin-card plugin-loading">The plug-ins could not be loaded just now. Please refresh in a moment.</article>';
     }
@@ -130,15 +133,28 @@
 
   document.addEventListener('click', (e) => {
     const b = e.target.closest('[data-buy]');
-    if (b) buy(b.dataset.buy, b);
+    if (b) buy(b.dataset.buy, b, b.dataset.withFree);
+    const again = e.target.closest('[data-reopen]');
+    if (again) { e.preventDefault(); openFree(again.dataset.reopen, true); }
     const c = e.target.closest('[data-claim]');
-    if (c) {
-      const form = document.querySelector(`[data-claim-form="${c.dataset.claim}"]`);
-      form.hidden = false;
-      c.hidden = true;
-      form.querySelector('[name=email]').focus();
-    }
+    if (c) openFree(c.dataset.claim, false);
   });
+  // Opens the free product's checkout; withAddon pre-selects the first paid add-on (from the offer or the e-mail link).
+  function openFree(id, withAddon) {
+    const form = document.querySelector(`[data-claim-form="${id}"]`);
+    if (!form) return;
+    document.querySelector(`[data-claim="${id}"]`)?.setAttribute('hidden', '');
+    form.parentElement.querySelector('[data-claimed]')?.remove();
+    form.hidden = false;
+    if (withAddon) {
+      const best = form.querySelector('.plugin-addon-best input') || form.querySelector('[name=addon][value=single]');
+      if (best) best.checked = true;
+      label(form);
+    }
+    form.scrollIntoView({ block: 'center' });
+    form.querySelector('[name=email]').focus();
+  }
+
   function label(form) {
     const addon = chosen(form);
     form.querySelector('button[type=submit]').textContent = addon ? `Continue · ${price(addon.cents)}` : 'Get it free';

@@ -1,8 +1,9 @@
 -- SoundBunker plug-in licences: products, licences, computer activations and trials.
 -- Run once in the Supabase SQL editor (safe to run again). Only the website's service role can read or write these tables;
--- the plug-ins and the Client Area go through /api/licence. Prices include IVA: the Armoury is free (claimed with an
--- e-mail address), each other plug-in is EUR 25 and SoundBunker Complete (every plug-in) is EUR 49. Change prices or
--- switch a product off in Table editor > plugin_products (active = false hides the Buy button).
+-- the plug-ins and the Client Area go through /api/licence. Prices include IVA. The Armoury is free (claimed with an
+-- e-mail address); each other plug-in is EUR 25 in the shop and EUR 19 as an add-on in the free Armoury's checkout;
+-- SoundBunker Complete (every plug-in) is EUR 69 in the shop and EUR 49 as that add-on. Change prices or switch a
+-- product off in Table editor > plugin_products (active = false hides the Buy button).
 
 create table if not exists plugin_products (
   id text primary key check (id ~ '^[a-z0-9-]{2,40}$'),
@@ -25,15 +26,15 @@ create table if not exists plugin_products (
 );
 
 -- NAPALM starts switched off (version 0.1.0); turn it on when its installers are published.
-insert into plugin_products (id, name, tagline, price_cents, free, includes, sort, active) values
-  ('armoury',  'SoundBunker Armoury', '11 mix and master effects',               0,    true,  array['armoury'], 10, true),
-  ('nuclear',  'NUCLEAR',             'Wavetable synthesiser',                   2500, false, array['nuclear'], 20, true),
-  ('napalm',   'NAPALM',              'Virtual analogue synthesiser',            2500, false, array['napalm'], 30, false),
-  ('shrapnel', 'SHRAPNEL',            'Drum machine and sample instrument',      2500, false, array['shrapnel'], 40, true),
-  ('fallout',  'FALLOUT',             'Extreme saturation',                      2500, false, array['fallout'], 50, true),
-  ('sentinel', 'SENTINEL',            'Precision mastering console',             2500, false, array['sentinel'], 60, true),
-  ('recon',    'RECON',               'Sampler with iPhone and Android capture', 2500, false, array['recon'], 70, true),
-  ('complete', 'SoundBunker Complete', 'Every SoundBunker plug-in',              4900, false,
+insert into plugin_products (id, name, tagline, price_cents, addon_price_cents, free, includes, sort, active) values
+  ('armoury',  'SoundBunker Armoury', '11 mix and master effects',               0,    null, true,  array['armoury'], 10, true),
+  ('nuclear',  'NUCLEAR',             'Wavetable synthesiser',                   2500, 1900, false, array['nuclear'], 20, true),
+  ('napalm',   'NAPALM',              'Virtual analogue synthesiser',            2500, 1900, false, array['napalm'], 30, false),
+  ('shrapnel', 'SHRAPNEL',            'Drum machine and sample instrument',      2500, 1900, false, array['shrapnel'], 40, true),
+  ('fallout',  'FALLOUT',             'Extreme saturation',                      2500, 1900, false, array['fallout'], 50, true),
+  ('sentinel', 'SENTINEL',            'Precision mastering console',             2500, 1900, false, array['sentinel'], 60, true),
+  ('recon',    'RECON',               'Sampler with iPhone and Android capture', 2500, 1900, false, array['recon'], 70, true),
+  ('complete', 'SoundBunker Complete', 'Every SoundBunker plug-in',              6900, 4900, false,
      array['armoury','nuclear','napalm','shrapnel','fallout','sentinel','recon'], 5, true)
 on conflict (id) do nothing;
 

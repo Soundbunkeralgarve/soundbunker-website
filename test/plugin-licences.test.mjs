@@ -13,11 +13,11 @@ const publicPem = crypto.createPublicKey(pem).export({ type: 'spki', format: 'pe
 
 const m = (n) => crypto.createHash('sha256').update(`machine-${n}`).digest('hex');
 
-async function database() {
+async function database({ asShipped = false } = {}) {
   const db = new PGlite();
   await db.exec('create role anon; create role authenticated; create role service_role;');
   await db.exec(await readFile(new URL('../SUPABASE_PLUGIN_LICENCES.sql', import.meta.url), 'utf8'));
-  await db.exec("update plugin_products set price_cents = 4900, active = true where id in ('fallout', 'complete');");
+  if (!asShipped) await db.exec("update plugin_products set price_cents = 4900, active = true where id = 'fallout';");
   return db;
 }
 
@@ -190,15 +190,18 @@ test('browsers cannot read or call the licence tables', async () => {
   } finally { await db.close(); }
 });
 
-test('prices: Armoury free, plug-ins EUR 25, everything EUR 49', async () => {
-  const db = await database();
+test('prices: Armoury free; plug-ins EUR 25 (EUR 19 add-on); everything EUR 69 (EUR 49 add-on)', async () => {
+  const db = await database({ asShipped: true });
   try {
-    await db.exec("update plugin_products set price_cents = 2500 where id = 'fallout'; update plugin_products set price_cents = 4900 where id = 'complete';");
     const products = Object.fromEntries((await listProducts(client(db))).map((p) => [p.id, p]));
     assert.equal(products.armoury.free, true); assert.equal(products.armoury.for_sale, true);
-    for (const id of ['nuclear', 'shrapnel', 'fallout', 'sentinel', 'recon']) assert.equal(products[id].price_cents, 2500, id);
+    for (const id of ['nuclear', 'shrapnel', 'fallout', 'sentinel', 'recon']) {
+      assert.equal(products[id].price_cents, 2500, id);
+      assert.equal(products[id].addon_price_cents, 1900, id);
+    }
     assert.equal(products.napalm.for_sale, false, 'NAPALM waits for its release');
-    assert.equal(products.complete.price_cents, 4900);
+    assert.equal(products.complete.price_cents, 6900);
+    assert.equal(products.complete.addon_price_cents, 4900);
     assert.equal(products.complete.includes.length, 7);
   } finally { await db.close(); }
 });
@@ -207,7 +210,7 @@ test('free Armoury: e-mailed key, one licence per address, upsell in the e-mail'
   const db = await database();
   const sb = client(db);
   try {
-    await db.exec("update plugin_products set price_cents = 2500 where id <> 'complete' and not free; update plugin_products set price_cents = 4900 where id = 'complete';");
+    await db.exec("update plugin_products set price_cents = 2500, addon_price_cents = null where id <> 'complete' and not free; update plugin_products set price_cents = 4900, addon_price_cents = null where id = 'complete';");
     const sent = [];
     const opts = { send: async (mail) => { sent.push(mail); } };
     assert.match((await claimFree({ productId: 'armoury', email: 'nope' }, sb, opts)).error, /valid e-mail/);
@@ -221,8 +224,9 @@ test('free Armoury: e-mailed key, one licence per address, upsell in the e-mail'
     assert.equal(sent[0].to, 'fan@example.com');
     assert.match(sent[0].subject, /free SoundBunker Armoury/);
     assert.ok(sent[0].text.includes(rows[0].licence_key));
-    assert.match(sent[0].text, /any SoundBunker plug-in for €25\.00/);
+    assert.match(sent[0].text, /any SoundBunker plug-in for €25\.00/, 'no add-on price set: normal price');
     assert.match(sent[0].text, /every one of them for €49\.00 \(€125\.00 separately\)/);
+    assert.match(sent[0].text, /plugins\.html\?offer=armoury#armoury/);
     const key = rows[0].licence_key;
     assert.equal((await ask(sb, { action: 'activate', product: 'armoury', machine: m(1), key })).ok, true, 'free key activates the Armoury');
     assert.equal((await ask(sb, { action: 'activate', product: 'fallout', machine: m(1), key })).error, 'wrong_product');
