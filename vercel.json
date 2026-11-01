@@ -133,6 +133,10 @@
   ],
   "rewrites": [
     {
+      "source": "/plugins",
+      "destination": "/plugins.html"
+    },
+    {
       "source": "/retreats",
       "destination": "/retreats.html"
     },

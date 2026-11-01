@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Plug-in licences | SoundBunker admin</title>
+  <link rel="icon" href="favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="client-gifts.css">
+  <link rel="stylesheet" href="plugins.css?v=20261101">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="plugin-admin.js?v=20261101" defer></script>
+</head>
+<body class="portal-bg plugin-store">
+  <main>
+    <section class="plugin-hero">
+      <p class="eyebrow"><a href="admin.html">Admin</a> · Plug-ins</p>
+      <h1>Plug-in licences</h1>
+      <p id="adminStatus" class="plugin-hero-note">Checking your admin sign-in...</p>
+    </section>
+    <section id="adminTools" hidden>
+      <form id="createForm" class="plugin-card">
+        <h2>Create a licence</h2>
+        <p>For beta testers, giveaways or a manual sale. Prices and download links are edited in Supabase (plugin_products).</p>
+        <label>E-mail <input id="createEmail" type="email" required></label>
+        <label>Plug-in <select id="createProduct"></select></label>
+        <label>Computers <input id="createSeats" type="number" min="1" max="10" value="2"></label>
+        <label>Note <input id="createNote" type="text" maxlength="300" placeholder="Beta tester, prize..."></label>
+        <label><input id="createSend" type="checkbox" checked> E-mail the key to them</label>
+        <div class="plugin-actions"><button class="plugin-buy" type="submit">Create licence</button></div>
+      </form>
+      <form id="searchForm" class="plugin-actions" style="margin:24px 0">
+        <input id="search" type="search" placeholder="Search e-mail or key">
+        <button class="plugin-download" type="submit">Search</button>
+      </form>
+      <p id="adminMessage" class="plugin-message" role="status"></p>
+      <div id="licenceList" class="client-plugin-list"></div>
+    </section>
+  </main>
+</body>
+</html>

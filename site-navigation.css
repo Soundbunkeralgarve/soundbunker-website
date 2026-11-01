@@ -49,3 +49,24 @@ html.navigation-open{overflow:hidden}
 @media(max-width:600px){.client-page .client-nav nav{display:grid;grid-template-columns:1fr 1fr;gap:7px}.client-page .client-nav nav a{min-height:44px;font-size:12px}}
 
 .site-header.unified-header .navigation-group-toggle{transform:none!important}
+
+/* Tidy menu (Nov 2026): drawn chevrons and menu icon, grouped Services panel and a separate language menu. */
+.site-header.unified-header .navigation-group-toggle>span.nav-chevron,.site-header.unified-header .navigation-group.is-open>.navigation-group-toggle>span.nav-chevron{display:inline-block;width:7px;height:7px;margin:-4px 0 0 1px;border:solid currentColor;border-width:0 1.6px 1.6px 0;font-size:0;transform:rotate(45deg);transition:transform .15s,margin .15s;opacity:.75}
+.site-header.unified-header .navigation-group.is-open>.navigation-group-toggle>span.nav-chevron{margin-top:3px;transform:rotate(-135deg)}
+.site-header.unified-header .menu-toggle .menu-icon{position:relative;display:inline-block;width:16px;height:2px;background:currentColor;border-radius:2px;box-shadow:0 -5px 0 currentColor,0 5px 0 currentColor}
+.site-header.unified-header .navigation-section+.navigation-section{margin-top:6px;padding-top:6px;border-top:1px solid #4a3456}
+.site-header.unified-header .nav-language .navigation-panel{display:none;left:auto;right:-14px;min-width:190px;margin:0;padding:8px;border:1px solid #62476f;border-radius:10px;flex-direction:column;gap:2px}
+.site-header.unified-header .nav-language.is-open>.navigation-panel{display:flex}
+.site-header.unified-header .nav-language .lang{display:flex;align-items:center;justify-content:flex-start;gap:12px;width:100%;height:auto;min-height:44px;padding:10px 12px;border:0;border-radius:5px;background:transparent;color:#f0e6f6;font-size:13px;font-weight:500;text-align:left}
+.site-header.unified-header .nav-language .lang b{width:22px;color:#c99be4;font-weight:700}
+.site-header.unified-header .nav-language .lang:hover{background:#392246}
+.site-header.unified-header .nav-language .lang.active{background:#392246;color:#fff}
+.site-header.unified-header .nav-language .navigation-group-toggle{padding:10px 2px;font-size:12px;letter-spacing:.06em;color:#dfc5ef}
+@media(max-width:1100px){
+ .site-header.unified-header .nav-language .navigation-group-toggle{font-size:16px;letter-spacing:0;color:inherit}
+ .site-header.unified-header .nav-language .navigation-group-toggle:before{content:'Language';margin-right:auto}
+ .site-header.unified-header .nav-language .nav-language-code{margin-right:10px;color:#c99be4;font-size:14px}
+ .site-header.unified-header .nav-language .navigation-panel{min-width:0;margin:0 0 8px;border-top:0;border-radius:0 0 8px 8px}
+ .site-header.unified-header .nav-mobile-actions{grid-template-columns:1fr}
+}
+@media(min-width:1101px) and (max-width:1240px){.site-header.unified-header .site-nav{gap:17px}.site-header.unified-header .header-actions{gap:14px}}

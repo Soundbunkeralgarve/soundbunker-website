@@ -36,6 +36,7 @@ const agentMocks = Anthropic => ({
   './catalog.js': { isIsoDate: v => /^\d{4}-\d{2}-\d{2}$/.test(v), TIME_ZONE: 'Europe/Lisbon' },
   './site-services.js': { serviceList: () => [{ id: 'recording-2h' }, { id: 'mix-12' }], effectiveSession: async id => ({ 'recording-2h': { name: 'Recording · 2 hours', price: 250, deposit: 100, hours: 2, group: 'recording' }, 'mix-12': { name: 'Mixing', price: 125, deposit: 125, noSlot: true, fullPayment: true, group: 'mixing' } })[id] || null },
   './slot-availability.js': { openSlots: async () => ['10:00', '16:00'] },
+  './plugin-licences.js': { listProducts: async () => [{ id: 'nuclear', name: 'NUCLEAR', price_eur: 25 }] },
   './studio-knowledge.js': { studioKnowledge: 'STUDIO COPY' },
 });
 

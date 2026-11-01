@@ -6,6 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 import { isIsoDate, TIME_ZONE } from './catalog.js';
 import { effectiveSession, serviceList } from './site-services.js';
 import { openSlots } from './slot-availability.js';
+import { listProducts } from './plugin-licences.js';
 import { studioKnowledge } from './studio-knowledge.js';
 
 export const STUDIO_MODEL = process.env.STUDIO_AGENT_MODEL || 'claude-opus-5-5';
@@ -17,6 +18,7 @@ How to answer:
 - Reply in the language the client writes in (English, Portuguese, French, German, Spanish or any other). Switch if they switch.
 - Keep replies short and conversational, like a helpful person at the studio: usually two to five sentences. No markdown headings or tables; on WhatsApp plain text reads best. Short lists are fine.
 - Only state facts that are in the studio information below or that a tool returns. For prices, deposits and what a package includes, call list_services first and quote those figures; they include VAT. Never invent prices, discounts, dates, people's names or policies.
+- For SoundBunker audio plug-ins (Armoury, NUCLEAR, SHRAPNEL, FALLOUT, SENTINEL, NAPALM, RECON and bundles), call list_plugins for current prices and what is on sale; downloads and licences are at https://www.soundbunker.pt/plugins.
 - To answer "is X free on <date>", call check_availability. Bookings are made and paid online: point clients to https://www.soundbunker.pt/#book or the relevant service page. You cannot take payments or confirm bookings yourself.
 - If you do not know, or the question needs a human decision, say so plainly and offer to pass it to the team.
 
@@ -31,6 +33,12 @@ const tools = [
   {
     name: 'list_services',
     description: 'Current bookable services with VAT-inclusive prices, deposits and session length in hours. Use before quoting any price.',
+    input_schema: { type: 'object', properties: {}, additionalProperties: false },
+    strict: true,
+  },
+  {
+    name: 'list_plugins',
+    description: 'SoundBunker audio plug-ins and bundles currently listed in the plug-in shop, with prices in EUR (VAT included) and what each includes.',
     input_schema: { type: 'object', properties: {}, additionalProperties: false },
     strict: true,
   },
@@ -80,6 +88,7 @@ async function runTool(name, input, db) {
     }
     return rows;
   }
+  if (name === 'list_plugins') return listProducts();
   if (name === 'check_availability') {
     if (!isIsoDate(input.date)) return { error: 'Use a date in YYYY-MM-DD format.' };
     const session = await effectiveSession(input.service_id, db || undefined);

@@ -247,3 +247,21 @@ export async function sendSoundBunkerShopInvoice(checkout, db=invoiceDB()) {
     items:[{name:'SoundBunker online order',description:(row.items||[]).map(i=>i.name+' x'+i.quantity).join('; ').slice(0,200),unit_price:Number((row.total_cents/123).toFixed(6)),quantity:1,unit:'unit',tax:{name:'IVA23'}}]},proprietary_uid:'soundbunker-shop-'+checkout.id};
   return queueWebsiteInvoice({brand:'soundbunker',sessionId:checkout.id,body,paidCents:row.total_cents},db);
 }
+
+// Plug-in licence sales: one invoice-receipt per Stripe checkout, same SoundBunker series and VAT as the shop.
+export async function sendPluginLicenceInvoice(checkout, product, email, db=invoiceDB()) {
+  if(checkout.livemode!==true)return {skipped:true,reason:'Test payment'};
+  if(checkout.metadata?.purchase_type!=='plugin_licence'||checkout.payment_status!=='paid'||checkout.currency!=='eur'||!Number.isSafeInteger(checkout.amount_total)||checkout.amount_total<=0)throw Error('Plug-in invoice payment mismatch');
+  const sequences=await ixRequest('/sequences.json');
+  if(!sequences.response.ok)throw Error('Invoice sequence lookup failed');
+  const sequence=(sequences.data?.sequences||[]).find(s=>s.serie==='SoundBunker');
+  if(!sequence?.current_invoice_receipt_sequence_id)throw Error('SoundBunker invoice-receipt sequence is not registered');
+  const details=checkout.customer_details||{},address=details.address||{},taxId=(details.tax_ids||[])[0]?.value,today=ixDate();
+  const body={invoice_receipt:{date:today,due_date:today,sequence_id:String(sequence.current_invoice_receipt_sequence_id),reference:'SoundBunker plug-in '+checkout.id,
+    observations:'SoundBunker plug-in licence: '+product.name+'\nPaid via Stripe: EUR '+(checkout.amount_total/100).toFixed(2),
+    client:{name:details.name||'SoundBunker customer',code:String(email).slice(0,100),email,...(taxId?{fiscal_id:taxId}:{}),
+      ...(address.line1?{address:[address.line1,address.line2].filter(Boolean).join(', ').slice(0,255)}:{}),
+      ...(address.city?{city:address.city}:{}),...(address.postal_code?{postal_code:address.postal_code}:{})},
+    items:[{name:product.name+' licence',description:('Software licence, '+product.seats+' computers, macOS and Windows').slice(0,200),unit_price:Number((checkout.amount_total/123).toFixed(6)),quantity:1,unit:'unit',tax:{name:'IVA23'}}]},proprietary_uid:'soundbunker-plugin-'+checkout.id};
+  return queueWebsiteInvoice({brand:'soundbunker',sessionId:checkout.id,body,paidCents:checkout.amount_total},db);
+}
