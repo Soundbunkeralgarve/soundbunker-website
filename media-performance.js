@@ -25,7 +25,8 @@ if (!mobileScreen.matches && !reducedMotion.matches && !saveData) {
 }
 
 const partyVideo = document.querySelector('.party-video-frame video');
-if (partyVideo && !reducedMotion.matches && !saveData) {
+// Phones keep the poster image: the party loop is 2.8 MB.
+if (partyVideo && !reducedMotion.matches && !saveData && !mobileScreen.matches) {
   if ('IntersectionObserver' in window) {
     const observer = new IntersectionObserver(entries => {
       for (const entry of entries) {

@@ -70,3 +70,5 @@ html.navigation-open{overflow:hidden}
  .site-header.unified-header .nav-mobile-actions{grid-template-columns:1fr}
 }
 @media(min-width:1101px) and (max-width:1240px){.site-header.unified-header .site-nav{gap:17px}.site-header.unified-header .header-actions{gap:14px}}
+.site-header.unified-header .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.site-header.unified-header .nav-external span[aria-hidden]{font-size:.85em;opacity:.7}

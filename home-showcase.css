@@ -1,0 +1,103 @@
+/* Homepage showcase sections restored from the pre-20 Oct homepage. Party banner and voiceover rules are copied
+   from v5-styles.css and the retreats advert from retreat-promo.css; both files also carry old header rules, so the
+   homepage loads only these copies. */
+
+.remote-spotlight{background:#efeaf3;color:#17111d}
+.remote-spotlight-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(38px,7vw,100px);align-items:center}
+.remote-copy h2{font-size:clamp(46px,6vw,82px);line-height:.95;margin:12px 0 28px;color:#17111d}
+.remote-copy>p:not(.eyebrow){font-size:19px;color:#514758;max-width:650px}
+.remote-copy ul{list-style:none;padding:0;margin:30px 0}
+.remote-copy li{padding:14px 0;border-top:1px solid #cfc5d4;font-weight:600}
+.remote-visual{position:relative;min-height:650px;overflow:hidden;background:#1a101f}
+.remote-visual img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.remote-visual span{position:absolute;left:22px;right:22px;bottom:22px;background:#6e20ad;color:#fff;padding:15px 18px;font:600 14px "Space Grotesk";letter-spacing:.06em;text-transform:uppercase}
+.client-wall{margin-top:70px;border-top:1px solid #c8bdce;padding-top:28px}
+.client-wall>p{font:600 13px "Space Grotesk";letter-spacing:.12em;text-transform:uppercase;color:#6d6173}
+.client-logo-grid{display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid #d4cbd8;border-left:1px solid #d4cbd8;margin-top:20px}
+.client-logo-grid>span{min-height:118px;padding:20px;display:flex;align-items:center;justify-content:center;text-align:center;border-right:1px solid #d4cbd8;border-bottom:1px solid #d4cbd8;background:#f8f5fa;color:#161116;font-weight:800}
+.client-logo-grid small{font-size:9px;letter-spacing:.3em}
+.logo-maybelline{font-family:Arial,sans-serif;letter-spacing:.1em}
+.logo-orange{background:#ff7900!important;color:#fff!important;font:700 25px Arial!important;text-transform:lowercase}
+.logo-landrover{font-style:italic;border-radius:50%}
+.logo-bbc{font:800 28px Arial!important;letter-spacing:.12em}
+.logo-amazon{font:700 27px Arial!important;text-transform:lowercase}
+.logo-dolmio{color:#c71926!important;font:900 25px Arial!important}
+.logo-sudocrem{color:#1556a0!important;font:700 24px Georgia!important}
+.logo-redbull{color:#ba1827!important}
+.logo-realmadrid{letter-spacing:.08em}
+.logo-podcast,.logo-therapy{font-family:"Space Grotesk";line-height:1.1}
+.logo-therapy small{letter-spacing:0;font-size:9px}
+.party-home{background:#8c35d8;color:#fff;overflow:hidden}
+.party-home-head{display:grid;grid-template-columns:1.25fr .75fr;gap:60px;align-items:end;margin-bottom:50px}
+.party-home-head h2{font-size:clamp(48px,7vw,92px);line-height:.92;margin:10px 0 0}
+.party-home-head>p{font-size:19px;line-height:1.6}
+.party-home-grid{display:grid;grid-template-columns:1.05fr .95fr;background:#151019}
+.party-video-frame{position:relative;min-height:790px;overflow:hidden}
+.party-video-frame video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.party-video-label{position:absolute;left:20px;right:20px;bottom:20px;padding:14px 16px;display:flex;justify-content:space-between;gap:18px;background:rgba(14,9,17,.86);font-size:13px}
+.party-inclusions{display:grid;grid-template-columns:1fr 1fr}
+.party-inclusions article{padding:32px;border-left:1px solid #3d3144;border-bottom:1px solid #3d3144;min-height:250px}
+.party-inclusions b{display:block;color:#c179ff;margin-bottom:24px}
+.party-inclusions h3{font-size:24px;margin:0 0 12px}
+.party-inclusions p{color:#c9bdcf}
+.party-offer-grid{display:grid;grid-template-columns:1.15fr .75fr 1fr;gap:18px;margin-top:18px}
+.party-main-offer,.party-extras,.party-other{background:#f5eff8;color:#1a131f;padding:34px}
+.party-main-offer>span{display:block;font:600 18px "Space Grotesk"}
+.party-main-offer>strong{display:block;font:700 clamp(64px,8vw,110px) "Space Grotesk";line-height:1;color:#7620b9}
+.party-main-offer ul{padding-left:18px}
+.party-main-offer li{margin:9px 0}
+.party-extras h3,.party-other h3{font-size:27px;margin-top:0}
+.party-extras p{display:flex;justify-content:space-between;gap:15px;padding:16px 0;border-top:1px solid #cfc1d5;margin:0}
+.party-other>strong{font:700 38px "Space Grotesk";color:#7620b9}
+.party-other .button{margin-top:20px;border-color:#7620b9;color:#7620b9}
+@media(max-width:900px){.remote-spotlight-grid,.party-home-head,.party-home-grid,.party-offer-grid{grid-template-columns:1fr}.remote-visual{min-height:560px}.client-logo-grid{grid-template-columns:repeat(3,1fr)}.party-video-frame{min-height:680px}.party-inclusions{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.remote-visual{min-height:500px}.client-logo-grid{grid-template-columns:repeat(2,1fr)}.client-logo-grid>span{min-height:92px;padding:14px;font-size:14px}.party-home-head{gap:20px}.party-video-frame{min-height:620px}.party-inclusions{grid-template-columns:1fr}.party-inclusions article{min-height:0}.party-offer-grid{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.party-video-frame video{display:none}.party-video-frame{background:url('party-poster.jpg') center/cover no-repeat}}
+
+/* Retreats advert */
+.retreat-promo{background:#35204b;border-bottom:1px solid #674884;overflow:hidden}
+.retreat-promo-inner{width:min(1280px,calc(100% - 60px));margin:auto;display:grid;grid-template-columns:1.15fr .85fr;min-height:350px;gap:40px;align-items:center}
+.retreat-promo-copy{padding:42px 0}
+.retreat-promo-copy .retreat-promo-kicker{color:#ddff8b;font-size:.8rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin:0 0 14px}
+.retreat-promo h2{font:600 clamp(2.1rem,3.5vw,3.5rem)/1.06 'Space Grotesk',sans-serif;letter-spacing:-.045em;margin:0 0 16px}
+.retreat-promo h2 span{color:#ddff8b}
+.retreat-promo-copy>p:not(.retreat-promo-kicker){color:#e0d2e9;line-height:1.65;margin:0 0 23px;max-width:650px}
+.retreat-promo-link{display:inline-flex;padding:14px 22px;background:#ddff8b;color:#171024;font-weight:800;border-radius:5px;min-height:48px;align-items:center}
+.retreat-promo-link:hover{background:#ecffba}
+.retreat-promo-link:focus-visible{outline:3px solid #fff;outline-offset:4px}
+.retreat-promo-visual{height:100%;min-height:350px;position:relative}
+.retreat-promo-visual>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 35%}
+.retreat-promo-visual:after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,#35204b,transparent 35%)}
+.retreat-promo-logos{display:flex;gap:22px;align-items:center;margin-top:28px}
+.retreat-promo-logos img{width:130px;height:45px;object-fit:contain;filter:brightness(0) invert(1)}
+.retreat-promo-logos img:nth-child(2){width:70px}
+.retreat-promo-logos img:nth-child(3){width:110px}
+@media(max-width:700px){.retreat-promo-inner{width:100%;grid-template-columns:1fr;gap:0}.retreat-promo-copy{padding:35px 22px}.retreat-promo h2{font-size:2.3rem}.retreat-promo-visual{min-height:220px;grid-row:2}.retreat-promo-visual:after{background:linear-gradient(180deg,#35204b,transparent 35%)}.retreat-promo-logos{gap:22px}.retreat-promo-logos img{width:110px}.retreat-promo-logos img:nth-child(2){width:65px}.retreat-promo-logos img:nth-child(3){width:95px}}
+/* Photography: two-photo collage beside the price list */
+.photo-sales-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(36px,6vw,90px);align-items:center}
+.photo-collage{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+.photo-collage img{width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;border-radius:6px}
+.photo-collage img:nth-child(2){margin-top:60px}
+.photo-lead{font-size:18px;line-height:1.6;color:#5e5661}
+@media(max-width:900px){.photo-sales-grid{grid-template-columns:1fr}.photo-collage img:nth-child(2){margin-top:30px}}
+.photo-table span strong,.photo-table span small{display:block}
+.photo-table span small{margin-top:3px;color:#6d6272;font-size:14px}
+/* The Hub Culture: logo beside the intro, four photo tiles, closing line */
+.hub-intro{display:grid;grid-template-columns:.8fr 1.2fr;gap:clamp(36px,6vw,90px);align-items:center}
+.hub-logo-only img{width:100%;max-width:360px;height:auto;margin-inline:auto}
+.hub-copy p:not(.eyebrow){font-size:18px;line-height:1.6;color:#c8bccf}
+.hub-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.hub-tags span{padding:8px 13px;border:1px solid #ffffff2e;border-radius:999px;font-size:13px;color:#e9ddf0}
+.hub-visual-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:56px}
+.hub-visual{position:relative;min-height:340px;display:flex;align-items:flex-end;padding:22px;border-radius:8px;overflow:hidden;background:#1d1425 center/cover no-repeat}
+.hub-visual:before{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#08050af0,#08050a1a 65%)}
+.hub-visual>span{position:relative}
+.hub-visual strong{display:block;font:700 18px "Space Grotesk",sans-serif;letter-spacing:.04em}
+.hub-visual small{display:block;margin-top:6px;color:#d7cbdd;font-size:13px;line-height:1.45}
+.hub-visual.skate{background-image:url(hub-skate.webp)}
+.hub-visual.street{background-image:url(hub-street-culture.webp)}
+.hub-visual.kids{background-image:url(hub-kids-creativity.webp)}
+.hub-visual.graffiti{background-image:url(hub-art-community.webp)}
+.hub-closer{margin-top:44px;font:600 clamp(24px,3vw,38px) "Space Grotesk",sans-serif;letter-spacing:-.03em;color:#deb2fa;text-align:center}
+@media(max-width:900px){.hub-intro{grid-template-columns:1fr}.hub-logo-only img{max-width:240px}.hub-visual-grid{grid-template-columns:1fr 1fr}.hub-visual{min-height:240px}}
+@media(max-width:520px){.hub-visual-grid{grid-template-columns:1fr}}

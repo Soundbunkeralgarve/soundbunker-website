@@ -23,7 +23,6 @@ const more = [
   ['record-label.html', 'Record label'],
   ['blog.html', 'Studio journal'],
   ['/redeem', 'Redeem a voucher'],
-  ['https://theticketbunker.com', 'The TicketBunker ↗', true],
   ['index.html#contact', 'Contact &amp; directions'],
 ];
 const languageNames = { en: 'English', pt: 'Português', de: 'Deutsch', fr: 'Français' };
@@ -47,7 +46,7 @@ function header(page, { bookHref, languages, basket }) {
 <button class="menu-toggle" type="button" aria-controls="site-nav" aria-expanded="false" aria-label="Open menu"><span>Menu</span><span class="menu-icon" aria-hidden="true"></span></button>
 <nav aria-label="Main navigation" class="site-nav" id="site-nav">
 ${group('services', 'services-submenu', 'services', 'Services', servicesPanel)}
-<a href="hub-academy.html" data-nav-label="academy">Academy</a><a href="/retreats" data-nav-label="retreats">Retreats</a><a href="shop.html" data-nav-label="shop">Shop</a>${hasPlugins ? '<a href="plugins.html" data-nav-label="plugins">Plug-ins</a>' : ''}
+<a href="hub-academy.html" data-nav-label="academy">Academy</a><a href="/retreats" data-nav-label="retreats">Retreats</a><a href="shop.html" data-nav-label="shop">Shop</a>${hasPlugins ? '<a href="plugins.html" data-nav-label="plugins">Plug-ins</a>' : ''}<a href="https://theticketbunker.com" target="_blank" rel="noopener" class="nav-external">TicketBunker <span aria-hidden="true">↗</span><span class="visually-hidden"> (opens The TicketBunker in a new tab)</span></a>
 ${group('more', 'more-submenu', 'more', 'More', more.map(l).join(''))}
 ${languageGroup}
 <div class="nav-mobile-actions"><a class="nav-client" href="client.html" data-nav-label="client">Client area</a></div>
