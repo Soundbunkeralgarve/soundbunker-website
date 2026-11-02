@@ -9,7 +9,9 @@ checks real session availability, and hands over to the team when a person is ne
 - **Website:** an "Ask the studio" button sits bottom-right on every public page. When the
   assistant hands over, the team gets an email with the summary and the client gets a
   "Continue on WhatsApp" button with their request already written.
-- **WhatsApp:** the assistant replies to every client message on the studio number.
+- **WhatsApp:** the assistant replies to every client message on the studio number, about 30 seconds
+  after it arrives (`WHATSAPP_REPLY_DELAY_SECONDS`), with the message marked read and "typing…" shown
+  first. If the client sends several messages in a row, it answers them together in one reply.
 - **Taking over:** reply to the client from the WhatsApp Business app on your phone as normal.
   The moment you send a message, the assistant goes quiet in that chat for 12 hours
   (`STUDIO_CHAT_HUMAN_HOLD_HOURS`). Each handover email also has a link to hand the chat back

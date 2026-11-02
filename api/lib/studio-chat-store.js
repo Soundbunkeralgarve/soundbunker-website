@@ -27,6 +27,13 @@ export async function saveMessage(db, threadId, role, body, externalMessageId) {
   return true;
 }
 
+// WhatsApp id of the client's most recent message, to tell whether they wrote again while a reply was waiting.
+export async function latestClientMessageId(db, threadId) {
+  const { data } = await db.from('studio_chat_messages').select('external_message_id')
+    .eq('thread_id', threadId).eq('role', 'client').order('created_at', { ascending: false }).limit(1);
+  return data?.[0]?.external_message_id || null;
+}
+
 export async function countClientMessagesSince(db, threadId, since) {
   const { count } = await db.from('studio_chat_messages').select('id', { count: 'exact', head: true })
     .eq('thread_id', threadId).eq('role', 'client').gte('created_at', since.toISOString());

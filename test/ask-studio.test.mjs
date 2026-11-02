@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 
 const source = file => readFileSync(new URL(`../${file}`, import.meta.url), 'utf8');
 async function load(file, mocks, env = {}) {
-  const context = vm.createContext({ console: { error() {} }, URL, URLSearchParams, AbortSignal, Buffer, Date, Intl, JSON, Math, Promise, process: { env }, fetch: (...args) => globalThis.fetch(...args) });
+  const context = vm.createContext({ console: { error() {} }, URL, URLSearchParams, AbortSignal, Buffer, Date, Intl, JSON, Math, Promise, process: { env }, setTimeout, fetch: (...args) => globalThis.fetch(...args) });
   const module = new vm.SourceTextModule(source(file), { context });
   await module.link(async spec => {
     if (spec.startsWith('node:')) {
@@ -79,23 +79,25 @@ test('request_human returns the handover and refusals fall back to a safe reply'
 });
 
 // WhatsApp webhook with an in-memory store.
-async function webhook({ held = false, extraEnv = {} } = {}) {
+async function webhook({ held = false, extraEnv = {}, onPause } = {}) {
   const sent = [], saved = [], holds = [], handoffs = [], background = [];
   const thread = { id: '00000000-0000-4000-8000-000000000001', channel: 'whatsapp', human_until: held ? '2999-01-01T00:00:00Z' : null };
   const seen = new Set();
-  const env = { WHATSAPP_APP_SECRET: 'app-secret', WHATSAPP_VERIFY_TOKEN: 'verify-me', WHATSAPP_TOKEN: 'token', WHATSAPP_PHONE_NUMBER_ID: '123', ...extraEnv };
+  const env = { WHATSAPP_APP_SECRET: 'app-secret', WHATSAPP_VERIFY_TOKEN: 'verify-me', WHATSAPP_TOKEN: 'token', WHATSAPP_PHONE_NUMBER_ID: '123', WHATSAPP_REPLY_DELAY_SECONDS: '0', ...extraEnv };
+  let latestClient = null;
   const namespace = await load('api/whatsapp-webhook.js', {
     '@vercel/functions': { waitUntil: promise => background.push(promise) },
     './lib/studio-agent.js': { askStudio: async () => ({ reply: 'Olá! Gravação de 2 horas: €250.', handoff: null }), fallbackReply: () => 'fallback' },
     './lib/studio-chat-store.js': {
       chatDatabase: () => ({}), openThread: async () => thread, isHeldForHuman: t => Boolean(t.human_until),
-      saveMessage: async (db, id, role, body, ext) => { if (ext && seen.has(ext)) return false; if (ext) seen.add(ext); saved.push({ role, body }); return true; },
+      saveMessage: async (db, id, role, body, ext) => { if (ext && seen.has(ext)) return false; if (ext) seen.add(ext); if (role === 'client') latestClient = ext; saved.push({ role, body }); return true; },
+      latestClientMessageId: async () => { await onPause?.(thread); return latestClient; },
       threadHistory: async () => [{ role: 'user', content: 'Olá' }], holdForHuman: async id => holds.push(id), releaseToAssistant: async () => {},
       notifyHandoff: async (...args) => handoffs.push(args), validResumeSignature: () => false,
     },
     './lib/http.js': { readRawBody: async request => request.raw },
   }, env);
-  return { namespace, sent, saved, holds, handoffs, background, env };
+  return { namespace, sent, saved, holds, handoffs, background, env, thread, setLatest: id => { latestClient = id; } };
 }
 const sign = (raw, secret = 'app-secret') => 'sha256=' + createHmac('sha256', secret).update(raw).digest('hex');
 const response = () => { const r = { statusCode: 0, headers: {}, setHeader(k, v) { r.headers[k] = v; }, end(body) { r.body = body; } }; return r; };
@@ -165,4 +167,25 @@ test('360dialog: keyed webhook URL is accepted, a wrong key is refused, and repl
   assert.equal(calls[0].headers['D360-API-KEY'], 'd360-key');
   assert.equal(calls[0].headers.authorization, undefined);
   assert.equal(calls[0].body.to, '351910000000');
+});
+
+test('waits before replying, shows typing, and stays quiet if the team or the client wrote meanwhile', async () => {
+  const realFetch = globalThis.fetch;
+  for (const meanwhile of ['nothing', 'team', 'client']) {
+    let h;
+    let checks = 0;
+    h = await webhook({ extraEnv: { WHATSAPP_REPLY_DELAY_SECONDS: '0.05' }, onPause: thread => {
+      if (++checks === 1 && meanwhile === 'team') thread.human_until = '2999-01-01T00:00:00Z';
+      if (checks === 2 && meanwhile === 'client') h.setLatest('wamid.newer');
+    } });
+    const posts = [];
+    globalThis.fetch = async (url, options) => { posts.push(JSON.parse(options.body)); return { ok: true, json: async () => ({ messages: [{ id: 'wamid.out' }] }) }; };
+    const raw = JSON.stringify({ entry: [{ changes: [{ field: 'messages', value: { messages: [{ from: '351910000000', id: 'wamid.in9', timestamp: String(Math.floor(Date.now() / 1000)), type: 'text', text: { body: 'Hi' } }] } }] }] });
+    await h.namespace.default({ method: 'POST', url: '/api/whatsapp-webhook', headers: { host: 'x', 'x-hub-signature-256': sign(raw) }, raw }, response());
+    await Promise.all(h.background);
+    assert.deepEqual(posts[0], { messaging_product: 'whatsapp', status: 'read', message_id: 'wamid.in9', typing_indicator: { type: 'text' } });
+    assert.equal(posts.length, meanwhile === 'nothing' ? 2 : 1, meanwhile);
+    if (meanwhile === 'nothing') { assert.equal(posts[1].text.body, 'Olá! Gravação de 2 horas: €250.'); }
+  }
+  globalThis.fetch = realFetch;
 });
