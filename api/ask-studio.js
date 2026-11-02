@@ -30,7 +30,7 @@ export default async function handler(request, response) {
     await saveMessage(db, thread.id, 'assistant', reply);
     if (!handoff) return json(response, { reply });
     await notifyHandoff(db, thread, handoff);
-    const note = `Hi SoundBunker! I was chatting with Ask the Studio on your website. ${handoff.summary}`;
+    const note = `Hi SoundBunker!${handoff.client_name ? ` I'm ${handoff.client_name}.` : ''} I was chatting with Ask the Studio on your website. ${handoff.summary}`;
     return json(response, { reply, handoff: true, whatsappUrl: `https://wa.me/${STUDIO_WHATSAPP}?text=${encodeURIComponent(note.slice(0, 900))}` });
   } catch (error) {
     console.error('Ask the Studio failed', error?.constructor?.name, error?.status || '', error?.message);
