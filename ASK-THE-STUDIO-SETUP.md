@@ -32,37 +32,40 @@ checks real session availability, and hands over to the team when a person is ne
 
 ## 2. WhatsApp (keeps your existing number and the Business app)
 
-This uses Meta's WhatsApp Cloud API in **coexistence** mode, so +351 964 895 908 stays in the
-WhatsApp Business app on your phone and you can keep replying from it.
+Meta's own developer dashboard cannot connect a number that stays in the WhatsApp Business app, so the
+studio number is connected through **360dialog** (a Meta WhatsApp partner) in **coexistence** mode.
++351 964 895 908 stays in the WhatsApp Business app on your phone and you keep replying from it.
+Never uninstall the Business app afterwards: that disconnects the number.
 
-1. The number must be on the **WhatsApp Business app** (not personal WhatsApp), up to date.
-2. In https://business.facebook.com make sure SoundBunker has a Meta Business portfolio.
-3. In https://developers.facebook.com → My Apps → Create app → type **Business** → add the
-   **WhatsApp** product.
-4. WhatsApp → API Setup → **Add phone number** → choose to connect your existing WhatsApp
-   Business app number, then follow the QR-code step in the app on your phone.
-5. Create a permanent token: Business settings → Users → System users → add one (Admin) →
-   Generate token for this app with `whatsapp_business_messaging` and
-   `whatsapp_business_management`.
-6. Add to Vercel (Production):
-   - `WHATSAPP_TOKEN`: the system user token
-   - `WHATSAPP_PHONE_NUMBER_ID`: from WhatsApp → API Setup (the ID, not the phone number)
-   - `WHATSAPP_APP_SECRET`: App settings → Basic → App secret
-   - `WHATSAPP_VERIFY_TOKEN`: any long random text you make up
-   - `STUDIO_CHAT_LINK_SECRET`: another long random text (signs the "hand back" links)
-7. Redeploy, then in the app: WhatsApp → Configuration → Webhook:
-   - Callback URL: `https://www.soundbunker.pt/api/whatsapp-webhook`
-   - Verify token: the same `WHATSAPP_VERIFY_TOKEN`
-   - Subscribe to **messages** and **smb_message_echoes** (the second one is how the assistant
-     knows you've replied from the app).
-8. Send a test message to the studio number from another phone.
+1. Sign up at https://hub.360dialog.com and start connecting a number. When asked, choose the option for a
+   number that is **already on the WhatsApp Business app** (coexistence). Log in with Facebook, pick the
+   **SoundBunker** business portfolio, then scan the QR code shown with the WhatsApp Business app.
+2. In the 360dialog Hub, generate the **API key** for the number and save it on this Mac without pasting it
+   anywhere else:
+   ```bash
+   pbpaste > ~/.soundbunker/d360-api-key.txt
+   ```
+3. In Vercel (project **soundbunker-website-fgmk** → Settings → Environment Variables, Production) add:
+   - `D360_API_KEY`: the 360dialog API key
+   - `WHATSAPP_WEBHOOK_KEY`: the contents of `~/.soundbunker/whatsapp-verify-token.txt`
+   - `STUDIO_CHAT_LINK_SECRET`: the contents of `~/.soundbunker/studio-chat-link-secret.txt`
+   Then redeploy.
+4. Point 360dialog at the site: `node scripts/set-360dialog-webhook.mjs`
+5. On your phone: WhatsApp Business → Settings → Business tools → turn off **Away message** and
+   **Greeting message**, so clients don't get both.
+6. Message the studio number from another phone to test, then reply from the Business app and check the
+   assistant stays quiet in that chat.
+
+Connecting straight to Meta (no partner) still works if you ever move the number off the Business app:
+set `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_APP_SECRET` and `WHATSAPP_VERIFY_TOKEN`
+instead of the 360dialog values, and subscribe the Meta app's webhook to `messages`.
 
 ## Costs
 
 - **Claude:** model `claude-opus-5-5` (set `STUDIO_AGENT_MODEL` to change it). The studio
   information is prompt-cached, so a typical reply costs roughly one to three euro cents.
-- **WhatsApp:** Meta charges per message by category; replies to clients who messaged you first
-  have been free in Meta's pricing. Check the current rates in WhatsApp Manager.
+- **WhatsApp:** 360dialog charges a monthly fee per number, and Meta charges per message by category;
+  replies to clients who messaged you first have been free in Meta's pricing. Check both before you start.
 
 ## Keeping answers accurate
 

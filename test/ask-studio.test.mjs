@@ -79,11 +79,11 @@ test('request_human returns the handover and refusals fall back to a safe reply'
 });
 
 // WhatsApp webhook with an in-memory store.
-async function webhook({ held = false } = {}) {
+async function webhook({ held = false, extraEnv = {} } = {}) {
   const sent = [], saved = [], holds = [], handoffs = [], background = [];
   const thread = { id: '00000000-0000-4000-8000-000000000001', channel: 'whatsapp', human_until: held ? '2999-01-01T00:00:00Z' : null };
   const seen = new Set();
-  const env = { WHATSAPP_APP_SECRET: 'app-secret', WHATSAPP_VERIFY_TOKEN: 'verify-me', WHATSAPP_TOKEN: 'token', WHATSAPP_PHONE_NUMBER_ID: '123' };
+  const env = { WHATSAPP_APP_SECRET: 'app-secret', WHATSAPP_VERIFY_TOKEN: 'verify-me', WHATSAPP_TOKEN: 'token', WHATSAPP_PHONE_NUMBER_ID: '123', ...extraEnv };
   const namespace = await load('api/whatsapp-webhook.js', {
     '@vercel/functions': { waitUntil: promise => background.push(promise) },
     './lib/studio-agent.js': { askStudio: async () => ({ reply: 'Olá! Gravação de 2 horas: €250.', handoff: null }), fallbackReply: () => 'fallback' },
@@ -132,7 +132,7 @@ test('answers a client once even when Meta retries, and stays quiet while the te
     assert.equal(h.saved.filter(m => m.role === 'client').length, 1);
     assert.equal(h.saved.filter(m => m.role === 'assistant').length, held ? 0 : 1);
     assert.equal(posts.length, held ? 0 : 1);
-    if (!held) assert.deepEqual(posts[0], { messaging_product: 'whatsapp', to: '351910000000', type: 'text', text: { body: 'Olá! Gravação de 2 horas: €250.', preview_url: true } });
+    if (!held) assert.deepEqual(posts[0], { messaging_product: 'whatsapp', recipient_type: 'individual', to: '351910000000', type: 'text', text: { body: 'Olá! Gravação de 2 horas: €250.', preview_url: true } });
   }
   globalThis.fetch = realFetch;
 });
@@ -144,4 +144,25 @@ test('a reply from the WhatsApp Business app pauses the assistant in that chat',
   await Promise.all(h.background);
   assert.deepEqual(h.saved, [{ role: 'team', body: 'Olá Ana, é o Steve!' }]);
   assert.equal(h.holds.length, 1);
+});
+
+test('360dialog: keyed webhook URL is accepted, a wrong key is refused, and replies go out through 360dialog', async () => {
+  const realFetch = globalThis.fetch;
+  const h = await webhook({ extraEnv: { WHATSAPP_APP_SECRET: '', WHATSAPP_WEBHOOK_KEY: 'hook-key-123', D360_API_KEY: 'd360-key' } });
+  const calls = [];
+  globalThis.fetch = async (url, options) => { calls.push({ url, headers: options.headers, body: JSON.parse(options.body) }); return { ok: true, json: async () => ({ messages: [{ id: 'wamid.out1' }] }) }; };
+  const raw = inbound('wamid.in-360', 'Hello');
+  let r = response();
+  await h.namespace.default({ method: 'POST', url: '/api/whatsapp-webhook?key=wrong-key-12', headers: { host: 'x' }, raw }, r);
+  assert.equal(r.statusCode, 401);
+  r = response();
+  await h.namespace.default({ method: 'POST', url: '/api/whatsapp-webhook?key=hook-key-123', headers: { host: 'x' }, raw }, r);
+  assert.equal(r.statusCode, 200);
+  await Promise.all(h.background);
+  globalThis.fetch = realFetch;
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].url, 'https://waba-v2.360dialog.io/messages');
+  assert.equal(calls[0].headers['D360-API-KEY'], 'd360-key');
+  assert.equal(calls[0].headers.authorization, undefined);
+  assert.equal(calls[0].body.to, '351910000000');
 });

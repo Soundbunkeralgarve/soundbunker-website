@@ -1,6 +1,7 @@
-// WhatsApp Cloud API webhook for the studio number (Meta "coexistence": the same number
-// stays in the WhatsApp Business app on the phone). The assistant answers clients; as soon
-// as someone replies from the app, it stays quiet in that chat so the person is in charge.
+// WhatsApp webhook for the studio number. The number is connected through 360dialog in
+// coexistence mode, so it stays in the WhatsApp Business app on the phone. The assistant answers
+// clients; as soon as someone replies from the app, it stays quiet in that chat so the person is
+// in charge. Meta's Cloud API directly is still supported (WHATSAPP_TOKEN + WHATSAPP_APP_SECRET).
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { waitUntil } from '@vercel/functions';
 import { askStudio, fallbackReply } from './lib/studio-agent.js';
@@ -10,19 +11,31 @@ import { readRawBody } from './lib/http.js';
 export const config = { api: { bodyParser: false } };
 const graph = () => `https://graph.facebook.com/${process.env.WHATSAPP_GRAPH_VERSION || 'v23.0'}`;
 
-function validSignature(raw, header) {
-  const secret = process.env.WHATSAPP_APP_SECRET;
+const sameSecret = (given, expected) => {
+  const a = Buffer.from(String(given || '')), b = Buffer.from(String(expected || ''));
+  return b.length > 0 && a.length === b.length && timingSafeEqual(a, b);
+};
+
+// 360dialog does not sign its webhook calls, so its webhook URL carries a secret key
+// (?key=WHATSAPP_WEBHOOK_KEY). Calls straight from Meta are checked against the app secret.
+function validDelivery(raw, request, url) {
+  if (process.env.WHATSAPP_WEBHOOK_KEY && sameSecret(url.searchParams.get('key'), process.env.WHATSAPP_WEBHOOK_KEY)) return true;
+  const secret = process.env.WHATSAPP_APP_SECRET, header = request.headers['x-hub-signature-256'];
   if (!secret || !/^sha256=[0-9a-f]{64}$/.test(header || '')) return false;
   const expected = createHmac('sha256', secret).update(raw).digest();
   return timingSafeEqual(expected, Buffer.from(header.slice(7), 'hex'));
 }
 
 async function sendWhatsApp(to, body) {
-  const response = await fetch(`${graph()}/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`, {
+  const message = JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to, type: 'text', text: { body: body.slice(0, 4000), preview_url: true } });
+  const viaDialog = Boolean(process.env.D360_API_KEY);
+  const response = await fetch(viaDialog ? 'https://waba-v2.360dialog.io/messages' : `${graph()}/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`, {
     method: 'POST',
     signal: AbortSignal.timeout(15000),
-    headers: { authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`, 'content-type': 'application/json' },
-    body: JSON.stringify({ messaging_product: 'whatsapp', to, type: 'text', text: { body: body.slice(0, 4000), preview_url: true } }),
+    headers: viaDialog
+      ? { 'D360-API-KEY': process.env.D360_API_KEY, 'content-type': 'application/json' }
+      : { authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`, 'content-type': 'application/json' },
+    body: message,
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(`WhatsApp send failed: ${data.error?.message || response.status}`);
@@ -101,7 +114,7 @@ export default async function handler(request, response) {
   if (request.method !== 'POST') { response.statusCode = 405; return response.end(); }
 
   const raw = await readRawBody(request);
-  if (!validSignature(raw, request.headers['x-hub-signature-256'])) { response.statusCode = 401; return response.end(); }
+  if (!validDelivery(raw, request, url)) { response.statusCode = 401; return response.end(); }
   let payload;
   try { payload = JSON.parse(raw); } catch { response.statusCode = 400; return response.end(); }
   // Acknowledge straight away so Meta does not retry; answer in the background.
