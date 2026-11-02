@@ -1,6 +1,14 @@
 // "Ask the Studio" chat button and panel. Answers come from /api/ask-studio.
 (() => {
  if (document.querySelector('.ask-studio')) return;
+ // Soft launch: hidden from visitors until LAUNCHED is true. Testers open any page with ?ask=1
+ // (remembered on this browser) and turn it off again with ?ask=0.
+ const LAUNCHED = false;
+ const flag = new URLSearchParams(location.search).get('ask');
+ try { if (flag === '1') localStorage.setItem('sb-ask-studio-tester', '1'); if (flag === '0') localStorage.removeItem('sb-ask-studio-tester'); } catch {}
+ let tester = flag === '1';
+ try { tester ||= localStorage.getItem('sb-ask-studio-tester') === '1'; } catch {}
+ if (!LAUNCHED && !tester) return;
  const copy = {
   en: { open: 'Ask the studio', title: 'Ask the studio', status: 'AI assistant · replies in any language', hello: 'Hi! Ask me anything about recording, prices, availability, parties or gift vouchers. If you need a person, I can pass you to the team.', placeholder: 'Type your question…', send: 'Send', close: 'Close chat', whatsapp: 'Continue on WhatsApp', thinking: 'Thinking…', error: 'Sorry, something went wrong. Please try again or message us on WhatsApp.', note: 'Answers are AI-generated. Bookings and payments happen on the booking form.' },
   pt: { open: 'Pergunte ao estúdio', title: 'Pergunte ao estúdio', status: 'Assistente IA · responde em qualquer língua', hello: 'Olá! Pergunte-me sobre gravações, preços, disponibilidade, festas ou vales-oferta. Se precisar de uma pessoa, passo-o à equipa.', placeholder: 'Escreva a sua pergunta…', send: 'Enviar', close: 'Fechar chat', whatsapp: 'Continuar no WhatsApp', thinking: 'A pensar…', error: 'Desculpe, algo correu mal. Tente novamente ou fale connosco no WhatsApp.', note: 'Respostas geradas por IA. Reservas e pagamentos são feitos no formulário de reserva.' },
