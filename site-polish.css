@@ -1,0 +1,46 @@
+/* Inner-page polish, loaded last on every page except the homepage (which has home-polish.css).
+   Page headers sit within one screen, sections share one spacing rhythm, and long phone stacks become swipe rows. */
+body:not(.home-page) main section.section{padding-block:clamp(48px,5.5vw,80px)}
+
+/* Page headers: never taller than the screen below the menu */
+body[data-service-page] .detail-hero,.detail-hero{min-height:min(600px,calc(100svh - 110px))!important}
+body[data-service-page="mixing"] .detail-hero{margin-top:96px}
+.detail-hero h1{font-size:clamp(44px,5.6vw,80px);line-height:.95;margin:10px 0 18px}
+.detail-hero-content{padding:130px 0 60px}
+body[data-service-page="mixing"] .detail-hero-content{padding:64px 4vw}
+.rt-hero{min-height:min(700px,calc(100svh - 76px));padding-top:110px;padding-bottom:64px}
+.gift-hero-premium{min-height:560px}
+.gift-hero-gallery{max-height:600px}
+.client-auth-visual{min-height:520px}
+.academy-hero-image{max-height:620px;overflow:hidden}
+.plugin-hero{padding-top:56px}
+.plugin-hero-image img{max-height:520px;object-fit:cover}
+/* The RECON privacy page reuses the plug-in header as its whole body: keep it a readable column */
+.plugin-hero.plugin-success{max-width:760px;margin-inline:auto}
+
+/* Image galleries */
+.hub-gallery img,.hub-gallery img:not(:first-child){height:300px}
+
+@media(max-width:900px){
+ body[data-service-page] .detail-hero,.detail-hero{min-height:min(540px,calc(100svh - 68px))!important}
+ .rt-hero{padding-top:96px;padding-bottom:44px}
+ .detail-hero-content{padding:104px 0 44px}
+ .gift-hero-gallery{min-height:340px;max-height:380px}
+ .academy-hero-image{max-height:380px}
+}
+
+/* Phones: swipe rows instead of tall stacks */
+@media(max-width:700px){
+ .gift-experience-list,.hub-gallery,.feature-cards{display:flex!important;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:6px}
+ .gift-experience-list::-webkit-scrollbar,.hub-gallery::-webkit-scrollbar,.feature-cards::-webkit-scrollbar{display:none}
+ .gift-experience-list>*,.hub-gallery>*,.feature-cards>*{flex:0 0 84%;scroll-snap-align:start}
+ .hub-gallery img,.hub-gallery img:not(:first-child){height:240px}
+ .academy-page .academy-visual-strip{grid-template-columns:repeat(3,1fr);height:140px}
+ .academy-page .academy-visual-strip img{height:140px}
+ .client-auth-visual{min-height:0}
+ .plugin-hero-image img{max-height:300px}
+}
+
+/* Plug-in pages: same body font and header buttons as the rest of the site */
+.plugin-store{font-family:"DM Sans",sans-serif}
+.site-header.unified-header .header-book,.site-header.unified-header .header-utility,.site-header.unified-header .menu-toggle{line-height:1.2}
