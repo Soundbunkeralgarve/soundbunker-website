@@ -33,6 +33,7 @@ export default async function handler(request, response) {
     const note = `Hi SoundBunker! I was chatting with Ask the Studio on your website. ${handoff.summary}`;
     return json(response, { reply, handoff: true, whatsappUrl: `https://wa.me/${STUDIO_WHATSAPP}?text=${encodeURIComponent(note.slice(0, 900))}` });
   } catch (error) {
+    console.error('Ask the Studio failed', error?.constructor?.name, error?.status || '', error?.message);
     if (error instanceof Anthropic.RateLimitError) return json(response, { reply: 'The assistant is busy right now. Please try again in a minute, or message us on WhatsApp.', whatsappUrl: `https://wa.me/${STUDIO_WHATSAPP}` });
     return json(response, { reply: fallbackReply(), whatsappUrl: `https://wa.me/${STUDIO_WHATSAPP}` });
   }
