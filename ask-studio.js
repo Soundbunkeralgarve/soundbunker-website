@@ -1,9 +1,9 @@
 // "Ask the Studio" chat button and panel. Answers come from /api/ask-studio.
 (() => {
  if (document.querySelector('.ask-studio')) return;
- // Soft launch: hidden from visitors until LAUNCHED is true. Testers open any page with ?ask=1
- // (remembered on this browser) and turn it off again with ?ask=0.
- const LAUNCHED = false;
+ // Launched for everyone on 2 Nov 2026. Set LAUNCHED to false to hide it again; testers can still
+ // open any page with ?ask=1 (remembered on this browser) and turn that off with ?ask=0.
+ const LAUNCHED = true;
  const flag = new URLSearchParams(location.search).get('ask');
  try { if (flag === '1') localStorage.setItem('sb-ask-studio-tester', '1'); if (flag === '0') localStorage.removeItem('sb-ask-studio-tester'); } catch {}
  let tester = flag === '1';
