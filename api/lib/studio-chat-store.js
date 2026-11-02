@@ -79,7 +79,7 @@ ${handoff.summary}
 
 ${reach}
 
-Recent conversation:
+The chat so far, oldest first (it can include earlier, unrelated questions from the same visitor):
 
 ${recent}`;
   await sendStudioEmail(process.env.STUDIO_CHAT_NOTIFY_EMAIL || process.env.BOOKING_NOTIFICATION_EMAIL || 'bookings@soundbunker.pt',
