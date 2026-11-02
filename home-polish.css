@@ -1,0 +1,84 @@
+/* Homepage polish: one spacing rhythm, imagery sized to sit within a screen, and swipeable card rows on phones
+   instead of tall stacks. Loaded last on the homepage only. */
+.home-page{--polish-radius:12px}
+.home-page main>section.section{padding-block:clamp(48px,5.5vw,80px)}
+.home-page .section h2{font-size:clamp(36px,4.6vw,64px)}
+.home-page .section-head{margin-bottom:clamp(26px,3.5vw,42px)}
+
+/* Shared image treatment */
+.home-page .service-card,.home-page .home-explore-card,.home-page .popstar-photo,.home-page .party-video-frame,.home-page .remote-visual,
+.home-page .label-art,.home-page .photo-collage img,.home-page .hub-visual,.home-page .market-photo img,.home-page .retreat-promo-visual{border-radius:var(--polish-radius);overflow:hidden}
+
+/* Services: shorter cards */
+.home-page .service-card{min-height:380px}
+
+/* Birthday parties: video and the four inclusions side by side at a fixed height */
+.home-page .party-home-head{margin-bottom:32px}
+.home-page .party-home-grid{align-items:stretch}
+.home-page .party-video-frame{height:clamp(380px,38vw,520px);min-height:0}
+.home-page .party-video-frame video,.home-page .party-video-frame img{width:100%;height:100%;object-fit:cover}
+.home-page .party-inclusions{height:clamp(380px,38vw,520px)}
+.home-page .party-inclusions article{padding:clamp(18px,2vw,28px)}
+.home-page .party-inclusions h3{font-size:clamp(18px,1.6vw,22px);margin:8px 0}
+.home-page .party-inclusions p{font-size:14px;line-height:1.5}
+
+/* Pop Star: photo beside the details instead of a full-screen photo above them */
+.home-page .popstar-feature{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(28px,4vw,56px);align-items:center}
+.home-page .popstar-photo{min-height:0;height:clamp(320px,32vw,460px)}
+.home-page .popstar-photo img{width:100%;height:100%;object-fit:cover;object-position:center 30%}
+
+/* Remote voiceover */
+.home-page .remote-visual{min-height:0;height:clamp(380px,40vw,540px)}
+.home-page .remote-visual img{width:100%;height:100%;object-fit:cover}
+
+/* Record label: covers sized with the copy */
+.home-page .label-art img{width:100%;max-height:520px;object-fit:cover}
+.home-page .latest-release-mini img{max-height:180px;object-fit:cover;border-radius:8px}
+
+/* Market: photo kept inside the page width */
+.home-page .market{min-height:0;width:var(--wrap);margin-inline:auto;gap:clamp(30px,5vw,70px);align-items:center;padding-block:clamp(48px,5.5vw,80px);background:transparent}
+.home-page .market-photo img{height:clamp(320px,34vw,480px)}
+.home-page .market-copy{padding:0;color:#fff}
+.home-page .market-copy p{color:#c8bccf}
+.home-page .market-copy .eyebrow{color:#c781ff}
+.home-page .market-prices{border-color:#ffffff24}
+.home-page .market-prices span{border-color:#ffffff24}
+.home-page .market-copy small{color:#a99cb0}
+
+/* Hub Culture tiles */
+.home-page .hub-visual{min-height:280px}
+.home-page .hub-visual-grid{margin-top:40px}
+
+/* Photography collage */
+.home-page .photo-collage img{aspect-ratio:4/5;max-height:420px}
+
+@media(max-width:900px){
+ .home-page .party-video-frame,.home-page .party-inclusions{height:auto}
+ .home-page .party-video-frame{aspect-ratio:16/10}
+ .home-page .market,.home-page .popstar-feature{grid-template-columns:1fr}
+ .home-page .remote-visual{height:360px}
+}
+
+/* Phones: card groups become swipeable rows with the next card peeking in */
+@media(max-width:700px){
+ .home-page .service-grid,.home-page .party-inclusions,.home-page .hub-visual-grid,.home-page .home-explore-grid{display:flex!important;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:4px}
+ .home-page .service-grid::-webkit-scrollbar,.home-page .party-inclusions::-webkit-scrollbar,.home-page .hub-visual-grid::-webkit-scrollbar,.home-page .home-explore-grid::-webkit-scrollbar{display:none}
+ .home-page .service-grid>*,.home-page .party-inclusions>*,.home-page .hub-visual-grid>*,.home-page .home-explore-grid>*{flex:0 0 80%;scroll-snap-align:start}
+ .home-page .service-card{min-height:340px!important}
+ .home-page .hub-visual{min-height:240px!important}
+ .home-page .party-inclusions article{border-radius:var(--polish-radius)}
+ .home-page .popstar-photo{height:260px}
+ .home-page .remote-visual{height:300px;min-height:0!important}
+ .home-page .market-photo img{height:240px}
+ .home-page .photo-collage img{max-height:260px}
+ .home-page .label-art img{max-height:300px}
+}
+@media(prefers-reduced-motion:reduce){.home-page .service-grid,.home-page .party-inclusions,.home-page .hub-visual-grid,.home-page .home-explore-grid{scroll-behavior:auto}}
+
+/* Finishing touches: sub-headings below the section title, party video and cards as one rounded panel */
+.home-page .popstar-copy h3{font-size:clamp(26px,2.6vw,38px)!important;line-height:1.05!important;margin:0 0 16px!important}
+.home-page .popstar-copy p{font-size:17px;line-height:1.6}
+@media(min-width:901px){
+ .home-page .party-home-grid{border-radius:var(--polish-radius);overflow:hidden}
+ .home-page .party-home-grid .party-video-frame{border-radius:0}
+}
