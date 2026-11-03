@@ -26,10 +26,6 @@
     const isBundle = p.includes.length > 1;
     const free = freeProduct();
     const names = isBundle && !p.pick ? products.filter((x) => p.includes.includes(x.id) && x.id !== p.id).map((x) => x.name) : [];
-    const download = (url, label) => url ? `<a class="plugin-download" href="${esc(url)}" rel="noopener">${label} ↓</a>` : '';
-    // The free product's downloads come with its key, after the free checkout; the others can be downloaded to try.
-    const downloads = isBundle || p.free || !p.for_sale ? '' : (download(p.mac_download, 'macOS') + download(p.windows_download, 'Windows')) ||
-      '<span class="plugin-soon">Download coming soon</span>';
     const saved = isBundle && p.for_sale && separately(p) > p.price_cents
       ? `<p class="plugin-saving">${price(separately(p))} separately · save ${price(separately(p) - p.price_cents)}</p>` : '';
     const soon = !p.for_sale;
@@ -51,10 +47,20 @@
       <div class="plugin-actions">
         ${p.free && p.for_sale ? `<button type="button" class="plugin-buy" data-claim="${esc(p.id)}">Get it free</button>` : ''}
         ${!p.free && p.for_sale ? `<button type="button" class="plugin-buy" data-buy="${esc(p.id)}"${p.pick ? ' disabled' : ''}>${p.pick ? `Choose ${esc(p.pick)}` : 'Buy licence'}</button>` : ''}
-        ${downloads}
       </div>
-      ${isBundle || p.free || !p.for_sale ? '' : '<p class="plugin-trial">Free 14-day trial in the download.</p>'}
+      ${isBundle || p.free || !p.for_sale ? '' : '<p class="plugin-trial"><a href="#try-free">Try it free for 14 days ↓</a></p>'}
     </article>`;
+  }
+
+  // Trial downloads, in their own section: the free product's come with its key, after the free checkout.
+  function trials() {
+    const link = (url, label) => url ? `<a class="plugin-download" href="${esc(url)}" rel="noopener">${label} ↓</a>` : '';
+    const row = (p, title) => `<div class="plugin-download-row"><strong>${esc(title)}</strong>${link(p.mac_download, 'macOS')}${link(p.windows_download, 'Windows')}</div>`;
+    const all = bundles().filter((b) => !b.pick && (b.mac_download || b.windows_download)).map((b) => row(b, `Everything (${b.name} installer)`));
+    const each = singles().filter((p) => p.mac_download || p.windows_download).map((p) => row(p, p.name));
+    if (!all.length && !each.length) return;
+    $('#tryList').innerHTML = [...all, ...each].join('');
+    $('#try-free').hidden = false;
   }
 
   async function checkout(body) {
@@ -101,6 +107,7 @@
       // Free first to welcome people in; the paid plug-ins follow as the upgrade, best value first.
       $('#freeGrid').innerHTML = products.filter((p) => p.free).map(card).join('');
       $('#pluginGrid').innerHTML = [...bundles().reverse(), ...products.filter((p) => !p.free && !bundles().includes(p))].map(card).join('');
+      trials();
       const params = new URLSearchParams(location.search);
       if (params.get('code')) redeem(params.get('code'));   // a producer link: plugins.html?code=XXXX
       else if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView({ block: 'center' });
