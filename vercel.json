@@ -133,6 +133,10 @@
   ],
   "rewrites": [
     {
+      "source": "/download/:product/:os",
+      "destination": "/api/licence?action=download&product=:product&os=:os"
+    },
+    {
       "source": "/plugins",
       "destination": "/plugins.html"
     },

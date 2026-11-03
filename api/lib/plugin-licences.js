@@ -84,9 +84,19 @@ export async function pluginRequest(body, db = licenceDB()) {
 
 //------------------------------------------------------------------------------------------------------------------
 // Shop
+// Installers are served through soundbunker.pt/download/<product>/<mac|windows>, so buyers never see where the files are hosted.
+const DOWNLOAD_FIELDS = { mac: 'mac_download', windows: 'windows_download' };
+const dl = (p, os) => (p?.[DOWNLOAD_FIELDS[os]] ? `${base()}/download/${p.id}/${os}` : null);
+
+export async function downloadUrl(id, os, db = licenceDB()) {
+  if (!/^[a-z0-9-]{2,40}$/.test(id || '') || !DOWNLOAD_FIELDS[os]) return null;
+  const row = await checked(db.from('plugin_products').select('*').eq('id', id).maybeSingle(), 'load the plug-in');
+  return row?.[DOWNLOAD_FIELDS[os]] || null;
+}
+
 const publicProduct = (p) => ({ id: p.id, name: p.name, tagline: p.tagline, price_cents: p.price_cents, free: p.free === true,
   pick: p.pick || null, seats: p.seats,
-  includes: p.includes, version: p.version, mac_download: p.mac_download || null, windows_download: p.windows_download || null,
+  includes: p.includes, version: p.version, mac_download: dl(p, 'mac'), windows_download: dl(p, 'windows'),
   for_sale: p.active === true });
 
 export async function listProducts(db = licenceDB()) {
@@ -333,10 +343,12 @@ export async function sendLicenceEmail(licence, db = licenceDB(), opts = {}) {
   const { send = sendTransactionalEmail, key } = opts;
   const [product] = await productRows(db, [licence.product_id]);
   const plugins = await productRows(db, licence.includes);
-  const oneByOne = plugins.map((p) => `${p.name}\n   macOS:   ${p.mac_download || `${base()}/plugins.html#${p.id}`}\n   Windows: ${p.windows_download || `${base()}/plugins.html#${p.id}`}`).join('\n\n');
+  // [label](url) becomes a named link in the HTML e-mail, so the e-mail shows product names instead of addresses.
+  const link = (label, url) => `[${label}](${url})`;
+  const oneByOne = plugins.map((p) => `${p.name}:  ${link('macOS', dl(p, 'mac') || `${base()}/plugins.html#${p.id}`)}  ·  ${link('Windows', dl(p, 'windows') || `${base()}/plugins.html#${p.id}`)}`).join('\n');
   const allInOne = plugins.length > 1 && (product.mac_download || product.windows_download);
   const downloads = allInOne
-    ? `Everything at once (one installer for all ${plugins.length}):\n   macOS:   ${product.mac_download || `${base()}/plugins.html`}\n   Windows: ${product.windows_download || `${base()}/plugins.html`}\n\nOr one by one:\n\n${oneByOne}`
+    ? `Everything at once (one installer for all ${plugins.length}):\n   ${link(`${product.name} for macOS`, dl(product, 'mac') || `${base()}/plugins.html`)}  ·  ${link(`${product.name} for Windows`, dl(product, 'windows') || `${base()}/plugins.html`)}\n\nOr one by one:\n\n${oneByOne}`
     : oneByOne;
   const body = `Hi,\n\n${product.free ? `Here is your free copy of ${product.name}.` : licence.source === 'code' ? `Here is your free ${product.name} licence, with our compliments.` : `Thank you for buying ${product.name}.`}\n\nYour licence key:\n\n    ${licence.licence_key}\n\n` +
     `It works on ${licence.seats} computers (macOS and Windows, mixed as you like)${plugins.length > 1 ? ` and unlocks ${plugins.map((p) => p.name).join(', ')}` : ''}.\n\n` +
@@ -370,10 +382,10 @@ function describe(licence, products, activations) {
   return { id: licence.id, key: licence.licence_key, product: product?.name || licence.product_id, status: licence.status,
     seats: licence.seats, email: licence.email, created_at: licence.created_at, source: licence.source, note: licence.note,
     plugins: licence.includes.map((id) => products.find((p) => p.id === id)).filter(Boolean)
-      .map((p) => ({ id: p.id, name: p.name, mac_download: p.mac_download || null, windows_download: p.windows_download || null })),
+      .map((p) => ({ id: p.id, name: p.name, mac_download: dl(p, 'mac'), windows_download: dl(p, 'windows') })),
     // A bundle with its own installer (SB COMPLETE) installs everything in one go.
     install_all: licence.includes.length > 1 && (product?.mac_download || product?.windows_download)
-      ? { mac_download: product.mac_download || null, windows_download: product.windows_download || null } : null,
+      ? { mac_download: dl(product, 'mac'), windows_download: dl(product, 'windows') } : null,
     computers: [...new Map(activations.filter((a) => a.licence_id === licence.id && !a.deactivated_at)
       .map((a) => [a.machine_id, { machine: a.machine_id, name: a.machine_name, os: a.os, last_seen_at: a.last_seen_at }])).values()] };
 }

@@ -3,7 +3,7 @@
 import { json, parseJson, validEmail } from './lib/http.js';
 import { optionalUser, requireUser, requireAdmin } from './lib/supabase-auth.js';
 import { pluginRequest, listProducts, createCheckout, claimFree, licenceForSession, myLicences, releaseComputer,
-  adminList, adminCreate, adminUpdate } from './lib/plugin-licences.js';
+  adminList, adminCreate, adminUpdate, downloadUrl } from './lib/plugin-licences.js';
 
 const PLUGIN_ACTIONS = ['activate', 'trial', 'refresh', 'deactivate'];
 
@@ -16,6 +16,15 @@ export default async function handler(request, response) {
       response.statusCode = 200;
       response.setHeader('content-type', 'application/json; charset=utf-8');
       return response.end(JSON.stringify({ products: await listProducts() }));
+    }
+    // /download/<product>/<mac|windows> (rewritten here): sends the browser on to the installer.
+    if (request.method === 'GET' && action === 'download') {
+      const id = url.searchParams.get('product') || '';
+      const target = await downloadUrl(id, url.searchParams.get('os'));
+      response.statusCode = 302;
+      response.setHeader('cache-control', 'no-store');
+      response.setHeader('location', target || `/plugins.html${/^[a-z0-9-]+$/.test(id) ? `#${id}` : ''}`);
+      return response.end();
     }
     if (request.method === 'GET' && action === 'session') {
       const licence = await licenceForSession(url.searchParams.get('session_id'));

@@ -355,7 +355,9 @@ test('producer codes: Stripe promotion codes limited to the code\'s product, cou
     const toProducer = sent.filter((x) => x.to === 'beat@maker.com');
     assert.match(toProducer[0].subject, /free SB COMPLETE/);
     assert.match(toProducer[0].text, /with our compliments/);
-    assert.match(toProducer[0].text, /Everything at once \(one installer for all 6\):\n   macOS:   \S+SB-COMPLETE-1\.0\.1-macOS\.pkg/);
+    assert.match(toProducer[0].text, /Everything at once \(one installer for all 6\):\n   \[SB COMPLETE for macOS\]\(https:\/\/www\.soundbunker\.pt\/download\/complete\/mac\)/);
+    assert.match(toProducer[0].text, /SB NUCLEAR:  \[macOS\]\(https:\/\/www\.soundbunker\.pt\/download\/nuclear\/mac\)/);
+    assert.doesNotMatch(toProducer[0].text, /github/i);
     assert.match(toProducer[0].text, /Or one by one:\n\nSB ARMOURY/);
     assert.equal(new Set(sent.filter((x) => /Producer code used · SBPRODUCER/.test(x.subject)).map((x) => x.key)).size, 1, 'retries reuse the e-mail key');
 
