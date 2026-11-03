@@ -27,7 +27,8 @@
     const free = freeProduct();
     const names = isBundle && !p.pick ? products.filter((x) => p.includes.includes(x.id) && x.id !== p.id).map((x) => x.name) : [];
     const download = (url, label) => url ? `<a class="plugin-download" href="${esc(url)}" rel="noopener">${label} ↓</a>` : '';
-    const downloads = isBundle || !p.for_sale ? '' : (download(p.mac_download, 'macOS') + download(p.windows_download, 'Windows')) ||
+    // The free product's downloads come with its key, after the free checkout; the others can be downloaded to try.
+    const downloads = isBundle || p.free || !p.for_sale ? '' : (download(p.mac_download, 'macOS') + download(p.windows_download, 'Windows')) ||
       '<span class="plugin-soon">Download coming soon</span>';
     const saved = isBundle && p.for_sale && separately(p) > p.price_cents
       ? `<p class="plugin-saving">${price(separately(p))} separately · save ${price(separately(p) - p.price_cents)}</p>` : '';
