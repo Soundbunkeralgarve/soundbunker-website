@@ -175,7 +175,7 @@ export async function createCheckout({ productId, email, userId, choice, code },
     if (!promos[producer.code]) return { error: 'That code is not available right now. Please try again later.' };
     form.delete('allow_promotion_codes');   // Stripe takes either a preset discount or the promotion code box
     form.set('discounts[0][promotion_code]', promos[producer.code]);
-    form.set('custom_text[submit][message]', `${includes}Free with your producer code: no payment needed. Your licence key is delivered by e-mail straight away.`);
+    form.set('custom_text[submit][message]', `${includes}Free with your discount code: no payment needed. Your licence key is delivered by e-mail straight away.`);
   }
   const session = await stripeCall('/checkout/sessions', form);
   return { url: session.url };
@@ -290,7 +290,7 @@ async function syncProducerPromos(db, p, stripeCall) {
 }
 
 async function createPromo(c, stripeCall) {
-  const coupon = await stripeCall('/coupons', new URLSearchParams({ percent_off: '100', duration: 'once', name: `Producer code ${c.code}`.slice(0, 40),
+  const coupon = await stripeCall('/coupons', new URLSearchParams({ percent_off: '100', duration: 'once', name: `Discount code ${c.code}`.slice(0, 40),
     'applies_to[products][0]': stripeProduct(c.product_id), 'metadata[plugin_code]': c.code }));
   const promo = { code: c.code, max_redemptions: String(c.max_uses - c.uses), 'metadata[plugin_code]': c.code,
     ...(c.expires_at ? { expires_at: String(Math.floor(new Date(c.expires_at).getTime() / 1000)) } : {}) };
