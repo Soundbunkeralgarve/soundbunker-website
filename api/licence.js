@@ -18,7 +18,7 @@ export default async function handler(request, response) {
       return response.end(JSON.stringify({ products: await listProducts() }));
     }
     // /download/<product>/<mac|windows> (rewritten here): sends the browser on to the installer.
-    if (request.method === 'GET' && action === 'download') {
+    if ((request.method === 'GET' || request.method === 'HEAD') && action === 'download') {
       const id = url.searchParams.get('product') || '';
       const target = await downloadUrl(id, url.searchParams.get('os'));
       response.statusCode = 302;
