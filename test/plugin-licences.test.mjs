@@ -7,7 +7,7 @@ import { PGlite } from '@electric-sql/pglite';
 const { privateKey } = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
 const pem = privateKey.export({ type: 'pkcs8', format: 'pem' });
 process.env.LICENCE_PRIVATE_KEY_B64 = Buffer.from(pem).toString('base64');
-const { pluginRequest, fulfilPluginCheckout, revokeForPayment, createCheckout, claimFree, listProducts, redeemCode } = await import('../api/lib/plugin-licences.js');
+const { pluginRequest, fulfilPluginCheckout, revokeForPayment, createCheckout, claimFree, listProducts } = await import('../api/lib/plugin-licences.js');
 const { verifyToken } = await import('../api/lib/licence-token.js');
 const publicPem = crypto.createPublicKey(pem).export({ type: 'spki', format: 'pem' });
 
@@ -279,41 +279,54 @@ test('every paid order includes the free Armoury; the 3-Pack unlocks the chosen 
   } finally { await db.close(); }
 });
 
-test('producer codes: free Complete licence per address, limited uses, off and expired codes refused', async () => {
+test('producer codes: a €0 checkout for the code\'s product, counted once per address, off and expired codes refused', async () => {
   const db = await database({ asShipped: true });
   const sb = client(db);
   try {
-    const sent = [];
-    const opts = { send: async (mail) => { sent.push(mail); } };
     await db.exec(`insert into plugin_codes (code, product_id, max_uses) values ('SBPRODUCER', 'complete', 2);
       insert into plugin_codes (code, product_id, active) values ('OLDCODE', 'complete', false);
       insert into plugin_codes (code, product_id, expires_at) values ('LASTYEAR', 'complete', now() - interval '1 day');`);
-    assert.match((await redeemCode({ code: 'SBPRODUCER', email: 'nope' }, sb, opts)).error, /valid e-mail/);
-    assert.match((await redeemCode({ code: 'WRONG', email: 'a@example.com' }, sb, opts)).error, /not valid/);
-    assert.match((await redeemCode({ code: 'OLDCODE', email: 'a@example.com' }, sb, opts)).error, /not valid/);
-    assert.match((await redeemCode({ code: 'LASTYEAR', email: 'a@example.com' }, sb, opts)).error, /expired/);
+    const noStripe = async () => assert.fail('no Stripe call');
+    assert.match((await createCheckout({ code: 'WRONG' }, sb, noStripe)).error, /not valid/);
+    assert.match((await createCheckout({ code: 'OLDCODE' }, sb, noStripe)).error, /not valid/);
+    assert.match((await createCheckout({ code: 'LASTYEAR' }, sb, noStripe)).error, /expired/);
 
-    assert.deepEqual(await redeemCode({ code: ' sbproducer ', email: 'Beat@Maker.com' }, sb, opts), { ok: true });
-    assert.deepEqual(await redeemCode({ code: 'SBPRODUCER', email: 'beat@maker.com' }, sb, opts), { ok: true }, 'same address again');
+    const calls = [];
+    const stripe = async (path, form) => { calls.push({ path, form }); return path === '/coupons' ? { id: 'co_free1' } : { url: 'https://checkout.stripe.com/free' }; };
+    assert.deepEqual(await createCheckout({ productId: 'nuclear', code: ' sbproducer ' }, sb, stripe), { url: 'https://checkout.stripe.com/free' });
+    assert.equal(calls[0].path, '/coupons');
+    assert.equal(calls[0].form.get('percent_off'), '100');
+    assert.equal(calls[0].form.get('max_redemptions'), '1');
+    const form = calls[1].form;
+    assert.equal(form.get('metadata[plugin_product]'), 'complete', 'the code decides the product');
+    assert.equal(form.get('discounts[0][coupon]'), 'co_free1');
+    assert.equal(form.get('metadata[code]'), 'SBPRODUCER');
+    assert.equal(form.get('allow_promotion_codes'), null, 'Stripe refuses discounts together with promotion codes');
+
+    const sent = [];
+    const opts = { send: async (mail) => { sent.push(mail); }, invoice: async () => assert.fail('no invoice for a €0 order') };
+    const order = (id, email) => ({ id, livemode: true, payment_status: 'no_payment_required', currency: 'eur', amount_subtotal: 5900,
+      amount_total: 0, payment_intent: null, customer_details: { email }, metadata: { purchase_type: 'plugin_licence', plugin_product: 'complete', code: 'SBPRODUCER' } });
+    const done = await fulfilPluginCheckout(order('cs_live_p1', 'beat@maker.com'), sb, opts);
+    assert.equal(done.invoice.skipped, true);
+    await fulfilPluginCheckout(order('cs_live_p1', 'beat@maker.com'), sb, opts);   // webhook retry
     let rows = (await db.query('select * from plugin_licences')).rows;
-    assert.equal(rows.length, 1, 'the same address keeps one licence');
-    assert.equal(rows[0].source, 'code'); assert.equal(rows[0].product_id, 'complete'); assert.equal(rows[0].email, 'beat@maker.com');
+    assert.equal(rows.length, 1);
+    assert.equal(rows[0].source, 'code'); assert.equal(rows[0].product_id, 'complete'); assert.equal(rows[0].note, 'Code SBPRODUCER');
     assert.equal((await db.query("select uses from plugin_codes where code = 'SBPRODUCER'")).rows[0].uses, 1);
     const toProducer = sent.filter((x) => x.to === 'beat@maker.com');
-    assert.equal(toProducer.length, 2, 're-sent the second time');
     assert.match(toProducer[0].subject, /free SoundBunker Complete/);
     assert.match(toProducer[0].text, /with our compliments/);
-    assert.ok(toProducer[0].text.includes(rows[0].licence_key));
-    assert.equal(sent.filter((x) => /Producer code used/.test(x.subject)).length, 1, 'the studio hears about each new producer once');
+    assert.equal(new Set(sent.filter((x) => /Producer code used · SBPRODUCER/.test(x.subject)).map((x) => x.key)).size, 1, 'retries reuse the e-mail key');
 
     const key = rows[0].licence_key;
     for (const product of ['nuclear', 'sentinel', 'armoury'])
       assert.equal((await ask(sb, { action: 'activate', product, machine: m(1), key })).ok, true, product);
-    assert.equal((await ask(sb, { action: 'activate', product: 'recon', machine: m(1), key })).error, 'wrong_product', 'RECON is not in Complete yet');
 
-    assert.deepEqual(await redeemCode({ code: 'SBPRODUCER', email: 'second@maker.com' }, sb, opts), { ok: true });
-    assert.match((await redeemCode({ code: 'SBPRODUCER', email: 'third@maker.com' }, sb, opts)).error, /maximum/);
-    rows = (await db.query('select * from plugin_licences')).rows;
-    assert.equal(rows.length, 2);
+    await fulfilPluginCheckout(order('cs_live_p2', 'second@maker.com'), sb, opts);
+    assert.equal((await db.query("select uses from plugin_codes where code = 'SBPRODUCER'")).rows[0].uses, 2);
+    assert.match((await createCheckout({ code: 'SBPRODUCER' }, sb, noStripe)).error, /maximum/);
+    await assert.rejects(fulfilPluginCheckout({ ...order('cs_live_p3', 'x@maker.com'), metadata: { purchase_type: 'plugin_licence', plugin_product: 'complete' } }, sb, opts),
+      /Not a paid/, 'a €0 order without a code is refused');
   } finally { await db.close(); }
 });

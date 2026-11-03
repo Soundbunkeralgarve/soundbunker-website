@@ -35,7 +35,9 @@ export default async function handler(request, response) {
   }
   if (!["checkout.session.completed", "checkout.session.async_payment_succeeded"].includes(event.type)) return json(response, { received: true });
   const checkout = event.data?.object;
-  if (!checkout || checkout.payment_status !== "paid") return json(response, { received: true });
+  // Plug-in licences can also complete at €0 with a producer code (no payment needed).
+  const freePlugin = checkout?.payment_status === "no_payment_required" && checkout.metadata?.purchase_type === "plugin_licence";
+  if (!checkout || (checkout.payment_status !== "paid" && !freePlugin)) return json(response, { received: true });
   try {
     const metadata = checkout.metadata || {};
     if(metadata.ticketbunker_flow==='separate_v1')return json(response,{error:'TicketBunker payments require their dedicated signed webhook'},400);

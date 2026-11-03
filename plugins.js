@@ -162,17 +162,19 @@
       const d = await r.json();
       if (!r.ok) throw new Error(d.error);
       products = d.products || [];
-      $('#pluginGrid').innerHTML = products.map(card).join('');
+      // Free first to welcome people in; the paid plug-ins follow as the upgrade, best value first.
+      $('#freeGrid').innerHTML = products.filter((p) => p.free).map(card).join('');
+      $('#pluginGrid').innerHTML = [...bundles().reverse(), ...products.filter((p) => !p.free && !bundles().includes(p))].map(card).join('');
       const params = new URLSearchParams(location.search);
       if (params.get('code')) {   // a producer link: plugins.html?code=XXXX#producer-code
         $('#codeForm').code.value = params.get('code').slice(0, 40);
         $('#producer-code').scrollIntoView({ block: 'center' });
-        $('#codeForm').email.focus();
+        $('#codeForm').querySelector('button').focus();
       } else if (params.get('offer')) openFree(params.get('offer'), true);
       else if (params.get('get')) openFree(params.get('get'), false);   // "Download Armoury free" links
       else if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView({ block: 'center' });
     } catch {
-      $('#pluginGrid').innerHTML = '<article class="plugin-card plugin-loading">The plug-ins could not be loaded just now. Please refresh in a moment.</article>';
+      $('#freeGrid').innerHTML = '<article class="plugin-card plugin-loading">The plug-ins could not be loaded just now. Please refresh in a moment.</article>';
     }
   }
 
@@ -204,25 +206,18 @@
     if (form) label(form);
   });
 
-  // Producer codes: the code and e-mail go to /api/licence?action=redeem, which e-mails a licence key.
+  // Producer codes work like a discount code: the same checkout as a purchase, at €0.
   async function redeem(form) {
     const button = form.querySelector('button[type=submit]'), note = $('#codeMessage');
-    const email = form.email.value;
     button.disabled = true;
-    button.textContent = 'Sending...';
+    button.textContent = 'Opening checkout...';
     note.textContent = '';
     try {
-      const r = await fetch('/api/licence?action=redeem', { method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ code: form.code.value, email }) });
-      const d = await r.json();
-      if (!r.ok) throw new Error(d.error || 'That did not work. Please try again.');
-      form.reset();
-      note.textContent = `Done: check ${email} for your key and the downloads (and the spam folder, just in case).`;
+      await checkout({ code: form.code.value });
     } catch (err) {
       note.textContent = err.message;
-    } finally {
       button.disabled = false;
-      button.textContent = 'Get my key';
+      button.textContent = 'Apply code';
     }
   }
 

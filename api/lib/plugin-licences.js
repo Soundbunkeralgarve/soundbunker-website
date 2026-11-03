@@ -116,7 +116,16 @@ async function stripe(path, form, idempotencyKey) {
 
 // Every paid order also gets the free product (the Armoury), unless the order already includes it. Stripe only sees the
 // paid item; the free licence is created with it after payment.
-export async function createCheckout({ productId, email, userId, choice }, db = licenceDB(), stripeCall = stripe) {
+// A producer code (plugin_codes) works like a discount code: the same checkout for the code's product, at €0 through a
+// one-off 100% coupon, so producers get the same e-mails, Client Area licence and Armoury as buyers.
+export async function createCheckout({ productId, email, userId, choice, code }, db = licenceDB(), stripeCall = stripe) {
+  let producer = null;
+  if (code) {
+    const r = await producerCode(db, code);
+    if (r.error) return r;
+    producer = r.code;
+    productId = producer.product_id;
+  }
   if (!PRODUCT.test(productId || '')) return { error: 'Unknown plug-in' };
   const p = await checked(db.from('plugin_products').select('*').eq('id', productId).maybeSingle(), 'load the plug-in');
   if (p?.free) return { error: `${p.name} is free: enter your e-mail address to get it.` };
@@ -148,6 +157,14 @@ export async function createCheckout({ productId, email, userId, choice }, db = 
     'payment_intent_data[metadata][plugin_product]': p.id
   });
   if (email) form.set('customer_email', email);
+  if (producer) {
+    const coupon = await stripeCall('/coupons', new URLSearchParams({ percent_off: '100', duration: 'once', max_redemptions: '1',
+      name: `Producer code ${producer.code}`.slice(0, 40) }));
+    form.delete('allow_promotion_codes');
+    form.set('discounts[0][coupon]', coupon.id);
+    form.set('metadata[code]', producer.code);
+    form.set('custom_text[submit][message]', 'Free with your producer code: no payment needed. Your licence key is delivered by e-mail straight away.');
+  }
   const session = await stripeCall('/checkout/sessions', form);
   return { url: session.url };
 }
@@ -171,29 +188,28 @@ export async function claimFree({ productId, email, userId }, db = licenceDB(), 
   return { ok: true };
 }
 
-// Producer codes (plugin_codes): a code typed on the plug-ins page gives that address its own free licence for the
-// code's product. Using the code again from the same address re-sends the same key and does not count again.
+// Producer codes (plugin_codes): checked when the checkout opens, counted once per address when it completes.
 const CODE_ERRORS = {
   invalid_code: 'That code is not valid.',
   expired: 'That code has expired.',
   used_up: 'That code has been used the maximum number of times.',
 };
 
-export async function redeemCode({ code, email }, db = licenceDB(), opts = {}) {
-  email = String(email || '').trim();
+async function producerCode(db, code) {
   code = String(code || '').trim().toUpperCase();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 200) return { error: 'Enter a valid e-mail address.' };
   if (!/^[A-Z0-9-]{4,40}$/.test(code)) return { error: CODE_ERRORS.invalid_code };
-  const r = await rpc(db, 'sb_plugin_redeem_code', { p_code: code, p_email: email, p_key: newLicenceKey() });
-  if (!r.ok) return { error: CODE_ERRORS[r.error] || CODE_ERRORS.invalid_code };
-  const licence = await checked(db.from('plugin_licences').select('*').eq('id', r.id).single(), 'load the licence');
-  const { send = sendTransactionalEmail } = opts;
-  await sendLicenceEmail(licence, db, { send, key: `plugin-code-${licence.id}-${new Date().toISOString().slice(0, 13)}` });
-  if (r.new) {
-    await send({ to: studio(), key: `plugin-code-studio-${licence.id}`, subject: `Producer code used · ${code}`,
-      text: `${email} used the code ${code}.\n\nKey: ${licence.licence_key}\n\nAdmin: ${base()}/plugin-admin.html` });
-  }
-  return { ok: true };
+  const c = await checked(db.from('plugin_codes').select('*').eq('code', code).maybeSingle(), 'check the code');
+  if (!c || !c.active) return { error: CODE_ERRORS.invalid_code };
+  if (c.expires_at && new Date(c.expires_at) <= new Date()) return { error: CODE_ERRORS.expired };
+  if (c.uses >= c.max_uses) return { error: CODE_ERRORS.used_up };
+  return { code: c };
+}
+
+async function recordCodeUse(db, code, email, licenceId) {
+  const { error } = await db.from('plugin_code_redemptions').insert({ code, email: email.toLowerCase(), licence_id: licenceId });
+  if (error) return;   // this address used the code before: it counts once
+  const c = await checked(db.from('plugin_codes').select('*').eq('code', code).maybeSingle(), 'check the code');
+  if (c) await checked(db.from('plugin_codes').update({ uses: c.uses + 1 }).eq('code', code), 'count the code');
 }
 
 // The offer in the free product's e-mail: the bundles, against buying the plug-ins one by one.
@@ -214,7 +230,8 @@ async function upsellText(db, freeId) {
 // After payment (Stripe webhook). Safe to run again for the same checkout: one licence per checkout, e-mails keyed.
 export async function fulfilPluginCheckout(checkout, db = licenceDB(), { send = sendTransactionalEmail, invoice = sendPluginLicenceInvoice } = {}) {
   const meta = checkout.metadata || {};
-  if (meta.purchase_type !== 'plugin_licence' || checkout.payment_status !== 'paid') throw new Error('Not a paid plug-in checkout');
+  const free = checkout.payment_status === 'no_payment_required' && Boolean(meta.code);
+  if (meta.purchase_type !== 'plugin_licence' || !(checkout.payment_status === 'paid' || free)) throw new Error('Not a paid plug-in checkout');
   const p = await checked(db.from('plugin_products').select('*').eq('id', meta.plugin_product).maybeSingle(), 'load the plug-in');
   if (!p) throw new Error('Paid plug-in not found');
   if (checkout.currency !== 'eur' || checkout.amount_subtotal !== p.price_cents) throw new Error('Plug-in payment does not match the price');
@@ -227,7 +244,8 @@ export async function fulfilPluginCheckout(checkout, db = licenceDB(), { send = 
   if (!licence) {
     const row = { licence_key: newLicenceKey(), product_id: p.id, includes: picked, seats: p.seats, email,
       user_id: /^[0-9a-f-]{36}$/.test(meta.user_id || '') ? meta.user_id : null,
-      source: checkout.livemode === true ? 'stripe' : 'stripe-test', stripe_session_id: checkout.id,
+      source: meta.code ? 'code' : checkout.livemode === true ? 'stripe' : 'stripe-test', ...(meta.code ? { note: `Code ${meta.code}` } : {}),
+      stripe_session_id: checkout.id,
       stripe_payment_intent: typeof checkout.payment_intent === 'string' ? checkout.payment_intent : checkout.payment_intent?.id || null,
       amount_cents: checkout.amount_total };
     const inserted = await db.from('plugin_licences').insert(row).select('*').single();
@@ -235,13 +253,16 @@ export async function fulfilPluginCheckout(checkout, db = licenceDB(), { send = 
     licence = inserted.error
       ? await checked(db.from('plugin_licences').select('*').eq('stripe_session_id', checkout.id).single(), 'save the licence')
       : inserted.data;
+    if (meta.code && !inserted.error) await recordCodeUse(db, meta.code, email, licence.id);
   }
 
   await sendLicenceEmail(licence, db, { send, key: `plugin-licence-${checkout.id}` });
   if (meta.free_product) await claimFree({ productId: meta.free_product, email, userId: licence.user_id }, db, { send, upsell: false });
-  await send({ to: studio(), key: `plugin-licence-studio-${checkout.id}`, subject: `Plug-in sold · ${p.name} · ${money(checkout.amount_total)}`,
+  await send({ to: studio(), key: `plugin-licence-studio-${checkout.id}`,
+    subject: meta.code ? `Producer code used · ${meta.code} · ${p.name}` : `Plug-in sold · ${p.name} · ${money(checkout.amount_total)}`,
     text: `${p.name} licence sold${checkout.livemode === true ? '' : ' (Stripe TEST payment)'}.\n\nBuyer: ${email}\nPaid: ${money(checkout.amount_total)}\nKey: ${licence.licence_key}\n\nAdmin: ${base()}/plugin-admin.html` });
-  const invoiced = checkout.livemode === true ? await invoice(checkout, p, email) : { skipped: true, reason: 'Test payment' };
+  const invoiced = !(checkout.amount_total > 0) ? { skipped: true, reason: 'Nothing to invoice' }
+    : checkout.livemode === true ? await invoice(checkout, p, email) : { skipped: true, reason: 'Test payment' };
   return { status: 'fulfilled', licence: licence.id, invoice: invoiced };
 }
 

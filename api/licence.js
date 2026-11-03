@@ -2,7 +2,7 @@
 // "My plug-ins" and the licence admin. Logic in lib/plugin-licences.js.
 import { json, parseJson, validEmail } from './lib/http.js';
 import { optionalUser, requireUser, requireAdmin } from './lib/supabase-auth.js';
-import { pluginRequest, listProducts, createCheckout, claimFree, redeemCode, licenceForSession, myLicences, releaseComputer,
+import { pluginRequest, listProducts, createCheckout, claimFree, licenceForSession, myLicences, releaseComputer,
   adminList, adminCreate, adminUpdate } from './lib/plugin-licences.js';
 
 const PLUGIN_ACTIONS = ['activate', 'trial', 'refresh', 'deactivate'];
@@ -43,17 +43,13 @@ export default async function handler(request, response) {
       const user = await optionalUser(request);
       const email = validEmail(body.email) ? String(body.email).trim() : user?.email;
       const result = await createCheckout({ productId: String(body.product || ''), email, userId: user?.id,
-        choice: Array.isArray(body.choice) ? body.choice.map(String).slice(0, 10) : undefined });
+        choice: Array.isArray(body.choice) ? body.choice.map(String).slice(0, 10) : undefined,
+        code: body.code ? String(body.code).slice(0, 40) : undefined });
       return json(response, result, result.error ? 400 : 200);
     }
     if (action === 'claim') {
       const user = await optionalUser(request);
       const result = await claimFree({ productId: String(body.product || ''), email: String(body.email || user?.email || ''), userId: user?.id });
-      return json(response, result, result.error ? 400 : 200);
-    }
-    if (action === 'redeem') {
-      const user = await optionalUser(request);
-      const result = await redeemCode({ code: String(body.code || ''), email: String(body.email || user?.email || '') });
       return json(response, result, result.error ? 400 : 200);
     }
     if (action === 'release') {
