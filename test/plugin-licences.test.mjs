@@ -281,7 +281,7 @@ test('every paid order includes the free Armoury; the 3-Pack unlocks the chosen 
 
 // A Stripe account with promotion codes, enough for the producer code sync.
 function fakeStripe() {
-  const s = { promos: [], coupons: [], sessions: [], prices: [], lineItems: {}, retrieved: {} };
+  const s = { products: {}, promos: [], coupons: [], sessions: [], prices: [], lineItems: {}, retrieved: {} };
   s.call = async (path, form) => {
     if (path.startsWith('/prices?')) {
       const keys = new URLSearchParams(path.split('?')[1]).getAll('lookup_keys[]');
@@ -294,7 +294,7 @@ function fakeStripe() {
     }
     if (path.endsWith('/line_items?limit=20')) return { data: s.lineItems[path.split('/')[3]] || [] };
     if (path.startsWith('/checkout/sessions/')) return s.retrieved[path.split('/')[3]] || assert.fail('unknown session');
-    if (path.startsWith('/products')) return { id: path.split('/')[2] || form.get('id') };
+    if (path.startsWith('/products')) { const id = path.split('/')[2] || form.get('id'); s.products[id] = form; return { id }; }
     if (path === '/coupons') {
       const c = { id: `co_${s.coupons.length + 1}`, percent: form.get('percent_off'), product: form.get('applies_to[products][0]') };
       s.coupons.push(c);
@@ -391,13 +391,16 @@ test('free SB ARMOURY: a €0 Stripe checkout offering SB COMPLETE and every plu
   try {
     const stripe = fakeStripe();
     assert.ok((await createCheckout({ productId: 'armoury' }, sb, stripe.call)).url);
+    const named = stripe.products.sb_plugin_complete;
+    assert.match(named.get('name'), /^★ BEST OFFER · SB COMPLETE: all 6 plug-ins, save €66\.00$/);
+    assert.match(named.get('images[0]'), /assets\/plugins\/complete\.jpg$/);
     const form = stripe.sessions[0];
     assert.equal(form.get('line_items[0][price_data][unit_amount]'), '0');
     assert.equal(form.get('line_items[0][price_data][product]'), 'sb_plugin_armoury');
     assert.equal(form.get('allow_promotion_codes'), 'true', 'discount codes can be typed in the checkout');
     const offered = [...form.keys()].filter((k) => /^optional_items\[\d+\]\[price\]$/.test(k)).map((k) => stripe.prices.find((p) => p.id === form.get(k)).product);
     assert.equal(offered[0], 'sb_plugin_complete', 'the full collection is offered first');
-    assert.equal(form.get('optional_items[0][adjustable_quantity][enabled]'), 'false');
+    assert.equal(form.get('optional_items[0][adjustable_quantity][maximum]'), '1');
     assert.ok(offered.includes('sb_plugin_nuclear') && !offered.includes('sb_plugin_pack3') && !offered.includes('sb_plugin_armoury'));
     assert.match(form.get('custom_text[submit][message]'), /SB ARMOURY is free\. Add SB COMPLETE above: all \d plug-ins for €59\.00 instead of €\d+\.00, you save/);
     await createCheckout({ productId: 'armoury' }, sb, stripe.call);
@@ -445,6 +448,11 @@ test('free SB ARMOURY: a €0 Stripe checkout offering SB COMPLETE and every plu
     assert.equal((await licenceForSession('cs_live_f5', sb, stripe.call)).product, 'SB COMPLETE');
     stripe.lineItems.cs_live_f6 = stripe.lineItems.cs_live_f5;
     await assert.rejects(fulfilPluginCheckout({ ...coded, id: 'cs_live_f6', discounts: [] }, sb, opts), /Not a paid/, 'added plug-ins are only free with a producer code');
+
+    // Two SB COMPLETEs: one key on twice the computers.
+    stripe.lineItems.cs_live_f7 = [item('armoury', 0), { ...item('complete', 5900), quantity: 2 }];
+    await fulfilPluginCheckout({ ...all, id: 'cs_live_f7', amount_subtotal: 11800, amount_total: 11800, customer_details: { email: 'twice@maker.com' } }, sb, opts);
+    assert.equal((await licenceForSession('cs_live_f7', sb, stripe.call)).seats, 4);
 
     stripe.lineItems.cs_live_f4 = [item('armoury', 0), item('complete', 5900)];
     await assert.rejects(fulfilPluginCheckout({ ...all, id: 'cs_live_f4', amount_subtotal: 100 }, sb, opts), /does not match/);

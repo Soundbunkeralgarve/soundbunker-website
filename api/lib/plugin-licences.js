@@ -145,7 +145,8 @@ export async function createCheckout({ productId, email, userId, choice, code },
   const free = (await checked(db.from('plugin_products').select('*').eq('free', true).eq('active', true), 'load the plug-ins'))
     .find((f) => !picked.includes(f.id)) || null;
   const names = p.pick ? (await productRows(db, picked)).map((x) => x.name).join(', ') + '. ' : '';
-  await ensureStripeProduct(p, stripeCall);
+  const rows = p.includes.length > 1 ? await checked(db.from('plugin_products').select('*').eq('active', true), 'load the plug-ins') : [];
+  await ensureStripeProduct(p, stripeCall, rows);
   // A sync failure must not stop a sale: buyers without a code can always pay.
   const promos = await syncProducerPromos(db, p, stripeCall).catch((e) => { if (producer) throw e; console.error('Producer code sync failed', e); return {}; });
   const includes = `${p.pick ? `Your plug-ins: ${names}` : ''}${free ? `${free.name} included free. ` : ''}`;
@@ -188,7 +189,8 @@ async function freeCheckout(p, { email, userId }, db, stripeCall) {
   const addons = rows.filter((x) => !x.free && !x.pick && x.price_cents > 0)
     .sort((a, b) => b.includes.length - a.includes.length).slice(0, 10);   // the full collection first
   await ensureStripeProduct(p, stripeCall);
-  const prices = await stripePrices(addons, stripeCall);
+  for (const b of addons.filter((x) => x.includes.length > 1)) await ensureStripeProduct(b, stripeCall, rows);
+  const prices = await stripePrices(addons, stripeCall, rows);
   // Producer codes work here too, on the add-on they belong to (normally SB COMPLETE). A sync failure must not stop the checkout.
   for (const x of addons) await syncProducerPromos(db, x, stripeCall).catch((e) => console.error('Producer code sync failed', e));
   const singles = addons.filter((x) => x.includes.length === 1);
@@ -218,7 +220,10 @@ async function freeCheckout(p, { email, userId }, db, stripeCall) {
   addons.forEach((x, i) => {
     form.set(`optional_items[${i}][price]`, prices[x.id]);
     form.set(`optional_items[${i}][quantity]`, '1');
-    form.set(`optional_items[${i}][adjustable_quantity][enabled]`, 'false');   // one licence covers 2 computers
+    // One of each: a licence already covers 2 computers. (Stripe still offers a quantity box; fulfilment adds seats for extras.)
+    form.set(`optional_items[${i}][adjustable_quantity][enabled]`, 'true');
+    form.set(`optional_items[${i}][adjustable_quantity][minimum]`, '0');
+    form.set(`optional_items[${i}][adjustable_quantity][maximum]`, '1');
   });
   if (email) form.set('customer_email', email);
   const session = await stripeCall('/checkout/sessions', form);
@@ -227,7 +232,7 @@ async function freeCheckout(p, { email, userId }, db, stripeCall) {
 
 // Stripe add-ons need saved prices: one per product and amount, found by lookup key (a new price follows a price change).
 const lookupKey = (p) => `sb_plugin_${p.id}_eur_${p.price_cents}`;
-async function stripePrices(products, stripeCall) {
+async function stripePrices(products, stripeCall, rows = []) {
   if (!products.length) return {};
   const query = products.map((p) => `lookup_keys[]=${encodeURIComponent(lookupKey(p))}`).join('&');
   const found = (await stripeCall(`/prices?active=true&limit=100&${query}`)).data || [];
@@ -235,7 +240,7 @@ async function stripePrices(products, stripeCall) {
   for (const p of products) {
     let price = found.find((x) => x.lookup_key === lookupKey(p));
     if (!price) {
-      await ensureStripeProduct(p, stripeCall);
+      await ensureStripeProduct(p, stripeCall, rows);
       price = await stripeCall('/prices', new URLSearchParams({ product: stripeProduct(p.id), currency: 'eur', unit_amount: String(p.price_cents), lookup_key: lookupKey(p) }));
     }
     ids[p.id] = price.id;
@@ -247,8 +252,19 @@ async function stripePrices(products, stripeCall) {
 // merch or anything else sold on the same Stripe account.
 const stripeProduct = (id) => `sb_plugin_${id}`;
 
-async function ensureStripeProduct(p, stripeCall) {
+// The full bundle (SB COMPLETE) is named and pictured as the best offer, so it stands out among the free checkout's add-ons.
+async function ensureStripeProduct(p, stripeCall, rows = []) {
   const details = { name: `${p.name} licence`, description: `${p.tagline || p.name}. macOS and Windows, ${p.seats} computers. Licence keys e-mailed instantly. VAT included.` };
+  const singles = rows.filter((x) => !x.free && x.includes.length === 1 && p.includes.includes(x.id));
+  const separately = singles.reduce((sum, x) => sum + x.price_cents, 0);
+  if (p.includes.length > 1 && !p.pick && separately > p.price_cents) {
+    const names = rows.filter((x) => p.includes.includes(x.id) && x.includes.length === 1).map((x) => x.name);
+    Object.assign(details, {
+      name: `★ BEST OFFER · ${p.name}: all ${p.includes.length} plug-ins, save ${money(separately - p.price_cents)}`,
+      description: `${names.join(' + ')}. ${money(separately)} bought one by one, ${money(p.price_cents)} here. One installer for everything, macOS and Windows, ${p.seats} computers. VAT included.`,
+      'images[0]': `${base()}/assets/plugins/${p.id}.jpg`
+    });
+  }
   try {
     await stripeCall(`/products/${stripeProduct(p.id)}`, new URLSearchParams(details));
   } catch (e) {
@@ -386,8 +402,12 @@ async function fulfilFreeCheckout(checkout, db, { send, invoice, stripeCall }) {
   const email = checkout.customer_details?.email || checkout.customer_email;
   if (!email) throw new Error('Plug-in buyer e-mail missing');
   const items = (await stripeCall(`/checkout/sessions/${checkout.id}/line_items?limit=20`)).data || [];
-  const ids = [...new Set(items.map((i) => i.price?.product?.id || i.price?.product).filter((x) => typeof x === 'string')
-    .map((x) => x.replace(/^sb_plugin_/, '')))].filter((id) => id !== free.id);
+  const qty = {};
+  for (const i of items) {
+    const product = i.price?.product?.id || i.price?.product;
+    if (typeof product === 'string') qty[product.replace(/^sb_plugin_/, '')] = (qty[product.replace(/^sb_plugin_/, '')] || 0) + (i.quantity || 1);
+  }
+  const ids = Object.keys(qty).filter((id) => id !== free.id);
   if (!ids.length) {
     if (checkout.amount_total !== 0) throw new Error('Free plug-in checkout was charged');
     await claimFree({ productId: free.id, email, userId: meta.user_id }, db, { send });
@@ -398,10 +418,12 @@ async function fulfilFreeCheckout(checkout, db, { send, invoice, stripeCall }) {
   // Only a producer code makes added plug-ins free.
   const code = checkout.payment_status === 'no_payment_required' ? await producerCodeUsed(checkout, stripeCall) : '';
   if (!(checkout.payment_status === 'paid' || code)) throw new Error('Not a paid plug-in checkout');
-  if (checkout.currency !== 'eur' || checkout.amount_subtotal !== bought.reduce((sum, b) => sum + b.price_cents, 0)) throw new Error('Plug-in payment does not match the price');
+  if (checkout.currency !== 'eur' || checkout.amount_subtotal !== bought.reduce((sum, b) => sum + b.price_cents * qty[b.id], 0)) throw new Error('Plug-in payment does not match the price');
   const p = bought.sort((a, b) => b.includes.length - a.includes.length)[0];   // SB COMPLETE if they took it
   const includes = [...new Set([free.id, ...p.includes, ...bought.flatMap((b) => b.includes)])];
-  return (await deliver(checkout, db, { p, includes, email, code, userId: meta.user_id, send, invoice })).result;
+  // Two of a plug-in: the one key works on twice as many computers.
+  const seats = Math.min(10, p.seats * Math.max(...bought.map((b) => qty[b.id])));
+  return (await deliver(checkout, db, { p: { ...p, seats }, includes, email, code, userId: meta.user_id, send, invoice })).result;
 }
 
 // One licence per checkout: saved, e-mailed, reported to the studio and invoiced.
