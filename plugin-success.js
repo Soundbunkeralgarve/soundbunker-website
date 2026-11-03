@@ -10,7 +10,10 @@
     $('#successLead').textContent = `Licensed to ${l.email}.`;
     $('#licenceKey').textContent = l.key;
     $('#licenceSeats').textContent = `Use it on ${l.seats} computers, macOS and Windows mixed.`;
-    $('#successDownloads').innerHTML = l.plugins.map((p) => `<div class="plugin-download-row"><strong>${esc(p.name)}</strong>
+    const all = l.install_all ? `<div class="plugin-download-row plugin-download-all"><strong>Everything at once</strong>
+      ${l.install_all.mac_download ? `<a class="plugin-buy" href="${esc(l.install_all.mac_download)}" rel="noopener">Install all · macOS ↓</a>` : ''}
+      ${l.install_all.windows_download ? `<a class="plugin-buy" href="${esc(l.install_all.windows_download)}" rel="noopener">Install all · Windows ↓</a>` : ''}</div>` : '';
+    $('#successDownloads').innerHTML = all + l.plugins.map((p) => `<div class="plugin-download-row"><strong>${esc(p.name)}</strong>
       ${p.mac_download ? `<a class="plugin-download" href="${esc(p.mac_download)}" rel="noopener">macOS ↓</a>` : '<span class="plugin-soon">macOS: link in your e-mail soon</span>'}
       ${p.windows_download ? `<a class="plugin-download" href="${esc(p.windows_download)}" rel="noopener">Windows ↓</a>` : '<span class="plugin-soon">Windows: link in your e-mail soon</span>'}</div>`).join('');
     $('#successBody').hidden = false;

@@ -360,11 +360,13 @@ function renderPluginLicences(licences) {
     const computers = l.computers.length
       ? `<ul class="client-plugin-computers">${l.computers.map(c => `<li><span>${escapeHtml(c.name || 'Computer')} · ${escapeHtml(c.os)} · last seen ${escapeHtml(String(c.last_seen_at).slice(0, 10))}</span><button type="button" data-release-licence="${escapeHtml(l.id)}" data-release-machine="${escapeHtml(c.machine)}">Remove</button></li>`).join('')}</ul>`
       : '<p class="client-plugin-status">Not activated on any computer yet.</p>';
+    const all = l.install_all ? [l.install_all.mac_download && `<a href="${escapeHtml(l.install_all.mac_download)}" rel="noopener"><strong>Install all · macOS ↓</strong></a>`,
+      l.install_all.windows_download && `<a href="${escapeHtml(l.install_all.windows_download)}" rel="noopener"><strong>Install all · Windows ↓</strong></a>`].filter(Boolean).join(' · ') : '';
     return `<article class="client-plugin-card"><h3>${escapeHtml(l.product)}</h3>
       <p class="client-plugin-key-label">Licence key</p>
       <div class="client-plugin-key"><code>${escapeHtml(l.key)}</code><button type="button" data-copy-key="${escapeHtml(l.key)}">Copy key</button></div>
       <p class="client-plugin-status">${l.status === 'active' ? `Active · ${l.computers.length} of ${l.seats} computers in use` : 'This licence is no longer active.'}</p>
-      ${computers}<p>${downloads || '<a href="plugins.html">Download links are on the plug-ins page ↗</a>'}</p></article>`;
+      ${computers}${all ? `<p>${all}</p>` : ''}<p>${downloads || '<a href="plugins.html">Download links are on the plug-ins page ↗</a>'}</p></article>`;
   }).join('');
 }
 

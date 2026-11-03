@@ -48,14 +48,16 @@ from (values ('armoury', 'SB ARMOURY'), ('nuclear', 'SB NUCLEAR'), ('napalm', 'S
 where p.id = n.id and p.name is distinct from n.name;
 
 -- Installers (public GitHub releases in Soundbunkeralgarve/SoundBunker-Downloads). Re-running this script updates them.
+-- SB COMPLETE has its own all-in-one installer; its plug-ins keep their single ones too.
 update plugin_products p set mac_download = d.mac, windows_download = d.win, updated_at = now()
 from (values
-  ('armoury', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/armoury-1.0.0/SoundBunker-Armoury-1.0.0-macOS.pkg', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/armoury-1.0.0/SoundBunker-Armoury-1.0.0-Windows-x64-Setup.exe'),
-  ('nuclear', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/nuclear-1.0.0/NUCLEAR-1.0.0-macOS.pkg', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/nuclear-1.0.0/NUCLEAR-1.0.0-Windows-x64-Setup.exe'),
-  ('napalm', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/napalm-1.0.0/NAPALM-1.0.0-macOS.pkg', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/napalm-1.0.0/NAPALM-1.0.0-Windows-x64-Setup.exe'),
-  ('shrapnel', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/shrapnel-1.0.0/SHRAPNEL-1.0.0-macOS.pkg', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/shrapnel-1.0.0/SHRAPNEL-1.0.0-Windows-x64-Setup.exe'),
-  ('fallout', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/fallout-1.0.0/FALLOUT-1.0.0-macOS.pkg', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/fallout-1.0.0/FALLOUT-1.0.0-Windows-x64-Setup.exe'),
-  ('sentinel', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/sentinel-1.0.0/SENTINEL-1.0.0-macOS.pkg', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/sentinel-1.0.0/SENTINEL-1.0.0-Windows-Setup.exe')
+  ('armoury', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/armoury-1.0.1/SoundBunker-Armoury-1.0.1-macOS.pkg', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/armoury-1.0.1/SoundBunker-Armoury-1.0.1-Windows-x64-Setup.exe'),
+  ('nuclear', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/nuclear-1.0.1/NUCLEAR-1.0.1-macOS.pkg', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/nuclear-1.0.1/NUCLEAR-1.0.1-Windows-x64-Setup.exe'),
+  ('napalm', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/napalm-1.0.1/NAPALM-1.0.1-macOS.pkg', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/napalm-1.0.1/NAPALM-1.0.1-Windows-x64-Setup.exe'),
+  ('shrapnel', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/shrapnel-1.0.1/SHRAPNEL-1.0.1-macOS.pkg', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/shrapnel-1.0.1/SHRAPNEL-1.0.1-Windows-x64-Setup.exe'),
+  ('fallout', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/fallout-1.0.1/FALLOUT-1.0.1-macOS.pkg', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/fallout-1.0.1/FALLOUT-1.0.1-Windows-x64-Setup.exe'),
+  ('sentinel', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/sentinel-1.0.1/SENTINEL-1.0.1-macOS.pkg', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/sentinel-1.0.1/SENTINEL-1.0.1-Windows-Setup.exe'),
+  ('complete', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/complete-1.0.1/SB-COMPLETE-1.0.1-macOS.pkg', 'https://github.com/Soundbunkeralgarve/SoundBunker-Downloads/releases/download/complete-1.0.1/SB-COMPLETE-1.0.1-Windows-x64-Setup.exe')
 ) as d(id, mac, win)
 where p.id = d.id;
 

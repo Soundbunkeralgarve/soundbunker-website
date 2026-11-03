@@ -333,7 +333,11 @@ export async function sendLicenceEmail(licence, db = licenceDB(), opts = {}) {
   const { send = sendTransactionalEmail, key } = opts;
   const [product] = await productRows(db, [licence.product_id]);
   const plugins = await productRows(db, licence.includes);
-  const downloads = plugins.map((p) => `${p.name}\n   macOS:   ${p.mac_download || `${base()}/plugins.html#${p.id}`}\n   Windows: ${p.windows_download || `${base()}/plugins.html#${p.id}`}`).join('\n\n');
+  const oneByOne = plugins.map((p) => `${p.name}\n   macOS:   ${p.mac_download || `${base()}/plugins.html#${p.id}`}\n   Windows: ${p.windows_download || `${base()}/plugins.html#${p.id}`}`).join('\n\n');
+  const allInOne = plugins.length > 1 && (product.mac_download || product.windows_download);
+  const downloads = allInOne
+    ? `Everything at once (one installer for all ${plugins.length}):\n   macOS:   ${product.mac_download || `${base()}/plugins.html`}\n   Windows: ${product.windows_download || `${base()}/plugins.html`}\n\nOr one by one:\n\n${oneByOne}`
+    : oneByOne;
   const body = `Hi,\n\n${product.free ? `Here is your free copy of ${product.name}.` : licence.source === 'code' ? `Here is your free ${product.name} licence, with our compliments.` : `Thank you for buying ${product.name}.`}\n\nYour licence key:\n\n    ${licence.licence_key}\n\n` +
     `It works on ${licence.seats} computers (macOS and Windows, mixed as you like)${plugins.length > 1 ? ` and unlocks ${plugins.map((p) => p.name).join(', ')}` : ''}.\n\n` +
     `1. Download and install:\n\n${downloads}\n\n` +
@@ -367,6 +371,9 @@ function describe(licence, products, activations) {
     seats: licence.seats, email: licence.email, created_at: licence.created_at, source: licence.source, note: licence.note,
     plugins: licence.includes.map((id) => products.find((p) => p.id === id)).filter(Boolean)
       .map((p) => ({ id: p.id, name: p.name, mac_download: p.mac_download || null, windows_download: p.windows_download || null })),
+    // A bundle with its own installer (SB COMPLETE) installs everything in one go.
+    install_all: licence.includes.length > 1 && (product?.mac_download || product?.windows_download)
+      ? { mac_download: product.mac_download || null, windows_download: product.windows_download || null } : null,
     computers: [...new Map(activations.filter((a) => a.licence_id === licence.id && !a.deactivated_at)
       .map((a) => [a.machine_id, { machine: a.machine_id, name: a.machine_name, os: a.os, last_seen_at: a.last_seen_at }])).values()] };
 }
