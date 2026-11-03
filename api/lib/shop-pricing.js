@@ -13,7 +13,7 @@ export function retailPrice(name, fallback) {
   if (/\bzip hoodie\b/i.test(name)) return 6000;
   if (/\bshotta bag\b/i.test(name)) return 3000;
   if (/\bbum bag\b/i.test(name)) return 3500;
-  if (/\bwater bottle\b/i.test(name)) return 2800;
+  if (/\bwater bottle\b/i.test(name)) return 2995;
   return retailPrices[productCategory(name)] ?? fallback;
 }
 function setting(name, fallback, min, max) {
