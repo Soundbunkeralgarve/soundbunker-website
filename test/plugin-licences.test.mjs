@@ -227,7 +227,7 @@ test('free Armoury: e-mailed key, one licence per address, bundles offered in th
     assert.equal(rows.length, 1, 'claiming again re-sends the same key');
     assert.equal(rows[0].source, 'free'); assert.equal(rows[0].email, 'fan@example.com');
     assert.equal(sent.length, 2);
-    assert.match(sent[0].subject, /free SoundBunker Armoury/);
+    assert.match(sent[0].subject, /free SB ARMOURY/);
     assert.ok(sent[0].text.includes(rows[0].licence_key));
     assert.match(sent[0].text, /is €25\.00, or any 3 for €45\.00 \(instead of €75\.00\), or all 5 for €59\.00 \(instead of €125\.00\)/);
     assert.match(sent[0].text, /plugins\.html\?offer=armoury#armoury/);
@@ -246,7 +246,7 @@ test('every paid order includes the free Armoury; the 3-Pack unlocks the chosen 
     await createCheckout({ productId: 'nuclear', email: 'fan@example.com' }, sb, stripe);
     assert.equal(form.get('line_items[0][price_data][unit_amount]'), '2500');
     assert.equal(form.get('metadata[free_product]'), 'armoury', 'single plug-in: Armoury added free');
-    assert.match(form.get('custom_text[submit][message]'), /^SoundBunker Armoury included free\./);
+    assert.match(form.get('custom_text[submit][message]'), /^SB ARMOURY included free\./);
     assert.equal(form.get('line_items[0][price_data][product]'), 'sb_plugin_nuclear');
     await createCheckout({ productId: 'complete' }, sb, stripe);
     assert.equal(form.get('line_items[0][price_data][unit_amount]'), '5900');
@@ -259,7 +259,7 @@ test('every paid order includes the free Armoury; the 3-Pack unlocks the chosen 
     assert.equal(form.get('line_items[0][price_data][unit_amount]'), '4500');
     assert.equal(form.get('metadata[choice]'), 'nuclear,napalm,fallout');
     assert.equal(form.get('metadata[free_product]'), 'armoury');
-    assert.match(form.get('custom_text[submit][message]'), /^Your plug-ins: NUCLEAR, NAPALM, FALLOUT\. SoundBunker Armoury included free\./);
+    assert.match(form.get('custom_text[submit][message]'), /^Your plug-ins: SB NUCLEAR, SB NAPALM, SB FALLOUT\. SB ARMOURY included free\./);
 
     const sent = [];
     const opts = { send: async (mail) => { sent.push(mail); }, invoice: async () => ({ queued: true }) };
@@ -272,9 +272,9 @@ test('every paid order includes the free Armoury; the 3-Pack unlocks the chosen 
     const key = (await db.query("select licence_key from plugin_licences where product_id = 'pack3'")).rows[0].licence_key;
     assert.equal((await ask(sb, { action: 'activate', product: 'napalm', machine: m(1), key })).ok, true, 'a chosen plug-in activates');
     assert.equal((await ask(sb, { action: 'activate', product: 'sentinel', machine: m(1), key })).error, 'wrong_product', 'an unchosen one does not');
-    const freeMail = sent.find((x) => /free SoundBunker Armoury/.test(x.subject));
+    const freeMail = sent.find((x) => /free SB ARMOURY/.test(x.subject));
     assert.ok(freeMail && !/Want more/.test(freeMail.text), 'no sales pitch right after buying');
-    assert.ok(sent.some((x) => /SoundBunker 3-Pack licence key/.test(x.subject) && /unlocks NUCLEAR, NAPALM, FALLOUT/.test(x.text)));
+    assert.ok(sent.some((x) => /SB 3-PACK licence key/.test(x.subject) && /unlocks SB NUCLEAR, SB NAPALM, SB FALLOUT/.test(x.text)));
     await assert.rejects(fulfilPluginCheckout({ ...checkout, id: 'cs_live_x', metadata: { ...checkout.metadata, choice: 'nuclear,sentinel' } }, sb, opts), /choice is invalid/);
     await assert.rejects(fulfilPluginCheckout({ ...checkout, id: 'cs_live_y', amount_subtotal: 2500 }, sb, opts), /does not match/);
   } finally { await db.close(); }
@@ -353,7 +353,7 @@ test('producer codes: Stripe promotion codes limited to the code\'s product, cou
     assert.equal(rows[0].source, 'code'); assert.equal(rows[0].product_id, 'complete'); assert.equal(rows[0].note, 'Code SBPRODUCER');
     assert.equal((await db.query("select uses from plugin_codes where code = 'SBPRODUCER'")).rows[0].uses, 1);
     const toProducer = sent.filter((x) => x.to === 'beat@maker.com');
-    assert.match(toProducer[0].subject, /free SoundBunker Complete/);
+    assert.match(toProducer[0].subject, /free SB COMPLETE/);
     assert.match(toProducer[0].text, /with our compliments/);
     assert.equal(new Set(sent.filter((x) => /Producer code used · SBPRODUCER/.test(x.subject)).map((x) => x.key)).size, 1, 'retries reuse the e-mail key');
 

@@ -28,18 +28,24 @@ create table if not exists plugin_products (
 );
 
 insert into plugin_products (id, name, tagline, price_cents, free, pick, includes, sort, active) values
-  ('armoury',  'SoundBunker Armoury',  '11 mix and master effects',               0,    true,  null, array['armoury'], 10, true),
-  ('nuclear',  'NUCLEAR',              'Wavetable synthesiser',                   2500, false, null, array['nuclear'], 20, true),
-  ('napalm',   'NAPALM',               'Virtual analogue synthesiser',            2500, false, null, array['napalm'], 30, true),
-  ('shrapnel', 'SHRAPNEL',             'Drum machine and sample instrument',      2500, false, null, array['shrapnel'], 40, true),
-  ('fallout',  'FALLOUT',              'Extreme saturation',                      2500, false, null, array['fallout'], 50, true),
-  ('sentinel', 'SENTINEL',             'Precision mastering console',             2500, false, null, array['sentinel'], 60, true),
-  ('recon',    'RECON',                'Sampler with iPhone and Android capture', 2500, false, null, array['recon'], 70, false),
-  ('complete', 'SoundBunker Complete', 'Every SoundBunker plug-in',               5900, false, null,
+  ('armoury',  'SB ARMOURY',           '11 mix and master effects',               0,    true,  null, array['armoury'], 10, true),
+  ('nuclear',  'SB NUCLEAR',           'Wavetable synthesiser',                   2500, false, null, array['nuclear'], 20, true),
+  ('napalm',   'SB NAPALM',            'Virtual analogue synthesiser',            2500, false, null, array['napalm'], 30, true),
+  ('shrapnel', 'SB SHRAPNEL',          'Drum machine and sample instrument',      2500, false, null, array['shrapnel'], 40, true),
+  ('fallout',  'SB FALLOUT',           'Extreme saturation',                      2500, false, null, array['fallout'], 50, true),
+  ('sentinel', 'SB SENTINEL',          'Precision mastering console',             2500, false, null, array['sentinel'], 60, true),
+  ('recon',    'SB RECON',             'Sampler with iPhone and Android capture', 2500, false, null, array['recon'], 70, false),
+  ('complete', 'SB COMPLETE',          'Every SoundBunker plug-in',               5900, false, null,
      array['armoury','nuclear','napalm','shrapnel','fallout','sentinel'], 5, true),
-  ('pack3',    'SoundBunker 3-Pack',   'Any 3 SoundBunker plug-ins',              4500, false, 3,
+  ('pack3',    'SB 3-PACK',            'Any 3 SoundBunker plug-ins',              4500, false, 3,
      array['nuclear','napalm','shrapnel','fallout','sentinel'], 6, true)
 on conflict (id) do nothing;
+
+-- Product names: SB and capitals. Re-running this script renames existing products too.
+update plugin_products p set name = n.name, updated_at = now()
+from (values ('armoury', 'SB ARMOURY'), ('nuclear', 'SB NUCLEAR'), ('napalm', 'SB NAPALM'), ('shrapnel', 'SB SHRAPNEL'),
+  ('fallout', 'SB FALLOUT'), ('sentinel', 'SB SENTINEL'), ('recon', 'SB RECON'), ('complete', 'SB COMPLETE'), ('pack3', 'SB 3-PACK')) as n(id, name)
+where p.id = n.id and p.name is distinct from n.name;
 
 -- Installers (public GitHub releases in Soundbunkeralgarve/SoundBunker-Downloads). Re-running this script updates them.
 update plugin_products p set mac_download = d.mac, windows_download = d.win, updated_at = now()
