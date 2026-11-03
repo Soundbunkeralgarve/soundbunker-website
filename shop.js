@@ -59,7 +59,7 @@ function renderProducts(){
 }
 async function loadCatalog(){
  $('#catalog-retry').hidden=true;$('#catalog-message').textContent='Opening the full collection…';$('#products').setAttribute('aria-busy','true');
- try{const response=await fetch('/assets/shop/catalog.json?v=20261020-mobile-1');if(!response.ok)throw Error('Catalogue unavailable');const data=await response.json();if(!Array.isArray(data.products)||!data.products.length)throw Error('Catalogue empty');catalog=data.products.filter(product=>product.collection!=='crude-city'&&Number.isSafeInteger(product.id)&&Number.isSafeInteger(product.price));
+ try{const response=await fetch('/assets/shop/catalog.json?v=20261103-bottle-2995');if(!response.ok)throw Error('Catalogue unavailable');const data=await response.json();if(!Array.isArray(data.products)||!data.products.length)throw Error('Catalogue empty');catalog=data.products.filter(product=>product.collection!=='crude-city'&&Number.isSafeInteger(product.id)&&Number.isSafeInteger(product.price));
   const colors=[...new Set(catalog.flatMap(product=>product.colors||[]))].sort((a,b)=>a.localeCompare(b));$('#color-filter').replaceChildren(new Option('All colours','all'),...colors.map(color=>new Option(color,color.toLowerCase())));renderProducts();
   const productId=location.hash.match(/^#product-(\d+)$/)?.[1];const linked=catalog.find(product=>String(product.id)===productId);if(linked){document.getElementById('product-'+linked.id)?.scrollIntoView({block:'center'});await openProductPicker(linked);}
  }catch{ $('#products').setAttribute('aria-busy','false');$('#catalog-message').textContent='The collection could not load. Please try again.';$('#catalog-retry').hidden=false;}
