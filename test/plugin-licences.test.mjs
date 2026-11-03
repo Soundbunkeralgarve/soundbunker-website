@@ -7,7 +7,7 @@ import { PGlite } from '@electric-sql/pglite';
 const { privateKey } = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
 const pem = privateKey.export({ type: 'pkcs8', format: 'pem' });
 process.env.LICENCE_PRIVATE_KEY_B64 = Buffer.from(pem).toString('base64');
-const { pluginRequest, fulfilPluginCheckout, revokeForPayment, createCheckout, claimFree, listProducts, licenceForSession } = await import('../api/lib/plugin-licences.js');
+const { pluginRequest, fulfilPluginCheckout, revokeForPayment, createCheckout, claimFree, listProducts, licenceForSession, downloadAllowed, trialLinks } = await import('../api/lib/plugin-licences.js');
 const { verifyToken } = await import('../api/lib/licence-token.js');
 const publicPem = crypto.createPublicKey(pem).export({ type: 'spki', format: 'pem' });
 
@@ -365,8 +365,8 @@ test('producer codes: Stripe promotion codes limited to the code\'s product, cou
     const toProducer = sent.filter((x) => x.to === 'beat@maker.com');
     assert.match(toProducer[0].subject, /free SB COMPLETE/);
     assert.match(toProducer[0].text, /with our compliments/);
-    assert.match(toProducer[0].text, /Everything at once \(one installer for all 6\):\n   \[SB COMPLETE for macOS\]\(https:\/\/www\.soundbunker\.pt\/download\/complete\/mac\)/);
-    assert.match(toProducer[0].text, /SB NUCLEAR:  \[macOS\]\(https:\/\/www\.soundbunker\.pt\/download\/nuclear\/mac\)/);
+    assert.match(toProducer[0].text, /Everything at once \(one installer for all 6\):\n   \[SB COMPLETE for macOS\]\(https:\/\/www\.soundbunker\.pt\/download\/complete\/mac\?e=\d+&s=[\w-]{22}\)/);
+    assert.match(toProducer[0].text, /SB NUCLEAR:  \[macOS\]\(https:\/\/www\.soundbunker\.pt\/download\/nuclear\/mac\?e=\d+&s=[\w-]{22}\)/);
     assert.doesNotMatch(toProducer[0].text, /github/i);
     assert.match(toProducer[0].text, /Or one by one:\n\nSB ARMOURY/);
     assert.equal(new Set(sent.filter((x) => /Producer code used · SBPRODUCER/.test(x.subject)).map((x) => x.key)).size, 1, 'retries reuse the e-mail key');
@@ -456,5 +456,26 @@ test('free SB ARMOURY: a €0 Stripe checkout offering SB COMPLETE and every plu
 
     stripe.lineItems.cs_live_f4 = [item('armoury', 0), item('complete', 5900)];
     await assert.rejects(fulfilPluginCheckout({ ...all, id: 'cs_live_f4', amount_subtotal: 100 }, sb, opts), /does not match/);
+  } finally { await db.close(); }
+});
+
+test('download links are signed: they work from e-mails and for signed-in trials, not when guessed or edited', async () => {
+  const db = await database({ asShipped: true });
+  const sb = client(db);
+  try {
+    assert.equal((await listProducts(sb)).some((p) => 'mac_download' in p), false, 'the public product list has no installer links');
+    const links = await trialLinks(sb);
+    assert.equal(links[0].id, 'complete', 'the all-in-one installer first');
+    assert.ok(!links.some((l) => l.id === 'armoury' || l.id === 'pack3'));
+    const url = new URL(links.find((l) => l.id === 'nuclear').mac_download);
+    assert.equal(url.pathname, '/download/nuclear/mac');
+    const [e, s] = [url.searchParams.get('e'), url.searchParams.get('s')];
+    assert.equal(downloadAllowed('nuclear', 'mac', e, s), true);
+    assert.ok(Number(e) * 1000 - Date.now() <= 3 * 86400 * 1000, 'trial links expire within days');
+    assert.equal(downloadAllowed('napalm', 'mac', e, s), false, 'not for another plug-in');
+    assert.equal(downloadAllowed('nuclear', 'windows', e, s), false);
+    assert.equal(downloadAllowed('nuclear', 'mac', String(Number(e) + 86400), s), false, 'the expiry cannot be stretched');
+    assert.equal(downloadAllowed('nuclear', 'mac', '1000000000', s), false);
+    assert.equal(downloadAllowed('nuclear', 'mac', undefined, undefined), false, 'a bare link is refused');
   } finally { await db.close(); }
 });

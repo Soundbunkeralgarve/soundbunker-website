@@ -92,7 +92,19 @@
 @media (max-width: 760px) { 
 /* Free first, then the upsell */
 .plugin-start, .plugin-upsell, .plugin-try { margin-top: 48px; scroll-margin-top: 110px; }
-.plugin-try[hidden] { display: none; }
+.plugin-try[hidden], .plugin-upgrade[hidden] { display: none; }
+.plugin-try-signin { padding: 18px; border-radius: 14px; border: 1px solid rgba(200, 162, 74, .7); background: rgba(200, 162, 74, .1); display: grid; gap: 12px; justify-items: start; }
+.plugin-try-signin p { margin: 0; }
+.plugin-upgrade { margin-top: 32px; padding: 24px; border-radius: 18px; border: 2px solid #c8a24a; background: linear-gradient(120deg, rgba(200, 162, 74, .2), rgba(255, 255, 255, .04)); scroll-margin-top: 110px; }
+.plugin-upgrade h2 { font-family: 'Space Grotesk', sans-serif; font-size: clamp(1.6rem, 3.2vw, 2.4rem); line-height: 1.1; margin: 6px 0 18px; }
+.plugin-upgrade-options { display: grid; grid-template-columns: 1.3fr 1fr; gap: 14px; }
+.plugin-upgrade-options > div { position: relative; padding: 18px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, .18); background: rgba(0, 0, 0, .25); display: grid; gap: 8px; align-content: start; justify-items: start; }
+.plugin-upgrade-options h3 { margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; }
+.plugin-upgrade-options p { margin: 0; }
+.plugin-upgrade-options .plugin-upgrade-best { border: 2px solid #c8a24a; background: rgba(200, 162, 74, .16); padding-top: 26px; }
+.plugin-upgrade-options .plugin-upgrade-best .plugin-badge { top: -12px; right: auto; left: 16px; }
+.plugin-buy-plain { background: transparent; border: 1px solid rgba(255, 255, 255, .45); color: inherit; }
+@media (max-width: 700px) { .plugin-upgrade { padding: 18px; } .plugin-upgrade-options { grid-template-columns: 1fr; } }
 .plugin-try-list { display: grid; gap: 10px; }
 .plugin-try-list .plugin-download-row { padding: 14px 18px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, .15); background: rgba(255, 255, 255, .04); }
 .plugin-try-list .plugin-download-row:first-child { border-color: rgba(200, 162, 74, .7); }

@@ -86,7 +86,28 @@ export async function pluginRequest(body, db = licenceDB()) {
 // Shop
 // Installers are served through soundbunker.pt/download/<product>/<mac|windows>, so buyers never see where the files are hosted.
 const DOWNLOAD_FIELDS = { mac: 'mac_download', windows: 'windows_download' };
-const dl = (p, os) => (p?.[DOWNLOAD_FIELDS[os]] ? `${base()}/download/${p.id}/${os}` : null);
+// The links are signed and expire, so installers only reach people with a key (e-mail, Client Area) or a signed-in
+// account (trials): a shared or guessed link sends people to the page to sign in instead.
+const DAY = 86400;
+const downloadSignature = (id, os, e) => crypto.createHmac('sha256', signingKey().pem).update(`download:${id}:${os}:${e}`).digest('base64url').slice(0, 22);
+const dl = (p, os, days = 3650) => {
+  if (!p?.[DOWNLOAD_FIELDS[os]]) return null;
+  const e = (Math.floor(Date.now() / 1000 / DAY) + days) * DAY;
+  return `${base()}/download/${p.id}/${os}?e=${e}&s=${downloadSignature(p.id, os, e)}`;
+};
+
+export function downloadAllowed(id, os, e, signature) {
+  if (!/^\d{9,11}$/.test(e || '') || Number(e) * 1000 < Date.now() || !/^[A-Za-z0-9_-]{22}$/.test(signature || '')) return false;
+  return crypto.timingSafeEqual(Buffer.from(downloadSignature(id, os, e)), Buffer.from(signature));
+}
+
+// Trial downloads for a signed-in account: every plug-in on sale, and the full bundle's all-in-one installer.
+export async function trialLinks(db = licenceDB()) {
+  const rows = await checked(db.from('plugin_products').select('*').eq('active', true).order('sort'), 'load the plug-ins');
+  return rows.filter((p) => !p.free && !p.pick && (p.mac_download || p.windows_download))
+    .sort((a, b) => b.includes.length - a.includes.length)
+    .map((p) => ({ id: p.id, name: p.name, bundle: p.includes.length > 1, mac_download: dl(p, 'mac', 2), windows_download: dl(p, 'windows', 2) }));
+}
 
 export async function downloadUrl(id, os, db = licenceDB()) {
   if (!/^[a-z0-9-]{2,40}$/.test(id || '') || !DOWNLOAD_FIELDS[os]) return null;
@@ -96,7 +117,7 @@ export async function downloadUrl(id, os, db = licenceDB()) {
 
 const publicProduct = (p) => ({ id: p.id, name: p.name, tagline: p.tagline, price_cents: p.price_cents, free: p.free === true,
   pick: p.pick || null, seats: p.seats,
-  includes: p.includes, version: p.version, mac_download: dl(p, 'mac'), windows_download: dl(p, 'windows'),
+  includes: p.includes, version: p.version,
   for_sale: p.active === true });
 
 export async function listProducts(db = licenceDB()) {

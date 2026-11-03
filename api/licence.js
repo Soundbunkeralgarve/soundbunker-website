@@ -3,7 +3,7 @@
 import { json, parseJson, validEmail } from './lib/http.js';
 import { optionalUser, requireUser, requireAdmin } from './lib/supabase-auth.js';
 import { pluginRequest, listProducts, createCheckout, claimFree, licenceForSession, myLicences, releaseComputer,
-  adminList, adminCreate, adminUpdate, downloadUrl } from './lib/plugin-licences.js';
+  adminList, adminCreate, adminUpdate, downloadUrl, downloadAllowed, trialLinks } from './lib/plugin-licences.js';
 
 const PLUGIN_ACTIONS = ['activate', 'trial', 'refresh', 'deactivate'];
 
@@ -19,12 +19,17 @@ export default async function handler(request, response) {
     }
     // /download/<product>/<mac|windows> (rewritten here): sends the browser on to the installer.
     if ((request.method === 'GET' || request.method === 'HEAD') && action === 'download') {
-      const id = url.searchParams.get('product') || '';
-      const target = await downloadUrl(id, url.searchParams.get('os'));
+      const id = url.searchParams.get('product') || '', os = url.searchParams.get('os') || '';
+      const target = downloadAllowed(id, os, url.searchParams.get('e'), url.searchParams.get('s')) ? await downloadUrl(id, os) : null;
       response.statusCode = 302;
       response.setHeader('cache-control', 'no-store');
-      response.setHeader('location', target || `/plugins.html${/^[a-z0-9-]+$/.test(id) ? `#${id}` : ''}`);
+      response.setHeader('location', target || '/plugins.html#try-free');
       return response.end();
+    }
+    if (request.method === 'GET' && action === 'trial-links') {
+      const ctx = await requireUser(request, { loadProfile: false });
+      if (ctx.error) return json(response, { error: ctx.error }, ctx.status);
+      return json(response, { links: await trialLinks() });
     }
     if (request.method === 'GET' && action === 'session') {
       const licence = await licenceForSession(url.searchParams.get('session_id'));

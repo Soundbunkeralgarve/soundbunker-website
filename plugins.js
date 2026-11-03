@@ -52,19 +52,60 @@
     </article>`;
   }
 
-  // Trial downloads, in their own section: the free product's come with its key, after the free checkout.
-  function trials() {
-    const link = (url, label) => url ? `<a class="plugin-download" href="${esc(url)}" rel="noopener">${label} ↓</a>` : '';
-    const row = (p, title) => `<div class="plugin-download-row"><strong>${esc(title)}</strong>${link(p.mac_download, 'macOS')}${link(p.windows_download, 'Windows')}</div>`;
-    const all = bundles().filter((b) => !b.pick && (b.mac_download || b.windows_download)).map((b) => row(b, `Everything (${b.name} installer)`));
-    const each = singles().filter((p) => p.mac_download || p.windows_download).map((p) => row(p, p.name));
-    if (!all.length && !each.length) return;
-    $('#tryList').innerHTML = [...all, ...each].join('');
+  // The visitor's SoundBunker account (the Client Area's sign-in), if signed in on this browser.
+  let token;
+  async function sessionToken() {
+    if (token !== undefined) return token;
+    try {
+      const config = await (await fetch('/api/supabase-config')).json();
+      const auth = window.supabase.createClient(config.url, config.key, { auth: { persistSession: true, autoRefreshToken: true } }).auth;
+      token = (await auth.getSession()).data.session?.access_token || null;
+    } catch { token = null; }
+    return token;
+  }
+
+  // Trial downloads need a free account, so everyone who tries a plug-in is a client. The free product's downloads come
+  // with its key, after the free checkout.
+  async function trials() {
     $('#try-free').hidden = false;
+    const signedIn = await sessionToken();
+    const r = signedIn && await fetch('/api/licence?action=trial-links', { headers: { authorization: `Bearer ${signedIn}` }, cache: 'no-store' }).catch(() => null);
+    if (!r?.ok) {
+      $('#tryList').innerHTML = `<div class="plugin-try-signin"><p><strong>Sign in to download the trials.</strong> No account yet? Creating one is free and takes a minute: your trials, licence keys and downloads are kept together in your Client Area.</p>
+        <a class="plugin-buy" href="client.html?next=${encodeURIComponent('/plugins#try-free')}">Sign in or create a free account</a></div>`;
+      return;
+    }
+    const link = (url, label) => url ? `<a class="plugin-download" href="${esc(url)}" rel="noopener">${label} ↓</a>` : '';
+    $('#tryList').innerHTML = (await r.json()).links.map((p) => `<div class="plugin-download-row"><strong>${esc(p.bundle ? `Everything (${p.name} installer)` : p.name)}</strong>${link(p.mac_download, 'macOS')}${link(p.windows_download, 'Windows')}</div>`).join('');
+    if (location.hash === '#try-free') $('#try-free').scrollIntoView({ block: 'start' });
+  }
+
+  // From a plug-in whose trial ended (its BUY A LICENCE button): keep this one, or take the full set.
+  function upgrade(id) {
+    const p = products.find((x) => x.id === id && !x.free && x.for_sale && x.includes.length === 1);
+    const best = bundles().filter((b) => !b.pick && b.includes.includes(id)).pop();
+    const pack = bundles().find((b) => b.pick && b.includes.includes(id));
+    if (!p || !best) return false;
+    $('#upgrade').innerHTML = `<p class="eyebrow">Keep using ${esc(p.name)}</p>
+      <h2 id="upgrade-title">Trial over? Keep ${esc(p.name)}, or get every plug-in.</h2>
+      <div class="plugin-upgrade-options">
+        <div class="plugin-upgrade-best"><span class="plugin-badge">Best offer</span>
+          <h3>${esc(best.name)} · ${price(best.price_cents)}</h3>
+          <p>All ${best.includes.length} SoundBunker plug-ins, ${esc(p.name)} included${separately(best) > best.price_cents ? `: ${price(separately(best))} bought one by one, you save ${price(separately(best) - best.price_cents)}` : ''}.</p>
+          <button type="button" class="plugin-buy" data-buy="${esc(best.id)}">Get ${esc(best.name)} · ${price(best.price_cents)}</button></div>
+        <div><h3>${esc(p.name)} · ${price(p.price_cents)}</h3>
+          <p>Just this one${freeProduct() ? `, with ${esc(freeProduct().name)} free` : ''}.${pack ? ` Or <a href="#${esc(pack.id)}">any ${pack.pick} for ${price(pack.price_cents)}</a>.` : ''}</p>
+          <button type="button" class="plugin-buy plugin-buy-plain" data-buy="${esc(p.id)}">Buy ${esc(p.name)} · ${price(p.price_cents)}</button></div>
+      </div>
+      <p class="plugin-trial">Your key arrives by e-mail straight away: paste it into the plug-in, nothing to reinstall. Got a discount code? Tap &ldquo;Add code&rdquo; at checkout.</p>`;
+    $('#upgrade').hidden = false;
+    $('#upgrade').scrollIntoView({ block: 'start' });
+    return true;
   }
 
   async function checkout(body) {
-    const r = await fetch('/api/licence?action=checkout', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+    const signedIn = await sessionToken();   // the licence lands in their Client Area
+    const r = await fetch('/api/licence?action=checkout', { method: 'POST', headers: { 'content-type': 'application/json', ...(signedIn ? { authorization: `Bearer ${signedIn}` } : {}) }, body: JSON.stringify(body) });
     const d = await r.json();
     if (!r.ok || !d.url) throw new Error(d.error || 'Checkout is not available right now.');
     location.href = d.url;
@@ -109,7 +150,10 @@
       $('#pluginGrid').innerHTML = [...bundles().reverse(), ...products.filter((p) => !p.free && !bundles().includes(p))].map(card).join('');
       trials();
       const params = new URLSearchParams(location.search);
+      const hash = location.hash.slice(1);
       if (params.get('code')) redeem(params.get('code'));   // a producer link: plugins.html?code=XXXX
+      else if (params.get('offer') && freeProduct()?.id === params.get('offer')) getFree(params.get('offer'));   // the free plug-in's GET YOUR FREE KEY
+      else if (upgrade(params.get('buy') || hash)) { /* a plug-in's BUY A LICENCE */ }
       else if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView({ block: 'center' });
     } catch {
       $('#freeGrid').innerHTML = '<article class="plugin-card plugin-loading">The plug-ins could not be loaded just now. Please refresh in a moment.</article>';
