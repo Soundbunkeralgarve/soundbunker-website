@@ -394,7 +394,7 @@ test('free SB ARMOURY: a €0 Stripe checkout offering SB COMPLETE and every plu
     const form = stripe.sessions[0];
     assert.equal(form.get('line_items[0][price_data][unit_amount]'), '0');
     assert.equal(form.get('line_items[0][price_data][product]'), 'sb_plugin_armoury');
-    assert.equal(form.get('allow_promotion_codes'), null);
+    assert.equal(form.get('allow_promotion_codes'), 'true', 'discount codes can be typed in the checkout');
     const offered = [...form.keys()].filter((k) => /^optional_items\[\d+\]\[price\]$/.test(k)).map((k) => stripe.prices.find((p) => p.id === form.get(k)).product);
     assert.equal(offered[0], 'sb_plugin_complete', 'the full collection is offered first');
     assert.ok(offered.includes('sb_plugin_nuclear') && !offered.includes('sb_plugin_pack3') && !offered.includes('sb_plugin_armoury'));
@@ -433,6 +433,17 @@ test('free SB ARMOURY: a €0 Stripe checkout offering SB COMPLETE and every plu
     stripe.lineItems.cs_live_f3 = [item('armoury', 0), item('complete', 5900)];
     await fulfilPluginCheckout(all, sb, opts);
     assert.equal((await licenceForSession('cs_live_f3', sb, stripe.call)).product, 'SB COMPLETE');
+
+    // A producer code on the added SB COMPLETE: free, counted, no invoice.
+    await db.exec(`insert into plugin_codes (code, product_id, max_uses) values ('FREEPROD', 'complete', 5)`);
+    const coded = { ...all, id: 'cs_live_f5', payment_status: 'no_payment_required', amount_total: 0, customer_details: { email: 'prod@maker.com' },
+      discounts: [{ promotion_code: { id: 'promo_x', metadata: { plugin_code: 'FREEPROD' } } }] };
+    stripe.lineItems.cs_live_f5 = [item('armoury', 0), item('complete', 5900)];
+    assert.equal((await fulfilPluginCheckout(coded, sb, opts)).invoice.skipped, true);
+    assert.equal((await db.query(`select uses from plugin_codes where code = 'FREEPROD'`)).rows[0].uses, 1);
+    assert.equal((await licenceForSession('cs_live_f5', sb, stripe.call)).product, 'SB COMPLETE');
+    stripe.lineItems.cs_live_f6 = stripe.lineItems.cs_live_f5;
+    await assert.rejects(fulfilPluginCheckout({ ...coded, id: 'cs_live_f6', discounts: [] }, sb, opts), /Not a paid/, 'added plug-ins are only free with a producer code');
 
     stripe.lineItems.cs_live_f4 = [item('armoury', 0), item('complete', 5900)];
     await assert.rejects(fulfilPluginCheckout({ ...all, id: 'cs_live_f4', amount_subtotal: 100 }, sb, opts), /does not match/);

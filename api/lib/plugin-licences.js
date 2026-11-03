@@ -189,6 +189,8 @@ async function freeCheckout(p, { email, userId }, db, stripeCall) {
     .sort((a, b) => b.includes.length - a.includes.length).slice(0, 10);   // the full collection first
   await ensureStripeProduct(p, stripeCall);
   const prices = await stripePrices(addons, stripeCall);
+  // Producer codes work here too, on the add-on they belong to (normally SB COMPLETE). A sync failure must not stop the checkout.
+  for (const x of addons) await syncProducerPromos(db, x, stripeCall).catch((e) => console.error('Producer code sync failed', e));
   const singles = addons.filter((x) => x.includes.length === 1);
   const each = singles.length ? Math.min(...singles.map((x) => x.price_cents)) : 0;
   const pitch = addons.filter((x) => x.includes.length > 1).map((b) => {
@@ -200,6 +202,7 @@ async function freeCheckout(p, { email, userId }, db, stripeCall) {
     mode: 'payment',
     success_url: `${base()}/plugin-success.html?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${base()}/plugins.html#${p.id}`,
+    allow_promotion_codes: 'true',
     'tax_id_collection[enabled]': 'true',
     customer_creation: 'always',
     'line_items[0][quantity]': '1',
@@ -391,11 +394,13 @@ async function fulfilFreeCheckout(checkout, db, { send, invoice, stripeCall }) {
   }
   const bought = await productRows(db, ids);
   if (bought.length !== ids.length || bought.some((b) => b.free || b.pick)) throw new Error('Plug-in add-on not found');
-  if (checkout.payment_status !== 'paid' || checkout.currency !== 'eur' ||
-    checkout.amount_subtotal !== bought.reduce((sum, b) => sum + b.price_cents, 0)) throw new Error('Plug-in payment does not match the price');
+  // Only a producer code makes added plug-ins free.
+  const code = checkout.payment_status === 'no_payment_required' ? await producerCodeUsed(checkout, stripeCall) : '';
+  if (!(checkout.payment_status === 'paid' || code)) throw new Error('Not a paid plug-in checkout');
+  if (checkout.currency !== 'eur' || checkout.amount_subtotal !== bought.reduce((sum, b) => sum + b.price_cents, 0)) throw new Error('Plug-in payment does not match the price');
   const p = bought.sort((a, b) => b.includes.length - a.includes.length)[0];   // SB COMPLETE if they took it
   const includes = [...new Set([free.id, ...p.includes, ...bought.flatMap((b) => b.includes)])];
-  return (await deliver(checkout, db, { p, includes, email, code: '', userId: meta.user_id, send, invoice })).result;
+  return (await deliver(checkout, db, { p, includes, email, code, userId: meta.user_id, send, invoice })).result;
 }
 
 // One licence per checkout: saved, e-mailed, reported to the studio and invoiced.
