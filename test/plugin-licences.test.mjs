@@ -397,6 +397,7 @@ test('free SB ARMOURY: a €0 Stripe checkout offering SB COMPLETE and every plu
     assert.equal(form.get('allow_promotion_codes'), 'true', 'discount codes can be typed in the checkout');
     const offered = [...form.keys()].filter((k) => /^optional_items\[\d+\]\[price\]$/.test(k)).map((k) => stripe.prices.find((p) => p.id === form.get(k)).product);
     assert.equal(offered[0], 'sb_plugin_complete', 'the full collection is offered first');
+    assert.equal(form.get('optional_items[0][adjustable_quantity][enabled]'), 'false');
     assert.ok(offered.includes('sb_plugin_nuclear') && !offered.includes('sb_plugin_pack3') && !offered.includes('sb_plugin_armoury'));
     assert.match(form.get('custom_text[submit][message]'), /SB ARMOURY is free\. Add SB COMPLETE above: all \d plug-ins for €59\.00 instead of €\d+\.00, you save/);
     await createCheckout({ productId: 'armoury' }, sb, stripe.call);

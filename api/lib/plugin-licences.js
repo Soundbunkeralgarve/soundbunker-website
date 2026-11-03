@@ -218,6 +218,7 @@ async function freeCheckout(p, { email, userId }, db, stripeCall) {
   addons.forEach((x, i) => {
     form.set(`optional_items[${i}][price]`, prices[x.id]);
     form.set(`optional_items[${i}][quantity]`, '1');
+    form.set(`optional_items[${i}][adjustable_quantity][enabled]`, 'false');   // one licence covers 2 computers
   });
   if (email) form.set('customer_email', email);
   const session = await stripeCall('/checkout/sessions', form);
