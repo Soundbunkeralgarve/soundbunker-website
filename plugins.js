@@ -52,51 +52,8 @@
         ${!p.free && p.for_sale ? `<button type="button" class="plugin-buy" data-buy="${esc(p.id)}"${p.pick ? ' disabled' : ''}>${p.pick ? `Choose ${esc(p.pick)}` : 'Buy licence'}</button>` : ''}
         ${downloads}
       </div>
-      ${p.free && p.for_sale ? freeCheckout(p) : ''}
       ${isBundle || p.free || !p.for_sale ? '' : '<p class="plugin-trial">Free 14-day trial in the download.</p>'}
     </article>`;
-  }
-
-  // The free product's checkout: e-mail, and the bundles on offer.
-  function freeCheckout(p) {
-    const options = bundles().map((b) => `<label class="plugin-addon-best"><input type="radio" name="addon" value="${esc(b.id)}" data-price="${b.price_cents}">
-        <strong>${b.pick ? `Any ${esc(b.pick)} plug-ins for ${price(b.price_cents)}` : `Every plug-in for ${price(b.price_cents)}`}</strong>
-        <span>(${price(separately(b))} separately)</span></label>
-        ${b.pick ? `<div class="plugin-addon-pick" data-for="${esc(b.id)}" hidden>${picker(b, 'free')}</div>` : ''}`).join('');
-    return `<form class="plugin-claim" data-claim-form="${esc(p.id)}" hidden>
-      <label>Your e-mail <input type="email" name="email" required autocomplete="email" placeholder="you@example.com"></label>
-      ${options ? `<fieldset class="plugin-addons"><legend>Want more with your free ${esc(p.name)}?</legend>
-        <label><input type="radio" name="addon" value="" checked> No thanks, just the free ${esc(p.name)}</label>
-        ${options}
-      </fieldset>` : ''}
-      <button type="submit" class="plugin-buy">Get it free</button>
-      <p class="plugin-trial">Your licence key and download links arrive by e-mail. Bundles are paid securely by card, Apple Pay or Google Pay.</p></form>`;
-  }
-
-  function chosen(form) {
-    const id = form.querySelector('[name=addon]:checked')?.value || '';
-    if (!id) return null;
-    const b = products.find((p) => p.id === id);
-    return { id, cents: b.price_cents, pick: b.pick, choice: b.pick ? pickedIn(form.querySelector(`[data-for="${id}"]`)) : [] };
-  }
-
-  function label(form) {
-    const addon = chosen(form);
-    const button = form.querySelector('button[type=submit]');
-    form.querySelectorAll('.plugin-addon-pick').forEach((d) => { d.hidden = d.dataset.for !== addon?.id; });
-    const waiting = addon?.pick && addon.choice.length !== addon.pick;
-    button.disabled = Boolean(waiting);
-    button.textContent = !addon ? 'Get it free' : waiting ? `Choose ${addon.pick}` : `Continue · ${price(addon.cents)}`;
-  }
-
-  // After the free product: offer the bundles again (they reopen its checkout).
-  function offer(freeId) {
-    const list = bundles();
-    if (!list.length) return '';
-    return `<div class="plugin-offer"><p class="eyebrow">Your key is on its way</p>
-      <h3>Want the rest for less?</h3>
-      <p>${list.map((b) => `${b.pick ? `Any ${b.pick} plug-ins` : 'Every plug-in'} for ${price(b.price_cents)} (${price(separately(b))} separately)`).join(', or ')}.</p>
-      <div class="plugin-actions"><a class="plugin-buy" href="?offer=${esc(freeId)}#${esc(freeId)}" data-reopen="${esc(freeId)}">See the bundles</a></div></div>`;
   }
 
   async function checkout(body) {
@@ -104,25 +61,6 @@
     const d = await r.json();
     if (!r.ok || !d.url) throw new Error(d.error || 'Checkout is not available right now.');
     location.href = d.url;
-  }
-
-  async function claim(form) {
-    const id = form.dataset.claimForm, input = form.querySelector('[name=email]'), button = form.querySelector('button[type=submit]');
-    const addon = chosen(form);
-    button.disabled = true;
-    button.textContent = addon ? 'Opening checkout...' : 'Sending...';
-    $('#pluginMessage').textContent = '';
-    try {
-      if (addon) return await checkout({ product: addon.id, choice: addon.choice, email: input.value });
-      const r = await fetch('/api/licence?action=claim', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ product: id, email: input.value }) });
-      const d = await r.json();
-      if (!r.ok) throw new Error(d.error || 'That did not work. Please try again.');
-      form.hidden = true;
-      form.insertAdjacentHTML('afterend', `<div data-claimed><p class="plugin-trial">Done: check ${esc(input.value)} for your key and downloads (and the spam folder, just in case).</p>${offer(id)}</div>`);
-    } catch (e) {
-      $('#pluginMessage').textContent = e.message;
-      label(form);
-    }
   }
 
   async function buy(id, button) {
@@ -140,20 +78,17 @@
     }
   }
 
-  // Opens the free product's checkout; withOffer pre-selects the first bundle (from the offer or the e-mail link).
-  function openFree(id, withOffer) {
-    const form = document.querySelector(`[data-claim-form="${id}"]`);
-    if (!form) return;
-    document.querySelector(`[data-claim="${id}"]`)?.setAttribute('hidden', '');
-    form.parentElement.querySelector('[data-claimed]')?.remove();
-    form.hidden = false;
-    if (withOffer) {
-      const best = form.querySelector('.plugin-addon-best input');
-      if (best) best.checked = true;
+  // The free product goes through Stripe at €0 too, where SB COMPLETE and every plug-in are offered as add-ons.
+  async function getFree(id, button) {
+    const b = button || document.querySelector(`[data-claim="${id}"]`);
+    if (b) { b.disabled = true; b.textContent = 'Opening checkout...'; }
+    $('#pluginMessage').textContent = '';
+    try {
+      await checkout({ product: id });
+    } catch (e) {
+      $('#pluginMessage').textContent = e.message;
+      if (b) { b.disabled = false; b.textContent = 'Get it free'; }
     }
-    label(form);
-    form.scrollIntoView({ block: 'center' });
-    form.querySelector('[name=email]').focus();
   }
 
   async function load() {
@@ -167,8 +102,6 @@
       $('#pluginGrid').innerHTML = [...bundles().reverse(), ...products.filter((p) => !p.free && !bundles().includes(p))].map(card).join('');
       const params = new URLSearchParams(location.search);
       if (params.get('code')) redeem(params.get('code'));   // a producer link: plugins.html?code=XXXX
-      else if (params.get('offer')) openFree(params.get('offer'), true);
-      else if (params.get('get')) openFree(params.get('get'), false);   // "Download Armoury free" links
       else if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView({ block: 'center' });
     } catch {
       $('#freeGrid').innerHTML = '<article class="plugin-card plugin-loading">The plug-ins could not be loaded just now. Please refresh in a moment.</article>';
@@ -179,11 +112,9 @@
     const b = e.target.closest('[data-buy]');
     if (b && !b.disabled) buy(b.dataset.buy, b);
     const get = e.target.closest('[data-get-free]');
-    if (get) { e.preventDefault(); openFree(get.dataset.getFree, false); }
-    const again = e.target.closest('[data-reopen]');
-    if (again) { e.preventDefault(); openFree(again.dataset.reopen, true); }
+    if (get) { e.preventDefault(); getFree(get.dataset.getFree); }
     const c = e.target.closest('[data-claim]');
-    if (c) openFree(c.dataset.claim, false);
+    if (c && !c.disabled) getFree(c.dataset.claim, c);
   });
 
   document.addEventListener('change', (e) => {
@@ -199,8 +130,6 @@
         button.textContent = count === n ? 'Buy licence' : `Choose ${n - count} more`;
       }
     }
-    const form = e.target.closest('[data-claim-form]');
-    if (form) label(form);
   });
 
   // A producer link opens the checkout with the code already applied (codes can also be typed in the checkout itself).
@@ -213,13 +142,6 @@
       $('#pluginMessage').textContent = `${err.message} You can still enter a code at checkout.`;
     }
   }
-
-  document.addEventListener('submit', (e) => {
-    const form = e.target.closest('[data-claim-form]');
-    if (!form) return;
-    e.preventDefault();
-    claim(form);
-  });
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', load, { once: true }); else load();
 })();

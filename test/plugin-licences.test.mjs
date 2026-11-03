@@ -7,7 +7,7 @@ import { PGlite } from '@electric-sql/pglite';
 const { privateKey } = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
 const pem = privateKey.export({ type: 'pkcs8', format: 'pem' });
 process.env.LICENCE_PRIVATE_KEY_B64 = Buffer.from(pem).toString('base64');
-const { pluginRequest, fulfilPluginCheckout, revokeForPayment, createCheckout, claimFree, listProducts } = await import('../api/lib/plugin-licences.js');
+const { pluginRequest, fulfilPluginCheckout, revokeForPayment, createCheckout, claimFree, listProducts, licenceForSession } = await import('../api/lib/plugin-licences.js');
 const { verifyToken } = await import('../api/lib/licence-token.js');
 const publicPem = crypto.createPublicKey(pem).export({ type: 'spki', format: 'pem' });
 
@@ -141,7 +141,6 @@ test('checkout, fulfilment, e-mail and refunds', async () => {
     await db.exec("update plugin_products set active = false where id = 'napalm'");
     assert.match((await createCheckout({ productId: 'napalm' }, sb, async () => assert.fail('no Stripe call'))).error, /not on sale/);
     await db.exec("update plugin_products set active = true where id = 'napalm'");
-    assert.match((await createCheckout({ productId: 'armoury' }, sb, async () => assert.fail('no Stripe call'))).error, /free/);
     let form;
     const made = await createCheckout({ productId: 'fallout', email: 'buyer@example.com' }, sb, async (path, f) => { form = f; return { url: 'https://checkout.stripe.com/x' }; });
     assert.equal(made.url, 'https://checkout.stripe.com/x');
@@ -230,7 +229,7 @@ test('free Armoury: e-mailed key, one licence per address, bundles offered in th
     assert.match(sent[0].subject, /free SB ARMOURY/);
     assert.ok(sent[0].text.includes(rows[0].licence_key));
     assert.match(sent[0].text, /is €25\.00, or any 3 for €45\.00 \(instead of €75\.00\), or all 5 for €59\.00 \(instead of €125\.00\)/);
-    assert.match(sent[0].text, /plugins\.html\?offer=armoury#armoury/);
+    assert.match(sent[0].text, /plugins\.html#go-further/);
     const key = rows[0].licence_key;
     assert.equal((await ask(sb, { action: 'activate', product: 'armoury', machine: m(1), key })).ok, true, 'free key activates the Armoury');
     assert.equal((await ask(sb, { action: 'activate', product: 'fallout', machine: m(1), key })).error, 'wrong_product');
@@ -282,8 +281,19 @@ test('every paid order includes the free Armoury; the 3-Pack unlocks the chosen 
 
 // A Stripe account with promotion codes, enough for the producer code sync.
 function fakeStripe() {
-  const s = { promos: [], coupons: [], sessions: [] };
+  const s = { promos: [], coupons: [], sessions: [], prices: [], lineItems: {}, retrieved: {} };
   s.call = async (path, form) => {
+    if (path.startsWith('/prices?')) {
+      const keys = new URLSearchParams(path.split('?')[1]).getAll('lookup_keys[]');
+      return { data: s.prices.filter((p) => keys.includes(p.lookup_key)) };
+    }
+    if (path === '/prices') {
+      const p = { id: `price_${s.prices.length + 1}`, product: form.get('product'), unit_amount: Number(form.get('unit_amount')), lookup_key: form.get('lookup_key') };
+      s.prices.push(p);
+      return p;
+    }
+    if (path.endsWith('/line_items?limit=20')) return { data: s.lineItems[path.split('/')[3]] || [] };
+    if (path.startsWith('/checkout/sessions/')) return s.retrieved[path.split('/')[3]] || assert.fail('unknown session');
     if (path.startsWith('/products')) return { id: path.split('/')[2] || form.get('id') };
     if (path === '/coupons') {
       const c = { id: `co_${s.coupons.length + 1}`, percent: form.get('percent_off'), product: form.get('applies_to[products][0]') };
@@ -372,5 +382,59 @@ test('producer codes: Stripe promotion codes limited to the code\'s product, cou
     assert.equal(stripe.promos[0].active, false, 'a used-up code is switched off in Stripe');
     await assert.rejects(fulfilPluginCheckout({ ...order('cs_live_p3', 'x@maker.com'), discounts: [] }, sb, opts),
       /Not a paid/, 'a €0 order without a producer code is refused');
+  } finally { await db.close(); }
+});
+
+test('free SB ARMOURY: a €0 Stripe checkout offering SB COMPLETE and every plug-in, all on one key', async () => {
+  const db = await database({ asShipped: true });
+  const sb = client(db);
+  try {
+    const stripe = fakeStripe();
+    assert.ok((await createCheckout({ productId: 'armoury' }, sb, stripe.call)).url);
+    const form = stripe.sessions[0];
+    assert.equal(form.get('line_items[0][price_data][unit_amount]'), '0');
+    assert.equal(form.get('line_items[0][price_data][product]'), 'sb_plugin_armoury');
+    assert.equal(form.get('allow_promotion_codes'), null);
+    const offered = [...form.keys()].filter((k) => /^optional_items\[\d+\]\[price\]$/.test(k)).map((k) => stripe.prices.find((p) => p.id === form.get(k)).product);
+    assert.equal(offered[0], 'sb_plugin_complete', 'the full collection is offered first');
+    assert.ok(offered.includes('sb_plugin_nuclear') && !offered.includes('sb_plugin_pack3') && !offered.includes('sb_plugin_armoury'));
+    assert.match(form.get('custom_text[submit][message]'), /SB ARMOURY is free\. Add SB COMPLETE above: all \d plug-ins for €59\.00 instead of €\d+\.00, you save/);
+    await createCheckout({ productId: 'armoury' }, sb, stripe.call);
+    assert.equal(stripe.prices.length, offered.length, 'prices are made once and reused');
+
+    const sent = [];
+    const opts = { send: async (mail) => { sent.push(mail); }, invoice: async (c, p) => ({ queued: p.name }), stripeCall: stripe.call };
+    const meta = { purchase_type: 'plugin_licence', plugin_product: 'armoury', free_checkout: '1' };
+    const item = (id, cents) => ({ price: { product: `sb_plugin_${id}`, unit_amount: cents } });
+
+    // Nothing added: the free licence, and the thank-you page finds it.
+    const free = { id: 'cs_live_f1', livemode: true, status: 'complete', payment_status: 'no_payment_required', currency: 'eur', amount_subtotal: 0, amount_total: 0,
+      customer_details: { email: 'Free@Maker.com' }, metadata: meta };
+    stripe.lineItems.cs_live_f1 = [item('armoury', 0)];
+    stripe.retrieved.cs_live_f1 = free;
+    assert.equal((await fulfilPluginCheckout(free, sb, opts)).free, true);
+    assert.equal((await licenceForSession('cs_live_f1', sb, stripe.call)).product, 'SB ARMOURY');
+    assert.match(sent.find((m) => m.to === 'free@maker.com').subject, /Your free SB ARMOURY licence key/);
+
+    // Two plug-ins added: one key for SB ARMOURY + both, invoiced as such.
+    const two = { id: 'cs_live_f2', livemode: true, payment_status: 'paid', currency: 'eur', amount_subtotal: 5000, amount_total: 5000,
+      customer_details: { email: 'two@maker.com' }, metadata: meta };
+    stripe.lineItems.cs_live_f2 = [item('armoury', 0), item('nuclear', 2500), item('napalm', 2500)];
+    const done = await fulfilPluginCheckout(two, sb, opts);
+    assert.equal(done.invoice.queued, 'SB ARMOURY + SB NUCLEAR + SB NAPALM');
+    const l = await licenceForSession('cs_live_f2', sb, stripe.call);
+    assert.equal(l.product, 'SB ARMOURY + SB NUCLEAR + SB NAPALM');
+    assert.deepEqual(l.plugins.map((p) => p.id).sort(), ['armoury', 'napalm', 'nuclear']);
+    assert.equal(l.install_all, null);
+    assert.equal(sent.filter((m) => m.to === 'two@maker.com').length, 1, 'one e-mail, one key');
+
+    // SB COMPLETE added: an SB COMPLETE licence.
+    const all = { ...two, id: 'cs_live_f3', amount_subtotal: 5900, amount_total: 5900, customer_details: { email: 'all@maker.com' } };
+    stripe.lineItems.cs_live_f3 = [item('armoury', 0), item('complete', 5900)];
+    await fulfilPluginCheckout(all, sb, opts);
+    assert.equal((await licenceForSession('cs_live_f3', sb, stripe.call)).product, 'SB COMPLETE');
+
+    stripe.lineItems.cs_live_f4 = [item('armoury', 0), item('complete', 5900)];
+    await assert.rejects(fulfilPluginCheckout({ ...all, id: 'cs_live_f4', amount_subtotal: 100 }, sb, opts), /does not match/);
   } finally { await db.close(); }
 });

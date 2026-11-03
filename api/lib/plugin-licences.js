@@ -138,7 +138,7 @@ export async function createCheckout({ productId, email, userId, choice, code },
   }
   if (!PRODUCT.test(productId || '')) return { error: 'Unknown plug-in' };
   const p = await checked(db.from('plugin_products').select('*').eq('id', productId).maybeSingle(), 'load the plug-in');
-  if (p?.free) return { error: `${p.name} is free: enter your e-mail address to get it.` };
+  if (p?.free && p.active) return freeCheckout(p, { email, userId }, db, stripeCall);
   if (!p || !p.active || !(p.price_cents > 0)) return { error: `${p?.name || 'This plug-in'} is not on sale yet.` };
   const picked = pickedPlugins(p, Array.isArray(choice) ? choice.join(',') : choice);
   if (!picked) return { error: `Choose ${p.pick} different plug-ins for the ${p.name}.` };
@@ -178,6 +178,65 @@ export async function createCheckout({ productId, email, userId, choice, code },
   }
   const session = await stripeCall('/checkout/sessions', form);
   return { url: session.url };
+}
+
+// The free product (SB ARMOURY) goes through Stripe too, at €0, with SB COMPLETE and every paid plug-in offered as add-ons
+// in the checkout itself. Whatever the buyer adds comes on the same licence key. The 3-Pack is left out: Stripe can't
+// ask which three.
+async function freeCheckout(p, { email, userId }, db, stripeCall) {
+  const rows = await checked(db.from('plugin_products').select('*').eq('active', true).order('sort'), 'load the plug-ins');
+  const addons = rows.filter((x) => !x.free && !x.pick && x.price_cents > 0)
+    .sort((a, b) => b.includes.length - a.includes.length).slice(0, 10);   // the full collection first
+  await ensureStripeProduct(p, stripeCall);
+  const prices = await stripePrices(addons, stripeCall);
+  const singles = addons.filter((x) => x.includes.length === 1);
+  const each = singles.length ? Math.min(...singles.map((x) => x.price_cents)) : 0;
+  const pitch = addons.filter((x) => x.includes.length > 1).map((b) => {
+    const separately = singles.filter((x) => b.includes.includes(x.id)).length * each;
+    return `Add ${b.name} above: all ${b.includes.length} plug-ins for ${money(b.price_cents)}` +
+      (separately > b.price_cents ? ` instead of ${money(separately)}, you save ${money(separately - b.price_cents)}. ` : '. ');
+  }).join('') + (singles.length ? `Or add any single plug-in for ${money(each)}. ` : '');
+  const form = new URLSearchParams({
+    mode: 'payment',
+    success_url: `${base()}/plugin-success.html?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${base()}/plugins.html#${p.id}`,
+    'tax_id_collection[enabled]': 'true',
+    customer_creation: 'always',
+    'line_items[0][quantity]': '1',
+    'line_items[0][price_data][currency]': 'eur',
+    'line_items[0][price_data][unit_amount]': '0',
+    'line_items[0][price_data][product]': stripeProduct(p.id),
+    'custom_text[submit][message]': `${p.name} is free. ${pitch}Your licence key and downloads arrive by e-mail straight away.`,
+    'metadata[purchase_type]': 'plugin_licence',
+    'metadata[plugin_product]': p.id,
+    'metadata[free_checkout]': '1',
+    'metadata[user_id]': userId || ''
+  });
+  addons.forEach((x, i) => {
+    form.set(`optional_items[${i}][price]`, prices[x.id]);
+    form.set(`optional_items[${i}][quantity]`, '1');
+  });
+  if (email) form.set('customer_email', email);
+  const session = await stripeCall('/checkout/sessions', form);
+  return { url: session.url };
+}
+
+// Stripe add-ons need saved prices: one per product and amount, found by lookup key (a new price follows a price change).
+const lookupKey = (p) => `sb_plugin_${p.id}_eur_${p.price_cents}`;
+async function stripePrices(products, stripeCall) {
+  if (!products.length) return {};
+  const query = products.map((p) => `lookup_keys[]=${encodeURIComponent(lookupKey(p))}`).join('&');
+  const found = (await stripeCall(`/prices?active=true&limit=100&${query}`)).data || [];
+  const ids = {};
+  for (const p of products) {
+    let price = found.find((x) => x.lookup_key === lookupKey(p));
+    if (!price) {
+      await ensureStripeProduct(p, stripeCall);
+      price = await stripeCall('/prices', new URLSearchParams({ product: stripeProduct(p.id), currency: 'eur', unit_amount: String(p.price_cents), lookup_key: lookupKey(p) }));
+    }
+    ids[p.id] = price.id;
+  }
+  return ids;
 }
 
 // Each plug-in product has a fixed Stripe product, so a producer code's coupon can be limited to it and never discounts
@@ -289,7 +348,7 @@ async function upsellText(db, freeId) {
     ? `any ${b.pick} for ${money(b.price_cents)} (instead of ${money(b.pick * each)})`
     : `all ${single.length} for ${money(b.price_cents)} (instead of ${money(single.length * each)})`);
   return `\n\nWant more? Every other SoundBunker plug-in (${single.map((p) => p.name).join(', ')}) is ${money(each)}` +
-    (offers.length ? `, or ${offers.join(', or ')}` : '') + `: ${base()}/plugins.html?offer=${freeId}#${freeId}`;
+    (offers.length ? `, or ${offers.join(', or ')}` : '') + `: ${base()}/plugins.html#go-further`;
 }
 
 //------------------------------------------------------------------------------------------------------------------
@@ -297,6 +356,7 @@ async function upsellText(db, freeId) {
 export async function fulfilPluginCheckout(checkout, db = licenceDB(), { send = sendTransactionalEmail, invoice = sendPluginLicenceInvoice, stripeCall = stripe } = {}) {
   const meta = checkout.metadata || {};
   if (meta.purchase_type !== 'plugin_licence') throw new Error('Not a paid plug-in checkout');
+  if (meta.free_checkout === '1') return fulfilFreeCheckout(checkout, db, { send, invoice, stripeCall });
   // Only a producer code makes a plug-in order free.
   const code = checkout.payment_status === 'no_payment_required' ? meta.code || await producerCodeUsed(checkout, stripeCall) : '';
   if (!(checkout.payment_status === 'paid' || code)) throw new Error('Not a paid plug-in checkout');
@@ -308,10 +368,42 @@ export async function fulfilPluginCheckout(checkout, db = licenceDB(), { send = 
   const email = checkout.customer_details?.email || checkout.customer_email;
   if (!email) throw new Error('Plug-in buyer e-mail missing');
 
+  const licence = await deliver(checkout, db, { p, includes: picked, email, code, userId: meta.user_id, send, invoice });
+  if (meta.free_product) await claimFree({ productId: meta.free_product, email, userId: licence.user_id }, db, { send, upsell: false });
+  return licence.result;
+}
+
+// The free checkout: just the free product, or the add-ons the buyer ticked, all on one licence with the free product.
+async function fulfilFreeCheckout(checkout, db, { send, invoice, stripeCall }) {
+  const meta = checkout.metadata || {};
+  if (!['paid', 'no_payment_required'].includes(checkout.payment_status)) throw new Error('Not a completed plug-in checkout');
+  const free = await checked(db.from('plugin_products').select('*').eq('id', meta.plugin_product).maybeSingle(), 'load the plug-in');
+  if (!free?.free) throw new Error('Free plug-in not found');
+  const email = checkout.customer_details?.email || checkout.customer_email;
+  if (!email) throw new Error('Plug-in buyer e-mail missing');
+  const items = (await stripeCall(`/checkout/sessions/${checkout.id}/line_items?limit=20`)).data || [];
+  const ids = [...new Set(items.map((i) => i.price?.product?.id || i.price?.product).filter((x) => typeof x === 'string')
+    .map((x) => x.replace(/^sb_plugin_/, '')))].filter((id) => id !== free.id);
+  if (!ids.length) {
+    if (checkout.amount_total !== 0) throw new Error('Free plug-in checkout was charged');
+    await claimFree({ productId: free.id, email, userId: meta.user_id }, db, { send });
+    return { status: 'fulfilled', free: true };
+  }
+  const bought = await productRows(db, ids);
+  if (bought.length !== ids.length || bought.some((b) => b.free || b.pick)) throw new Error('Plug-in add-on not found');
+  if (checkout.payment_status !== 'paid' || checkout.currency !== 'eur' ||
+    checkout.amount_subtotal !== bought.reduce((sum, b) => sum + b.price_cents, 0)) throw new Error('Plug-in payment does not match the price');
+  const p = bought.sort((a, b) => b.includes.length - a.includes.length)[0];   // SB COMPLETE if they took it
+  const includes = [...new Set([free.id, ...p.includes, ...bought.flatMap((b) => b.includes)])];
+  return (await deliver(checkout, db, { p, includes, email, code: '', userId: meta.user_id, send, invoice })).result;
+}
+
+// One licence per checkout: saved, e-mailed, reported to the studio and invoiced.
+async function deliver(checkout, db, { p, includes, email, code, userId, send, invoice }) {
   let licence = await checked(db.from('plugin_licences').select('*').eq('stripe_session_id', checkout.id).maybeSingle(), 'look up the licence');
   if (!licence) {
-    const row = { licence_key: newLicenceKey(), product_id: p.id, includes: picked, seats: p.seats, email,
-      user_id: /^[0-9a-f-]{36}$/.test(meta.user_id || '') ? meta.user_id : null,
+    const row = { licence_key: newLicenceKey(), product_id: p.id, includes, seats: p.seats, email,
+      user_id: /^[0-9a-f-]{36}$/.test(userId || '') ? userId : null,
       source: code ? 'code' : checkout.livemode === true ? 'stripe' : 'stripe-test', ...(code ? { note: `Code ${code}` } : {}),
       stripe_session_id: checkout.id,
       stripe_payment_intent: typeof checkout.payment_intent === 'string' ? checkout.payment_intent : checkout.payment_intent?.id || null,
@@ -325,14 +417,18 @@ export async function fulfilPluginCheckout(checkout, db = licenceDB(), { send = 
   }
 
   await sendLicenceEmail(licence, db, { send, key: `plugin-licence-${checkout.id}` });
-  if (meta.free_product) await claimFree({ productId: meta.free_product, email, userId: licence.user_id }, db, { send, upsell: false });
+  const name = licenceName(licence, p, await productRows(db, includes));
   await send({ to: studio(), key: `plugin-licence-studio-${checkout.id}`,
-    subject: code ? `Producer code used · ${code} · ${p.name}` : `Plug-in sold · ${p.name} · ${money(checkout.amount_total)}`,
-    text: `${p.name} licence sold${checkout.livemode === true ? '' : ' (Stripe TEST payment)'}.\n\nBuyer: ${email}\nPaid: ${money(checkout.amount_total)}\nKey: ${licence.licence_key}\n\nAdmin: ${base()}/plugin-admin.html` });
+    subject: code ? `Producer code used · ${code} · ${name}` : `Plug-in sold · ${name} · ${money(checkout.amount_total)}`,
+    text: `${name} licence sold${checkout.livemode === true ? '' : ' (Stripe TEST payment)'}.\n\nBuyer: ${email}\nPaid: ${money(checkout.amount_total)}\nKey: ${licence.licence_key}\n\nAdmin: ${base()}/plugin-admin.html` });
   const invoiced = !(checkout.amount_total > 0) ? { skipped: true, reason: 'Nothing to invoice' }
-    : checkout.livemode === true ? await invoice(checkout, p, email) : { skipped: true, reason: 'Test payment' };
-  return { status: 'fulfilled', licence: licence.id, invoice: invoiced };
+    : checkout.livemode === true ? await invoice(checkout, { ...p, name }, email) : { skipped: true, reason: 'Test payment' };
+  return Object.assign(licence, { result: { status: 'fulfilled', licence: licence.id, invoice: invoiced } });
 }
+
+// A licence is named after its product, unless it also unlocks plug-ins outside it (add-ons in the free checkout).
+const licenceName = (licence, product, plugins) => !product ? licence.product_id
+  : licence.includes.some((id) => !product.includes.includes(id)) ? plugins.map((x) => x.name).join(' + ') : product.name;
 
 async function productRows(db, ids) {
   const rows = await checked(db.from('plugin_products').select('*').in('id', ids), 'load the plug-ins');
@@ -346,18 +442,19 @@ export async function sendLicenceEmail(licence, db = licenceDB(), opts = {}) {
   // [label](url) becomes a named link in the HTML e-mail, so the e-mail shows product names instead of addresses.
   const link = (label, url) => `[${label}](${url})`;
   const oneByOne = plugins.map((p) => `${p.name}:  ${link('macOS', dl(p, 'mac') || `${base()}/plugins.html#${p.id}`)}  ·  ${link('Windows', dl(p, 'windows') || `${base()}/plugins.html#${p.id}`)}`).join('\n');
-  const allInOne = plugins.length > 1 && (product.mac_download || product.windows_download);
+  const name = licenceName(licence, product, plugins);
+  const allInOne = product.includes.length > 1 && (product.mac_download || product.windows_download);
   const downloads = allInOne
     ? `Everything at once (one installer for all ${plugins.length}):\n   ${link(`${product.name} for macOS`, dl(product, 'mac') || `${base()}/plugins.html`)}  ·  ${link(`${product.name} for Windows`, dl(product, 'windows') || `${base()}/plugins.html`)}\n\nOr one by one:\n\n${oneByOne}`
     : oneByOne;
-  const body = `Hi,\n\n${product.free ? `Here is your free copy of ${product.name}.` : licence.source === 'code' ? `Here is your free ${product.name} licence, with our compliments.` : `Thank you for buying ${product.name}.`}\n\nYour licence key:\n\n    ${licence.licence_key}\n\n` +
+  const body = `Hi,\n\n${product.free ? `Here is your free copy of ${name}.` : licence.source === 'code' ? `Here is your free ${name} licence, with our compliments.` : `Thank you for buying ${name}.`}\n\nYour licence key:\n\n    ${licence.licence_key}\n\n` +
     `It works on ${licence.seats} computers (macOS and Windows, mixed as you like)${plugins.length > 1 ? ` and unlocks ${plugins.map((p) => p.name).join(', ')}` : ''}.\n\n` +
     `1. Download and install:\n\n${downloads}\n\n` +
     `2. Open the plug-in in your DAW (or the standalone app), paste the key into the activation window and press ACTIVATE. It needs the internet once; after that it works offline.\n\n` +
     `Moving to a new computer? Press DEACTIVATE THIS COMPUTER in the plug-in first, or remove the old computer in your Client Area: ${base()}/client#my-plugins\n\n` +
     `Your key is also saved in your Client Area (sign in or register with ${licence.email}).` +
     (product.free && opts.upsell !== false ? await upsellText(db, product.id) : '') + `\n\nSoundBunker Algarve`;
-  await send({ to: licence.email, key: key || `plugin-licence-resend-${licence.id}-${Date.now()}`, subject: product.free || licence.source === 'code' ? `Your free ${product.name} licence key` : `Your ${product.name} licence key`, text: body });
+  await send({ to: licence.email, key: key || `plugin-licence-resend-${licence.id}-${Date.now()}`, subject: product.free || licence.source === 'code' ? `Your free ${name} licence key` : `Your ${name} licence key`, text: body });
   await db.from('plugin_licences').update({ email_sent_at: new Date().toISOString() }).eq('id', licence.id);
 }
 
@@ -370,21 +467,29 @@ export async function revokeForPayment(paymentIntent, reason, db = licenceDB()) 
 }
 
 // Success page: the licence for a checkout (the session id is only known to the buyer's browser and Stripe).
-export async function licenceForSession(sessionId, db = licenceDB()) {
+export async function licenceForSession(sessionId, db = licenceDB(), stripeCall = stripe) {
   if (!/^cs_[A-Za-z0-9_]+$/.test(sessionId || '')) return null;
-  const licence = await checked(db.from('plugin_licences').select('*').eq('stripe_session_id', sessionId).maybeSingle(), 'look up the licence');
-  if (!licence) return null;
+  let licence = await checked(db.from('plugin_licences').select('*').eq('stripe_session_id', sessionId).maybeSingle(), 'look up the licence');
+  if (!licence) {
+    // A free checkout with nothing added gives the buyer's free licence (one per address), not one for the checkout.
+    const s = await stripeCall(`/checkout/sessions/${sessionId}`).catch(() => null);
+    const email = (s?.customer_details?.email || '').trim().toLowerCase();
+    if (s?.metadata?.free_checkout !== '1' || s.status !== 'complete' || !email) return null;
+    licence = (await checked(db.from('plugin_licences').select('*').eq('product_id', s.metadata.plugin_product).eq('source', 'free')
+      .eq('email', email), 'look up the licence'))[0];
+    if (!licence) return null;
+  }
   return describe(licence, await productRows(db, [licence.product_id, ...licence.includes]), []);
 }
 
 function describe(licence, products, activations) {
   const product = products.find((p) => p.id === licence.product_id);
-  return { id: licence.id, key: licence.licence_key, product: product?.name || licence.product_id, status: licence.status,
+  return { id: licence.id, key: licence.licence_key, product: licenceName(licence, product, licence.includes.map((id) => products.find((p) => p.id === id)).filter(Boolean)), status: licence.status,
     seats: licence.seats, email: licence.email, created_at: licence.created_at, source: licence.source, note: licence.note,
     plugins: licence.includes.map((id) => products.find((p) => p.id === id)).filter(Boolean)
       .map((p) => ({ id: p.id, name: p.name, mac_download: dl(p, 'mac'), windows_download: dl(p, 'windows') })),
     // A bundle with its own installer (SB COMPLETE) installs everything in one go.
-    install_all: licence.includes.length > 1 && (product?.mac_download || product?.windows_download)
+    install_all: product?.includes.length > 1 && (product.mac_download || product.windows_download)
       ? { mac_download: dl(product, 'mac'), windows_download: dl(product, 'windows') } : null,
     computers: [...new Map(activations.filter((a) => a.licence_id === licence.id && !a.deactivated_at)
       .map((a) => [a.machine_id, { machine: a.machine_id, name: a.machine_name, os: a.os, last_seen_at: a.last_seen_at }])).values()] };
