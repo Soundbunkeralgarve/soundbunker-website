@@ -116,8 +116,8 @@ async function stripe(path, form, idempotencyKey) {
 
 // Every paid order also gets the free product (the Armoury), unless the order already includes it. Stripe only sees the
 // paid item; the free licence is created with it after payment.
-// A producer code (plugin_codes) works like a discount code: the same checkout for the code's product, at €0 through a
-// one-off 100% coupon, so producers get the same e-mails, Client Area licence and Armoury as buyers.
+// Producer codes (plugin_codes) are Stripe promotion codes too, typed in the checkout's own "Add promotion code" box. A
+// producer link (plugins.html?code=XXXX) opens the checkout with the code already applied.
 export async function createCheckout({ productId, email, userId, choice, code }, db = licenceDB(), stripeCall = stripe) {
   let producer = null;
   if (code) {
@@ -135,6 +135,10 @@ export async function createCheckout({ productId, email, userId, choice, code },
   const free = (await checked(db.from('plugin_products').select('*').eq('free', true).eq('active', true), 'load the plug-ins'))
     .find((f) => !picked.includes(f.id)) || null;
   const names = p.pick ? (await productRows(db, picked)).map((x) => x.name).join(', ') + '. ' : '';
+  await ensureStripeProduct(p, stripeCall);
+  // A sync failure must not stop a sale: buyers without a code can always pay.
+  const promos = await syncProducerPromos(db, p, stripeCall).catch((e) => { if (producer) throw e; console.error('Producer code sync failed', e); return {}; });
+  const includes = `${p.pick ? `Your plug-ins: ${names}` : ''}${free ? `${free.name} included free. ` : ''}`;
   const form = new URLSearchParams({
     mode: 'payment',
     success_url: `${base()}/plugin-success.html?session_id={CHECKOUT_SESSION_ID}`,
@@ -145,9 +149,8 @@ export async function createCheckout({ productId, email, userId, choice, code },
     'line_items[0][quantity]': '1',
     'line_items[0][price_data][currency]': 'eur',
     'line_items[0][price_data][unit_amount]': String(p.price_cents),
-    'line_items[0][price_data][product_data][name]': `${p.name} licence`,
-    'line_items[0][price_data][product_data][description]': `${names}${p.tagline}. macOS and Windows, ${p.seats} computers.${free ? ` ${free.name} included free.` : ''} Licence keys e-mailed instantly. VAT included.`,
-    'custom_text[submit][message]': 'Your licence key is delivered by e-mail as soon as you pay. By paying you ask for immediate delivery and accept that the right of withdrawal ends once the licence is activated.',
+    'line_items[0][price_data][product]': stripeProduct(p.id),
+    'custom_text[submit][message]': `${includes}Your licence key is delivered by e-mail as soon as you pay. By paying you ask for immediate delivery and accept that the right of withdrawal ends once the licence is activated.`,
     'metadata[purchase_type]': 'plugin_licence',
     'metadata[plugin_product]': p.id,
     'metadata[choice]': p.pick ? picked.join(',') : '',
@@ -158,15 +161,68 @@ export async function createCheckout({ productId, email, userId, choice, code },
   });
   if (email) form.set('customer_email', email);
   if (producer) {
-    const coupon = await stripeCall('/coupons', new URLSearchParams({ percent_off: '100', duration: 'once', max_redemptions: '1',
-      name: `Producer code ${producer.code}`.slice(0, 40) }));
-    form.delete('allow_promotion_codes');
-    form.set('discounts[0][coupon]', coupon.id);
-    form.set('metadata[code]', producer.code);
-    form.set('custom_text[submit][message]', 'Free with your producer code: no payment needed. Your licence key is delivered by e-mail straight away.');
+    if (!promos[producer.code]) return { error: 'That code is not available right now. Please try again later.' };
+    form.delete('allow_promotion_codes');   // Stripe takes either a preset discount or the promotion code box
+    form.set('discounts[0][promotion_code]', promos[producer.code]);
+    form.set('custom_text[submit][message]', `${includes}Free with your producer code: no payment needed. Your licence key is delivered by e-mail straight away.`);
   }
   const session = await stripeCall('/checkout/sessions', form);
   return { url: session.url };
+}
+
+// Each plug-in product has a fixed Stripe product, so a producer code's coupon can be limited to it and never discounts
+// merch or anything else sold on the same Stripe account.
+const stripeProduct = (id) => `sb_plugin_${id}`;
+
+async function ensureStripeProduct(p, stripeCall) {
+  const details = { name: `${p.name} licence`, description: `${p.tagline || p.name}. macOS and Windows, ${p.seats} computers. Licence keys e-mailed instantly. VAT included.` };
+  try {
+    await stripeCall(`/products/${stripeProduct(p.id)}`, new URLSearchParams(details));
+  } catch (e) {
+    if (!/no such product/i.test(e.message)) throw e;
+    await stripeCall('/products', new URLSearchParams({ id: stripeProduct(p.id), ...details }));
+  }
+}
+
+// Keeps the product's Stripe promotion codes in step with plugin_codes: creates the usable ones, switches off the ones
+// that are off, expired or used up. Returns the promotion code ids by code.
+async function syncProducerPromos(db, p, stripeCall) {
+  const codes = await checked(db.from('plugin_codes').select('*').eq('product_id', p.id), 'load the codes');
+  const promos = {};
+  for (const c of codes) {
+    const usable = c.active && c.uses < c.max_uses && !(c.expires_at && new Date(c.expires_at) <= new Date());
+    const listed = await stripeCall(`/promotion_codes?code=${encodeURIComponent(c.code)}&active=true&limit=10`);
+    const found = (listed.data || []).find((x) => x.metadata?.plugin_code === c.code);
+    if (found && !usable) await stripeCall(`/promotion_codes/${found.id}`, new URLSearchParams({ active: 'false' }));
+    else if (found) promos[c.code] = found.id;
+    else if (usable) promos[c.code] = (await createPromo(c, stripeCall)).id;
+  }
+  return promos;
+}
+
+async function createPromo(c, stripeCall) {
+  const coupon = await stripeCall('/coupons', new URLSearchParams({ percent_off: '100', duration: 'once', name: `Producer code ${c.code}`.slice(0, 40),
+    'applies_to[products][0]': stripeProduct(c.product_id), 'metadata[plugin_code]': c.code }));
+  const promo = { code: c.code, max_redemptions: String(c.max_uses - c.uses), 'metadata[plugin_code]': c.code,
+    ...(c.expires_at ? { expires_at: String(Math.floor(new Date(c.expires_at).getTime() / 1000)) } : {}) };
+  try {
+    return await stripeCall('/promotion_codes', new URLSearchParams({ ...promo, coupon: coupon.id }));
+  } catch (e) {   // newer Stripe API versions take the coupon as promotion[coupon]
+    if (!/coupon|promotion/i.test(e.message)) throw e;
+    return stripeCall('/promotion_codes', new URLSearchParams({ ...promo, 'promotion[type]': 'coupon', 'promotion[coupon]': coupon.id }));
+  }
+}
+
+// The producer code behind a €0 checkout, from the promotion code the buyer applied.
+async function producerCodeUsed(checkout, stripeCall) {
+  const discounts = checkout.discounts || (await stripeCall(`/checkout/sessions/${checkout.id}`)).discounts || [];
+  for (const d of discounts) {
+    const promo = d.promotion_code;
+    if (!promo) continue;
+    const full = typeof promo === 'object' && promo.metadata ? promo : await stripeCall(`/promotion_codes/${typeof promo === 'string' ? promo : promo.id}`);
+    if (full.metadata?.plugin_code) return full.metadata.plugin_code;
+  }
+  return '';
 }
 
 // Free products (the Armoury): the key goes by e-mail, which proves the address. One licence per address and product;
@@ -228,10 +284,12 @@ async function upsellText(db, freeId) {
 
 //------------------------------------------------------------------------------------------------------------------
 // After payment (Stripe webhook). Safe to run again for the same checkout: one licence per checkout, e-mails keyed.
-export async function fulfilPluginCheckout(checkout, db = licenceDB(), { send = sendTransactionalEmail, invoice = sendPluginLicenceInvoice } = {}) {
+export async function fulfilPluginCheckout(checkout, db = licenceDB(), { send = sendTransactionalEmail, invoice = sendPluginLicenceInvoice, stripeCall = stripe } = {}) {
   const meta = checkout.metadata || {};
-  const free = checkout.payment_status === 'no_payment_required' && Boolean(meta.code);
-  if (meta.purchase_type !== 'plugin_licence' || !(checkout.payment_status === 'paid' || free)) throw new Error('Not a paid plug-in checkout');
+  if (meta.purchase_type !== 'plugin_licence') throw new Error('Not a paid plug-in checkout');
+  // Only a producer code makes a plug-in order free.
+  const code = checkout.payment_status === 'no_payment_required' ? meta.code || await producerCodeUsed(checkout, stripeCall) : '';
+  if (!(checkout.payment_status === 'paid' || code)) throw new Error('Not a paid plug-in checkout');
   const p = await checked(db.from('plugin_products').select('*').eq('id', meta.plugin_product).maybeSingle(), 'load the plug-in');
   if (!p) throw new Error('Paid plug-in not found');
   if (checkout.currency !== 'eur' || checkout.amount_subtotal !== p.price_cents) throw new Error('Plug-in payment does not match the price');
@@ -244,7 +302,7 @@ export async function fulfilPluginCheckout(checkout, db = licenceDB(), { send = 
   if (!licence) {
     const row = { licence_key: newLicenceKey(), product_id: p.id, includes: picked, seats: p.seats, email,
       user_id: /^[0-9a-f-]{36}$/.test(meta.user_id || '') ? meta.user_id : null,
-      source: meta.code ? 'code' : checkout.livemode === true ? 'stripe' : 'stripe-test', ...(meta.code ? { note: `Code ${meta.code}` } : {}),
+      source: code ? 'code' : checkout.livemode === true ? 'stripe' : 'stripe-test', ...(code ? { note: `Code ${code}` } : {}),
       stripe_session_id: checkout.id,
       stripe_payment_intent: typeof checkout.payment_intent === 'string' ? checkout.payment_intent : checkout.payment_intent?.id || null,
       amount_cents: checkout.amount_total };
@@ -253,13 +311,13 @@ export async function fulfilPluginCheckout(checkout, db = licenceDB(), { send = 
     licence = inserted.error
       ? await checked(db.from('plugin_licences').select('*').eq('stripe_session_id', checkout.id).single(), 'save the licence')
       : inserted.data;
-    if (meta.code && !inserted.error) await recordCodeUse(db, meta.code, email, licence.id);
+    if (code && !inserted.error) await recordCodeUse(db, code, email, licence.id);
   }
 
   await sendLicenceEmail(licence, db, { send, key: `plugin-licence-${checkout.id}` });
   if (meta.free_product) await claimFree({ productId: meta.free_product, email, userId: licence.user_id }, db, { send, upsell: false });
   await send({ to: studio(), key: `plugin-licence-studio-${checkout.id}`,
-    subject: meta.code ? `Producer code used · ${meta.code} · ${p.name}` : `Plug-in sold · ${p.name} · ${money(checkout.amount_total)}`,
+    subject: code ? `Producer code used · ${code} · ${p.name}` : `Plug-in sold · ${p.name} · ${money(checkout.amount_total)}`,
     text: `${p.name} licence sold${checkout.livemode === true ? '' : ' (Stripe TEST payment)'}.\n\nBuyer: ${email}\nPaid: ${money(checkout.amount_total)}\nKey: ${licence.licence_key}\n\nAdmin: ${base()}/plugin-admin.html` });
   const invoiced = !(checkout.amount_total > 0) ? { skipped: true, reason: 'Nothing to invoice' }
     : checkout.livemode === true ? await invoice(checkout, p, email) : { skipped: true, reason: 'Test payment' };

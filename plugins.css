@@ -99,15 +99,7 @@
 .plugin-addon-pick { padding-left: 24px; }
 .plugin-pick { border-color: rgba(200, 162, 74, .5); }
 @media (min-width: 860px) { .plugin-bundle.plugin-pick { display: flex; flex-direction: column; } }
-.plugin-code { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: end; margin: 40px 0; padding: 26px; border: 1px solid rgba(200, 162, 74, .45); border-radius: 14px; background: rgba(200, 162, 74, .06); }
-.plugin-code h2 { margin: 4px 0 8px; }
-.plugin-code p { margin: 0; }
-.plugin-code form { display: grid; gap: 12px; }
-.plugin-code label { display: grid; gap: 6px; font-size: .9rem; }
-.plugin-code input { padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, .25); background: rgba(0, 0, 0, .35); color: inherit; font: inherit; }
-.plugin-code input[name=code] { text-transform: uppercase; letter-spacing: .12em; }
-@media (max-width: 760px) { .plugin-code { grid-template-columns: 1fr; } }
-
+@media (max-width: 760px) { 
 /* Free first, then the upsell */
 .plugin-start, .plugin-upsell { margin-top: 48px; scroll-margin-top: 110px; }
 .plugin-start h2, .plugin-upsell h2 { font-family: 'Space Grotesk', sans-serif; font-size: clamp(1.7rem, 3.4vw, 2.6rem); line-height: 1.1; margin: 6px 0 10px; max-width: 820px; }
@@ -121,3 +113,9 @@
   .plugin-start .plugin-card-image { grid-column: 1; grid-row: 1 / span 20; }
   .plugin-start .plugin-card-image img { width: 100%; margin: 0; border-radius: 10px; }
 }
+
+/* Client Area: licence key with a copy button */
+.client-plugin-key-label { margin: 10px 0 6px; font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: #caa9ff; font-weight: 800; }
+.client-plugin-key { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.client-plugin-key code { flex: 1 1 260px; overflow-wrap: anywhere; }
+.client-plugin-key button { border: 1px solid rgba(255, 255, 255, .3); background: transparent; color: #fff; border-radius: 999px; padding: 8px 14px; font: inherit; font-weight: 700; cursor: pointer; }

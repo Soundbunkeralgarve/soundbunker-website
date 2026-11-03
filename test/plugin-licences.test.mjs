@@ -246,7 +246,8 @@ test('every paid order includes the free Armoury; the 3-Pack unlocks the chosen 
     await createCheckout({ productId: 'nuclear', email: 'fan@example.com' }, sb, stripe);
     assert.equal(form.get('line_items[0][price_data][unit_amount]'), '2500');
     assert.equal(form.get('metadata[free_product]'), 'armoury', 'single plug-in: Armoury added free');
-    assert.match(form.get('line_items[0][price_data][product_data][description]'), /SoundBunker Armoury included free/);
+    assert.match(form.get('custom_text[submit][message]'), /^SoundBunker Armoury included free\./);
+    assert.equal(form.get('line_items[0][price_data][product]'), 'sb_plugin_nuclear');
     await createCheckout({ productId: 'complete' }, sb, stripe);
     assert.equal(form.get('line_items[0][price_data][unit_amount]'), '5900');
     assert.equal(form.get('metadata[free_product]'), '', 'Complete already contains the Armoury');
@@ -258,7 +259,7 @@ test('every paid order includes the free Armoury; the 3-Pack unlocks the chosen 
     assert.equal(form.get('line_items[0][price_data][unit_amount]'), '4500');
     assert.equal(form.get('metadata[choice]'), 'nuclear,napalm,fallout');
     assert.equal(form.get('metadata[free_product]'), 'armoury');
-    assert.match(form.get('line_items[0][price_data][product_data][description]'), /^NUCLEAR, NAPALM, FALLOUT\./);
+    assert.match(form.get('custom_text[submit][message]'), /^Your plug-ins: NUCLEAR, NAPALM, FALLOUT\. SoundBunker Armoury included free\./);
 
     const sent = [];
     const opts = { send: async (mail) => { sent.push(mail); }, invoice: async () => ({ queued: true }) };
@@ -279,7 +280,38 @@ test('every paid order includes the free Armoury; the 3-Pack unlocks the chosen 
   } finally { await db.close(); }
 });
 
-test('producer codes: a €0 checkout for the code\'s product, counted once per address, off and expired codes refused', async () => {
+// A Stripe account with promotion codes, enough for the producer code sync.
+function fakeStripe() {
+  const s = { promos: [], coupons: [], sessions: [] };
+  s.call = async (path, form) => {
+    if (path.startsWith('/products')) return { id: path.split('/')[2] || form.get('id') };
+    if (path === '/coupons') {
+      const c = { id: `co_${s.coupons.length + 1}`, percent: form.get('percent_off'), product: form.get('applies_to[products][0]') };
+      s.coupons.push(c);
+      return c;
+    }
+    if (path === '/promotion_codes') {
+      const p = { id: `promo_${s.promos.length + 1}`, code: form.get('code'), coupon: form.get('coupon'), max: form.get('max_redemptions'),
+        active: true, metadata: { plugin_code: form.get('metadata[plugin_code]') } };
+      s.promos.push(p);
+      return p;
+    }
+    if (path.startsWith('/promotion_codes?')) {
+      const q = new URLSearchParams(path.split('?')[1]);
+      return { data: s.promos.filter((p) => p.active && p.code === q.get('code')) };
+    }
+    if (path.startsWith('/promotion_codes/')) {
+      const p = s.promos.find((x) => x.id === path.split('/')[2]);
+      if (form) p.active = form.get('active') !== 'false';
+      return p;
+    }
+    if (path === '/checkout/sessions') { s.sessions.push(form); return { url: 'https://checkout.stripe.com/s' }; }
+    throw new Error(`unexpected Stripe call ${path}`);
+  };
+  return s;
+}
+
+test('producer codes: Stripe promotion codes limited to the code\'s product, counted once per address, switched off when used up', async () => {
   const db = await database({ asShipped: true });
   const sb = client(db);
   try {
@@ -291,22 +323,28 @@ test('producer codes: a €0 checkout for the code\'s product, counted once per 
     assert.match((await createCheckout({ code: 'OLDCODE' }, sb, noStripe)).error, /not valid/);
     assert.match((await createCheckout({ code: 'LASTYEAR' }, sb, noStripe)).error, /expired/);
 
-    const calls = [];
-    const stripe = async (path, form) => { calls.push({ path, form }); return path === '/coupons' ? { id: 'co_free1' } : { url: 'https://checkout.stripe.com/free' }; };
-    assert.deepEqual(await createCheckout({ productId: 'nuclear', code: ' sbproducer ' }, sb, stripe), { url: 'https://checkout.stripe.com/free' });
-    assert.equal(calls[0].path, '/coupons');
-    assert.equal(calls[0].form.get('percent_off'), '100');
-    assert.equal(calls[0].form.get('max_redemptions'), '1');
-    const form = calls[1].form;
+    // Any checkout for the product makes sure its usable codes exist in Stripe, once, and only for that product.
+    const stripe = fakeStripe();
+    await createCheckout({ productId: 'complete' }, sb, stripe.call);
+    await createCheckout({ productId: 'complete' }, sb, stripe.call);
+    await createCheckout({ productId: 'nuclear' }, sb, stripe.call);
+    assert.deepEqual(stripe.promos.map((p) => `${p.code}:${p.max}:${p.metadata.plugin_code}`), ['SBPRODUCER:2:SBPRODUCER']);
+    assert.deepEqual(stripe.coupons.map((c) => `${c.percent}:${c.product}`), ['100:sb_plugin_complete'], 'never discounts merch or other products');
+    assert.equal(stripe.sessions[0].get('allow_promotion_codes'), 'true', 'buyers type codes in the checkout');
+    assert.equal(stripe.sessions[0].get('line_items[0][price_data][product]'), 'sb_plugin_complete');
+
+    // A producer link opens the checkout for the code's product with the code applied.
+    await createCheckout({ productId: 'nuclear', code: ' sbproducer ' }, sb, stripe.call);
+    const form = stripe.sessions.at(-1);
     assert.equal(form.get('metadata[plugin_product]'), 'complete', 'the code decides the product');
-    assert.equal(form.get('discounts[0][coupon]'), 'co_free1');
-    assert.equal(form.get('metadata[code]'), 'SBPRODUCER');
+    assert.equal(form.get('discounts[0][promotion_code]'), 'promo_1');
     assert.equal(form.get('allow_promotion_codes'), null, 'Stripe refuses discounts together with promotion codes');
 
     const sent = [];
-    const opts = { send: async (mail) => { sent.push(mail); }, invoice: async () => assert.fail('no invoice for a €0 order') };
+    const opts = { send: async (mail) => { sent.push(mail); }, invoice: async () => assert.fail('no invoice for a €0 order'), stripeCall: stripe.call };
     const order = (id, email) => ({ id, livemode: true, payment_status: 'no_payment_required', currency: 'eur', amount_subtotal: 5900,
-      amount_total: 0, payment_intent: null, customer_details: { email }, metadata: { purchase_type: 'plugin_licence', plugin_product: 'complete', code: 'SBPRODUCER' } });
+      amount_total: 0, payment_intent: null, customer_details: { email }, discounts: [{ coupon: 'co_1', promotion_code: 'promo_1' }],
+      metadata: { purchase_type: 'plugin_licence', plugin_product: 'complete' } });
     const done = await fulfilPluginCheckout(order('cs_live_p1', 'beat@maker.com'), sb, opts);
     assert.equal(done.invoice.skipped, true);
     await fulfilPluginCheckout(order('cs_live_p1', 'beat@maker.com'), sb, opts);   // webhook retry
@@ -326,7 +364,9 @@ test('producer codes: a €0 checkout for the code\'s product, counted once per 
     await fulfilPluginCheckout(order('cs_live_p2', 'second@maker.com'), sb, opts);
     assert.equal((await db.query("select uses from plugin_codes where code = 'SBPRODUCER'")).rows[0].uses, 2);
     assert.match((await createCheckout({ code: 'SBPRODUCER' }, sb, noStripe)).error, /maximum/);
-    await assert.rejects(fulfilPluginCheckout({ ...order('cs_live_p3', 'x@maker.com'), metadata: { purchase_type: 'plugin_licence', plugin_product: 'complete' } }, sb, opts),
-      /Not a paid/, 'a €0 order without a code is refused');
+    await createCheckout({ productId: 'complete' }, sb, stripe.call);
+    assert.equal(stripe.promos[0].active, false, 'a used-up code is switched off in Stripe');
+    await assert.rejects(fulfilPluginCheckout({ ...order('cs_live_p3', 'x@maker.com'), discounts: [] }, sb, opts),
+      /Not a paid/, 'a €0 order without a producer code is refused');
   } finally { await db.close(); }
 });

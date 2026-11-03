@@ -361,9 +361,10 @@ function renderPluginLicences(licences) {
       ? `<ul class="client-plugin-computers">${l.computers.map(c => `<li><span>${escapeHtml(c.name || 'Computer')} · ${escapeHtml(c.os)} · last seen ${escapeHtml(String(c.last_seen_at).slice(0, 10))}</span><button type="button" data-release-licence="${escapeHtml(l.id)}" data-release-machine="${escapeHtml(c.machine)}">Remove</button></li>`).join('')}</ul>`
       : '<p class="client-plugin-status">Not activated on any computer yet.</p>';
     return `<article class="client-plugin-card"><h3>${escapeHtml(l.product)}</h3>
-      <code>${escapeHtml(l.key)}</code>
+      <p class="client-plugin-key-label">Licence key</p>
+      <div class="client-plugin-key"><code>${escapeHtml(l.key)}</code><button type="button" data-copy-key="${escapeHtml(l.key)}">Copy key</button></div>
       <p class="client-plugin-status">${l.status === 'active' ? `Active · ${l.computers.length} of ${l.seats} computers in use` : 'This licence is no longer active.'}</p>
-      ${computers}${downloads ? `<p>${downloads}</p>` : ''}</article>`;
+      ${computers}<p>${downloads || '<a href="plugins.html">Download links are on the plug-ins page ↗</a>'}</p></article>`;
   }).join('');
 }
 
@@ -383,6 +384,11 @@ async function loadPluginLicences(session) {
 }
 
 document.addEventListener('click', async event => {
+  const copy = event.target.closest('[data-copy-key]');
+  if (copy) {
+    try { await navigator.clipboard.writeText(copy.dataset.copyKey); copy.textContent = 'Copied'; } catch { /* select the key by hand */ }
+    return;
+  }
   const button = event.target.closest('[data-release-licence]');
   if (!button) return;
   button.disabled = true;

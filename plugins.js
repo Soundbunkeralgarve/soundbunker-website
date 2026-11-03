@@ -166,11 +166,8 @@
       $('#freeGrid').innerHTML = products.filter((p) => p.free).map(card).join('');
       $('#pluginGrid').innerHTML = [...bundles().reverse(), ...products.filter((p) => !p.free && !bundles().includes(p))].map(card).join('');
       const params = new URLSearchParams(location.search);
-      if (params.get('code')) {   // a producer link: plugins.html?code=XXXX#producer-code
-        $('#codeForm').code.value = params.get('code').slice(0, 40);
-        $('#producer-code').scrollIntoView({ block: 'center' });
-        $('#codeForm').querySelector('button').focus();
-      } else if (params.get('offer')) openFree(params.get('offer'), true);
+      if (params.get('code')) redeem(params.get('code'));   // a producer link: plugins.html?code=XXXX
+      else if (params.get('offer')) openFree(params.get('offer'), true);
       else if (params.get('get')) openFree(params.get('get'), false);   // "Download Armoury free" links
       else if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView({ block: 'center' });
     } catch {
@@ -206,23 +203,18 @@
     if (form) label(form);
   });
 
-  // Producer codes work like a discount code: the same checkout as a purchase, at €0.
-  async function redeem(form) {
-    const button = form.querySelector('button[type=submit]'), note = $('#codeMessage');
-    button.disabled = true;
-    button.textContent = 'Opening checkout...';
-    note.textContent = '';
+  // A producer link opens the checkout with the code already applied (codes can also be typed in the checkout itself).
+  async function redeem(code) {
+    $('#pluginMessage').textContent = 'Opening checkout with your code...';
+    $('#pluginMessage').scrollIntoView({ block: 'center' });
     try {
-      await checkout({ code: form.code.value });
+      await checkout({ code: code.slice(0, 40) });
     } catch (err) {
-      note.textContent = err.message;
-      button.disabled = false;
-      button.textContent = 'Apply code';
+      $('#pluginMessage').textContent = `${err.message} You can still enter a code at checkout.`;
     }
   }
 
   document.addEventListener('submit', (e) => {
-    if (e.target.id === 'codeForm') { e.preventDefault(); redeem(e.target); return; }
     const form = e.target.closest('[data-claim-form]');
     if (!form) return;
     e.preventDefault();

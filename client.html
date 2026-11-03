@@ -12,11 +12,11 @@
   <link rel="stylesheet" href="client-gifts.css">
   <link rel="stylesheet" href="client-portal.css">
   <link rel="stylesheet" href="client-dashboard.css">
-  <link rel="stylesheet" href="client-tickets.css">
-  <link rel="stylesheet" href="plugins.css?v=20261101">
+  <link rel="stylesheet" href="client-tickets.css?v=20261103">
+  <link rel="stylesheet" href="plugins.css?v=20261103b">
   <link rel="stylesheet" href="client-mobile-app.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="client.js?v=20261101-plugins" defer></script>
+  <script src="client.js?v=20261103-plugins" defer></script>
 <link rel="stylesheet" href="calendar-picker.css">
 <script defer src="calendar-picker.js"></script>
   <link rel="stylesheet" href="client-music.css?v=1">
@@ -36,7 +36,7 @@
 <main class="client-shell">
     <header class="client-nav">
       <a href="/" class="client-logo" aria-label="SoundBunker Algarve home"><img src="soundbunker-logo.png" alt="SoundBunker Algarve"></a>
-      <nav aria-label="Client shortcuts"><a href="#my-tickets">My Tickets</a><a href="shop.html">Merch Shop</a><a href="gift-vouchers.html">Gift Experiences</a><a href="/redeem">Redeem voucher</a><a href="/community">SoundBunker Social</a><a href="#inbox">Inbox <span id="inboxBadge"></span></a><a href="#notifications">Updates <span id="noticeBadge"></span></a></nav>
+      <nav aria-label="Client shortcuts"><a href="#my-tickets">My Tickets</a><a href="#my-plugins">My Plug-ins</a><a href="shop.html">Merch Shop</a><a href="gift-vouchers.html">Gift Experiences</a><a href="/redeem">Redeem voucher</a><a href="/community">SoundBunker Social</a><a href="#inbox">Inbox <span id="inboxBadge"></span></a><a href="#notifications">Updates <span id="noticeBadge"></span></a></nav>
     </header>
 
     <section id="authPanel" class="client-auth" hidden>
@@ -99,7 +99,7 @@
         </form>
       </details>
 
-      <p><a href="#my-invoices">View my invoices ↗</a></p><section class="client-account-categories" aria-label="Your SoundBunker account areas"><a href="#manage-sessions"><span>01 / STUDIO</span><strong>Studio bookings</strong><small>Sessions and audio projects</small></a><a href="#my-files"><span>02 / PHOTOGRAPHY</span><strong>My Photography</strong><small>Galleries and downloads</small></a><a href="#my-vouchers"><span>03 / GIFT VOUCHERS</span><strong>Gift Vouchers</strong><small>Experiences and gift codes</small></a><a href="#my-tickets"><span>04 / EVENT TICKETS</span><strong>My Tickets</strong><small>QR tickets, downloads and sharing</small></a></section>
+      <p><a href="#my-invoices">View my invoices ↗</a></p><section class="client-account-categories" aria-label="Your SoundBunker account areas"><a href="#manage-sessions"><span>01 / STUDIO</span><strong>Studio bookings</strong><small>Sessions and audio projects</small></a><a href="#my-files"><span>02 / PHOTOGRAPHY</span><strong>My Photography</strong><small>Galleries and downloads</small></a><a href="#my-vouchers"><span>03 / GIFT VOUCHERS</span><strong>Gift Vouchers</strong><small>Experiences and gift codes</small></a><a href="#my-tickets"><span>04 / EVENT TICKETS</span><strong>My Tickets</strong><small>QR tickets, downloads and sharing</small></a><a href="#my-plugins"><span>05 / PLUG-INS</span><strong>My Plug-ins</strong><small>Licence keys and downloads</small></a></section>
       <section class="client-hub-panel" id="my-invoices"><div><p class="eyebrow">YOUR PURCHASES</p><h2>Invoices.</h2><p>Your SoundBunker invoices, payment records and downloads.</p><div id="myInvoices" role="status">Loading your invoices…</div></div></section>
       <section class="client-session-upload" id="session-upload">
         <div class="client-session-upload-copy">
@@ -180,7 +180,7 @@
       </section>
       <section class="client-plugins-section" id="my-plugins">
         <div class="client-voucher-head">
-          <div><p class="eyebrow">My Plug-ins</p><h2>Your SoundBunker licences.</h2><p>Licences bought with this account's e-mail appear here. Remove an old computer to free its seat.</p></div>
+          <div><p class="eyebrow">My Plug-ins</p><h2>Your SoundBunker licences.</h2><p>Your licence keys and downloads, for every plug-in bought or claimed with this account's e-mail (free ones and producer codes too). Remove an old computer to free its seat.</p></div>
           <div><a href="plugins.html">Browse the plug-ins →</a></div>
         </div>
         <div id="pluginLicenceList" class="client-plugin-list"><div class="client-loading-card">Loading your licences...</div></div>
