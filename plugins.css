@@ -95,6 +95,8 @@
 .plugin-try[hidden], .plugin-upgrade[hidden] { display: none; }
 .plugin-try-signin { padding: 18px; border-radius: 14px; border: 1px solid rgba(200, 162, 74, .7); background: rgba(200, 162, 74, .1); display: grid; gap: 12px; justify-items: start; }
 .plugin-try-signin p { margin: 0; }
+.plugin-try-signin a.plugin-buy, .plugin-upgrade a.plugin-buy { text-decoration: none; }
+.plugin-upgrade a:not(.plugin-buy) { color: #c8a24a; }
 .plugin-upgrade { margin-top: 32px; padding: 24px; border-radius: 18px; border: 2px solid #c8a24a; background: linear-gradient(120deg, rgba(200, 162, 74, .2), rgba(255, 255, 255, .04)); scroll-margin-top: 110px; }
 .plugin-upgrade h2 { font-family: 'Space Grotesk', sans-serif; font-size: clamp(1.6rem, 3.2vw, 2.4rem); line-height: 1.1; margin: 6px 0 18px; }
 .plugin-upgrade-options { display: grid; grid-template-columns: 1.3fr 1fr; gap: 14px; }
