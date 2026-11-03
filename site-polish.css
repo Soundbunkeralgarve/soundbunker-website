@@ -14,7 +14,8 @@ body[data-service-page="mixing"] .detail-hero-content{padding:64px 4vw}
 .client-auth-visual{min-height:520px}
 .academy-hero-image{max-height:620px;overflow:hidden}
 .plugin-hero{padding-top:56px}
-.plugin-hero-image img{max-height:520px;object-fit:cover}
+/* Show the whole plug-in banner: the logo sits at its top edge and the names along its bottom */
+.plugin-hero-image img{max-height:none;object-fit:contain}
 /* The RECON privacy page reuses the plug-in header as its whole body: keep it a readable column */
 .plugin-hero.plugin-success{max-width:760px;margin-inline:auto}
 
@@ -38,7 +39,6 @@ body[data-service-page="mixing"] .detail-hero-content{padding:64px 4vw}
  .academy-page .academy-visual-strip{grid-template-columns:repeat(3,1fr);height:140px}
  .academy-page .academy-visual-strip img{height:140px}
  .client-auth-visual{min-height:0}
- .plugin-hero-image img{max-height:300px}
 }
 
 /* Plug-in pages: same body font and header buttons as the rest of the site */
