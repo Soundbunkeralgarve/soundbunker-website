@@ -250,7 +250,7 @@ export default function App(){
  const ready=!!myEvent&&(!loadingEvents||offlineStatus?.active||hubConnection)&&!working&&!startupError&&!loading;
  const cameraActive=foreground&&!toolsOpen&&!manualOpen&&!hubPairing;
  const offlineExpired=offlineStatus?.active&&Date.now()+offlineStatus.offset>=Date.parse(offlineStatus.expiresAt);
- const statusLabel=hubConnection?(hubHealth?.ready?'HUB READY':'HUB LOST'):!ready?'DOOR CREW':offlineExpired?'RECONNECT':offlineStatus?.active?`LANE ${offlineStatus.lane}`:manualOpen?'MANUAL':!cameraActive?'PAUSED':permission?.granted?'READY':'CAMERA OFF';
+ const statusLabel=hubConnection?(hubHealth?.ready?'HUB READY':'HUB LOST'):!ready?'SIGN IN':offlineExpired?'RECONNECT':offlineStatus?.active?`LANE ${offlineStatus.lane}`:manualOpen?'MANUAL':!cameraActive?'PAUSED':permission?.granted?'READY':'CAMERA OFF';
  const resultColor=result?.kind==='approved'?C.mint:result?.kind==='warning'?C.amber:C.red;
  return <SafeAreaView style={s.root}><StatusBar barStyle="light-content" backgroundColor="#000"/><KeyboardAvoidingView style={s.flex} behavior={Platform.OS==='ios'?'padding':undefined}>
   <View style={s.header}>
@@ -264,7 +264,7 @@ export default function App(){
    {loading?<ActivityIndicator style={s.loader} color={C.mint}/>:<Button title="Retry connection" onPress={()=>setAttempt(n=>n+1)} style={s.wideButton}/>}
    <Footer/>
   </View>:!user?<ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.loginContainer}>
-   <View style={s.loginIntro}><Text style={s.kicker}>WELCOME, DOOR CREW</Text><Text style={s.headline}>Let them in.</Text><Text style={s.body}>Sign in. Choose your event. Start scanning.</Text></View>
+   <View style={s.loginIntro}><Text style={s.kicker}>FOR EVENT ORGANISERS AND DOOR STAFF</Text><Text style={s.headline}>Let them in.</Text><Text style={s.body}>Sign in. Choose your event. Start scanning.</Text></View>
    <View style={s.loginCard}>
     <Text style={s.label}>Email address</Text><Input value={email} autoCapitalize="none" autoCorrect={false} keyboardType="email-address" autoComplete="email" textContentType="username" onChangeText={setEmail} placeholder="you@example.com"/>
     <Text style={s.label}>Password</Text><Input value={password} onChangeText={setPassword} secureTextEntry autoComplete="current-password" textContentType="password" placeholder="Your password" returnKeyType="go" onSubmitEditing={signIn}/>
@@ -272,7 +272,7 @@ export default function App(){
     <Button title={busy?'Signing in…':'Sign in'} disabled={busy} onPress={signIn}/>
     <Pressable style={s.textAction} onPress={()=>Linking.openURL('https://theticketbunker.com/client')} accessibilityRole="link"><Text style={s.link}>Forgot password?</Text></Pressable>
    </View>
-   <Text style={s.bodyCenter}>Use the email your organiser invited.</Text><Footer/>
+   <Text style={s.bodyCenter}>Sign in with your TicketBunker organiser account, or the email an organiser invited you with.</Text><Pressable style={s.textAction} onPress={()=>Linking.openURL('https://theticketbunker.com/organiser?signup=1')} accessibilityRole="link"><Text style={s.link}>New organiser? Create a free account</Text></Pressable><Footer/>
   </ScrollView>:!user.email_confirmed_at?<View style={s.welcome}><Text style={s.headline}>Check your inbox.</Text><Text style={s.bodyCenter}>Verify your email before scanning tickets.</Text><Button title="Sign out" disabled={busy} onPress={signOut}/></View>:
   <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.container}>
    <View style={s.panel}>
