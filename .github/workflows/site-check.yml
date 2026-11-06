@@ -109,6 +109,10 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f SUPABASE_TICKETBUNKER_PUBLIC_BETA_TEST.sql
       - name: Verify real €0 booking, scanner, pricing and inventory separation
         run: psql -v ON_ERROR_STOP=1 -f test/ticketbunker-public-beta-schema.sql
+      - name: Keep private test events scannable until their own expiry
+        run: psql -v ON_ERROR_STOP=1 -f SUPABASE_TICKETBUNKER_TEST_EVENT_CHECKIN_WINDOW.sql
+      - name: Verify an old-start private test event still admits once
+        run: psql -v ON_ERROR_STOP=1 -f test/ticketbunker-test-event-checkin-window.sql
       - name: Create event-scoped Street Team and attribution schema
         run: psql -v ON_ERROR_STOP=1 -f SUPABASE_TICKETBUNKER_STREET_TEAM.sql
       - name: Verify VIP reward targets, test attribution and restricted data

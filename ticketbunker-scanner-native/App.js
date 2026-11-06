@@ -250,7 +250,7 @@ export default function App(){
  const ready=!!myEvent&&(!loadingEvents||offlineStatus?.active||hubConnection)&&!working&&!startupError&&!loading;
  const cameraActive=foreground&&!toolsOpen&&!manualOpen&&!hubPairing;
  const offlineExpired=offlineStatus?.active&&Date.now()+offlineStatus.offset>=Date.parse(offlineStatus.expiresAt);
- const statusLabel=hubConnection?(hubHealth?.ready?'HUB READY':'HUB LOST'):!ready?'DOOR CREW':offlineExpired?'RECONNECT':offlineStatus?.active?`LANE ${offlineStatus.lane}`:manualOpen?'MANUAL':!cameraActive?'PAUSED':permission?.granted?'READY':'CAMERA OFF';
+ const statusLabel=hubConnection?(hubHealth?.ready?'HUB READY':'HUB LOST'):!ready?'SIGN IN':offlineExpired?'RECONNECT':offlineStatus?.active?`LANE ${offlineStatus.lane}`:manualOpen?'MANUAL':!cameraActive?'PAUSED':permission?.granted?'READY':'CAMERA OFF';
  const resultColor=result?.kind==='approved'?C.mint:result?.kind==='warning'?C.amber:C.red;
  return <SafeAreaView style={s.root}><StatusBar barStyle="light-content" backgroundColor="#000"/><KeyboardAvoidingView style={s.flex} behavior={Platform.OS==='ios'?'padding':undefined}>
   <View style={s.header}>
@@ -264,7 +264,7 @@ export default function App(){
    {loading?<ActivityIndicator style={s.loader} color={C.mint}/>:<Button title="Retry connection" onPress={()=>setAttempt(n=>n+1)} style={s.wideButton}/>}
    <Footer/>
   </View>:!user?<ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.loginContainer}>
-   <View style={s.loginIntro}><Text style={s.kicker}>WELCOME, DOOR CREW</Text><Text style={s.headline}>Let them in.</Text><Text style={s.body}>Sign in. Choose your event. Start scanning.</Text></View>
+   <View style={s.loginIntro}><Text style={s.kicker}>FOR EVENT ORGANISERS AND DOOR STAFF</Text><Text style={s.headline}>Let them in.</Text><Text style={s.body}>Sign in. Choose your event. Start scanning.</Text></View>
    <View style={s.loginCard}>
     <Text style={s.label}>Email address</Text><Input value={email} autoCapitalize="none" autoCorrect={false} keyboardType="email-address" autoComplete="email" textContentType="username" onChangeText={setEmail} placeholder="you@example.com"/>
     <Text style={s.label}>Password</Text><Input value={password} onChangeText={setPassword} secureTextEntry autoComplete="current-password" textContentType="password" placeholder="Your password" returnKeyType="go" onSubmitEditing={signIn}/>
@@ -272,7 +272,7 @@ export default function App(){
     <Button title={busy?'Signing in…':'Sign in'} disabled={busy} onPress={signIn}/>
     <Pressable style={s.textAction} onPress={()=>Linking.openURL('https://theticketbunker.com/client')} accessibilityRole="link"><Text style={s.link}>Forgot password?</Text></Pressable>
    </View>
-   <Text style={s.bodyCenter}>Use the email your organiser invited.</Text><Footer/>
+   <Text style={s.bodyCenter}>Sign in with your TicketBunker organiser account, or the email an organiser invited you with.</Text><Pressable style={s.textAction} onPress={()=>Linking.openURL('https://theticketbunker.com/organiser?signup=1')} accessibilityRole="link"><Text style={s.link}>New organiser? Create a free account</Text></Pressable><Footer/>
   </ScrollView>:!user.email_confirmed_at?<View style={s.welcome}><Text style={s.headline}>Check your inbox.</Text><Text style={s.bodyCenter}>Verify your email before scanning tickets.</Text><Button title="Sign out" disabled={busy} onPress={signOut}/></View>:
   <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.container}>
    <View style={s.panel}>
@@ -306,7 +306,7 @@ export default function App(){
     </View>}
     <View style={s.scanHeading}><Text style={s.panelHeading}>Scan ticket</Text><Text style={s.small}>One ticket. One entry.</Text></View>
     {permission?.granted?<View style={s.cameraFrame}><CameraView style={s.camera} facing="back" enableTorch={torch&&cameraActive} active={cameraActive} barcodeScannerSettings={QR_SETTINGS} onBarcodeScanned={cameraActive&&!feedbackOpen&&!working?onBarcodeScanned:undefined}/><View pointerEvents="none" style={s.scanOverlay}><View style={s.target}><View style={[s.corner,s.topLeft]}/><View style={[s.corner,s.topRight]}/><View style={[s.corner,s.bottomLeft]}/><View style={[s.corner,s.bottomRight]}/></View><Text style={s.scanHint}>{manualOpen?'Camera paused for manual entry':toolsOpen?'Camera paused in settings':'Hold the QR code inside the frame'}</Text></View></View>:
-    <View style={s.cameraMissing}><Text style={s.panelHeading}>Enable your camera</Text><Text style={s.bodyCenter}>Point your camera at a ticket QR code to check it in.</Text><Button title={permission?.canAskAgain===false?'Open camera settings':'Allow camera access'} onPress={()=>permission?.canAskAgain===false?Linking.openSettings():requestPermission()}/></View>}
+    <View style={s.cameraMissing}><Text style={s.panelHeading}>Camera</Text><Text style={s.bodyCenter}>{permission?.canAskAgain===false?'Camera access is off. You can turn it on in Settings, or use Enter manually instead.':'TicketBunker Scanner uses the camera only to read ticket QR codes at the door.'}</Text><Button title={permission?.canAskAgain===false?'Open Settings':'Continue'} onPress={()=>permission?.canAskAgain===false?Linking.openSettings():requestPermission()}/></View>}
     <View style={s.controls}><Button title={torch?'Torch on':'Torch off'} variant="secondary" onPress={()=>setTorch(x=>!x)} disabled={!permission?.granted} style={s.flex}/><Button title={manualOpen?'Close entry':'Enter manually'} variant="secondary" onPress={()=>setManualOpen(x=>!x)} style={s.flex}/></View>
     {manualOpen&&<View style={s.panel}><Text style={s.label}>Ticket link</Text><Input autoCapitalize="none" autoCorrect={false} value={manual} onChangeText={setManual} placeholder="Paste ticket URL"/><Button title={working?'Checking…':'Check ticket'} disabled={working||!manual.trim()} onPress={()=>handleScan(manual.trim(),'manual')}/></View>}
     {result&&<View accessibilityRole="alert" style={[s.result,{borderColor:resultColor}]}><Text style={[s.resultHeading,{color:resultColor}]}>{result.heading}</Text><Text style={s.resultDetail}>{result.detail}</Text></View>}
