@@ -2,6 +2,8 @@
 -- Before this, check-in only opened 18h before to 36h after starts_at, so a long-lived
 -- test event (e.g. the App Store review demo) refused every scan two days after it started.
 -- Real events keep exactly the same window.
+-- Guest lists add this column in production; a no-op there, needed where guest-list-schema.sql isn't applied.
+ALTER TABLE public.sb_event_orders ADD COLUMN IF NOT EXISTS guest_allocation_id uuid;
 CREATE OR REPLACE FUNCTION public.sb_checkin_event_ticket(p_ticket uuid, p_actor uuid)
  RETURNS jsonb
  LANGUAGE plpgsql
