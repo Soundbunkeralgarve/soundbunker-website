@@ -35,6 +35,21 @@
     render(d.licences);
   }
 
+  const money = cents => `€${(cents / 100).toFixed(2)}`;
+  async function loadAffiliates() {
+    const { payouts, affiliates } = await api('/api/licence?action=admin-affiliates');
+    $('#affiliateMembers').innerHTML = affiliates.map(member =>
+      `<li>${esc(member.full_name)} · ${esc(member.email)}</li>`).join('');
+    $('#affiliatePayouts').innerHTML = payouts.length ? payouts.map(payout => `<article class="client-plugin-card">
+      <h3>${esc(payout.full_name)} · ${money(payout.cents)}</h3>
+      <p>${esc(payout.email)} · ${esc(payout.requested_at.slice(0, 10))}</p>
+      ${payout.cents > 0 ? `<div class="plugin-actions">
+        <button class="plugin-download" data-bank="${esc(payout.id)}">View bank details</button>
+        <button class="plugin-download" data-paid="${esc(payout.id)}" data-cents="${payout.cents}">Mark paid</button>
+      </div><p data-bank-details hidden></p>` : '<p>The sales in this request were refunded or disputed.</p>'}
+    </article>`).join('') : '<p>No pending requests.</p>';
+  }
+
   async function start() {
     try {
       const config = await fetch('/api/supabase-config').then((r) => r.json());
@@ -44,6 +59,7 @@
       await load();
       $('#adminStatus').textContent = `Signed in as ${session.user.email}.`;
       $('#adminTools').hidden = false;
+      await loadAffiliates().catch((error) => { $('#affiliateAdminMessage').textContent = error.message; });
     } catch (e) { $('#adminStatus').textContent = e.message; }
   }
 
@@ -64,6 +80,34 @@
     b.disabled = true;
     try { await api('/api/licence?action=admin-update', { id: b.dataset.id, update: b.dataset.update }); $('#adminMessage').textContent = 'Done.'; await load(); }
     catch (err) { $('#adminMessage').textContent = err.message; b.disabled = false; }
+  });
+  $('#affiliatePayouts').addEventListener('click', async (event) => {
+    const button = event.target.closest('[data-bank], [data-paid]');
+    if (!button) return;
+    const details = button.closest('article').querySelector('[data-bank-details]');
+    const status = $('#affiliateAdminMessage');
+    button.disabled = true;
+    try {
+      if (button.dataset.bank) {
+        if (details.hidden) {
+          const bank = await api('/api/licence?action=admin-payout-details&id=' + encodeURIComponent(button.dataset.bank));
+          details.textContent = bank.holder + ' · ' + bank.iban;
+          details.hidden = false;
+          button.textContent = 'Hide bank details';
+        } else {
+          details.textContent = '';
+          details.hidden = true;
+          button.textContent = 'View bank details';
+        }
+        return;
+      }
+      const cents = Number(button.dataset.cents);
+      if (!confirm(`Confirm you have already transferred ${money(cents)} to this affiliate.`)) return;
+      await api('/api/licence?action=admin-affiliate-paid', { id: button.dataset.paid, cents });
+      status.textContent = 'Payout marked paid.';
+      await loadAffiliates();
+    } catch (error) { status.textContent = error.message; }
+    finally { button.disabled = false; }
   });
   start();
 })();

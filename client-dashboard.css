@@ -54,3 +54,9 @@
 .client-session-dropzone small{display:block;color:#bfb2c5;margin-top:9px;font-size:13px}
 .client-session-upload-status{margin:13px 3px 0;color:#d5c8da;font-size:13px;line-height:1.45}
 @media(max-width:850px){.client-session-upload{grid-template-columns:1fr;gap:25px;margin-left:5vw;margin-right:5vw;padding:28px 24px}.client-session-dropzone{min-height:200px}}
+
+/* Plug-in affiliate account and payout form */
+#plugin-affiliates .client-plugin-card { display: grid; gap: .8rem; }
+#plugin-affiliates input { width: min(100%, 32rem); padding: .7rem .85rem; color: inherit; background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.25); border-radius: .5rem; font: inherit; }
+#affiliatePayoutForm { display: grid; gap: .65rem; margin-top: .5rem; }
+#plugin-affiliates button { justify-self: start; }

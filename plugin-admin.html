@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="client-gifts.css">
   <link rel="stylesheet" href="plugins.css?v=20261101">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="plugin-admin.js?v=20261101" defer></script>
+  <script src="plugin-admin.js?v=20261108-affiliates" defer></script>
 </head>
 <body class="portal-bg plugin-store">
   <main>
@@ -20,6 +20,13 @@
       <p id="adminStatus" class="plugin-hero-note">Checking your admin sign-in...</p>
     </section>
     <section id="adminTools" hidden>
+      <section id="affiliate-payouts" class="plugin-card">
+        <h2>Plug-in affiliate payouts</h2>
+        <p>Review the amount and bank details, send the transfer, then mark it paid here.</p>
+        <p id="affiliateAdminMessage" role="status"></p>
+        <div id="affiliatePayouts"></div>
+        <details><summary>Affiliate members</summary><ul id="affiliateMembers"></ul></details>
+      </section>
       <form id="createForm" class="plugin-card">
         <h2>Create a licence</h2>
         <p>For beta testers, giveaways or a manual sale. Prices and download links are edited in Supabase (plugin_products).</p>

@@ -1,5 +1,5 @@
 import { fulfillShopCheckout } from './lib/printful-shop.js';
-import { fulfilPluginCheckout, revokeForPayment } from './lib/plugin-licences.js';
+import { fulfilPluginCheckout, revokeForPayment, reversePluginAffiliatePayment } from './lib/plugin-licences.js';
 import { fulfillEventCheckout } from './lib/events.js';
 import { fulfilCapacityCheckout } from './lib/event-capacity.js';
 import { fulfilListingCheckout } from './lib/event-listings.js';
@@ -27,6 +27,7 @@ export default async function handler(request, response) {
     if (event.type === "charge.refunded" && object.refunded !== true) return json(response, { received: true, partial_refund: true });
     try {
       const paymentIntent = typeof object.payment_intent === "string" ? object.payment_intent : object.payment_intent?.id;
+      if (event.livemode === true) await reversePluginAffiliatePayment(paymentIntent, object.metadata);
       return json(response, { received: true, ...(await revokeForPayment(paymentIntent, event.type === "charge.refunded" ? "refund" : "dispute")) });
     } catch (error) {
       console.error('Plug-in licence revoke failed', error);

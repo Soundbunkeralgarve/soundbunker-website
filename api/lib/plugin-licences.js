@@ -5,6 +5,9 @@ import { createClient } from '@supabase/supabase-js';
 import { licenceToken, trialToken, verifyToken, newLicenceKey, normaliseKey, TRIAL_DAYS } from './licence-token.js';
 import { sendTransactionalEmail } from './notify.js';
 import { sendPluginLicenceInvoice } from './invoicexpress.js';
+import { affiliateJoinUrl, attachAffiliateReferral, recordAffiliateSale, reverseAffiliateSale } from './plugin-affiliates.js';
+
+export const GIVEAWAY_CODE = 'SBPRODUCER';
 
 const KEY = /^SB(-[0-9A-HJKMNP-TV-Z]{5}){4}$/;
 const MACHINE = /^[0-9a-f]{64}$/;
@@ -149,7 +152,7 @@ async function stripe(path, form, idempotencyKey) {
 // paid item; the free licence is created with it after payment.
 // Producer codes (plugin_codes) are Stripe promotion codes too, typed in the checkout's own "Add promotion code" box. A
 // producer link (plugins.html?code=XXXX) opens the checkout with the code already applied.
-export async function createCheckout({ productId, email, userId, choice, code }, db = licenceDB(), stripeCall = stripe) {
+export async function createCheckout({ productId, email, userId, choice, code, referral }, db = licenceDB(), stripeCall = stripe) {
   let producer = null;
   if (code) {
     const r = await producerCode(db, code);
@@ -159,7 +162,7 @@ export async function createCheckout({ productId, email, userId, choice, code },
   }
   if (!PRODUCT.test(productId || '')) return { error: 'Unknown plug-in' };
   const p = await checked(db.from('plugin_products').select('*').eq('id', productId).maybeSingle(), 'load the plug-in');
-  if (p?.free && p.active) return freeCheckout(p, { email, userId }, db, stripeCall);
+  if (p?.free && p.active) return freeCheckout(p, { email, userId, referral }, db, stripeCall);
   if (!p || !p.active || !(p.price_cents > 0)) return { error: `${p?.name || 'This plug-in'} is not on sale yet.` };
   const picked = pickedPlugins(p, Array.isArray(choice) ? choice.join(',') : choice);
   if (!picked) return { error: `Choose ${p.pick} different plug-ins for the ${p.name}.` };
@@ -198,6 +201,7 @@ export async function createCheckout({ productId, email, userId, choice, code },
     form.set('discounts[0][promotion_code]', promos[producer.code]);
     form.set('custom_text[submit][message]', `${includes}Free with your discount code: no payment needed. Your licence key is delivered by e-mail straight away.`);
   }
+  await attachAffiliateReferral(form, db, referral, userId);
   const session = await stripeCall('/checkout/sessions', form);
   return { url: session.url };
 }
@@ -205,7 +209,7 @@ export async function createCheckout({ productId, email, userId, choice, code },
 // The free product (SB ARMOURY) goes through Stripe too, at €0, with SB COMPLETE and every paid plug-in offered as add-ons
 // in the checkout itself. Whatever the buyer adds comes on the same licence key. The 3-Pack is left out: Stripe can't
 // ask which three.
-async function freeCheckout(p, { email, userId }, db, stripeCall) {
+async function freeCheckout(p, { email, userId, referral }, db, stripeCall) {
   const rows = await checked(db.from('plugin_products').select('*').eq('active', true).order('sort'), 'load the plug-ins');
   const addons = rows.filter((x) => !x.free && !x.pick && x.price_cents > 0)
     .sort((a, b) => b.includes.length - a.includes.length).slice(0, 10);   // the full collection first
@@ -247,6 +251,7 @@ async function freeCheckout(p, { email, userId }, db, stripeCall) {
     form.set(`optional_items[${i}][adjustable_quantity][maximum]`, '1');
   });
   if (email) form.set('customer_email', email);
+  await attachAffiliateReferral(form, db, referral, userId);
   const session = await stripeCall('/checkout/sessions', form);
   return { url: session.url };
 }
@@ -300,8 +305,16 @@ async function syncProducerPromos(db, p, stripeCall) {
   const codes = await checked(db.from('plugin_codes').select('*').eq('product_id', p.id), 'load the codes');
   const promos = {};
   for (const c of codes) {
-    const usable = c.active && c.uses < c.max_uses && !(c.expires_at && new Date(c.expires_at) <= new Date());
     const listed = await stripeCall(`/promotion_codes?code=${encodeURIComponent(c.code)}&active=true&limit=10`);
+    if (c.code === GIVEAWAY_CODE) {
+      for (const promo of listed.data || []) {
+        if (promo.code?.toUpperCase() === GIVEAWAY_CODE || promo.metadata?.plugin_code === GIVEAWAY_CODE) {
+          await stripeCall(`/promotion_codes/${promo.id}`, new URLSearchParams({ active: 'false' }));
+        }
+      }
+      continue;
+    }
+    const usable = c.active && c.uses < c.max_uses && !(c.expires_at && new Date(c.expires_at) <= new Date());
     const found = (listed.data || []).find((x) => x.metadata?.plugin_code === c.code);
     if (found && !usable) await stripeCall(`/promotion_codes/${found.id}`, new URLSearchParams({ active: 'false' }));
     else if (found) promos[c.code] = found.id;
@@ -369,6 +382,20 @@ async function producerCode(db, code) {
   if (c.expires_at && new Date(c.expires_at) <= new Date()) return { error: CODE_ERRORS.expired };
   if (c.uses >= c.max_uses) return { error: CODE_ERRORS.used_up };
   return { code: c };
+}
+
+export async function claimGiveaway(user, db = licenceDB(), send = sendTransactionalEmail) {
+  const result = await rpc(db, 'sb_plugin_claim_giveaway', {
+    p_user_id: user.id, p_email: user.email, p_key: newLicenceKey()
+  });
+  if (!result.ok) return { error: CODE_ERRORS[result.error] || 'This giveaway licence is no longer available.' };
+  const licence = await checked(db.from('plugin_licences').select('*').eq('id', result.id).single(), 'load the giveaway licence');
+  if (!licence.email_sent_at) await sendLicenceEmail(licence, db, { send, key: `plugin-giveaway-${licence.id}` });
+  return { url: '/client#my-plugins' };
+}
+
+export function reversePluginAffiliatePayment(intent, metadata, db = licenceDB(), stripeCall = stripe) {
+  return reverseAffiliateSale(db, stripeCall, intent, metadata);
 }
 
 async function recordCodeUse(db, code, email, licenceId) {
@@ -465,6 +492,7 @@ async function deliver(checkout, db, { p, includes, email, code, userId, send, i
     if (code && !inserted.error) await recordCodeUse(db, code, email, licence.id);
   }
 
+  await recordAffiliateSale(checkout, licence, db);
   await sendLicenceEmail(licence, db, { send, key: `plugin-licence-${checkout.id}` });
   const name = licenceName(licence, p, await productRows(db, includes));
   await send({ to: studio(), key: `plugin-licence-studio-${checkout.id}`,
@@ -502,6 +530,7 @@ export async function sendLicenceEmail(licence, db = licenceDB(), opts = {}) {
     `2. Open the plug-in in your DAW (or the standalone app), paste the key into the activation window and press ACTIVATE. It needs the internet once; after that it works offline.\n\n` +
     `Moving to a new computer? Press DEACTIVATE THIS COMPUTER in the plug-in first, or remove the old computer in your Client Area: ${base()}/client#my-plugins\n\n` +
     `Your key is also saved in your Client Area (sign in or register with ${licence.email}).` +
+    `\n\nWant to share the plug-ins? Join the SoundBunker affiliate programme and earn €10 per eligible paid order through your link. [Become an affiliate](${affiliateJoinUrl()}).` +
     (product.free && opts.upsell !== false ? await upsellText(db, product.id) : '') + `\n\nSoundBunker Algarve`;
   await send({ to: licence.email, key: key || `plugin-licence-resend-${licence.id}-${Date.now()}`, subject: product.free || licence.source === 'code' ? `Your free ${name} licence key` : `Your ${name} licence key`, text: body });
   await db.from('plugin_licences').update({ email_sent_at: new Date().toISOString() }).eq('id', licence.id);

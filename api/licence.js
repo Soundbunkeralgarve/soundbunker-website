@@ -3,7 +3,9 @@
 import { json, parseJson, validEmail } from './lib/http.js';
 import { optionalUser, requireUser, requireAdmin } from './lib/supabase-auth.js';
 import { pluginRequest, listProducts, createCheckout, claimFree, licenceForSession, myLicences, releaseComputer,
-  adminList, adminCreate, adminUpdate, downloadUrl, downloadAllowed, trialLinks } from './lib/plugin-licences.js';
+  adminList, adminCreate, adminUpdate, downloadUrl, downloadAllowed, trialLinks, claimGiveaway, GIVEAWAY_CODE } from './lib/plugin-licences.js';
+
+import { affiliateStatus, joinAffiliate, requestAffiliatePayout, affiliateAdmin, markAffiliatePaid, payoutBankDetails } from './lib/plugin-affiliates.js';
 
 const PLUGIN_ACTIONS = ['activate', 'trial', 'refresh', 'deactivate'];
 
@@ -40,6 +42,18 @@ export default async function handler(request, response) {
       if (ctx.error) return json(response, { error: ctx.error }, ctx.status);
       return json(response, { licences: await myLicences(ctx.user, ctx.admin) });
     }
+    if (request.method === 'GET' && action === 'affiliate') {
+      const ctx = await requireUser(request, { loadProfile: false });
+      if (ctx.error) return json(response, { error: ctx.error }, ctx.status);
+      return json(response, await affiliateStatus(ctx.admin, ctx.user.id));
+    }
+    if (request.method === 'GET' && ['admin-affiliates', 'admin-payout-details'].includes(action)) {
+      const ctx = await requireAdmin(request);
+      if (ctx.error) return json(response, { error: ctx.error }, ctx.status);
+      if (action === 'admin-affiliates') return json(response, await affiliateAdmin(ctx.admin));
+      const bank = await payoutBankDetails(ctx.admin, url.searchParams.get('id'));
+      return json(response, bank || { error: 'Payout details are unavailable.' }, bank ? 200 : 404);
+    }
     if (request.method === 'GET' && action === 'admin-list') {
       const ctx = await requireAdmin(request);
       if (ctx.error) return json(response, { error: ctx.error }, ctx.status);
@@ -53,12 +67,37 @@ export default async function handler(request, response) {
     // The plug-ins always answer 200 with { ok, error } so they can show the reason.
     if (!action && PLUGIN_ACTIONS.includes(body.action)) return json(response, await pluginRequest(body));
 
+    if (action === 'checkout' && String(body.code || '').trim().toUpperCase() === GIVEAWAY_CODE) {
+      const ctx = await requireUser(request);
+      if (ctx.error || !ctx.user.email || !ctx.user.email_confirmed_at) {
+        return json(response, { error: 'Sign in with a confirmed SoundBunker account to claim this giveaway.', signIn: true }, 401);
+      }
+      if (!String(ctx.profile?.full_name || ctx.user.user_metadata?.full_name || '').trim()) {
+        return json(response, { error: 'A full name is required to claim this giveaway. Contact SoundBunker to update your profile.' }, 400);
+      }
+      const result = await claimGiveaway(ctx.user, ctx.admin);
+      return json(response, result, result.error ? 400 : 200);
+    }
+    if (action === 'affiliate-join' || action === 'affiliate-payout') {
+      const ctx = await requireUser(request);
+      if (ctx.error) return json(response, { error: ctx.error }, ctx.status);
+      const result = action === 'affiliate-join' ? await joinAffiliate(ctx.admin, ctx.user, ctx.profile)
+        : await requestAffiliatePayout(ctx.admin, ctx.user.id, body);
+      return json(response, result, result.error ? 400 : 200);
+    }
+    if (action === 'admin-affiliate-paid') {
+      const ctx = await requireAdmin(request);
+      if (ctx.error) return json(response, { error: ctx.error }, ctx.status);
+      const result = await markAffiliatePaid(ctx.admin, String(body.id || ''), body.cents);
+      return json(response, result, result.error ? 409 : 200);
+    }
     if (action === 'checkout') {
       const user = await optionalUser(request);
       const email = validEmail(body.email) ? String(body.email).trim() : user?.email;
       const result = await createCheckout({ productId: String(body.product || ''), email, userId: user?.id,
         choice: Array.isArray(body.choice) ? body.choice.map(String).slice(0, 10) : undefined,
-        code: body.code ? String(body.code).slice(0, 40) : undefined });
+        code: body.code ? String(body.code).slice(0, 40) : undefined,
+        referral: typeof body.referral === 'string' ? body.referral.slice(0, 25) : undefined });
       return json(response, result, result.error ? 400 : 200);
     }
     if (action === 'claim') {
