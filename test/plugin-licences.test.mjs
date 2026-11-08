@@ -7,7 +7,7 @@ import { PGlite } from '@electric-sql/pglite';
 const { privateKey } = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
 const pem = privateKey.export({ type: 'pkcs8', format: 'pem' });
 process.env.LICENCE_PRIVATE_KEY_B64 = Buffer.from(pem).toString('base64');
-const { pluginRequest, fulfilPluginCheckout, revokeForPayment, createCheckout, claimFree, listProducts, licenceForSession, downloadAllowed, trialLinks } = await import('../api/lib/plugin-licences.js');
+const { pluginRequest, fulfilPluginCheckout, revokeForPayment, createCheckout, claimFree, listProducts, licenceForSession, downloadAllowed, trialLinks, claimGiveaway } = await import('../api/lib/plugin-licences.js');
 const { verifyToken } = await import('../api/lib/licence-token.js');
 const publicPem = crypto.createPublicKey(pem).export({ type: 'spki', format: 'pem' });
 
@@ -325,7 +325,7 @@ test('producer codes: Stripe promotion codes limited to the code\'s product, cou
   const db = await database({ asShipped: true });
   const sb = client(db);
   try {
-    await db.exec(`insert into plugin_codes (code, product_id, max_uses) values ('SBPRODUCER', 'complete', 2);
+    await db.exec(`insert into plugin_codes (code, product_id, max_uses) values ('SBOTHER', 'complete', 2);
       insert into plugin_codes (code, product_id, active) values ('OLDCODE', 'complete', false);
       insert into plugin_codes (code, product_id, expires_at) values ('LASTYEAR', 'complete', now() - interval '1 day');`);
     const noStripe = async () => assert.fail('no Stripe call');
@@ -338,13 +338,13 @@ test('producer codes: Stripe promotion codes limited to the code\'s product, cou
     await createCheckout({ productId: 'complete' }, sb, stripe.call);
     await createCheckout({ productId: 'complete' }, sb, stripe.call);
     await createCheckout({ productId: 'nuclear' }, sb, stripe.call);
-    assert.deepEqual(stripe.promos.map((p) => `${p.code}:${p.max}:${p.metadata.plugin_code}`), ['SBPRODUCER:2:SBPRODUCER']);
+    assert.deepEqual(stripe.promos.map((p) => `${p.code}:${p.max}:${p.metadata.plugin_code}`), ['SBOTHER:2:SBOTHER']);
     assert.deepEqual(stripe.coupons.map((c) => `${c.percent}:${c.product}`), ['100:sb_plugin_complete'], 'never discounts merch or other products');
     assert.equal(stripe.sessions[0].get('allow_promotion_codes'), 'true', 'buyers type codes in the checkout');
     assert.equal(stripe.sessions[0].get('line_items[0][price_data][product]'), 'sb_plugin_complete');
 
     // A producer link opens the checkout for the code's product with the code applied.
-    await createCheckout({ productId: 'nuclear', code: ' sbproducer ' }, sb, stripe.call);
+    await createCheckout({ productId: 'nuclear', code: ' sbother ' }, sb, stripe.call);
     const form = stripe.sessions.at(-1);
     assert.equal(form.get('metadata[plugin_product]'), 'complete', 'the code decides the product');
     assert.equal(form.get('discounts[0][promotion_code]'), 'promo_1');
@@ -360,8 +360,8 @@ test('producer codes: Stripe promotion codes limited to the code\'s product, cou
     await fulfilPluginCheckout(order('cs_live_p1', 'beat@maker.com'), sb, opts);   // webhook retry
     let rows = (await db.query('select * from plugin_licences')).rows;
     assert.equal(rows.length, 1);
-    assert.equal(rows[0].source, 'code'); assert.equal(rows[0].product_id, 'complete'); assert.equal(rows[0].note, 'Code SBPRODUCER');
-    assert.equal((await db.query("select uses from plugin_codes where code = 'SBPRODUCER'")).rows[0].uses, 1);
+    assert.equal(rows[0].source, 'code'); assert.equal(rows[0].product_id, 'complete'); assert.equal(rows[0].note, 'Code SBOTHER');
+    assert.equal((await db.query("select uses from plugin_codes where code = 'SBOTHER'")).rows[0].uses, 1);
     const toProducer = sent.filter((x) => x.to === 'beat@maker.com');
     assert.match(toProducer[0].subject, /free SB COMPLETE/);
     assert.match(toProducer[0].text, /with our compliments/);
@@ -369,15 +369,15 @@ test('producer codes: Stripe promotion codes limited to the code\'s product, cou
     assert.match(toProducer[0].text, /SB NUCLEAR:  \[macOS\]\(https:\/\/www\.soundbunker\.pt\/download\/nuclear\/mac\?e=\d+&s=[\w-]{22}\)/);
     assert.doesNotMatch(toProducer[0].text, /github/i);
     assert.match(toProducer[0].text, /Or one by one:\n\nSB ARMOURY/);
-    assert.equal(new Set(sent.filter((x) => /Producer code used · SBPRODUCER/.test(x.subject)).map((x) => x.key)).size, 1, 'retries reuse the e-mail key');
+    assert.equal(new Set(sent.filter((x) => /Producer code used · SBOTHER/.test(x.subject)).map((x) => x.key)).size, 1, 'retries reuse the e-mail key');
 
     const key = rows[0].licence_key;
     for (const product of ['nuclear', 'sentinel', 'armoury'])
       assert.equal((await ask(sb, { action: 'activate', product, machine: m(1), key })).ok, true, product);
 
     await fulfilPluginCheckout(order('cs_live_p2', 'second@maker.com'), sb, opts);
-    assert.equal((await db.query("select uses from plugin_codes where code = 'SBPRODUCER'")).rows[0].uses, 2);
-    assert.match((await createCheckout({ code: 'SBPRODUCER' }, sb, noStripe)).error, /maximum/);
+    assert.equal((await db.query("select uses from plugin_codes where code = 'SBOTHER'")).rows[0].uses, 2);
+    assert.match((await createCheckout({ code: 'SBOTHER' }, sb, noStripe)).error, /maximum/);
     await createCheckout({ productId: 'complete' }, sb, stripe.call);
     assert.equal(stripe.promos[0].active, false, 'a used-up code is switched off in Stripe');
     await assert.rejects(fulfilPluginCheckout({ ...order('cs_live_p3', 'x@maker.com'), discounts: [] }, sb, opts),
@@ -478,4 +478,99 @@ test('download links are signed: they work from e-mails and for signed-in trials
     assert.equal(downloadAllowed('nuclear', 'mac', '1000000000', s), false);
     assert.equal(downloadAllowed('nuclear', 'mac', undefined, undefined), false, 'a bare link is refused');
   } finally { await db.close(); }
+});
+
+test('giveaway requires an account and links previous guest licences without a second redemption', async () => {
+  const { default: handler } = await import('../api/licence.js');
+  const response = { setHeader() {}, end(value) { this.payload = JSON.parse(value); } };
+  await handler({ method: 'POST', url: '/api/licence?action=checkout', headers: {}, body: { code: ' sbproducer ', email: 'guest@example.com' } }, response);
+  assert.equal(response.statusCode, 401);
+  assert.equal(response.payload.signIn, true);
+
+  const db = await database({ asShipped: true });
+  try {
+    await db.exec(await readFile(new URL('../SUPABASE_PLUGIN_AFFILIATES.sql', import.meta.url), 'utf8'));
+    await db.exec(`insert into plugin_codes (code, product_id, max_uses) values ('SBPRODUCER', 'complete', 1);
+      insert into plugin_licences (licence_key, product_id, includes, seats, email, amount_cents, source, email_sent_at)
+      select 'SB-AAAAA-BBBBB-CCCCC-DDDDD', id, includes, seats, 'old@example.com', 0, 'stripe', now()
+      from plugin_products where id = 'complete';`);
+    const sb = client(db);
+    const stripe = fakeStripe();
+    stripe.promos.push({ id: 'promo_old_giveaway', code: 'SBPRODUCER', active: true, metadata: {} });
+    await createCheckout({ productId: 'complete' }, sb, stripe.call);
+    assert.equal(stripe.promos[0].active, false, 'the old public Stripe code is retired');
+    assert.equal(stripe.promos.length, 1, 'the giveaway cannot recreate a guest promotion');
+    const sent = [];
+    const send = async email => { sent.push(email); };
+    const user = { id: '98a2dc67-56d2-41c5-b8b5-e50cc1591001', email: 'new@example.com' };
+    const old = { id: '98a2dc67-56d2-41c5-b8b5-e50cc1591002', email: 'old@example.com' };
+    assert.equal((await claimGiveaway(old, sb, send)).url, '/client#my-plugins');
+    assert.equal((await claimGiveaway(user, sb, send)).url, '/client#my-plugins');
+    assert.equal((await claimGiveaway(user, sb, send)).url, '/client#my-plugins');
+    assert.match((await claimGiveaway({ ...user, email: 'next@example.com' }, sb, send)).error, /maximum/i);
+    assert.equal(sent.length, 1);
+    assert.match(sent[0].text, /SB COMPLETE for macOS/);
+    assert.match(sent[0].text, /Become an affiliate/);
+    assert.deepEqual((await db.query("select user_id, amount_cents from plugin_licences order by email")).rows, [
+      { user_id: user.id, amount_cents: 0 }, { user_id: old.id, amount_cents: 0 }
+    ]);
+  } finally { await db.close(); }
+});
+
+test('affiliate commission, secured payout and refund handling', async () => {
+  const { attachAffiliateReferral, recordAffiliateSale, requestAffiliatePayout, payoutBankDetails, markAffiliatePaid } =
+    await import('../api/lib/plugin-affiliates.js');
+  const db = await database({ asShipped: true });
+  process.env.PLUGIN_AFFILIATE_PAYOUT_KEY = crypto.randomBytes(32).toString('base64');
+  try {
+    await db.exec(await readFile(new URL('../SUPABASE_PLUGIN_AFFILIATES.sql', import.meta.url), 'utf8'));
+    const sb = client(db);
+    const member = '98a2dc67-56d2-41c5-b8b5-e50cc1591003';
+    const code = 'a1'.repeat(12);
+    await db.query("insert into plugin_affiliates (user_id, code, email, full_name) values ($1, $2, 'affiliate@example.com', 'Test Affiliate')", [member, code]);
+    const form = new URLSearchParams();
+    await attachAffiliateReferral(form, sb, code, member);
+    assert.equal(form.has('metadata[plugin_affiliate]'), false);
+    await attachAffiliateReferral(form, sb, code);
+    assert.equal(form.get('metadata[plugin_affiliate]'), member);
+    assert.equal(form.get('payment_intent_data[metadata][plugin_affiliate]'), member);
+    const checkout = { id: 'cs_live_affiliate1', metadata: { plugin_affiliate: member }, livemode: true, payment_status: 'paid', currency: 'eur', amount_total: 5900 };
+    const licence = { stripe_payment_intent: 'pi_affiliate1', email: 'buyer@example.com', user_id: null };
+    await recordAffiliateSale({ ...checkout, amount_total: 0 }, licence, sb);
+    await recordAffiliateSale({ ...checkout, livemode: false }, licence, sb);
+    await recordAffiliateSale(checkout, { ...licence, email: 'AFFILIATE@example.com' }, sb);
+    assert.equal((await db.query('select * from plugin_affiliate_sales')).rows.length, 0);
+    await recordAffiliateSale(checkout, licence, sb);
+    await recordAffiliateSale(checkout, licence, sb);
+    await db.query("select sb_plugin_affiliate_reverse('pi_affiliate2', $1)", [member]);
+    await recordAffiliateSale({ ...checkout, id: 'cs_live_affiliate2' }, { ...licence, stripe_payment_intent: 'pi_affiliate2' }, sb);
+
+    const sent = [];
+    const send = async email => { sent.push(email); };
+    const iban = 'GB82WEST12345698765432';
+    assert.match((await requestAffiliatePayout(sb, member, { holder: 'Test Affiliate', iban: 'bad' }, send)).error, /valid IBAN/);
+    const requested = await requestAffiliatePayout(sb, member, { holder: 'Test Affiliate', iban }, send);
+    assert.equal(requested.sales, 1);
+    assert.equal(requested.requested_cents, 1000);
+    assert.equal(requested.available_cents, 0);
+    assert.equal(sent.length, 1);
+    assert.equal(sent[0].text.includes(iban), false);
+    assert.equal((await requestAffiliatePayout(sb, member, { retry: true }, send)).open_request, requested.open_request);
+    assert.equal(sent.length, 1);
+    assert.deepEqual(await payoutBankDetails(sb, requested.open_request), { holder: 'Test Affiliate', iban });
+    const { rows: [row] } = await db.query('select bank_ciphertext from plugin_affiliate_payouts where id = $1', [requested.open_request]);
+    assert.notEqual(row.bank_ciphertext, null);
+    assert.equal(row.bank_ciphertext.includes(iban), false);
+    assert.equal((await markAffiliatePaid(sb, requested.open_request, 2000)).ok, undefined);
+    assert.equal((await markAffiliatePaid(sb, requested.open_request, 1000)).ok, true);
+    assert.equal(await payoutBankDetails(sb, requested.open_request), null);
+    assert.equal((await db.query('select paid_cents, bank_ciphertext from plugin_affiliate_payouts')).rows[0].bank_ciphertext, null);
+    await db.exec('set role authenticated');
+    await assert.rejects(db.query('select * from plugin_affiliate_payouts'), /permission denied/);
+    await assert.rejects(db.query('select sb_plugin_affiliate_summary($1)', [member]), /permission denied/);
+    await db.exec('reset role');
+  } finally {
+    delete process.env.PLUGIN_AFFILIATE_PAYOUT_KEY;
+    await db.close();
+  }
 });

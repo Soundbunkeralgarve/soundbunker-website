@@ -103,10 +103,22 @@
     return true;
   }
 
+  const referralCode = /^[a-f0-9]{24}$/;
+  const linkedReferral = new URLSearchParams(location.search).get('ref') || '';
+  let referral = referralCode.test(linkedReferral) ? linkedReferral : '';
+  try {
+    if (referral) sessionStorage.setItem('sb-plugin-referral', referral);
+    else referral = sessionStorage.getItem('sb-plugin-referral') || '';
+  } catch { /* A direct referral link still works when storage is disabled. */ }
+
   async function checkout(body) {
     const signedIn = await sessionToken();   // the licence lands in their Client Area
-    const r = await fetch('/api/licence?action=checkout', { method: 'POST', headers: { 'content-type': 'application/json', ...(signedIn ? { authorization: `Bearer ${signedIn}` } : {}) }, body: JSON.stringify(body) });
+    const r = await fetch('/api/licence?action=checkout', { method: 'POST', headers: { 'content-type': 'application/json', ...(signedIn ? { authorization: `Bearer ${signedIn}` } : {}) }, body: JSON.stringify({ ...body, ...(referralCode.test(referral) ? { referral } : {}) }) });
     const d = await r.json();
+    if (r.status === 401 && d.signIn && String(body.code || '').trim().toUpperCase() === 'SBPRODUCER') {
+      location.replace('/client?next=' + encodeURIComponent('/plugins.html?code=SBPRODUCER'));
+      return;
+    }
     if (!r.ok || !d.url) throw new Error(d.error || 'Checkout is not available right now.');
     location.href = d.url;
   }
@@ -186,12 +198,13 @@
 
   // A producer link opens the checkout with the code already applied (codes can also be typed in the checkout itself).
   async function redeem(code) {
-    $('#pluginMessage').textContent = 'Opening checkout with your code...';
+    const giveaway = code.trim().toUpperCase() === 'SBPRODUCER';
+    $('#pluginMessage').textContent = giveaway ? 'Opening your SoundBunker giveaway...' : 'Opening checkout with your code...';
     $('#pluginMessage').scrollIntoView({ block: 'center' });
     try {
       await checkout({ code: code.slice(0, 40) });
     } catch (err) {
-      $('#pluginMessage').textContent = `${err.message} You can still enter a code at checkout.`;
+      $('#pluginMessage').textContent = giveaway ? err.message : `${err.message} You can still enter a code at checkout.`;
     }
   }
 

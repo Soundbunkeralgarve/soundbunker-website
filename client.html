@@ -11,12 +11,12 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="client-gifts.css">
   <link rel="stylesheet" href="client-portal.css">
-  <link rel="stylesheet" href="client-dashboard.css">
+  <link rel="stylesheet" href="client-dashboard.css?v=20261108-affiliates">
   <link rel="stylesheet" href="client-tickets.css?v=20261103">
   <link rel="stylesheet" href="plugins.css?v=20261103b">
   <link rel="stylesheet" href="client-mobile-app.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="client.js?v=20261103-trials" defer></script>
+  <script src="client.js?v=20261108-affiliates" defer></script>
 <link rel="stylesheet" href="calendar-picker.css">
 <script defer src="calendar-picker.js"></script>
   <link rel="stylesheet" href="client-music.css?v=1">
@@ -36,7 +36,7 @@
 <main class="client-shell">
     <header class="client-nav">
       <a href="/" class="client-logo" aria-label="SoundBunker Algarve home"><img src="soundbunker-logo.png" alt="SoundBunker Algarve"></a>
-      <nav aria-label="Client shortcuts"><a href="#my-tickets">My Tickets</a><a href="#my-plugins">My Plug-ins</a><a href="shop.html">Merch Shop</a><a href="gift-vouchers.html">Gift Experiences</a><a href="/redeem">Redeem voucher</a><a href="/community">SoundBunker Social</a><a href="#inbox">Inbox <span id="inboxBadge"></span></a><a href="#notifications">Updates <span id="noticeBadge"></span></a></nav>
+      <nav aria-label="Client shortcuts"><a href="#my-tickets">My Tickets</a><a href="#my-plugins">My Plug-ins</a><a href="#plugin-affiliates">Affiliates</a><a href="shop.html">Merch Shop</a><a href="gift-vouchers.html">Gift Experiences</a><a href="/redeem">Redeem voucher</a><a href="/community">SoundBunker Social</a><a href="#inbox">Inbox <span id="inboxBadge"></span></a><a href="#notifications">Updates <span id="noticeBadge"></span></a></nav>
     </header>
 
     <section id="authPanel" class="client-auth" hidden>
@@ -185,6 +185,31 @@
         </div>
         <div id="pluginLicenceList" class="client-plugin-list"><div class="client-loading-card">Loading your licences...</div></div>
         <p id="pluginLicenceMessage" class="client-inline-message" role="status"></p>
+      </section>
+
+      <section class="client-plugins-section" id="plugin-affiliates" aria-labelledby="affiliateHeading">
+        <div class="client-voucher-head">
+          <div><p class="eyebrow">SoundBunker affiliates</p><h2 id="affiliateHeading">Earn €10 per referred plug-in order.</h2>
+          <p>Join with your SoundBunker account and share your personal link. Earn €10 when someone places an eligible paid plug-in order through it. Free claims, your own orders and refunded or disputed sales do not earn commission.</p></div>
+        </div>
+        <button id="affiliateJoin" type="button" class="client-button" hidden>Become an affiliate</button>
+        <div id="affiliateMember" class="client-plugin-card" hidden>
+          <label for="affiliateLink">Your referral link</label>
+          <input id="affiliateLink" type="url" readonly>
+          <button id="affiliateCopy" type="button" class="client-button">Copy link</button>
+          <p>Credited sales <strong id="affiliateSales">0</strong> · Available <strong id="affiliateAvailable">€0.00</strong> · Requested <strong id="affiliateRequested">€0.00</strong> · Paid <strong id="affiliatePaid">€0.00</strong></p>
+          <form id="affiliatePayoutForm" hidden autocomplete="off">
+            <h3>Request a bank transfer</h3>
+            <p>Enter the name and IBAN of the account you want us to pay. SoundBunker uses these details to process your payout. <a href="/privacy">Privacy information</a>.</p>
+            <label for="affiliateBankHolder">Bank account holder name</label>
+            <input id="affiliateBankHolder" type="text" minlength="2" maxlength="150" required>
+            <label for="affiliateIban">IBAN</label>
+            <input id="affiliateIban" type="text" maxlength="42" autocapitalize="characters" spellcheck="false" required>
+            <button id="affiliatePayoutSubmit" type="submit" class="client-button">Request payout</button>
+          </form>
+          <button id="affiliatePayoutRetry" type="button" class="client-button" hidden>Retry sending payout request</button>
+        </div>
+        <p id="affiliateMessage" class="client-inline-message" role="status"></p>
       </section>
 
       <section class="client-community-feature">

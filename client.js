@@ -55,7 +55,7 @@ async function boot() {
 }
 
 function safeAccountReturn(next){
- if(['/redeem','/organiser','/client#my-tickets','/plugins#try-free'].includes(next))return next;
+ if(['/redeem','/organiser','/client#my-tickets','/plugins#try-free','/plugins.html?code=SBPRODUCER','/client#plugin-affiliates'].includes(next))return next;
  if(/^\/event-scanner\?(?:invite=[a-f0-9]{64}|eventId=[a-f0-9-]{36})$/i.test(String(next||'')))return next;
  return '';
 }
@@ -129,11 +129,13 @@ async function enterPortal(session) {
   const next = new URLSearchParams(location.search).get('next');
   if (next === '/redeem') { location.replace('/redeem'); return; }
   if (next === '/organiser') { location.replace('/organiser'); return; }
-  if (next === '/plugins#try-free') { location.replace(next); return; }
+  if (next === '/plugins#try-free' || next === '/plugins.html?code=SBPRODUCER') { location.replace(next); return; }
   if (safeAccountReturn(next).startsWith('/event-scanner?')) { location.replace(next); return; }
   if (next === '/client#my-tickets') history.replaceState(null,'','/client#my-tickets');
-  if (profile.role === 'admin' && !['#inbox','#notifications','#my-tickets'].includes(location.hash)) { location.replace('/admin'); return; }
-  await Promise.all([loadInvoices(session), loadProjects(session), loadGalleries(session), loadVouchers(session), loadPluginLicences(session), loadBookings(), loadNotifications(), loadInbox(), loadMyEventTickets(), loadMarketingPreferences(session)]);
+  if (next === '/client#plugin-affiliates') history.replaceState(null, '', '/client#plugin-affiliates');
+  if (profile.role === 'admin' && !['#inbox','#notifications','#my-tickets','#my-plugins','#plugin-affiliates'].includes(location.hash)) { location.replace('/admin'); return; }
+  await Promise.all([loadInvoices(session), loadProjects(session), loadGalleries(session), loadVouchers(session), loadPluginLicences(session), loadAffiliate(), loadBookings(), loadNotifications(), loadInbox(), loadMyEventTickets(), loadMarketingPreferences(session)]);
+  if (['#my-plugins', '#plugin-affiliates'].includes(location.hash)) $(location.hash)?.scrollIntoView({ block: 'start' });
   if(location.hash==='#my-files') document.querySelector('#my-files')?.scrollIntoView({block:'start'});
   if(location.hash==='#my-tickets') document.querySelector('#my-tickets')?.scrollIntoView({block:'start'});
   if(location.hash==='#session-upload') document.querySelector('#session-upload')?.scrollIntoView({block:'start'});
@@ -419,6 +421,39 @@ async function portalApi(path, payload) {
   if (!response.ok) throw new Error(data.error || 'Could not load this area');
   return data;
 }
+const affiliateMoney = cents => new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR' }).format(cents / 100);
+
+function renderAffiliate(data) {
+  show('#affiliateJoin', !data.joined || data.joinNoticePending);
+  show('#affiliateMember', data.joined);
+  if (!data.joined) return;
+  $('#affiliateJoin').textContent = 'Finish joining';
+  $('#affiliateLink').value = data.link;
+  $('#affiliateSales').textContent = data.sales;
+  $('#affiliateAvailable').textContent = affiliateMoney(data.available_cents);
+  $('#affiliateRequested').textContent = affiliateMoney(data.requested_cents);
+  $('#affiliatePaid').textContent = affiliateMoney(data.paid_cents);
+  show('#affiliatePayoutForm', data.available_cents > 0 && !data.requested_cents);
+  show('#affiliatePayoutRetry', data.payout_notice_pending && data.requested_cents > 0);
+}
+
+async function loadAffiliate() {
+  try { renderAffiliate(await portalApi('/api/licence?action=affiliate')); }
+  catch (error) { $('#affiliateMessage').textContent = error.message; }
+}
+
+async function affiliateAction(button, action, body, success) {
+  const message = $('#affiliateMessage');
+  button.disabled = true;
+  message.textContent = 'Saving…';
+  try {
+    renderAffiliate(await portalApi('/api/licence?action=' + action, body));
+    message.textContent = success;
+    return true;
+  } catch (error) { message.textContent = error.message; }
+  finally { button.disabled = false; }
+}
+
 async function loadBookings() {
   try {
     const data = await portalApi('/api/bookings');
@@ -570,6 +605,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }else if(accountPurpose==='/organiser'){
    const title=$('#authPanel .client-auth-copy h1');if(title)title.textContent='Your event business starts here.';
    const welcome=$('#authPanel .client-login-card h2');if(welcome)welcome.textContent='Sign in or create an organiser account.';
+  }else if(accountPurpose==='/plugins.html?code=SBPRODUCER' || accountPurpose==='/client#plugin-affiliates'){
+   const giveaway=accountPurpose==='/plugins.html?code=SBPRODUCER';
+   const title=$('#authPanel .client-auth-copy h1');if(title)title.textContent=giveaway?'Claim your free SB COMPLETE bundle.':'Join the SoundBunker affiliate programme.';
+   const welcome=$('#authPanel .client-login-card h2');if(welcome)welcome.textContent='Create an account or sign in to continue.';
+   setMode('signup');
   }else if(accountPurpose==='/client#my-tickets'){
    const title=$('#authPanel .client-auth-copy h1');if(title)title.textContent='All your tickets. One SoundBunker account.';
    const welcome=$('#authPanel .client-login-card h2');if(welcome)welcome.textContent='Sign in to view your event tickets.';
@@ -588,6 +628,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }catch(error){status.textContent=error.message;}
     finally{button.disabled=false;}
   });
+  $('#affiliateJoin').addEventListener('click', event =>
+    affiliateAction(event.currentTarget, 'affiliate-join', {}, 'Your referral link is ready.'));
+  $('#affiliateCopy').addEventListener('click', async () => {
+    const input = $('#affiliateLink');
+    try {
+      await navigator.clipboard.writeText(input.value);
+      $('#affiliateMessage').textContent = 'Referral link copied.';
+    } catch {
+      input.select();
+      $('#affiliateMessage').textContent = 'Copy the selected referral link.';
+    }
+  });
+  $('#affiliatePayoutForm').addEventListener('submit', async event => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const details = { holder: $('#affiliateBankHolder').value, iban: $('#affiliateIban').value };
+    if (await affiliateAction($('#affiliatePayoutSubmit'), 'affiliate-payout', details, 'Payout requested. SoundBunker will review your bank transfer.')) form.reset();
+  });
+  $('#affiliatePayoutRetry').addEventListener('click', event =>
+    affiliateAction(event.currentTarget, 'affiliate-payout', { retry: true }, 'Payout request sent.'));
   $('#loginForm').addEventListener('submit', authenticate);
   $('#loginTab').addEventListener('click', () => setMode('login'));
   $('#signupTab').addEventListener('click', () => setMode('signup'));
