@@ -38,6 +38,23 @@ export async function queueWebsiteInvoice({brand,sessionId,body,paidCents,docume
   return {queued:!row.email_sent_at,invoice_id:row.ix_document_id||null,invoice_number:row.document_number||null,series:brand==='soundbunker'?'SoundBunker':'Crude-City'};
 }
 
+function invoiceMatches(invoice,id,expected,total){
+ return invoice?.id!=null&&String(invoice.id)===String(id)&&invoice.reference===expected.reference&&
+   Math.round(Number(invoice.total)*100)===total&&String(invoice.sequence_id)===String(expected.sequence_id);
+}
+
+function crudeCityDraftUpdate(invoice,id,expected,fiscalTotal){
+ if(invoice?.status!=='draft'||String(invoice.id)!==String(id)||invoice.reference!==expected.reference)return null;
+ const amount=Math.round(Number(invoice.total)*100);
+ if(amount===fiscalTotal)return expected;
+ if(!Number.isSafeInteger(amount)||Math.abs(amount-fiscalTotal)>1)return null;
+ const [item]=expected.items||[];
+ if(expected.items?.length!==1||item?.quantity!==1||item.tax?.name!=='IVA23')return null;
+ const unitPrice=Math.round(Number(item.unit_price)*100)/100;
+ if(Math.round(unitPrice*123)!==fiscalTotal)return null;
+ return {...expected,items:[{...item,unit_price:unitPrice}]};
+}
+
 export async function processInvoiceJob(row,{db,request,table=TABLE,brand=row.brand}) {
   const payload=structuredClone(row.request_payload||{});
   const fiscalTotal=Number(payload.fiscal_total_cents??row.amount_cents);
@@ -83,12 +100,28 @@ export async function processInvoiceJob(row,{db,request,table=TABLE,brand=row.br
     }
   }
   let invoice=extract(await api('/'+type+'/'+row.ix_document_id+'.json'));
-  if(!invoice?.id||Math.round(Number(invoice.total)*100)!==fiscalTotal||invoice.reference!==expected.reference||String(invoice.sequence_id)!==String(expected.sequence_id))throw Error('Invoice contents do not match the paid order');
+  let repairRejected=false;
+  if(!invoiceMatches(invoice,row.ix_document_id,expected,fiscalTotal)&&brand==='crude-city'&&type==='invoice_receipts'&&payload.paid_cents===fiscalTotal&&!payload.draft_repair_attempted_at){
+    const draft=crudeCityDraftUpdate(invoice,row.ix_document_id,expected,fiscalTotal);
+    if(draft){
+      try{await api('/'+type+'/'+row.ix_document_id+'.json',{method:'PUT',body:{invoice:draft}})}catch(error){
+        if(![400,422].includes(error.status))throw error;
+        repairRejected=true;
+      }
+      payload.draft_repair_attempted_at=new Date().toISOString();await write({request_payload:payload});
+      if(!repairRejected)invoice=extract(await api('/'+type+'/'+row.ix_document_id+'.json'));
+    }
+  }
+  if(!invoiceMatches(invoice,row.ix_document_id,expected,fiscalTotal)){
+    const amount=Math.round(Number(invoice?.total)*100),sequence=String(invoice?.sequence_id||'');
+    throw Error('Invoice contents do not match the paid order (amount '+(Number.isSafeInteger(amount)?amount:'unknown')+'/'+fiscalTotal+', sequence '+(/^\d+$/.test(sequence)?sequence:'unknown')+'/'+expected.sequence_id+', reference '+(invoice?.reference===expected.reference?'matches':'differs')+(repairRejected?', draft update rejected':'')+')');
+  }
   if(invoice.status==='draft') {
     await api('/'+type+'/'+invoice.id+'/change-state.json',{method:'PUT',body:{invoice:{state:'finalized'}}});
     invoice=extract(await api('/'+type+'/'+invoice.id+'.json'));
   }
   if(!invoice||!['final','sent','settled'].includes(invoice.status))throw Error('Invoice is not finalized');
+  if(!invoiceMatches(invoice,row.ix_document_id,expected,fiscalTotal))throw Error('Finalized invoice contents do not match the paid order');
   if(type==='invoices'&&payload.paid_cents>0&&!payload.payment_recorded) {
     const related=await api('/document/'+invoice.id+'/related_documents.json');
     const note='Stripe payment '+row.stripe_session_id;

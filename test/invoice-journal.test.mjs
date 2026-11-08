@@ -64,6 +64,40 @@ test('uncertain creation with no matching document is held instead of duplicated
  const db=database();await queueWebsiteInvoice(fixture(),db);db.rows[0].request_payload.creation_attempted_at='2026-10-21';const api=provider();
  await assert.rejects(processInvoiceJob(db.rows[0],{db,request:api.request}),/uncertain/);assert.equal(count(api,'/invoice_receipts.json','POST'),0);
 });
+test('a Crude City draft can be corrected in place without replacing the fiscal document',async()=>{
+ const input=fixture();input.brand='crude-city';input.paidCents=21789;
+ input.body.invoice_receipt.items=[{name:'Crude City online order',unit_price:177.146341,quantity:1,tax:{name:'IVA23'}}];
+ const db=database();await queueWebsiteInvoice(input,db);
+ const row=db.rows[0],expected=row.request_payload.body.invoice_receipt;
+ row.ix_document_id=42;
+ const draft={id:42,status:'draft',reference:expected.reference,sequence_id:'123',total:217.88,permalink:'https://www.app.invoicexpress.com/documents/example'};
+ const calls=[];
+ const request=async(path,{method='GET',body}={})=>{
+  calls.push([path,method]);
+  if(path==='/invoice_receipts/42.json'&&method==='PUT'){
+   assert.equal(body.invoice.items[0].unit_price,177.15);
+   assert.equal(body.invoice.sequence_id,'123');
+   draft.total=217.89;
+  }
+  if(path.endsWith('/change-state.json'))draft.status='final';
+  return {response:{ok:true},data:{invoice_receipt:{...draft}}};
+ };
+ await processInvoiceJob(row,{db,request});
+ assert.equal(row.ix_document_id,42);
+ assert.equal(calls.filter(([,method])=>method==='POST').length,0);
+ assert.ok(row.email_sent_at);
+});
+test('a draft with an unrelated payment reference is never updated or finalized',async()=>{
+ const input=fixture();input.brand='crude-city';
+ const db=database();await queueWebsiteInvoice(input,db);const row=db.rows[0];row.ix_document_id=42;
+ const methods=[];
+ const request=async(_path,{method='GET'}={})=>{
+  methods.push(method);
+  return {response:{ok:true},data:{invoice_receipt:{id:42,status:'draft',reference:'another-order',total:12.30,sequence_id:'123'}}};
+ };
+ await assert.rejects(processInvoiceJob(row,{db,request}),/reference differs/);
+ assert.deepEqual(methods,['GET']);
+});
 test('deposit receipt is reconciled after a timeout, never recorded twice',async()=>{
  const db=database();await queueWebsiteInvoice(fixture('invoices'),db);const api=provider({uncertainPayment:true});await assert.rejects(processInvoiceJob(db.rows[0],{db,request:api.request}));
  await processInvoiceJob(db.rows[0],{db,request:api.request});assert.equal(count(api,'/partial_payments.json','POST'),1);assert.ok(db.rows[0].email_sent_at);assert.match(db.rows[0].email_payload.message.body,/Remaining balance: EUR 7.30/);
