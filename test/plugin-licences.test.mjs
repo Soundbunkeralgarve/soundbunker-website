@@ -142,16 +142,22 @@ test('checkout, fulfilment, e-mail and refunds', async () => {
     assert.match((await createCheckout({ productId: 'napalm' }, sb, async () => assert.fail('no Stripe call'))).error, /not on sale/);
     await db.exec("update plugin_products set active = true where id = 'napalm'");
     let form;
-    const made = await createCheckout({ productId: 'fallout', email: 'buyer@example.com' }, sb, async (path, f) => { form = f; return { url: 'https://checkout.stripe.com/x' }; });
+    const userId = '98a2dc67-56d2-41c5-b8b5-e50cc1591004';
+    const made = await createCheckout({ productId: 'fallout', email: 'buyer@example.com', userId }, sb, async (path, f) => { form = f; return { url: 'https://checkout.stripe.com/x' }; });
     assert.equal(made.url, 'https://checkout.stripe.com/x');
     assert.equal(form.get('line_items[0][price_data][unit_amount]'), '4900');
     assert.equal(form.get('metadata[purchase_type]'), 'plugin_licence');
+    assert.equal(form.get('metadata[plugin_account_email]'), 'buyer@example.com');
+    assert.equal(form.get('metadata[user_id]'), userId);
     assert.equal(form.get('payment_intent_data[metadata][plugin_product]'), 'fallout');
 
     const sent = [];
-    const opts = { send: async (mail) => { sent.push(mail); }, invoice: async () => ({ queued: true }) };
+    const opts = { send: async (mail) => { sent.push(mail); }, invoice: async (session, product, email) => {
+      assert.equal(email, 'billing@example.com');
+      return { queued: true };
+    } };
     const checkout = { id: 'cs_live_123', livemode: true, payment_status: 'paid', currency: 'eur', amount_subtotal: 4900, amount_total: 3900,
-      payment_intent: 'pi_123', customer_details: { email: 'buyer@example.com' }, metadata: { purchase_type: 'plugin_licence', plugin_product: 'fallout' } };
+      payment_intent: 'pi_123', customer_details: { email: 'billing@example.com' }, metadata: { purchase_type: 'plugin_licence', plugin_product: 'fallout', plugin_account_email: 'buyer@example.com', user_id: userId } };
     const done = await fulfilPluginCheckout(checkout, sb, opts);
     assert.equal(done.status, 'fulfilled');
     assert.deepEqual(done.invoice, { queued: true });
@@ -161,6 +167,8 @@ test('checkout, fulfilment, e-mail and refunds', async () => {
     assert.equal(rows.length, 1);
     assert.match(rows[0].licence_key, /^SB(-[0-9A-HJKMNP-TV-Z]{5}){4}$/);
     assert.equal(rows[0].amount_cents, 3900);
+    assert.equal(rows[0].user_id, userId);
+    assert.equal(rows[0].email, 'buyer@example.com');
     const customer = sent.filter((x) => x.to === 'buyer@example.com');
     assert.equal(customer.length, 2);
     assert.equal(customer[0].key, customer[1].key, 'retries reuse the e-mail idempotency key');
@@ -482,10 +490,16 @@ test('download links are signed: they work from e-mails and for signed-in trials
 
 test('giveaway requires an account and links previous guest licences without a second redemption', async () => {
   const { default: handler } = await import('../api/licence.js');
-  const response = { setHeader() {}, end(value) { this.payload = JSON.parse(value); } };
-  await handler({ method: 'POST', url: '/api/licence?action=checkout', headers: {}, body: { code: ' sbproducer ', email: 'guest@example.com' } }, response);
-  assert.equal(response.statusCode, 401);
-  assert.equal(response.payload.signIn, true);
+  for (const [action, details] of [
+    ['checkout', { code: ' sbproducer ' }], ['checkout', { product: 'complete' }],
+    ['checkout', { product: 'armoury' }], ['claim', { product: 'armoury' }]
+  ]) {
+    const response = { setHeader() {}, end(value) { this.payload = JSON.parse(value); } };
+    await handler({ method: 'POST', url: '/api/licence?action=' + action, headers: {},
+      body: { ...details, email: 'guest@example.com' } }, response);
+    assert.equal(response.statusCode, 401);
+    assert.equal(response.payload.signIn, true);
+  }
 
   const db = await database({ asShipped: true });
   try {

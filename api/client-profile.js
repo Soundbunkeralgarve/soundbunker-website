@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
-import { json } from './lib/http.js';
+import { json, parseJson } from './lib/http.js';
 import { dropboxConfigured, ensureClientDropboxFolder } from './lib/dropbox.js';
 export default async function handler(request,response){
-  if(request.method!=='GET') return json(response,{error:'Method not allowed'},405);
+  if(!['GET','POST'].includes(request.method)) return json(response,{error:'Method not allowed'},405);
   const auth=request.headers.authorization||'';
   const token=auth.startsWith('Bearer ')?auth.slice(7):'';
   if(!token) return json(response,{error:'Not signed in'},401);
@@ -13,6 +13,16 @@ export default async function handler(request,response){
   if(userError||!userData?.user) return json(response,{error:'Session expired'},401);
   const admin=createClient(url,secret,{auth:{persistSession:false,autoRefreshToken:false}});
   const user=userData.user;
+  if (request.method === 'POST') {
+    if (!user.email_confirmed_at || !user.email) return json(response, {error:'Verify your account email first.'}, 403);
+    const body = await parseJson(request).catch(() => null);
+    const fullName = typeof body?.fullName === 'string' ? body.fullName.trim() : '';
+    if (!fullName || fullName.length > 150 || /[\p{Cc}]/u.test(fullName)) {
+      return json(response, {error:'Enter your full name.'}, 400);
+    }
+    const {error} = await admin.from('profiles').upsert({id:user.id,email:user.email,full_name:fullName},{onConflict:'id'});
+    return json(response, error ? {error:'Could not save your full name.'} : {ok:true}, error ? 503 : 200);
+  }
   let {data:profile,error}=await admin.from('profiles').select('*').eq('id',user.id).maybeSingle();
   if(error) return json(response,{error:'Could not load client profile'},500);
   if(!profile){
