@@ -194,7 +194,10 @@ export async function createCheckout({ productId, email, userId, choice, code, r
     'payment_intent_data[metadata][purchase_type]': 'plugin_licence',
     'payment_intent_data[metadata][plugin_product]': p.id
   });
-  if (email) form.set('customer_email', email);
+  if (email) {
+    form.set('customer_email', email);
+    if (userId) form.set('metadata[plugin_account_email]', email);
+  }
   if (producer) {
     if (!promos[producer.code]) return { error: 'That code is not available right now. Please try again later.' };
     form.delete('allow_promotion_codes');   // Stripe takes either a preset discount or the promotion code box
@@ -250,7 +253,10 @@ async function freeCheckout(p, { email, userId, referral }, db, stripeCall) {
     form.set(`optional_items[${i}][adjustable_quantity][minimum]`, '0');
     form.set(`optional_items[${i}][adjustable_quantity][maximum]`, '1');
   });
-  if (email) form.set('customer_email', email);
+  if (email) {
+    form.set('customer_email', email);
+    if (userId) form.set('metadata[plugin_account_email]', email);
+  }
   await attachAffiliateReferral(form, db, referral, userId);
   const session = await stripeCall('/checkout/sessions', form);
   return { url: session.url };
@@ -433,7 +439,7 @@ export async function fulfilPluginCheckout(checkout, db = licenceDB(), { send = 
   if (checkout.currency !== 'eur' || checkout.amount_subtotal !== p.price_cents) throw new Error('Plug-in payment does not match the price');
   const picked = pickedPlugins(p, meta.choice);
   if (!picked) throw new Error('Plug-in bundle choice is invalid');
-  const email = checkout.customer_details?.email || checkout.customer_email;
+  const email = meta.plugin_account_email || checkout.customer_details?.email || checkout.customer_email;
   if (!email) throw new Error('Plug-in buyer e-mail missing');
 
   const licence = await deliver(checkout, db, { p, includes: picked, email, code, userId: meta.user_id, send, invoice });
@@ -447,7 +453,7 @@ async function fulfilFreeCheckout(checkout, db, { send, invoice, stripeCall }) {
   if (!['paid', 'no_payment_required'].includes(checkout.payment_status)) throw new Error('Not a completed plug-in checkout');
   const free = await checked(db.from('plugin_products').select('*').eq('id', meta.plugin_product).maybeSingle(), 'load the plug-in');
   if (!free?.free) throw new Error('Free plug-in not found');
-  const email = checkout.customer_details?.email || checkout.customer_email;
+  const email = meta.plugin_account_email || checkout.customer_details?.email || checkout.customer_email;
   if (!email) throw new Error('Plug-in buyer e-mail missing');
   const items = (await stripeCall(`/checkout/sessions/${checkout.id}/line_items?limit=20`)).data || [];
   const qty = {};
@@ -498,8 +504,9 @@ async function deliver(checkout, db, { p, includes, email, code, userId, send, i
   await send({ to: studio(), key: `plugin-licence-studio-${checkout.id}`,
     subject: code ? `Producer code used · ${code} · ${name}` : `Plug-in sold · ${name} · ${money(checkout.amount_total)}`,
     text: `${name} licence sold${checkout.livemode === true ? '' : ' (Stripe TEST payment)'}.\n\nBuyer: ${email}\nPaid: ${money(checkout.amount_total)}\nKey: ${licence.licence_key}\n\nAdmin: ${base()}/plugin-admin.html` });
+  const billingEmail = checkout.customer_details?.email || checkout.customer_email || email;
   const invoiced = !(checkout.amount_total > 0) ? { skipped: true, reason: 'Nothing to invoice' }
-    : checkout.livemode === true ? await invoice(checkout, { ...p, name }, email) : { skipped: true, reason: 'Test payment' };
+    : checkout.livemode === true ? await invoice(checkout, { ...p, name }, billingEmail) : { skipped: true, reason: 'Test payment' };
   return Object.assign(licence, { result: { status: 'fulfilled', licence: licence.id, invoice: invoiced } });
 }
 
@@ -551,7 +558,7 @@ export async function licenceForSession(sessionId, db = licenceDB(), stripeCall 
   if (!licence) {
     // A free checkout with nothing added gives the buyer's free licence (one per address), not one for the checkout.
     const s = await stripeCall(`/checkout/sessions/${sessionId}`).catch(() => null);
-    const email = (s?.customer_details?.email || '').trim().toLowerCase();
+    const email = (s?.metadata?.plugin_account_email || s?.customer_details?.email || s?.customer_email || '').trim().toLowerCase();
     if (s?.metadata?.free_checkout !== '1' || s.status !== 'complete' || !email) return null;
     licence = (await checked(db.from('plugin_licences').select('*').eq('product_id', s.metadata.plugin_product).eq('source', 'free')
       .eq('email', email), 'look up the licence'))[0];

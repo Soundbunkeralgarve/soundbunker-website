@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="plugins.css?v=20261103b">
   <link rel="stylesheet" href="client-mobile-app.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="client.js?v=20261108-affiliates" defer></script>
+  <script src="client.js?v=20261108-plugin-accounts" defer></script>
 <link rel="stylesheet" href="calendar-picker.css">
 <script defer src="calendar-picker.js"></script>
   <link rel="stylesheet" href="client-music.css?v=1">
@@ -54,13 +54,13 @@
           <h2>Welcome to SoundBunker.</h2>
           <div class="auth-tabs"><button id="loginTab" class="auth-tab active" type="button">Sign in</button><button id="signupTab" class="auth-tab" type="button">Create account</button></div>
           <form id="loginForm" class="login-panel">
-            <div id="nameField" hidden><label>Your name<input id="fullName" type="text" autocomplete="name" placeholder="Your full name"></label></div>
+            <div id="nameField" hidden><label>Your name<input id="fullName" type="text" maxlength="150" autocomplete="name" placeholder="Your full name"></label></div>
             <label>Email<input id="email" type="email" autocomplete="email" placeholder="you@example.com" required></label>
             <label>Password<input id="password" type="password" autocomplete="current-password" minlength="8" placeholder="Minimum 8 characters" required></label>
             <label class="client-marketing-consent" for="authMarketingConsent">
               <input id="authMarketingConsent" type="checkbox" name="marketingConsent" value="yes">
-              <span><strong>Yes, email me about new events and promotions.</strong>
-                <small>TicketBunker events, SoundBunker news and special offers. Optional, and you can unsubscribe anytime. <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy details</a>.</small></span>
+              <span><strong>Join the SoundBunker mailing list.</strong>
+                <small>Get new plug-ins, early releases, studio news, special offers and TicketBunker event announcements. Optional. Unsubscribe anytime. <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy details</a>.</small></span>
             </label>
             <button id="authSubmit" class="client-primary" type="submit">Sign in</button>
             <button id="forgotPassword" class="text-button" type="button">Forgot password?</button>
@@ -86,6 +86,13 @@
         <div><span>Signed in as</span><strong id="clientEmail"></strong></div>
         <div class="client-account-actions"><span id="roleBadge" class="role-badge">Client</span><button id="signOut" class="ghost-button">Sign out</button></div>
       </div>
+      <p id="pluginAccountMessage" class="client-inline-message" role="status" hidden>Check your inbox and verify your SoundBunker email address to continue.</p>
+      <form id="pluginProfileForm" class="client-email-preferences" hidden>
+        <h2>Complete your SoundBunker account</h2>
+        <label>Full name <input id="pluginProfileName" type="text" autocomplete="name" maxlength="150" required></label>
+        <button id="pluginProfileSubmit" class="client-primary" type="submit">Save and continue</button>
+        <p id="pluginProfileStatus" role="status"></p>
+      </form>
       <details id="accountEmailPreferences" class="client-email-preferences">
         <summary><span>Events &amp; promotions emails</span><small>Manage email preferences</small></summary>
         <form id="marketingPreferencesForm">

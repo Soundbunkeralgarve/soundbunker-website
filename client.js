@@ -3,6 +3,8 @@ let mode = 'login';
 let folderTimer;
 let folderChecks = 0;
 let profileRequest;
+let submittingAuth = false;
+let returningToPlugins = false;
 let activePeer = null;
 let inboxAll = [];
 let inboxMembers = [];
@@ -41,7 +43,7 @@ async function boot() {
     else { show('#portalPanel', false); show('#authPanel', true); }
     supabaseClient.auth.onAuthStateChange((event, newSession) => {
       // Supabase callbacks must return promptly; fetching inside one can stall auth.
-      if (newSession && event === 'SIGNED_IN') setTimeout(() => enterPortal(newSession), 0);
+      if (newSession && event === 'SIGNED_IN') setTimeout(() => { if (!submittingAuth) enterPortal(newSession); }, 0);
       if (event === 'SIGNED_OUT') {
         clearInterval(folderTimer);
         folderTimer = null;
@@ -54,10 +56,26 @@ async function boot() {
   }
 }
 
+function pluginCheckoutReturn(value) {
+  if (!String(value || '').startsWith('/plugins.html?') || value.length > 280) return '';
+  const params = new URLSearchParams(value.slice('/plugins.html?'.length));
+  const checkout = params.get('checkout'), code = params.get('code');
+  const productId = /^[a-z0-9-]{2,40}$/;
+  if (checkout ? !productId.test(checkout) || code !== null : !/^[A-Z0-9-]{4,40}$/.test(code || '')) return '';
+  const safe = new URLSearchParams(checkout ? { checkout } : { code });
+  const choices = params.get('choice')?.split(',') || [];
+  if (choices.length && (!checkout || choices.length > 10 || choices.some(choice => !productId.test(choice)))) return '';
+  if (choices.length) safe.set('choice', choices.join(','));
+  const ref = params.get('ref');
+  if (ref !== null && !/^[a-f0-9]{24}$/.test(ref)) return '';
+  if (ref) safe.set('ref', ref);
+  return '/plugins.html?' + safe;
+}
+
 function safeAccountReturn(next){
- if(['/redeem','/organiser','/client#my-tickets','/plugins#try-free','/plugins.html?code=SBPRODUCER','/client#plugin-affiliates'].includes(next))return next;
+ if(['/redeem','/organiser','/client#my-tickets','/plugins#try-free','/client#plugin-affiliates'].includes(next))return next;
  if(/^\/event-scanner\?(?:invite=[a-f0-9]{64}|eventId=[a-f0-9-]{36})$/i.test(String(next||'')))return next;
- return '';
+ return pluginCheckoutReturn(next);
 }
 async function marketingConsentRequest(session,body){
  const response=await fetch('/api/client-marketing-consent',{
@@ -94,22 +112,30 @@ async function authenticate(event) {
   const password = $('#password').value;
   const fullName = $('#fullName').value.trim();
   const marketingOptIn=$('#authMarketingConsent').checked===true;
+  if (mode === 'signup' && (!fullName || fullName.length > 150 || /[\p{Cc}]/u.test(fullName))) return message('Enter your full name.', true);
+  if (submittingAuth) return;
+  submittingAuth = true;
   $('#authSubmit').disabled = true;
-  message(mode === 'signup' ? 'Creating your account...' : 'Signing in...');
-  const next = new URLSearchParams(location.search).get('next');
-  const permittedNext = safeAccountReturn(next);
-  const result = mode === 'signup'
-    ? await supabaseClient.auth.signUp({ email, password, options: { emailRedirectTo: location.origin+'/client'+(permittedNext?'?next='+encodeURIComponent(permittedNext):''), data: { full_name: fullName, name: fullName, ticketbunker_marketing_signup_pending: marketingOptIn } } })
-    : await supabaseClient.auth.signInWithPassword({ email, password });
-  $('#authSubmit').disabled = false;
-  if (result.error) return message(result.error.message, true);
-  if (mode === 'signup' && !result.data.session) return message('Account created. Check your email to confirm your address, then sign in.');
-  if(result.data.session){
-    if(mode==='login'&&marketingOptIn){
-      try{await marketingConsentRequest(result.data.session,{source:'account',consent:true});}
-      catch(error){console.warn('Sign-in email opt-in failed',error);}
+  try {
+    message(mode === 'signup' ? 'Creating your account...' : 'Signing in...');
+    const next = new URLSearchParams(location.search).get('next');
+    const permittedNext = safeAccountReturn(next);
+    const result = mode === 'signup'
+      ? await supabaseClient.auth.signUp({ email, password, options: { emailRedirectTo: location.origin+'/client'+(permittedNext?'?next='+encodeURIComponent(permittedNext):''), data: { full_name: fullName, name: fullName, ticketbunker_marketing_signup_pending: marketingOptIn } } })
+      : await supabaseClient.auth.signInWithPassword({ email, password });
+    if (result.error) return message(result.error.message, true);
+    if (mode === 'signup' && !result.data.session) return message('Account created. Check your email to confirm your address, then sign in.');
+    if(result.data.session){
+      if(mode==='login'&&marketingOptIn){
+        try{await marketingConsentRequest(result.data.session,{source:'account',consent:true});}
+        catch(error){console.warn('Sign-in email opt-in failed',error);}
+      }
+      await enterPortal(result.data.session);
     }
-    await enterPortal(result.data.session);
+  } catch (error) { message(error.message, true); }
+  finally {
+    submittingAuth = false;
+    $('#authSubmit').disabled = false;
   }
 }
 
@@ -129,7 +155,23 @@ async function enterPortal(session) {
   const next = new URLSearchParams(location.search).get('next');
   if (next === '/redeem') { location.replace('/redeem'); return; }
   if (next === '/organiser') { location.replace('/organiser'); return; }
-  if (next === '/plugins#try-free' || next === '/plugins.html?code=SBPRODUCER') { location.replace(next); return; }
+  const checkout = pluginCheckoutReturn(next);
+  if (checkout) {
+    if (returningToPlugins) return;
+    if (!session.user.email_confirmed_at) {
+      show('#pluginAccountMessage');
+      return;
+    }
+    if (!profile.full_name?.trim() || profile.full_name.trim().length > 150) {
+      show('#pluginProfileForm');
+      $('#pluginProfileForm').scrollIntoView({ block: 'center' });
+      return;
+    }
+    returningToPlugins = true;
+    location.replace(checkout);
+    return;
+  }
+  if (next === '/plugins#try-free') { location.replace(next); return; }
   if (safeAccountReturn(next).startsWith('/event-scanner?')) { location.replace(next); return; }
   if (next === '/client#my-tickets') history.replaceState(null,'','/client#my-tickets');
   if (next === '/client#plugin-affiliates') history.replaceState(null, '', '/client#plugin-affiliates');
@@ -605,9 +647,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }else if(accountPurpose==='/organiser'){
    const title=$('#authPanel .client-auth-copy h1');if(title)title.textContent='Your event business starts here.';
    const welcome=$('#authPanel .client-login-card h2');if(welcome)welcome.textContent='Sign in or create an organiser account.';
-  }else if(accountPurpose==='/plugins.html?code=SBPRODUCER' || accountPurpose==='/client#plugin-affiliates'){
-   const giveaway=accountPurpose==='/plugins.html?code=SBPRODUCER';
-   const title=$('#authPanel .client-auth-copy h1');if(title)title.textContent=giveaway?'Claim your free SB COMPLETE bundle.':'Join the SoundBunker affiliate programme.';
+  }else if(pluginCheckoutReturn(accountPurpose) || accountPurpose==='/client#plugin-affiliates'){
+   const checkout=pluginCheckoutReturn(accountPurpose);
+   const giveaway=checkout && new URLSearchParams(checkout.split('?')[1]).get('code')==='SBPRODUCER';
+   const title=$('#authPanel .client-auth-copy h1');if(title)title.textContent=giveaway?'Claim your free SB COMPLETE bundle.':checkout?'Continue to your SoundBunker plug-ins.':'Join the SoundBunker affiliate programme.';
    const welcome=$('#authPanel .client-login-card h2');if(welcome)welcome.textContent='Create an account or sign in to continue.';
    setMode('signup');
   }else if(accountPurpose==='/client#my-tickets'){
@@ -627,6 +670,18 @@ document.addEventListener('DOMContentLoaded', () => {
        (result.optedIn?'Subscribed to event news and promotions.':'Marketing emails switched off.');
     }catch(error){status.textContent=error.message;}
     finally{button.disabled=false;}
+  });
+  $('#pluginProfileForm').addEventListener('submit', async event => {
+    event.preventDefault();
+    const button = $('#pluginProfileSubmit'), status = $('#pluginProfileStatus');
+    button.disabled = true;
+    status.textContent = 'Saving your details…';
+    try {
+      await portalApi('/api/client-profile', { fullName: $('#pluginProfileName').value });
+      const checkout = pluginCheckoutReturn(new URLSearchParams(location.search).get('next'));
+      if (checkout) location.replace(checkout);
+    } catch (error) { status.textContent = error.message; }
+    finally { button.disabled = false; }
   });
   $('#affiliateJoin').addEventListener('click', event =>
     affiliateAction(event.currentTarget, 'affiliate-join', {}, 'Your referral link is ready.'));

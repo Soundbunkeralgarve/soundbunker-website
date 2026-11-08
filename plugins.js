@@ -111,12 +111,21 @@
     else referral = sessionStorage.getItem('sb-plugin-referral') || '';
   } catch { /* A direct referral link still works when storage is disabled. */ }
 
+  function accountCheckout(body) {
+    const params = new URLSearchParams();
+    if (body.code) params.set('code', body.code.trim().toUpperCase());
+    else params.set('checkout', body.product);
+    if (body.choice?.length) params.set('choice', body.choice.join(','));
+    if (referralCode.test(referral)) params.set('ref', referral);
+    location.replace('/client?next=' + encodeURIComponent('/plugins.html?' + params));
+  }
+
   async function checkout(body) {
     const signedIn = await sessionToken();   // the licence lands in their Client Area
     const r = await fetch('/api/licence?action=checkout', { method: 'POST', headers: { 'content-type': 'application/json', ...(signedIn ? { authorization: `Bearer ${signedIn}` } : {}) }, body: JSON.stringify({ ...body, ...(referralCode.test(referral) ? { referral } : {}) }) });
     const d = await r.json();
-    if (r.status === 401 && d.signIn && String(body.code || '').trim().toUpperCase() === 'SBPRODUCER') {
-      location.replace('/client?next=' + encodeURIComponent('/plugins.html?code=SBPRODUCER'));
+    if (d.signIn || d.needsName) {
+      accountCheckout(body);
       return;
     }
     if (!r.ok || !d.url) throw new Error(d.error || 'Checkout is not available right now.');
@@ -151,6 +160,18 @@
     }
   }
 
+  async function resumeCheckout(params) {
+    const product = params.get('checkout');
+    const status = $('#pluginMessage');
+    status.textContent = 'Opening checkout…';
+    try {
+      const choice = params.get('choice')?.split(',') || [];
+      await checkout({ product, ...(choice.length ? { choice } : {}) });
+    } catch (error) {
+      status.textContent = error.message;
+    }
+  }
+
   async function load() {
     try {
       const r = await fetch('/api/licence?action=products');
@@ -163,7 +184,8 @@
       trials();
       const params = new URLSearchParams(location.search);
       const hash = location.hash.slice(1);
-      if (params.get('code')) redeem(params.get('code'));   // a producer link: plugins.html?code=XXXX
+      if (/^[a-z0-9-]{4,40}$/i.test(params.get('code')?.trim() || '')) redeem(params.get('code').trim());   // a producer link: plugins.html?code=XXXX
+      else if (products.some((p) => p.id === params.get('checkout') && p.for_sale)) resumeCheckout(params);
       else if (params.get('offer') && freeProduct()?.id === params.get('offer')) getFree(params.get('offer'));   // the free plug-in's GET YOUR FREE KEY
       else if (upgrade(params.get('buy') || hash)) { /* a plug-in's BUY A LICENCE */ }
       else if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView({ block: 'center' });

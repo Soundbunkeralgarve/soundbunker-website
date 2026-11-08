@@ -24,27 +24,25 @@ export default async function handler(req,res){
    if(typeof body.consent!=='boolean')return json(res,{error:'Choose whether to receive event and promotional emails'},400);
    consent=body.consent;
   }else return json(res,{error:'Invalid marketing consent action'},400);
-  if(consent===Boolean(profile.data?.marketing_opt_in)&&source==='signup'){
-   // No consent change; still clear the one-time pending signup flag.
-   if(source==='signup')await db.auth.admin.updateUserById(user.id,{user_metadata:{ticketbunker_marketing_signup_pending:false}});
-   return json(res,{optedIn:consent,unchanged:true});
-  }
-  const when=consent?new Date().toISOString():null;
+  const when=consent?(profile.data?.marketing_opt_in_at||new Date().toISOString()):null;
   const update=await db.from('profiles').upsert({
    id:user.id,email,marketing_opt_in:consent,marketing_opt_in_at:when
   },{onConflict:'id'}).select('id').single();
   if(update.error)throw update.error;
-  let providerSynced=false,providerWarning='';
+  let providerSynced=false,providerWarning='',providerSuppressed=false;
   try{
    const result=await syncSoundBunkerMarketing({apiKey:process.env.RESEND_API_KEY,email,consent,firstName:profile.data?.full_name||user.user_metadata?.full_name});
    providerSynced=result.synced;
+   providerSuppressed=result.existing===true&&!result.synced;
    if(!result.synced)providerWarning=result.reason;
   }catch(error){
    console.error('Marketing consent Resend sync failed',error);
    providerWarning=consent?'Preference recorded, but mailing-list setup is delayed. Try again later.':
     'Preference saved, but provider unsubscribe was not confirmed. Use the unsubscribe link in any marketing email.';
   }
-  if(source==='signup'){
+  // Keep a confirmed signup opt-in pending when the provider is temporarily unavailable.
+  // An explicit account opt-out always clears any old signup intent.
+  if(user.user_metadata?.ticketbunker_marketing_signup_pending===true&&(!consent||providerSynced||providerSuppressed)){
    const clear=await db.auth.admin.updateUserById(user.id,{user_metadata:{ticketbunker_marketing_signup_pending:false}});
    if(clear.error)console.error('Unable to clear pending signup marketing flag',clear.error);
   }
