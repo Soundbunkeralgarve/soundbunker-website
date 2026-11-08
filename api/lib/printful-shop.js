@@ -47,7 +47,7 @@ export async function shopProduct(id) {
   if (productPending.has(key)) return productPending.get(key);
   const pending = (async () => {
   const detail = await pf(`/store/products/${key}`);
-  const variants = detail.sync_product.is_ignored ? [] : detail.sync_variants.map(v => publicVariant(v, detail.sync_product.name)).filter(Boolean);
+  const variants = detail.sync_product.is_ignored ? [] : detail.sync_variants.map(v => publicVariant(v, detail.sync_product.name, detail.sync_product.id)).filter(Boolean);
   const views = [...new Map(variants.flatMap(v => v.views || []).map(v => [v.url, v])).values()];
   const images = [...new Set([...variants.map(v => v.image), ...views.map(v => v.url)].filter(Boolean))];
   const artwork = campaignImages[key];
@@ -104,14 +104,14 @@ export function cents(value) {
   return amount;
 }
 export function httpsURL(value) { try { const url = new URL(value); return url.protocol === 'https:' ? url.href : ''; } catch { return ''; } }
-export function publicVariant(v, productName = v.name) {
+export function publicVariant(v, productName = v.name, productId = v.sync_product_id) {
   if (!v.synced || v.is_ignored || (v.availability_status && v.availability_status !== 'active') || v.currency !== 'EUR') return null;
   let price = retailPrice(productName);
   if (price === undefined) { try { price = cents(v.retail_price); } catch { return null; } }
   if (price < 50) return null;
   const views=(v.files||[]).filter(f=>f.type==='preview'||/^(front|back|sleeve_left|sleeve_right)$/.test(f.type)).map(f=>({url:httpsURL(f.preview_url),label:(f.type==='preview'?'Garment preview':({front:'Front print detail',back:'Back print detail',sleeve_left:'Left sleeve print detail',sleeve_right:'Right sleeve print detail'}[f.type]))+(v.color?' · '+v.color:'')})).filter(f=>f.url);
   const sizeLabel = shopSizeLabel(productName, v.size);
-  return { views, id: v.id, name: [productLabel(productName), v.color, sizeLabel].filter(Boolean).join(' / '), size: v.size, size_label: sizeLabel, age: kidsAge(productName, v.size), color: v.color, price, image: httpsURL(v.files?.find(f => f.type === 'preview')?.preview_url ) };
+  return { views, id: v.id, name: [displayProductTitle(productId, productName) || productLabel(productName), v.color, sizeLabel].filter(Boolean).join(' / '), size: v.size, size_label: sizeLabel, age: kidsAge(productName, v.size), color: v.color, price, image: httpsURL(v.files?.find(f => f.type === 'preview')?.preview_url ) };
 }
 const text = (v, n = 150) => typeof v === 'string' ? v.trim().slice(0, n) : '';
 export function cleanRecipient(value = {}) {
