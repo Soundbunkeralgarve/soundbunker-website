@@ -5,9 +5,9 @@ import { createClient } from '@supabase/supabase-js';
 import { licenceToken, trialToken, verifyToken, newLicenceKey, normaliseKey, TRIAL_DAYS } from './licence-token.js';
 import { sendTransactionalEmail } from './notify.js';
 import { sendPluginLicenceInvoice } from './invoicexpress.js';
-import { affiliateJoinUrl, attachAffiliateReferral, recordAffiliateSale, reverseAffiliateSale } from './plugin-affiliates.js';
+import { GIVEAWAY_CODE, affiliateJoinUrl, attachAffiliateReferral, recordAffiliateSale, reverseAffiliateSale } from './plugin-affiliates.js';
 
-export const GIVEAWAY_CODE = 'SBPRODUCER';
+export { GIVEAWAY_CODE };
 
 const KEY = /^SB(-[0-9A-HJKMNP-TV-Z]{5}){4}$/;
 const MACHINE = /^[0-9a-f]{64}$/;

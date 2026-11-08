@@ -3,6 +3,8 @@ import { sendTransactionalEmail } from './notify.js';
 
 const base = () => (process.env.SITE_URL || 'https://www.soundbunker.pt').replace(/\/$/, '');
 const studio = () => process.env.PLUGIN_AFFILIATE_NOTIFICATION_EMAIL || 'steve@soundbunker.pt';
+export const GIVEAWAY_CODE = 'SBPRODUCER';
+
 const referralCode = /^[a-f0-9]{24}$/;
 const uuid = /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i;
 const payment = /^pi_[a-zA-Z0-9_]+$/;
@@ -16,7 +18,9 @@ async function checked(query) {
 }
 
 async function producerEligible(db, email) {
-  return Boolean(email && await checked(db.rpc('sb_plugin_producer_eligible', { p_email: email })));
+  if (!email) return false;
+  return Boolean(await checked(db.from('plugin_code_redemptions').select('licence_id')
+    .eq('code', GIVEAWAY_CODE).eq('email', email.trim().toLowerCase()).maybeSingle()));
 }
 
 export async function affiliateStatus(db, userId, verifiedEmail) {
@@ -142,6 +146,8 @@ export async function recordAffiliateSale(checkout, licence, db) {
   const intent = licence.stripe_payment_intent;
   if (!uuid.test(id || '') || checkout.livemode !== true || checkout.payment_status !== 'paid' ||
       checkout.currency !== 'eur' || !(checkout.amount_total > 0) || !payment.test(intent || '')) return;
+  const affiliate = await checked(db.from('plugin_affiliates').select('email').eq('user_id', id).maybeSingle());
+  if (!await producerEligible(db, affiliate?.email)) return;
   await checked(db.rpc('sb_plugin_affiliate_record', {
     p_payment: intent, p_session: checkout.id, p_affiliate: id, p_email: licence.email, p_buyer: licence.user_id
   }));
