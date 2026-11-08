@@ -98,6 +98,23 @@ test('a draft with an unrelated payment reference is never updated or finalized'
  await assert.rejects(processInvoiceJob(row,{db,request}),/reference differs/);
  assert.deepEqual(methods,['GET']);
 });
+test('an unnumbered Crude City draft uses only its verified default series',async()=>{
+ for(const isDefault of [true,false]){
+  const input=fixture();input.brand='crude-city';
+  const db=database();await queueWebsiteInvoice(input,db);const row=db.rows[0];row.ix_document_id=42;
+  row.request_payload.draft_repair_attempted_at='2026-11-08T10:00:00Z';
+  const draft={id:42,status:'draft',reference:row.document_reference,total:12.30,sequence_id:null,sequence_number:'Rascunho',permalink:'https://www.app.invoicexpress.com/documents/example'};
+  let issued=false;
+  const request=async path=>{
+   if(path==='/sequences.json')return {response:{ok:true},data:{sequences:[{serie:'Crude-City',default_sequence:isDefault?1:0,current_invoice_receipt_sequence_id:123,current_invoice_receipt_validation_code:'ABCD1234'}]}};
+   if(path.endsWith('/change-state.json')){issued=true;draft.status='settled';draft.sequence_number='1/Crude-City';draft.atcud='ABCD1234-1';}
+   return {response:{ok:true},data:{invoice_receipt:{...draft}}};
+  };
+  if(isDefault){await processInvoiceJob(row,{db,request});assert.ok(row.email_sent_at);}
+  else await assert.rejects(processInvoiceJob(row,{db,request}),/sequence unknown/);
+  assert.equal(issued,isDefault);
+ }
+});
 test('deposit receipt is reconciled after a timeout, never recorded twice',async()=>{
  const db=database();await queueWebsiteInvoice(fixture('invoices'),db);const api=provider({uncertainPayment:true});await assert.rejects(processInvoiceJob(db.rows[0],{db,request:api.request}));
  await processInvoiceJob(db.rows[0],{db,request:api.request});assert.equal(count(api,'/partial_payments.json','POST'),1);assert.ok(db.rows[0].email_sent_at);assert.match(db.rows[0].email_payload.message.body,/Remaining balance: EUR 7.30/);

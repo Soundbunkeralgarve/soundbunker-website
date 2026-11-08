@@ -38,10 +38,14 @@ export async function queueWebsiteInvoice({brand,sessionId,body,paidCents,docume
   return {queued:!row.email_sent_at,invoice_id:row.ix_document_id||null,invoice_number:row.document_number||null,series:brand==='soundbunker'?'SoundBunker':'Crude-City'};
 }
 
-function invoiceMatches(invoice,id,expected,total){
+function invoiceIdentityMatches(invoice,id,expected,total){
  return invoice?.id!=null&&String(invoice.id)===String(id)&&invoice.reference===expected.reference&&
-   Math.round(Number(invoice.total)*100)===total&&String(invoice.sequence_id)===String(expected.sequence_id);
+   Math.round(Number(invoice.total)*100)===total;
 }
+
+const seriesName=value=>String(value||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+const showsSeries=(invoice,series)=>[invoice.sequence_number,invoice.inverted_sequence_number].some(number=>
+ String(number||'').split('/').some(part=>seriesName(part)===seriesName(series.serie)));
 
 function crudeCityDraftUpdate(invoice,id,expected,fiscalTotal){
  if(invoice?.status!=='draft'||String(invoice.id)!==String(id)||invoice.reference!==expected.reference)return null;
@@ -100,8 +104,25 @@ export async function processInvoiceJob(row,{db,request,table=TABLE,brand=row.br
     }
   }
   let invoice=extract(await api('/'+type+'/'+row.ix_document_id+'.json'));
+  let sequenceLookup;
+  const matches=async()=>{
+    if(!invoiceIdentityMatches(invoice,row.ix_document_id,expected,fiscalTotal))return false;
+    if(String(invoice.sequence_id)===String(expected.sequence_id))return true;
+    if(brand!=='crude-city'||type!=='invoice_receipts'||String(invoice.sequence_id??'').trim())return false;
+    sequenceLookup??=api('/sequences.json');
+    const {sequences}=await sequenceLookup;
+    const series=(Array.isArray(sequences)?sequences:[sequences]).find(s=>seriesName(s?.serie)==='crudecity'&&String(s.current_invoice_receipt_sequence_id)===String(expected.sequence_id));
+    if(!series)return false;
+    if(invoice.status==='draft'){
+      const unnumbered=[invoice.sequence_number,invoice.inverted_sequence_number].every(value=>/^(draft|rascunho)?$/i.test(String(value||'').trim()));
+      return showsSeries(invoice,series)||(unnumbered&&[1,'1',true].includes(series.default_sequence));
+    }
+    const validation=String(series.current_invoice_receipt_validation_code||'');
+    return /^[a-z0-9]{4,}$/i.test(validation)&&showsSeries(invoice,series)&&String(invoice.atcud||'').startsWith(validation+'-');
+  };
+  let verified=await matches();
   let repairRejected=false;
-  if(!invoiceMatches(invoice,row.ix_document_id,expected,fiscalTotal)&&brand==='crude-city'&&type==='invoice_receipts'&&payload.paid_cents===fiscalTotal&&!payload.draft_repair_attempted_at){
+  if(!verified&&brand==='crude-city'&&type==='invoice_receipts'&&payload.paid_cents===fiscalTotal&&!payload.draft_repair_attempted_at){
     const draft=crudeCityDraftUpdate(invoice,row.ix_document_id,expected,fiscalTotal);
     if(draft){
       try{await api('/'+type+'/'+row.ix_document_id+'.json',{method:'PUT',body:{invoice:draft}})}catch(error){
@@ -109,10 +130,10 @@ export async function processInvoiceJob(row,{db,request,table=TABLE,brand=row.br
         repairRejected=true;
       }
       payload.draft_repair_attempted_at=new Date().toISOString();await write({request_payload:payload});
-      if(!repairRejected)invoice=extract(await api('/'+type+'/'+row.ix_document_id+'.json'));
+      if(!repairRejected){invoice=extract(await api('/'+type+'/'+row.ix_document_id+'.json'));verified=await matches();}
     }
   }
-  if(!invoiceMatches(invoice,row.ix_document_id,expected,fiscalTotal)){
+  if(!verified){
     const amount=Math.round(Number(invoice?.total)*100),sequence=String(invoice?.sequence_id||'');
     throw Error('Invoice contents do not match the paid order (amount '+(Number.isSafeInteger(amount)?amount:'unknown')+'/'+fiscalTotal+', sequence '+(/^\d+$/.test(sequence)?sequence:'unknown')+'/'+expected.sequence_id+', reference '+(invoice?.reference===expected.reference?'matches':'differs')+(repairRejected?', draft update rejected':'')+')');
   }
@@ -121,7 +142,7 @@ export async function processInvoiceJob(row,{db,request,table=TABLE,brand=row.br
     invoice=extract(await api('/'+type+'/'+invoice.id+'.json'));
   }
   if(!invoice||!['final','sent','settled'].includes(invoice.status))throw Error('Invoice is not finalized');
-  if(!invoiceMatches(invoice,row.ix_document_id,expected,fiscalTotal))throw Error('Finalized invoice contents do not match the paid order');
+  if(!await matches())throw Error('Finalized invoice contents do not match the paid order');
   if(type==='invoices'&&payload.paid_cents>0&&!payload.payment_recorded) {
     const related=await api('/document/'+invoice.id+'/related_documents.json');
     const note='Stripe payment '+row.stripe_session_id;
