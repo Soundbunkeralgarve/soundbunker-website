@@ -507,7 +507,12 @@ test('giveaway requires an account and links previous guest licences without a s
     await db.exec(`insert into plugin_codes (code, product_id, max_uses) values ('SBPRODUCER', 'complete', 1);
       insert into plugin_licences (licence_key, product_id, includes, seats, email, amount_cents, source, email_sent_at)
       select 'SB-AAAAA-BBBBB-CCCCC-DDDDD', id, includes, seats, 'old@example.com', 0, 'stripe', now()
-      from plugin_products where id = 'complete';`);
+      from plugin_products where id = 'complete';
+      insert into plugin_code_redemptions (code, email, licence_id)
+        select 'SBPRODUCER', email, id from plugin_licences where email = 'old@example.com';`);
+    await db.exec(await readFile(new URL('../SUPABASE_PLUGIN_PRODUCER_ELIGIBILITY.sql', import.meta.url), 'utf8'));
+    assert.deepEqual((await db.query("select max_uses, uses from plugin_codes where code = 'SBPRODUCER'")).rows[0], { max_uses: 30, uses: 1 });
+    await db.exec("update plugin_codes set uses = 29 where code = 'SBPRODUCER'");
     const sb = client(db);
     const stripe = fakeStripe();
     stripe.promos.push({ id: 'promo_old_giveaway', code: 'SBPRODUCER', active: true, metadata: {} });
@@ -523,6 +528,7 @@ test('giveaway requires an account and links previous guest licences without a s
     assert.equal((await claimGiveaway(user, sb, send)).url, '/client#my-plugins');
     assert.match((await claimGiveaway({ ...user, email: 'next@example.com' }, sb, send)).error, /maximum/i);
     assert.equal(sent.length, 1);
+    assert.equal((await db.query("select uses from plugin_codes where code = 'SBPRODUCER'")).rows[0].uses, 30);
     assert.match(sent[0].text, /SB COMPLETE for macOS/);
     assert.match(sent[0].text, /Become an affiliate/);
     assert.deepEqual((await db.query("select user_id, amount_cents from plugin_licences order by email")).rows, [
@@ -532,16 +538,26 @@ test('giveaway requires an account and links previous guest licences without a s
 });
 
 test('affiliate commission, secured payout and refund handling', async () => {
-  const { attachAffiliateReferral, recordAffiliateSale, requestAffiliatePayout, payoutBankDetails, markAffiliatePaid } =
+  const { affiliateStatus, joinAffiliate, attachAffiliateReferral, recordAffiliateSale, requestAffiliatePayout, payoutBankDetails, markAffiliatePaid } =
     await import('../api/lib/plugin-affiliates.js');
   const db = await database({ asShipped: true });
   process.env.PLUGIN_AFFILIATE_PAYOUT_KEY = crypto.randomBytes(32).toString('base64');
   try {
     await db.exec(await readFile(new URL('../SUPABASE_PLUGIN_AFFILIATES.sql', import.meta.url), 'utf8'));
+    await db.exec("insert into plugin_codes (code, product_id) values ('SBPRODUCER', 'complete')");
+    await db.exec(await readFile(new URL('../SUPABASE_PLUGIN_PRODUCER_ELIGIBILITY.sql', import.meta.url), 'utf8'));
     const sb = client(db);
     const member = '98a2dc67-56d2-41c5-b8b5-e50cc1591003';
     const code = 'a1'.repeat(12);
-    await db.query("insert into plugin_affiliates (user_id, code, email, full_name) values ($1, $2, 'affiliate@example.com', 'Test Affiliate')", [member, code]);
+    const memberEmail = 'affiliate@example.com';
+    assert.deepEqual(await affiliateStatus(sb, member, memberEmail), { joined: false, eligible: false });
+    const user = { id: member, email: memberEmail, email_confirmed_at: '2026-11-08T15:00:00Z' };
+    assert.match((await joinAffiliate(sb, user, { full_name: 'Test Affiliate' })).error, /Redeem your producer invitation/);
+    const addAffiliate = () => db.query("insert into plugin_affiliates (user_id, code, email, full_name) values ($1, $2, $3, 'Test Affiliate')", [member, code, memberEmail]);
+    await assert.rejects(addAffiliate, /SBPRODUCER redemption is required/);
+    await claimGiveaway(user, sb, async () => {});
+    assert.deepEqual(await affiliateStatus(sb, member, memberEmail), { joined: false, eligible: true });
+    await addAffiliate();
     const form = new URLSearchParams();
     await attachAffiliateReferral(form, sb, code, member);
     assert.equal(form.has('metadata[plugin_affiliate]'), false);

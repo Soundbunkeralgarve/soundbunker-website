@@ -54,7 +54,7 @@ export default async function handler(request, response) {
     if (request.method === 'GET' && action === 'affiliate') {
       const ctx = await requireUser(request, { loadProfile: false });
       if (ctx.error) return json(response, { error: ctx.error }, ctx.status);
-      return json(response, await affiliateStatus(ctx.admin, ctx.user.id));
+      return json(response, await affiliateStatus(ctx.admin, ctx.user.id, ctx.user.email_confirmed_at ? ctx.user.email : ''));
     }
     if (request.method === 'GET' && ['admin-affiliates', 'admin-payout-details'].includes(action)) {
       const ctx = await requireAdmin(request);
