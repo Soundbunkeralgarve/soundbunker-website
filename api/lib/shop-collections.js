@@ -24,11 +24,14 @@ export function displayProductTitle(id, name) {
 }
 
 export const productTitles={
+475187578:'SoundBunker Bum Bag',
+475187361:'Smiley Snapback Hat',
+475187212:'Junglist Trucker Cap',
 475234129:'Traffic Cone · Crude City T-Shirt',475233992:'Traffic Cone · Crude City T-Shirt',
 475188683:'Go to Bed · Crude City T-Shirt',475188616:'Coke Head · Crude City T-Shirt',475188577:'Finger Dip · Crude City T-Shirt',475188515:'The Minivan · Crude City T-Shirt',475188413:'I’m Mixing · Crude City T-Shirt',475188366:'Horny Bitch · Crude City T-Shirt',475188276:'Horny Bastard · Crude City T-Shirt',475188058:'Rum & Bass · Crude City T-Shirt',475187845:'Sausage · Crude City T-Shirt',
-475185188:'Show Me Your Bass Face T-Shirt',475185126:'Bassline Junkie T-Shirt',475185087:'Junglist T-Shirt',475185071:'Ravin’ n Misbehavin’ T-Shirt',475184928:'On Vinyl T-Shirt',
+475185188:'Show Me Your Bass Face T-Shirt',475185126:'Bassline Junkie T-Shirt',475185087:'Junglist T-Shirt',475185071:'Ravin’ ’n’ Misbehavin’ T-Shirt',475184928:'I’ve Got This on Vinyl T-Shirt',
 475185407:'Junglist Hoodie',475185384:'Bassline Junkie Hoodie',475185349:'Bass Face Hoodie',
-475184534:'Record My Songs · Kids’ Hoodie',475184507:'Squishes, Not Records · Kids’ Hoodie',475184443:'Keep Calm · Kids’ Hoodie',475184289:'Singing & Chicken Nuggets · Kids’ T-Shirt',475184250:'Record My Songs · Kids’ T-Shirt',475183711:'Squishes, Not Records · Kids’ T-Shirt',475181951:'My Dad Is a DJ · Kids’ T-Shirt',475181285:'Bad Singing · Kids’ T-Shirt',475181217:'Keep Calm · Kids’ T-Shirt',475181120:'My First Real Loves · Kids’ T-Shirt',
+475184534:'Record My Songs · Kids’ Hoodie',475184507:'I Collect Squishies, Not Records · Kids’ Hoodie',475184443:'Keep Calm and Carry On Singing · Kids’ Hoodie',475184289:'My Two Favourite Things Are Singing and Chicken Nuggets · Kids’ T-Shirt',475184250:'Record My Songs · Kids’ T-Shirt',475183711:'I Collect Squishies, Not Records · Kids’ T-Shirt',475181951:'My Dad Is a DJ · Kids’ T-Shirt',475181285:'Bad Singing? I Came Prepared · Kids’ T-Shirt',475181217:'Keep Calm and Carry On Singing · Kids’ T-Shirt',475181120:'My Two Favourite Things Are Singing and Chicken Nuggets · Kids’ T-Shirt',
 475186347:'Jingle Beats · Kids’ Sweatshirt',475186223:'Sleigh the Mic · Kids’ Sweatshirt',475186142:'Fa La La Loud · Kids’ T-Shirt',475186071:'Santa’s Little Producer · Kids’ T-Shirt',475185948:'SoundBunker Christmas Sweatshirt',475185873:'More Gear · Christmas Sweatshirt',475185852:'Silent Night · Christmas Sweatshirt',475185759:'Waveform Tree · Christmas Sweatshirt',475185686:'Deck the Halls · Christmas Sweatshirt'
 };
 

@@ -37,7 +37,7 @@ export function marginCheck(subtotal, shipping, supplierTotal, minimum = 0.10) {
 export function productLabel(name = '') {
   const base = name.split(' / ')[0].trim();
   const design = base.match(/^Unisex Organic Cotton Creator 2\.0 T-Shirt (.+)$/i);
-  const slogans = {EXCELLENCE:'Excellence',DRUNK:'Drunk','LAST TAKE':'Last Take',MUM:'My Mum Loves My Music',GOD:'Rap God',DJ:'I’m Not a DJ',AUTOTUNE:'Autotune',BANGERS:'I Only Make Bangers','WARM UP':'Warm Up',TALENT:'Talent'};
+  const slogans = {EXCELLENCE:'I Wake Up Every Day and Piss Excellence',DRUNK:'I Only Sing When I’m Drunk','LAST TAKE':'Last Take, I Swear',MUM:'My Mum Loves My Music',GOD:'Rap God',DJ:'I’m Not a DJ',AUTOTUNE:'Do You Have Auto-Tune?',BANGERS:'I Only Make Bangers','WARM UP':'That Was Just a Warm-Up',TALENT:'Talented Motherfu**er'};
   if (design) return `${slogans[design[1].toUpperCase()] || design[1]} T-Shirt`;
   if (/^SoundBunker /i.test(base)) {
     if (productCategory(base)==='tshirts') return 'SoundBunker T-Shirt';
