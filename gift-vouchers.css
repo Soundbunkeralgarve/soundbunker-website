@@ -5,3 +5,19 @@
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}.gift-hero-gallery img,.gift-experience{transition:none}}
 .gift-redeem-link{color:#f4d7ff;font-weight:700;text-underline-offset:4px}
 .gift-redeem-section{width:min(1220px,90vw);margin:55px auto 0;padding:clamp(28px,4vw,44px);display:flex;align-items:center;justify-content:space-between;gap:28px;border:1px solid #7e5c8f;border-radius:18px;background:linear-gradient(125deg,#2b1837,#17101d)}.gift-redeem-section h2{font-size:clamp(30px,4vw,46px);letter-spacing:-.045em;margin:6px 0 11px}.gift-redeem-section p:last-child{color:#d3c5d9;margin:0;line-height:1.5}.gift-redeem-section a{padding:15px 23px;border-radius:999px;background:#fff;color:#181022;white-space:nowrap;font-weight:800;text-decoration:none}@media(max-width:720px){.gift-redeem-section{flex-direction:column;align-items:stretch;margin-top:28px}.gift-redeem-section a{text-align:center}}
+
+.gift-christmas-offer {
+  padding: 16px 18px;
+  border: 1px solid #daaf66;
+  border-radius: 12px;
+  background: #30121d;
+  color: #fff2d7;
+  line-height: 1.5;
+}
+.gift-experience-title .gift-previous-price {
+  display: block;
+  margin-bottom: 5px;
+  color: #706575;
+  font: 700 16px 'DM Sans', sans-serif;
+  text-align: right;
+}

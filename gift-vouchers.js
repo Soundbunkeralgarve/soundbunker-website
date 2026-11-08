@@ -7,9 +7,14 @@ const chosenPrice = document.querySelector('#chosenPrice');
 const payPrice = document.querySelector('#payPrice');
 const error = document.querySelector('#giftError');
 const params = new URLSearchParams(location.search);
+const offerBanner = document.querySelector('#giftChristmasOffer');
+const experiences = [...document.querySelectorAll('button[data-id]')];
 let accessToken = '';
 let basePrice = 0;
+let displayedTotal = 0;
 let quoteSequence = 0;
+let menuQuotes = {};
+let selectedExperience = null;
 const money = value => new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 2 }).format(Number(value));
 
 // Keep the existing purchase form and experience cards intact.
@@ -39,8 +44,61 @@ promotion.append(promotionLabel, applyButton, promotionStatus);
 form.insertBefore(promotion, form.querySelector('.gift-consent'));
 
 function setTotal(value) {
+  displayedTotal = Number(value);
   chosenPrice.textContent = money(value);
   payPrice.textContent = money(value);
+}
+
+function currentGiftQuote(id) {
+  const quote = menuQuotes[id];
+  return quote?.expiresAt && Date.parse(quote.expiresAt) > Date.now() ? quote : null;
+}
+
+function renderGiftPricing() {
+  offerBanner.hidden = !experiences.some(button => currentGiftQuote(button.dataset.id));
+  for (const button of experiences) {
+    const quote = currentGiftQuote(button.dataset.id);
+    const price = button.closest('[data-card]').querySelector('.gift-experience-title strong');
+    const tax = price.querySelector('small');
+    price.replaceChildren(money(quote?.total ?? button.dataset.price), tax);
+    if (quote) {
+      const previous = document.createElement('del');
+      previous.className = 'gift-previous-price';
+      previous.textContent = money(quote.faceValue);
+      price.prepend(previous);
+    }
+  }
+  if (selectedExperience) {
+    basePrice = currentGiftQuote(service.value)?.total ?? Number(selectedExperience.dataset.price);
+    if (discountCode.value.trim()) return applyPromotion();
+    setTotal(basePrice);
+  }
+}
+
+function refreshGiftPricingAtExpiry() {
+  const cutoff = Math.max(...experiences.map(button => Date.parse(currentGiftQuote(button.dataset.id)?.expiresAt) || 0));
+  if (cutoff > Date.now()) {
+    setTimeout(refreshGiftPricingAtExpiry, Math.min(cutoff - Date.now() + 20, 2_147_000_000));
+  } else {
+    renderGiftPricing();
+  }
+}
+
+async function loadGiftPricing() {
+  try {
+    const response = await fetch('/api/create-voucher-checkout', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ menuOnly: true })
+    });
+    if (!response.ok) return;
+    const data = await response.json();
+    menuQuotes = data.quotes || {};
+    await renderGiftPricing();
+    if (!offerBanner.hidden) refreshGiftPricingAtExpiry();
+  } catch {
+    // The checkout endpoint still verifies the current price before payment.
+  }
 }
 
 async function applyPromotion() {
@@ -84,7 +142,8 @@ discountCode.addEventListener('keydown', event => {
 function selectExperience(button, shouldScroll = true) {
   const id = button.dataset.id;
   const name = button.dataset.name;
-  basePrice = Number(button.dataset.price);
+  selectedExperience = button;
+  basePrice = currentGiftQuote(id)?.total ?? Number(button.dataset.price);
   ++quoteSequence;
   service.value = id;
   chosen.textContent = name;
@@ -97,7 +156,7 @@ function selectExperience(button, shouldScroll = true) {
   if (shouldScroll) formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-document.querySelectorAll('button[data-id]').forEach(button => {
+experiences.forEach(button => {
   button.addEventListener('click', () => selectExperience(button));
 });
 
@@ -128,8 +187,9 @@ form.addEventListener('submit', async event => {
   button.disabled = true;
   button.setAttribute('aria-busy', 'true');
   try {
+    await menuRequest;
     if (discountCode.value.trim() && !(await applyPromotion())) throw new Error('Please apply a valid discount code or clear the code field.');
-    const body = Object.fromEntries(new FormData(form));
+    const body = { ...Object.fromEntries(new FormData(form)), expectedTotal: displayedTotal };
     const headers = { 'content-type': 'application/json' };
     if (accessToken) headers.authorization = `Bearer ${accessToken}`;
     error.textContent = 'Opening secure payment...';
@@ -148,4 +208,5 @@ const packageId = params.get('package');
 let requested = null;
 if (packageId && /^[a-z0-9-]+$/i.test(packageId)) requested = document.querySelector(`button[data-id="${packageId}"]`);
 if (requested) selectExperience(requested, false);
+const menuRequest = loadGiftPricing();
 prefillClient();
