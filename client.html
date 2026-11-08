@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="plugins.css?v=20261103b">
   <link rel="stylesheet" href="client-mobile-app.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="client.js?v=20261108-plugin-accounts" defer></script>
+  <script src="client.js?v=20261108-producer-affiliates" defer></script>
 <link rel="stylesheet" href="calendar-picker.css">
 <script defer src="calendar-picker.js"></script>
   <link rel="stylesheet" href="client-music.css?v=1">
@@ -197,13 +197,16 @@
       <section class="client-plugins-section" id="plugin-affiliates" aria-labelledby="affiliateHeading">
         <div class="client-voucher-head">
           <div><p class="eyebrow">SoundBunker affiliates</p><h2 id="affiliateHeading">Earn €10 per referred plug-in order.</h2>
-          <p>Join with your SoundBunker account and share your personal link. Earn €10 when someone places an eligible paid plug-in order through it. Free claims, your own orders and refunded or disputed sales do not earn commission.</p></div>
+          <p>Redeem your producer invitation with your SoundBunker account, then join to get your personal link. Earn €10 when someone places an eligible paid plug-in order through it. Free claims, your own orders and refunded or disputed sales do not earn commission.</p></div>
         </div>
+        <p id="affiliateEligibility" class="client-inline-message" hidden>Redeem your producer invitation to join. If you already claimed it, sign in with the same email address.</p>
         <button id="affiliateJoin" type="button" class="client-button" hidden>Become an affiliate</button>
         <div id="affiliateMember" class="client-plugin-card" hidden>
-          <label for="affiliateLink">Your referral link</label>
-          <input id="affiliateLink" type="url" readonly>
-          <button id="affiliateCopy" type="button" class="client-button">Copy link</button>
+          <div id="affiliateReferral" hidden>
+            <label for="affiliateLink">Your referral link</label>
+            <input id="affiliateLink" type="url" readonly>
+            <button id="affiliateCopy" type="button" class="client-button">Copy link</button>
+          </div>
           <p>Credited sales <strong id="affiliateSales">0</strong> · Available <strong id="affiliateAvailable">€0.00</strong> · Requested <strong id="affiliateRequested">€0.00</strong> · Paid <strong id="affiliatePaid">€0.00</strong></p>
           <form id="affiliatePayoutForm" hidden autocomplete="off">
             <h3>Request a bank transfer</h3>

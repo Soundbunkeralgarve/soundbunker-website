@@ -3,6 +3,8 @@ import { sendTransactionalEmail } from './notify.js';
 
 const base = () => (process.env.SITE_URL || 'https://www.soundbunker.pt').replace(/\/$/, '');
 const studio = () => process.env.PLUGIN_AFFILIATE_NOTIFICATION_EMAIL || 'steve@soundbunker.pt';
+export const GIVEAWAY_CODE = 'SBPRODUCER';
+
 const referralCode = /^[a-f0-9]{24}$/;
 const uuid = /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i;
 const payment = /^pi_[a-zA-Z0-9_]+$/;
@@ -15,19 +17,27 @@ async function checked(query) {
   return data;
 }
 
-export async function affiliateStatus(db, userId) {
-  const affiliate = await checked(db.from('plugin_affiliates').select('code,notified_at').eq('user_id', userId).maybeSingle());
-  if (!affiliate) return { joined: false };
+async function producerEligible(db, email) {
+  if (!email) return false;
+  return Boolean(await checked(db.from('plugin_code_redemptions').select('licence_id')
+    .eq('code', GIVEAWAY_CODE).eq('email', email.trim().toLowerCase()).maybeSingle()));
+}
+
+export async function affiliateStatus(db, userId, verifiedEmail) {
+  const affiliate = await checked(db.from('plugin_affiliates').select('code,email,notified_at').eq('user_id', userId).maybeSingle());
+  const eligible = await producerEligible(db, affiliate?.email || verifiedEmail);
+  if (!affiliate) return { joined: false, eligible };
   const summary = await checked(db.rpc('sb_plugin_affiliate_summary', { p_affiliate: userId }));
   return {
-    joined: true, link: `${base()}/plugins.html?ref=${affiliate.code}`,
-    joinNoticePending: !affiliate.notified_at, ...summary
+    joined: true, eligible, ...(eligible ? { link: `${base()}/plugins.html?ref=${affiliate.code}` } : {}),
+    joinNoticePending: eligible && !affiliate.notified_at, ...summary
   };
 }
 
 export async function joinAffiliate(db, user, profile, send = sendTransactionalEmail) {
   const fullName = String(profile?.full_name || user.user_metadata?.full_name || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 200);
   if (!user.email_confirmed_at || !user.email || !fullName) return { error: 'Use a SoundBunker account with a full name and confirmed email to join.' };
+  if (!await producerEligible(db, user.email)) return { error: 'Redeem your producer invitation with this account email before joining.' };
   await checked(db.from('plugin_affiliates').upsert({
     user_id: user.id, code: randomBytes(12).toString('hex'), full_name: fullName, email: user.email.toLowerCase()
   }, { onConflict: 'user_id', ignoreDuplicates: true }));
@@ -124,8 +134,8 @@ export async function markAffiliatePaid(db, id, cents) {
 
 export async function attachAffiliateReferral(form, db, code, buyer) {
   if (!referralCode.test(code || '')) return;
-  const affiliate = await checked(db.from('plugin_affiliates').select('user_id').eq('code', code).maybeSingle());
-  if (!affiliate || affiliate.user_id === buyer) return;
+  const affiliate = await checked(db.from('plugin_affiliates').select('user_id,email').eq('code', code).maybeSingle());
+  if (!affiliate || affiliate.user_id === buyer || !await producerEligible(db, affiliate.email)) return;
   form.set('metadata[plugin_affiliate]', affiliate.user_id);
   form.set('payment_intent_data[metadata][plugin_affiliate]', affiliate.user_id);
   form.set('payment_intent_data[metadata][purchase_type]', 'plugin_licence');
@@ -136,6 +146,8 @@ export async function recordAffiliateSale(checkout, licence, db) {
   const intent = licence.stripe_payment_intent;
   if (!uuid.test(id || '') || checkout.livemode !== true || checkout.payment_status !== 'paid' ||
       checkout.currency !== 'eur' || !(checkout.amount_total > 0) || !payment.test(intent || '')) return;
+  const affiliate = await checked(db.from('plugin_affiliates').select('email').eq('user_id', id).maybeSingle());
+  if (!await producerEligible(db, affiliate?.email)) return;
   await checked(db.rpc('sb_plugin_affiliate_record', {
     p_payment: intent, p_session: checkout.id, p_affiliate: id, p_email: licence.email, p_buyer: licence.user_id
   }));

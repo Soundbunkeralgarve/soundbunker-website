@@ -466,11 +466,13 @@ async function portalApi(path, payload) {
 const affiliateMoney = cents => new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR' }).format(cents / 100);
 
 function renderAffiliate(data) {
-  show('#affiliateJoin', !data.joined || data.joinNoticePending);
+  show('#affiliateJoin', data.eligible && (!data.joined || data.joinNoticePending));
+  show('#affiliateEligibility', !data.eligible);
+  show('#affiliateReferral', Boolean(data.link));
   show('#affiliateMember', data.joined);
   if (!data.joined) return;
   $('#affiliateJoin').textContent = 'Finish joining';
-  $('#affiliateLink').value = data.link;
+  $('#affiliateLink').value = data.link || '';
   $('#affiliateSales').textContent = data.sales;
   $('#affiliateAvailable').textContent = affiliateMoney(data.available_cents);
   $('#affiliateRequested').textContent = affiliateMoney(data.requested_cents);

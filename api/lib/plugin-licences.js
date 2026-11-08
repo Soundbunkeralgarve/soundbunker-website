@@ -5,9 +5,9 @@ import { createClient } from '@supabase/supabase-js';
 import { licenceToken, trialToken, verifyToken, newLicenceKey, normaliseKey, TRIAL_DAYS } from './licence-token.js';
 import { sendTransactionalEmail } from './notify.js';
 import { sendPluginLicenceInvoice } from './invoicexpress.js';
-import { affiliateJoinUrl, attachAffiliateReferral, recordAffiliateSale, reverseAffiliateSale } from './plugin-affiliates.js';
+import { GIVEAWAY_CODE, affiliateJoinUrl, attachAffiliateReferral, recordAffiliateSale, reverseAffiliateSale } from './plugin-affiliates.js';
 
-export const GIVEAWAY_CODE = 'SBPRODUCER';
+export { GIVEAWAY_CODE };
 
 const KEY = /^SB(-[0-9A-HJKMNP-TV-Z]{5}){4}$/;
 const MACHINE = /^[0-9a-f]{64}$/;
@@ -537,7 +537,9 @@ export async function sendLicenceEmail(licence, db = licenceDB(), opts = {}) {
     `2. Open the plug-in in your DAW (or the standalone app), paste the key into the activation window and press ACTIVATE. It needs the internet once; after that it works offline.\n\n` +
     `Moving to a new computer? Press DEACTIVATE THIS COMPUTER in the plug-in first, or remove the old computer in your Client Area: ${base()}/client#my-plugins\n\n` +
     `Your key is also saved in your Client Area (sign in or register with ${licence.email}).` +
-    `\n\nWant to share the plug-ins? Join the SoundBunker affiliate programme and earn €10 per eligible paid order through your link. [Become an affiliate](${affiliateJoinUrl()}).` +
+    (licence.note === `Code ${GIVEAWAY_CODE}`
+      ? `\n\nWant to share the plug-ins? Join the SoundBunker affiliate programme and earn €10 per eligible paid order through your link. [Become an affiliate](${affiliateJoinUrl()}).`
+      : '') +
     (product.free && opts.upsell !== false ? await upsellText(db, product.id) : '') + `\n\nSoundBunker Algarve`;
   await send({ to: licence.email, key: key || `plugin-licence-resend-${licence.id}-${Date.now()}`, subject: product.free || licence.source === 'code' ? `Your free ${name} licence key` : `Your ${name} licence key`, text: body });
   await db.from('plugin_licences').update({ email_sent_at: new Date().toISOString() }).eq('id', licence.id);
