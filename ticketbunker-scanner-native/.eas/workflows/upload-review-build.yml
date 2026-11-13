@@ -1,6 +1,4 @@
 name: Upload TicketBunker Scanner 1.0.1 build 13
-on:
-  workflow_dispatch:
 jobs:
   upload_ios:
     name: Upload the signed build 13 to App Store Connect
