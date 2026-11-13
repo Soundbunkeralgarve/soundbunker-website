@@ -11,7 +11,7 @@
     "ios": {
       "bundleIdentifier": "pt.soundbunker.ticketbunkerscanner",
       "supportsTablet": true,
-      "buildNumber": "8",
+      "buildNumber": "13",
       "infoPlist": {}
     },
     "android": {
@@ -30,7 +30,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow TicketBunker Scanner to use your camera to scan event tickets.",
+          "cameraPermission": "TicketBunker Scanner uses the camera to read ticket and check-in hub QR codes.",
           "recordAudioAndroid": false,
           "barcodeScannerEnabled": true
         }

@@ -16,6 +16,14 @@ const Button=({title,onPress,variant='primary',disabled=false,style})=><Pressabl
 const Input=(props)=><TextInput placeholderTextColor="#71868b" style={s.input} {...props}/>;
 const Footer=()=> <View style={s.footer}><Text style={s.powered}>POWERED BY</Text><Image source={require('./assets/soundbunker-wordmark.png')} style={s.partnerLogo} resizeMode="contain" accessibilityLabel="SoundBunker Algarve"/><Pressable onPress={()=>Linking.openURL('https://theticketbunker.com/terms#privacy')} accessibilityRole="link" style={s.privacy}><Text style={s.small}>Privacy</Text></Pressable></View>;
 
+function CameraPermissionPrompt({permission,requestPermission,purpose,manualOption}){
+ const needsSettings=permission?.canAskAgain===false;
+ return <>
+  <Text style={s.bodyCenter}>{needsSettings?`Camera access is off. You can open Settings or ${manualOption}.`:`${purpose} Continue opens your device’s camera permission prompt.`}</Text>
+  <Button title={needsSettings?'Open Settings':'Continue'} onPress={needsSettings?()=>Linking.openSettings():requestPermission}/>
+ </>;
+}
+
 export default function App(){
  const [client]=useState(createScannerClient);
  const [user,setUser]=useState(null);
@@ -46,7 +54,7 @@ export default function App(){
  const [invite,setInvite]=useState('');
  const [torch,setTorch]=useState(false);
  const [foreground,setForeground]=useState(AppState.currentState!=='background');
- const [permission,requestPermission]=useCameraPermissions();
+ const [permission,requestPermission,getCameraPermission]=useCameraPermissions();
  const [admissions,setAdmissions]=useState(0);
  const feedbackTimer=useRef(null);
  const lock=useRef(false);
@@ -75,9 +83,12 @@ export default function App(){
   return()=>{alive=false;subscription.unsubscribe();};
  },[client,attempt]);
  useEffect(()=>{
-  const sub=AppState.addEventListener('change',next=>setForeground(next==='active'));
+  const sub=AppState.addEventListener('change',next=>{
+   setForeground(next==='active');
+   if(next==='active')getCameraPermission().catch(()=>{});
+  });
   return()=>{sub.remove();clearTimeout(feedbackTimer.current);client.auth.stopAutoRefresh();};
- },[client]);
+ },[client,getCameraPermission]);
  useEffect(()=>{
   if(foreground&&!loading&&!startupError)client.auth.startAutoRefresh();
   else client.auth.stopAutoRefresh();
@@ -250,7 +261,7 @@ export default function App(){
  const ready=!!myEvent&&(!loadingEvents||offlineStatus?.active||hubConnection)&&!working&&!startupError&&!loading;
  const cameraActive=foreground&&!toolsOpen&&!manualOpen&&!hubPairing;
  const offlineExpired=offlineStatus?.active&&Date.now()+offlineStatus.offset>=Date.parse(offlineStatus.expiresAt);
- const statusLabel=hubConnection?(hubHealth?.ready?'HUB READY':'HUB LOST'):!ready?'DOOR CREW':offlineExpired?'RECONNECT':offlineStatus?.active?`LANE ${offlineStatus.lane}`:manualOpen?'MANUAL':!cameraActive?'PAUSED':permission?.granted?'READY':'CAMERA OFF';
+ const statusLabel=hubConnection?(hubHealth?.ready?'HUB READY':'HUB LOST'):!ready?'SIGN IN':offlineExpired?'RECONNECT':offlineStatus?.active?`LANE ${offlineStatus.lane}`:manualOpen?'MANUAL':!cameraActive?'PAUSED':permission?.granted?'READY':'CAMERA OFF';
  const resultColor=result?.kind==='approved'?C.mint:result?.kind==='warning'?C.amber:C.red;
  return <SafeAreaView style={s.root}><StatusBar barStyle="light-content" backgroundColor="#000"/><KeyboardAvoidingView style={s.flex} behavior={Platform.OS==='ios'?'padding':undefined}>
   <View style={s.header}>
@@ -264,7 +275,7 @@ export default function App(){
    {loading?<ActivityIndicator style={s.loader} color={C.mint}/>:<Button title="Retry connection" onPress={()=>setAttempt(n=>n+1)} style={s.wideButton}/>}
    <Footer/>
   </View>:!user?<ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.loginContainer}>
-   <View style={s.loginIntro}><Text style={s.kicker}>WELCOME, DOOR CREW</Text><Text style={s.headline}>Let them in.</Text><Text style={s.body}>Sign in. Choose your event. Start scanning.</Text></View>
+   <View style={s.loginIntro}><Text style={s.kicker}>FOR EVENT ORGANISERS AND DOOR STAFF</Text><Text style={s.headline}>Let them in.</Text><Text style={s.body}>Sign in. Choose your event. Start scanning.</Text></View>
    <View style={s.loginCard}>
     <Text style={s.label}>Email address</Text><Input value={email} autoCapitalize="none" autoCorrect={false} keyboardType="email-address" autoComplete="email" textContentType="username" onChangeText={setEmail} placeholder="you@example.com"/>
     <Text style={s.label}>Password</Text><Input value={password} onChangeText={setPassword} secureTextEntry autoComplete="current-password" textContentType="password" placeholder="Your password" returnKeyType="go" onSubmitEditing={signIn}/>
@@ -272,14 +283,20 @@ export default function App(){
     <Button title={busy?'Signing in…':'Sign in'} disabled={busy} onPress={signIn}/>
     <Pressable style={s.textAction} onPress={()=>Linking.openURL('https://theticketbunker.com/client')} accessibilityRole="link"><Text style={s.link}>Forgot password?</Text></Pressable>
    </View>
-   <Text style={s.bodyCenter}>Use the email your organiser invited.</Text><Footer/>
+   <Text style={s.bodyCenter}>Sign in with your TicketBunker organiser account, or the email an organiser invited you with.</Text><Pressable style={s.textAction} onPress={()=>Linking.openURL('https://theticketbunker.com/organiser?signup=1')} accessibilityRole="link"><Text style={s.link}>New organiser? Create a free account</Text></Pressable><Footer/>
   </ScrollView>:!user.email_confirmed_at?<View style={s.welcome}><Text style={s.headline}>Check your inbox.</Text><Text style={s.bodyCenter}>Verify your email before scanning tickets.</Text><Button title="Sign out" disabled={busy} onPress={signOut}/></View>:
   <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.container}>
    <View style={s.panel}>
     <Text style={s.panelHeading}>Local check-in hub</Text>
     <Text style={s.small}>{hubConnection?(hubHealth?.ready?'Connected · shared duplicate checks active':hubHealth?.error||'Connecting to your local hub…'):'Scan any ticket at any door over your event Wi-Fi, even without internet.'}</Text>
     {hubConnection?<Button title="Disconnect this phone from hub" variant="secondary" disabled={working} onPress={leaveHub}/>:<Button title={hubPairing?'Cancel pairing':'Connect to local hub'} variant="secondary" disabled={working} onPress={()=>setHubPairing(x=>!x)}/>}
-    {hubPairing&&<><Text style={s.small}>Join the hub’s Wi-Fi. Ask the organiser to show your private pairing QR.</Text>{permission?.granted?<CameraView style={{height:230}} facing="back" barcodeScannerSettings={QR_SETTINGS} onBarcodeScanned={!working?({data})=>joinHub(data):undefined}/>:<Button title="Allow camera" onPress={requestPermission}/>}<Input value={hubLink} onChangeText={setHubLink} autoCapitalize="none" autoCorrect={false} placeholder="Or paste hub pairing link"/><Button title={working?'Connecting…':'Pair with hub'} disabled={working||!hubLink.trim()} onPress={()=>joinHub(hubLink.trim())}/></>}
+    {hubPairing&&<>
+     <Text style={s.small}>Join the hub’s Wi-Fi. Ask the organiser to show your private pairing QR.</Text>
+     {permission?.granted?<CameraView style={{height:230}} facing="back" barcodeScannerSettings={QR_SETTINGS} onBarcodeScanned={!working?({data})=>joinHub(data):undefined}/>:
+      <CameraPermissionPrompt permission={permission} requestPermission={requestPermission} purpose="The camera reads the hub’s pairing QR code." manualOption="paste the hub pairing link below"/>}
+     <Input value={hubLink} onChangeText={setHubLink} autoCapitalize="none" autoCorrect={false} placeholder="Or paste hub pairing link"/>
+     <Button title={working?'Connecting…':'Pair with hub'} disabled={working||!hubLink.trim()} onPress={()=>joinHub(hubLink.trim())}/>
+    </>}
    </View>
    <View style={s.eventCard}>
     <View style={s.line}><View style={s.flex}><Text style={s.kicker}>YOUR EVENT</Text><Text numberOfLines={2} accessibilityLabel={myEvent?.title} style={s.eventTitle}>{loadingEvents&&!hubConnection&&!offlineStatus?.active?'Loading your events…':myEvent?.title||'Choose your event'}</Text>{!!myEvent?.venue&&<Text numberOfLines={1} style={s.small}>{myEvent.venue}</Text>}</View>
@@ -305,8 +322,10 @@ export default function App(){
      {offlineStatus?<><Text style={s.small}>Show your lane number at the door. Tickets for another lane must go to its scanner. New sales, refunds and access changes need a refresh.</Text><Button title={working?'Please wait…':'Sync and finish offline mode'} variant="secondary" disabled={working} onPress={finishOffline}/>{offlineStatus.active&&<Button title="Sync and refresh download" variant="secondary" disabled={working} onPress={prepareOffline}/>}</>:<><Text style={s.label}>Total offline scanners (1–16)</Text><Input value={laneCount} onChangeText={setLaneCount} keyboardType="number-pad" maxLength={2}/><Button title={working?'Downloading…':'Prepare this phone for offline entry'} disabled={working} onPress={prepareOffline}/></>}
     </View>}
     <View style={s.scanHeading}><Text style={s.panelHeading}>Scan ticket</Text><Text style={s.small}>One ticket. One entry.</Text></View>
-    {permission?.granted?<View style={s.cameraFrame}><CameraView style={s.camera} facing="back" enableTorch={torch&&cameraActive} active={cameraActive} barcodeScannerSettings={QR_SETTINGS} onBarcodeScanned={cameraActive&&!feedbackOpen&&!working?onBarcodeScanned:undefined}/><View pointerEvents="none" style={s.scanOverlay}><View style={s.target}><View style={[s.corner,s.topLeft]}/><View style={[s.corner,s.topRight]}/><View style={[s.corner,s.bottomLeft]}/><View style={[s.corner,s.bottomRight]}/></View><Text style={s.scanHint}>{manualOpen?'Camera paused for manual entry':toolsOpen?'Camera paused in settings':'Hold the QR code inside the frame'}</Text></View></View>:
-    <View style={s.cameraMissing}><Text style={s.panelHeading}>Enable your camera</Text><Text style={s.bodyCenter}>Point your camera at a ticket QR code to check it in.</Text><Button title={permission?.canAskAgain===false?'Open camera settings':'Allow camera access'} onPress={()=>permission?.canAskAgain===false?Linking.openSettings():requestPermission()}/></View>}
+    {!hubPairing&&(permission?.granted?<View style={s.cameraFrame}><CameraView style={s.camera} facing="back" enableTorch={torch&&cameraActive} active={cameraActive} barcodeScannerSettings={QR_SETTINGS} onBarcodeScanned={cameraActive&&!feedbackOpen&&!working?onBarcodeScanned:undefined}/><View pointerEvents="none" style={s.scanOverlay}><View style={s.target}><View style={[s.corner,s.topLeft]}/><View style={[s.corner,s.topRight]}/><View style={[s.corner,s.bottomLeft]}/><View style={[s.corner,s.bottomRight]}/></View><Text style={s.scanHint}>{manualOpen?'Camera paused for manual entry':toolsOpen?'Camera paused in settings':'Hold the QR code inside the frame'}</Text></View></View>:
+    <View style={s.cameraMissing}>
+     <CameraPermissionPrompt permission={permission} requestPermission={requestPermission} purpose="The camera reads ticket QR codes at the door." manualOption="use Enter manually below"/>
+    </View>)}
     <View style={s.controls}><Button title={torch?'Torch on':'Torch off'} variant="secondary" onPress={()=>setTorch(x=>!x)} disabled={!permission?.granted} style={s.flex}/><Button title={manualOpen?'Close entry':'Enter manually'} variant="secondary" onPress={()=>setManualOpen(x=>!x)} style={s.flex}/></View>
     {manualOpen&&<View style={s.panel}><Text style={s.label}>Ticket link</Text><Input autoCapitalize="none" autoCorrect={false} value={manual} onChangeText={setManual} placeholder="Paste ticket URL"/><Button title={working?'Checking…':'Check ticket'} disabled={working||!manual.trim()} onPress={()=>handleScan(manual.trim(),'manual')}/></View>}
     {result&&<View accessibilityRole="alert" style={[s.result,{borderColor:resultColor}]}><Text style={[s.resultHeading,{color:resultColor}]}>{result.heading}</Text><Text style={s.resultDetail}>{result.detail}</Text></View>}
