@@ -1,0 +1,10 @@
+name: Upload TicketBunker Scanner 1.0.1 build 13
+on:
+  workflow_dispatch:
+jobs:
+  upload_ios:
+    name: Upload the signed build 13 to App Store Connect
+    type: submit
+    params:
+      build_id: 8c180c63-e094-4174-b072-1dcab0efb2c7
+      profile: production
