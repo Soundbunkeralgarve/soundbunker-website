@@ -23,12 +23,30 @@
  narrow.addEventListener('change',()=>setOpen(false));
  // Keep the navigation labels consistent with the existing page translator.
  const labels = {
-  en: { mixing: 'Online mixing & mastering', contact: 'Contact', client: 'Client area', book: 'Order online' },
-  pt: { mixing: 'Mistura e masterização online', contact: 'Contacto', client: 'Área de cliente', book: 'Encomendar online' },
-  fr: { mixing: 'Mixage et mastering en ligne', contact: 'Contact', client: 'Espace client', book: 'Commander en ligne' },
-  de: { mixing: 'Online-Mixing und Mastering', contact: 'Kontakt', client: 'Kundenbereich', book: 'Online bestellen' },
+  pt: {
+   services: 'Serviços', mixing: 'Mistura e masterização online', tuition: 'Aulas individuais online', production: 'Produção musical', remixes: 'Remixes',
+   relocation: 'Mudança de instalações', photography: 'Fotografia', retreats: 'Retiros', bookPhoto: 'Marcar sessão fotográfica', shop: 'Loja', plugins: 'Plug-ins', more: 'Mais', label: 'Editora', journal: 'Diário do estúdio',
+   redeem: 'Usar um vale', contact: 'Contacto', client: 'Área de cliente', order: 'Encomendar online', online: 'Serviços online',
+  },
+  fr: {
+   services: 'Services', mixing: 'Mixage et mastering en ligne', tuition: 'Cours individuels en ligne', production: 'Production musicale', remixes: 'Remixes',
+   relocation: 'Déménagement du studio', photography: 'Photographie', retreats: 'Séjours', bookPhoto: 'Réserver une séance photo', shop: 'Boutique', plugins: 'Plug-ins', more: 'Plus', label: 'Label', journal: 'Journal du studio',
+   redeem: 'Utiliser un bon', contact: 'Contact', client: 'Espace client', order: 'Commander en ligne', online: 'Services en ligne',
+  },
+  de: {
+   services: 'Leistungen', mixing: 'Online-Mixing und Mastering', tuition: 'Online-Einzelunterricht', production: 'Musikproduktion', remixes: 'Remixe',
+   relocation: 'Studioumzug', photography: 'Fotografie', retreats: 'Retreats', bookPhoto: 'Fotoshooting buchen', shop: 'Shop', plugins: 'Plug-ins', more: 'Mehr', label: 'Plattenlabel', journal: 'Studio-Blog',
+   redeem: 'Gutschein einlösen', contact: 'Kontakt', client: 'Kundenbereich', order: 'Online bestellen', online: 'Online-Angebote',
+  },
  };
- function localise(){const copy=labels[document.documentElement.lang]||labels.en;header.querySelectorAll('[data-nav-label]').forEach(node=>{node.textContent=copy[node.dataset.navLabel]||node.textContent;});const code=header.querySelector('.nav-language-code'),active=header.querySelector('.lang.active');if(code)code.textContent=(document.documentElement.lang||active?.dataset.lang||'en').slice(0,2).toUpperCase();}
+ const labelNodes = [...header.querySelectorAll('[data-nav-label]')].map(node => [node, node.textContent]);
+ function localise() {
+  const language = document.documentElement.lang.slice(0, 2);
+  const copy = labels[language];
+  for (const [node, initialText] of labelNodes) node.textContent = copy?.[node.dataset.navLabel] || initialText;
+  const code = header.querySelector('.nav-language-code');
+  if (code) code.textContent = (language || 'en').toUpperCase();
+ }
  new MutationObserver(localise).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});localise();
  const current=location.pathname.replace(/\/$/,'/index.html').split('/').pop();nav.querySelectorAll('a').forEach(link=>{const destination=new URL(link.href,location.href);if(destination.pathname.split('/').pop()===current&&!destination.hash)link.setAttribute('aria-current','page');});
 })();

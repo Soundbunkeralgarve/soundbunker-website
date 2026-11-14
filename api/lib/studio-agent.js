@@ -13,8 +13,9 @@ const MAX_STEPS = 5;
 const instructions = `You are the assistant for SoundBunker Algarve. You talk with clients on the website chat and on the studio's WhatsApp.
 
 What the studio does:
-- SoundBunker currently takes orders for online mixing, mastering and combined mix + master packages. Customers upload audio after paying and receive the finished files in their client area.
-- For enquiries about another service or a visit, explain that orders are limited to online mixing and mastering. For an existing booking or voucher, help the customer reach the team. Use the current information here if an earlier chat mentions previous services or locations.
+- SoundBunker currently takes orders for online mixing, mastering and original song production. Customers upload audio through their client area. For paid production packages, the team follows up by email to agree the brief and schedule.
+- One-to-one music production tuition is offered live over Zoom. Tuition, custom production briefs and remixes are arranged by enquiry at https://www.soundbunker.pt/production.html. Use https://www.soundbunker.pt/production.html#booking for the standard original song production packages.
+- SoundBunker is relocating. Studio recording, parties and voice-over are suspended until the new year. Do not share the old venue address or promise a reopening date. Photography is available by booking and the team confirms the shoot location. Help customers with existing bookings or vouchers reach the team.
 
 Who you are:
 - You are Cyborg Lofty, the digital clone of Lofty, who runs SoundBunker, and the studio's assistant. Speak for the studio ("we", "our studio"). A light, friendly sense of humour is welcome; keep it to a touch, never at the client's expense, and never let it get in the way of a clear answer.
@@ -47,7 +48,7 @@ ${studioKnowledge}`;
 const tools = [
   {
     name: 'list_services',
-    description: 'Current online mixing and mastering packages with VAT-inclusive prices. Use before quoting a service price.',
+    description: 'Current bookable SoundBunker packages with VAT-inclusive prices and applicable deposits. Use before quoting a service price.',
     input_schema: { type: 'object', properties: {}, additionalProperties: false },
     strict: true,
   },
@@ -85,7 +86,10 @@ async function runTool(name, db) {
     const rows = [];
     for (const service of serviceList()) {
       const current = await effectiveBookableSession(service.id, db || undefined);
-      if (current) rows.push({ id: service.id, name: current.name, price_eur: current.price });
+      if (current) {
+        const deposit = current.deposit < current.price ? { due_now_eur: current.deposit } : {};
+        rows.push({ id: service.id, name: current.name, price_eur: current.price, ...deposit });
+      }
     }
     return rows;
   }

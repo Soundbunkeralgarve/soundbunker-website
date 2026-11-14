@@ -18,6 +18,8 @@ const pageText = html => {
 const pages = [
   ['Homepage', 'index.html'],
   ['Online mixing and mastering', 'mixing-mastering.html'],
+  ['Remote production, tuition and remixes', 'production.html'],
+  ['Photography', 'photography.html'],
   ['Using an existing voucher', 'redeem.html'],
   ['Plug-ins', 'plugins.html'],
 ];

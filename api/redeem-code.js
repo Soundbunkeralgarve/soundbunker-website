@@ -1,6 +1,5 @@
 import { json, parseJson, safeText } from './lib/http.js';
-import { effectiveBookableSession, onlineMixingOnly, serviceList } from './lib/site-services.js';
-import { getSession } from './lib/catalog.js';
+import { effectiveBookableSession, serviceList } from './lib/site-services.js';
 import { quoteVoucher, GIFT_EXPERIENCES } from './lib/redeem.js';
 import { requireUser } from './lib/supabase-auth.js';
 export default async function handler(request,response) {
@@ -16,15 +15,16 @@ export default async function handler(request,response) {
     // applied to any current bookable service.
     const prize=await admin.from('prize_codes').select('service_id').eq('code',code).maybeSingle();
     if(prize.error) throw new Error('Voucher redemption unavailable');
-    if (prize.data && onlineMixingOnly) {
-      return json(response,{error:'Please email bookings@soundbunker.pt about your existing prize voucher.'},409);
-    }
     const gift=prize.data ? null : await admin.from('vouchers').select('service_id').eq('code',code).maybeSingle();
     if(gift?.error) throw new Error('Voucher redemption unavailable');
-    const giftId=onlineMixingOnly ? null : GIFT_EXPERIENCES[gift?.data?.service_id];
-    let serviceId=prize.data?.service_id || safeText(input.service,60) || giftId;
+    const giftId=GIFT_EXPERIENCES[gift?.data?.service_id];
+    const giftSession=giftId ? await effectiveBookableSession(giftId,admin) : null;
+    let serviceId=prize.data?.service_id || safeText(input.service,60) || (giftSession ? giftId : '');
     let session=await effectiveBookableSession(serviceId,admin);
-    if (!serviceId && gift?.data && onlineMixingOnly) {
+    if (prize.data && !session) {
+      return json(response,{error:'Please email bookings@soundbunker.pt about your existing prize voucher.'},409);
+    }
+    if (!serviceId && gift?.data) {
       for (const item of serviceList()) {
         session=await effectiveBookableSession(item.id,admin);
         if (session) {
@@ -35,7 +35,6 @@ export default async function handler(request,response) {
     }
     if(!session || session.voucher || (session.prizeOnly && !prize.data)) throw new Error('Choose a valid service');
     const quote=await quoteVoucher(admin,code,session,serviceId,request);
-    const giftSession=giftId ? getSession(giftId) : null;
     return json(response,{...quote,serviceName:session.name,price:session.price,hours:session.hours,noSlot:Boolean(session.noSlot),
       giftExperience:giftSession?{id:giftId,name:giftSession.name,price:giftSession.price}:null});
   }catch(err){return json(response,{error:err.message||'Voucher not available'},400)}

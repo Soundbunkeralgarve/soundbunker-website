@@ -2,14 +2,19 @@ import { createClient } from '@supabase/supabase-js';
 import { getSession, sessions } from './catalog.js';
 
 // Keep the full catalogue for existing bookings, invoices and vouchers.
-export const onlineMixingOnly = true;
+export const studioRelocating = true;
+const suspendedGroups = new Set(['recording', 'hire', 'voiceover', 'parties', 'gift', 'voucher']);
 
-function isBookable(session) {
-  return session && (!onlineMixingOnly || session.group === 'mixing');
+function bookableSession(id, session) {
+  if (!session || !studioRelocating) return session;
+  if (suspendedGroups.has(session.group) || id === 'prize-recording-1h') return null;
+  if (session.group === 'production') return { ...session, noSlot: true, remoteProduction: true };
+  return session;
 }
 
 export async function effectiveBookableSession(id, admin) {
-  return isBookable(getSession(id)) ? effectiveSession(id, admin) : null;
+  if (!bookableSession(id, getSession(id))) return null;
+  return bookableSession(id, await effectiveSession(id, admin));
 }
 
 export async function effectiveSession(id, admin) {
@@ -28,6 +33,8 @@ export async function effectiveSession(id, admin) {
 
 export function serviceList() {
   return Object.entries(sessions)
-    .filter(([, entry]) => isBookable(entry) && !entry.prizeOnly && !entry.voucherOnly)
-    .map(([id, entry]) => ({ id, ...entry }));
+    .flatMap(([id, entry]) => {
+      const session = bookableSession(id, entry);
+      return session && !session.prizeOnly && !session.voucherOnly ? [{ id, ...session }] : [];
+    });
 }

@@ -1,6 +1,6 @@
 # SoundBunker Algarve — Studio Control build
 
-SoundBunker Algarve website. New studio service orders are currently limited to online mixing and mastering.
+SoundBunker Algarve website. During relocation, online mixing, mastering and remote music production can be ordered online. One-to-one tuition and remixes are available by enquiry. Studio recording, parties and voice-over are suspended.
 
 ## Included
 

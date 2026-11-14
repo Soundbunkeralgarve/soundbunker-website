@@ -1,24 +1,25 @@
 <!doctype html><html lang="en"><head><meta name="robots" content="noindex,follow">
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Redeem a SoundBunker Algarve gift voucher or prize voucher and book your studio session online.">
+<meta name="description" content="Use a SoundBunker gift or prize voucher on eligible services.">
 <title>Redeem a voucher | SoundBunker Algarve</title><link rel="icon" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="redeem.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="redeem.js?v=20261114" defer></script>
 <link rel="stylesheet" href="calendar-picker.css">
 <script defer src="calendar-picker.js"></script>
-<link rel="stylesheet" href="site-navigation.css?v=20261102b-nav"><script src="site-navigation.js?v=20261114" defer></script><link rel="stylesheet" href="ask-studio.css?v=20261101"><script src="ask-studio.js?v=20261114" defer></script><link rel="stylesheet" href="site-polish.css?v=20261103c"></head><body>
+<link rel="stylesheet" href="site-navigation.css?v=20261102b-nav"><script src="site-navigation.js?v=20261114-remote" defer></script><link rel="stylesheet" href="ask-studio.css?v=20261101"><script src="ask-studio.js?v=20261114-remote" defer></script><link rel="stylesheet" href="site-polish.css?v=20261103c"></head><body>
 <header class="site-header unified-header" id="top">
 <a class="brand" href="/" aria-label="SoundBunker Algarve home"><img src="soundbunker-logo-white.png" alt="SoundBunker Algarve" width="1100" height="160"></a>
 <button class="menu-toggle" type="button" aria-controls="site-nav" aria-expanded="false" aria-label="Open menu"><span>Menu</span><span class="menu-icon" aria-hidden="true"></span></button>
 <nav aria-label="Main navigation" class="site-nav" id="site-nav">
-<a href="/mixing-mastering.html" data-nav-label="mixing">Online mixing &amp; mastering</a>
-<a href="/#contact" data-nav-label="contact">Contact</a>
+<div class="nav-services navigation-group"><button class="navigation-group-toggle" type="button" aria-controls="services-submenu" aria-expanded="false"><span data-nav-label="services">Services</span><span class="nav-chevron" aria-hidden="true"></span></button><div class="navigation-panel" id="services-submenu"><div class="navigation-section"><a href="/mixing-mastering.html" data-nav-label="mixing">Online mixing &amp; mastering</a><a href="/production.html#tuition" data-nav-label="tuition">One-to-one online tuition</a><a href="/production.html#production" data-nav-label="production">Music production</a><a href="/production.html#remixes" data-nav-label="remixes">Remixes</a></div><div class="navigation-section"><a href="/photography.html" data-nav-label="photography">Photography</a><a href="/#relocation" data-nav-label="relocation">Studio relocation</a></div></div></div>
+<a href="/retreats" data-nav-label="retreats">Retreats</a><a href="/shop.html" data-nav-label="shop">Shop</a><a href="/plugins" data-nav-label="plugins">Plug-ins</a><a href="https://theticketbunker.com" target="_blank" rel="noopener" class="nav-external">TicketBunker <span aria-hidden="true">↗</span><span class="visually-hidden"> (opens The TicketBunker in a new tab)</span></a>
+<div class="nav-more navigation-group"><button class="navigation-group-toggle" type="button" aria-controls="more-submenu" aria-expanded="false"><span data-nav-label="more">More</span><span class="nav-chevron" aria-hidden="true"></span></button><div class="navigation-panel" id="more-submenu"><a href="/record-label.html" data-nav-label="label">Record label</a><a href="/blog.html" data-nav-label="journal">Studio journal</a><a href="/redeem" data-nav-label="redeem">Redeem a voucher</a><a href="/#contact" data-nav-label="contact">Contact</a></div></div>
 
 <div class="nav-mobile-actions"><a class="nav-client" href="/client" data-nav-label="client">Client area</a></div>
-</nav><div class="header-actions"><a class="header-utility" href="/client" data-nav-label="client">Client area</a><a class="header-book" href="/mixing-mastering.html#book" data-nav-label="book">Order online</a></div></header>
-<main class="redeem-shell"><section class="redeem-intro"><h1>Redeem a SoundBunker voucher</h1><p>Sign in to apply the value of an existing gift voucher to an online mix or master.</p>
-<div class="redeem-help"><strong>Gift voucher</strong><p>Apply its value to mixing or mastering. Any unused balance stays on your voucher until it expires. For help with the experience named on your voucher, email <a href="mailto:bookings@soundbunker.pt">bookings@soundbunker.pt</a>.</p><strong>Prize voucher</strong><p>Email <a href="mailto:bookings@soundbunker.pt">bookings@soundbunker.pt</a> for help with an existing prize voucher.</p></div>
+</nav><div class="header-actions"><a class="header-utility" href="/client" data-nav-label="client">Client area</a><a class="header-book" href="/#book" data-nav-label="online">Online services</a></div></header>
+<main class="redeem-shell"><section class="redeem-intro"><h1>Redeem a SoundBunker voucher</h1><p>Sign in to apply the value of an existing gift voucher to an available service.</p>
+<div class="redeem-help"><strong>Gift voucher</strong><p>Apply its value to an available service. Any unused balance stays on your voucher until it expires. For help with the experience named on your voucher, email <a href="mailto:bookings@soundbunker.pt">bookings@soundbunker.pt</a>.</p><strong>Prize voucher</strong><p>Check your code below. For help with a recording prize, email <a href="mailto:bookings@soundbunker.pt">bookings@soundbunker.pt</a>.</p></div>
 <img src="service-mixing-new.jpg" alt="Mixing at SoundBunker Algarve"></section>
 <section class="redeem-card"><span class="eyebrow">REDEEM ONLINE</span><h2>Check your code.</h2>
 <div id="loginGate" class="redeem-gate" hidden><p>Sign in or create your free SoundBunker client account to redeem your voucher.</p><a href="/client?next=%2Fredeem">Create account / Sign in ↗</a></div>

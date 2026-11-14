@@ -91,13 +91,38 @@
       "permanent": true
     },
     {
-      "source": "/:page(recording|production|voiceover|photography|experiences-parties|parties|gift-vouchers|retreats|record-label|hub-academy|hub-culture|blog){.html}?{/}?",
+      "source": "/:page(hub-academy|hub-culture){.html}?{/}?",
       "destination": "/",
       "permanent": false
     },
     {
+      "source": "/:page(recording|voiceover|experiences-parties|parties){.html}?{/}?",
+      "destination": "/#relocation",
+      "permanent": false
+    },
+    {
+      "source": "/gift-vouchers{.html}?{/}?",
+      "destination": "/redeem",
+      "permanent": false
+    },
+    {
       "source": "/book/recording-studio{/}?",
-      "destination": "/",
+      "destination": "/#relocation",
+      "permanent": false
+    },
+    {
+      "source": "/:page(production|photography|blog|record-label){/}?",
+      "destination": "/:page.html",
+      "permanent": false
+    },
+    {
+      "source": "/retreats.html",
+      "destination": "/retreats",
+      "permanent": false
+    },
+    {
+      "source": "/retreats/",
+      "destination": "/retreats",
       "permanent": false
     },
     {
@@ -114,6 +139,10 @@
     {
       "source": "/plugins",
       "destination": "/plugins.html"
+    },
+    {
+      "source": "/retreats",
+      "destination": "/retreats.html"
     },
     {
       "source": "/client",

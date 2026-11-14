@@ -1,7 +1,7 @@
 import { randomBytes, randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import { getSession } from './lib/catalog.js';
-import { onlineMixingOnly } from './lib/site-services.js';
+import { studioRelocating } from './lib/site-services.js';
 import { json, parseJson, safeText, validEmail } from './lib/http.js';
 import { optionalUser } from './lib/supabase-auth.js';
 
@@ -51,7 +51,7 @@ function automaticGiftQuote(session, service, now) {
 export default async function handler(request, response) {
   response.setHeader('Cache-Control', 'no-store');
   if (request.method !== 'POST') return json(response, { error: 'Method not allowed' }, 405);
-  if (onlineMixingOnly) return json(response, { error: 'Gift experience sales are currently paused.' }, 409);
+  if (studioRelocating) return json(response, { error: 'Gift experience sales are currently paused.' }, 409);
   try {
     const input = await parseJson(request);
     if (input.menuOnly === true) {

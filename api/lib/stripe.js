@@ -3,13 +3,16 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 export async function createCheckoutSession({ session, booking, origin, bookingRef, quote, voucher }) {
   if (!process.env.STRIPE_SECRET_KEY) throw new Error("Stripe is not configured");
   const locale = booking.language === "pt" ? "pt" : booking.language === "fr" ? "fr" : "en-GB";
+  const balance = (quote.total - quote.due).toFixed(2);
+  const timing = session.remoteProduction ? 'Remote production. SoundBunker will email you to plan the project.' : `${booking.date} at ${booking.time}.`;
+  const returnPath = { mixing: '/mixing-mastering.html#book', production: '/production.html#booking', photography: '/photography.html#book' }[session.group] || '/#book';
   const metadata = {
     booking_ref: bookingRef,
     service_id: booking.service,
     service_name: session.name,
-    date: booking.date,
-    start: booking.time,
-    hours: String(session.hours),
+    date: session.noSlot ? "" : booking.date,
+    start: session.noSlot ? "" : booking.time,
+    hours: String(session.hours || 0),
     total: String(quote.total),
     deposit: String(session.deposit),
     discount_code: quote.code,
@@ -28,7 +31,7 @@ export async function createCheckoutSession({ session, booking, origin, bookingR
     mode: "payment",
     submit_type: "book",
     success_url: `${origin}/success.html?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}${session.group === 'mixing' ? '/mixing-mastering.html#book' : '/#book'}`,
+    cancel_url: `${origin}${returnPath}`,
     customer_email: booking.email,
     customer_creation: "always",
     locale,
@@ -40,9 +43,9 @@ export async function createCheckoutSession({ session, booking, origin, bookingR
     "line_items[0][price_data][currency]": "eur",
     "line_items[0][price_data][unit_amount]": String(Math.round(quote.due * 100)),
     "line_items[0][price_data][product_data][name]": session.fullPayment ? `SoundBunker — ${session.name}` : `SoundBunker booking deposit — ${session.name}`,
-    "line_items[0][price_data][product_data][description]": session.noSlot
+    "line_items[0][price_data][product_data][description]": session.noSlot && !session.remoteProduction
       ? `Paid in full. VAT included.${quote.code ? ` Code ${quote.code}: €${quote.discount} off.` : ''}${voucher ? ` Gift credit €${voucher.credit}.` : ''}`
-      : `${booking.date} at ${booking.time}. Total after credit €${quote.total}, paid today €${quote.due}; balance €${(quote.total - quote.due).toFixed(2)}.${quote.code ? ` Code ${quote.code} applied.` : ''}${voucher ? ` Gift credit €${voucher.credit}.` : ''}`
+      : `${timing} Total after credit €${quote.total}, paid today €${quote.due}. Balance €${balance}.${quote.code ? ` Code ${quote.code} applied.` : ''}${voucher ? ` Gift credit €${voucher.credit}.` : ''}`
   });
   Object.entries(metadata).forEach(([key, value]) => body.set(`metadata[${key}]`, String(value).slice(0, 500)));
   const response = await fetch("https://api.stripe.com/v1/checkout/sessions", { method: "POST", headers: { authorization: `Bearer ${process.env.STRIPE_SECRET_KEY}`, "content-type": "application/x-www-form-urlencoded" }, body });
