@@ -48,7 +48,7 @@ export default async function handler(req,res){
     organiser_profile_id:organiser.data.id,country_code:country,
     currency:country==='GB'?'gbp':'eur',venue_timezone:country==='GB'?'Europe/London':'Europe/Lisbon',
     event_kind:'club',description:'PRIVATE QR SYSTEM TEST. No real show, payment or admission. Tickets are €0/£0 and for testing only.',
-    venue:'The Hub Culture, Loulé (TEST ONLY)',image_url:origin()+'/academy-performance.jpg',
+    venue:'Loulé, Algarve (TEST ONLY)',image_url:origin()+'/academy-performance.jpg',
     starts_at:startsAt,internal_free_test:true,test_code_hash:key,test_expires_at:expiresAt,status:'draft'
    }).select('id,title,starts_at').single();
    if(newEvent.error)throw newEvent.error;

@@ -40,9 +40,13 @@ export async function sendBookingConfirmations(booking, key = booking.booking_re
   const details = booking.booking_details || {};
   const when = booking.local_date ? `${booking.local_date} at ${booking.local_time} (Portugal time)` : 'No studio appointment required';
   const balance = Math.max(0, Number(booking.total_eur || 0) - Number(booking.paid_eur || 0));
-  const summary = `Service: ${booking.service_name}\nWhen: ${when}\nReference: ${booking.booking_ref}\nPaid: ${money(booking.paid_eur)}\nBalance due on the day: ${money(balance)}`;
+  const summary = `Service: ${booking.service_name}\nWhen: ${when}\nReference: ${booking.booking_ref}\nPaid: ${money(booking.paid_eur)}` +
+    (booking.local_date ? `\nBalance due on the day: ${money(balance)}` : '');
+  const nextStep = booking.local_date
+    ? `Manage your booking: ${base()}/client\nIf you need to move your slot, you can do so more than 24 hours before the session.`
+    : `Upload your audio using the email address from checkout: ${base()}/client#session-upload`;
   await Promise.all([
-    sendTransactionalEmail({ to: booking.customer_email, key: `booking-customer-${key}`, subject: `Your SoundBunker booking is confirmed · ${booking.local_date || booking.booking_ref}`, text: `Hi ${booking.customer_name},\n\nYour booking is confirmed.\n\n${summary}\n\nManage your booking: ${base()}/client\nIf you need to move your slot, you can do so more than 24 hours before the session.\n\nSee you soon,\nSoundBunker Algarve` }),
+    sendTransactionalEmail({ to: booking.customer_email, key: `booking-customer-${key}`, subject: `Your SoundBunker booking is confirmed · ${booking.local_date || booking.booking_ref}`, text: `Hi ${booking.customer_name},\n\nYour booking is confirmed.\n\n${summary}\n\n${nextStep}\n\nSoundBunker Algarve` }),
     sendTransactionalEmail({ to: studio(), key: `booking-studio-${key}`, subject: `New confirmed booking · ${booking.service_name}`, text: `${summary}\n\nCustomer: ${booking.customer_name}\nEmail: ${booking.customer_email}\nPhone: ${details.phone || ''}\nNotes: ${details.notes || ''}\n\nAdmin: ${base()}/admin` })
   ]);
 }

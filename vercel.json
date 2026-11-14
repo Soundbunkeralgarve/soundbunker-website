@@ -81,36 +81,6 @@
       "permanent": true
     },
     {
-      "source": "/book/recording-studio",
-      "destination": "/recording.html",
-      "permanent": true
-    },
-    {
-      "source": "/book/recording-studio/",
-      "destination": "/recording.html",
-      "permanent": true
-    },
-    {
-      "source": "/hub-academy",
-      "destination": "/hub-academy.html",
-      "permanent": true
-    },
-    {
-      "source": "/hub-academy/",
-      "destination": "/hub-academy.html",
-      "permanent": true
-    },
-    {
-      "source": "/blog",
-      "destination": "/blog.html",
-      "permanent": true
-    },
-    {
-      "source": "/blog/",
-      "destination": "/blog.html",
-      "permanent": true
-    },
-    {
       "source": "/shop",
       "destination": "/shop.html",
       "permanent": true
@@ -121,14 +91,19 @@
       "permanent": true
     },
     {
-      "source": "/retreats/",
-      "destination": "/retreats",
-      "permanent": true
+      "source": "/:page(recording|production|voiceover|photography|experiences-parties|parties|gift-vouchers|retreats|record-label|hub-academy|hub-culture|blog){.html}?{/}?",
+      "destination": "/",
+      "permanent": false
     },
     {
-      "source": "/retreats.html",
-      "destination": "/retreats",
-      "permanent": true
+      "source": "/book/recording-studio{/}?",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/mixing-mastering{/}?",
+      "destination": "/mixing-mastering.html",
+      "permanent": false
     }
   ],
   "rewrites": [
@@ -139,10 +114,6 @@
     {
       "source": "/plugins",
       "destination": "/plugins.html"
-    },
-    {
-      "source": "/retreats",
-      "destination": "/retreats.html"
     },
     {
       "source": "/client",

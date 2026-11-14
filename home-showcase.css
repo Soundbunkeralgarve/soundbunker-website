@@ -82,7 +82,7 @@
 @media(max-width:900px){.photo-sales-grid{grid-template-columns:1fr}.photo-collage img:nth-child(2){margin-top:30px}}
 .photo-table span strong,.photo-table span small{display:block}
 .photo-table span small{margin-top:3px;color:#6d6272;font-size:14px}
-/* The Hub Culture: logo beside the intro, four photo tiles, closing line */
+/* Feature grid */
 .hub-intro{display:grid;grid-template-columns:.8fr 1.2fr;gap:clamp(36px,6vw,90px);align-items:center}
 .hub-logo-only img{width:100%;max-width:360px;height:auto;margin-inline:auto}
 .hub-copy p:not(.eyebrow){font-size:18px;line-height:1.6;color:#c8bccf}

@@ -1,5 +1,5 @@
 import { isIsoDate } from "./lib/catalog.js";
-import { effectiveSession } from "./lib/site-services.js";
+import { effectiveBookableSession } from "./lib/site-services.js";
 import { openSlots } from "./lib/slot-availability.js";
 import { json } from "./lib/http.js";
 
@@ -9,7 +9,7 @@ export default async function handler(request, response) {
   const date = url.searchParams.get("date");
   if (!isIsoDate(date)) return json(response, { error: "Invalid date" }, 400);
   try {
-    const session = await effectiveSession(url.searchParams.get("service"));
+    const session = await effectiveBookableSession(url.searchParams.get("service"));
     if (!session || session.noSlot) return json(response, { error: 'Service unavailable' }, 400);
     return json(response, { slots: await openSlots(date, session) });
   }

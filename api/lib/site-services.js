@@ -1,6 +1,17 @@
 import { createClient } from '@supabase/supabase-js';
 import { getSession, sessions } from './catalog.js';
 
+// Keep the full catalogue for existing bookings, invoices and vouchers.
+export const onlineMixingOnly = true;
+
+function isBookable(session) {
+  return session && (!onlineMixingOnly || session.group === 'mixing');
+}
+
+export async function effectiveBookableSession(id, admin) {
+  return isBookable(getSession(id)) ? effectiveSession(id, admin) : null;
+}
+
 export async function effectiveSession(id, admin) {
   const original = getSession(id);
   if (!original) return null;
@@ -15,4 +26,8 @@ export async function effectiveSession(id, admin) {
   return { ...original, price: Number(data.price_eur), deposit: Number(data.deposit_eur) };
 }
 
-export function serviceList() { return Object.entries(sessions).filter(([,entry])=>!entry.prizeOnly && !entry.voucherOnly).map(([id, entry]) => ({ id, ...entry })); }
+export function serviceList() {
+  return Object.entries(sessions)
+    .filter(([, entry]) => isBookable(entry) && !entry.prizeOnly && !entry.voucherOnly)
+    .map(([id, entry]) => ({ id, ...entry }));
+}

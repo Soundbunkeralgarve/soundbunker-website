@@ -22,7 +22,12 @@
  });
  narrow.addEventListener('change',()=>setOpen(false));
  // Keep the navigation labels consistent with the existing page translator.
- const labels={en:{home:'Home',services:'Services',academy:'Academy',retreats:'Retreats',shop:'Shop',plugins:'Plug-ins',more:'More',client:'Client area',book:'Book now'},pt:{home:'Início',services:'Serviços',academy:'Academia',retreats:'Retiros',shop:'Loja',plugins:'Plug-ins',more:'Mais',client:'Área de cliente',book:'Reservar'},fr:{home:'Accueil',services:'Services',academy:'Académie',retreats:'Retraites',shop:'Boutique',plugins:'Plug-ins',more:'Plus',client:'Espace client',book:'Réserver'},de:{home:'Start',services:'Leistungen',academy:'Akademie',retreats:'Retreats',shop:'Shop',plugins:'Plug-ins',more:'Mehr',client:'Kundenbereich',book:'Buchen'}};
+ const labels = {
+  en: { mixing: 'Online mixing & mastering', contact: 'Contact', client: 'Client area', book: 'Order online' },
+  pt: { mixing: 'Mistura e masterização online', contact: 'Contacto', client: 'Área de cliente', book: 'Encomendar online' },
+  fr: { mixing: 'Mixage et mastering en ligne', contact: 'Contact', client: 'Espace client', book: 'Commander en ligne' },
+  de: { mixing: 'Online-Mixing und Mastering', contact: 'Kontakt', client: 'Kundenbereich', book: 'Online bestellen' },
+ };
  function localise(){const copy=labels[document.documentElement.lang]||labels.en;header.querySelectorAll('[data-nav-label]').forEach(node=>{node.textContent=copy[node.dataset.navLabel]||node.textContent;});const code=header.querySelector('.nav-language-code'),active=header.querySelector('.lang.active');if(code)code.textContent=(document.documentElement.lang||active?.dataset.lang||'en').slice(0,2).toUpperCase();}
  new MutationObserver(localise).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});localise();
  const current=location.pathname.replace(/\/$/,'/index.html').split('/').pop();nav.querySelectorAll('a').forEach(link=>{const destination=new URL(link.href,location.href);if(destination.pathname.split('/').pop()===current&&!destination.hash)link.setAttribute('aria-current','page');});

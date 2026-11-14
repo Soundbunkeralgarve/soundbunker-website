@@ -5,7 +5,7 @@
   let t;
   if(preview){
    // Public design sample only: no booking, signed admission URL or wallet action.
-   t={title:'After Dark · Live Sessions',tier:'DESIGN PREVIEW · NOT VALID FOR ENTRY',holderName:'Sample guest',admissionNumber:1,date:'2030-12-14T21:00:00Z',endDate:'2030-12-15T02:00:00Z',timezone:'Europe/Lisbon',venue:'The Hub Culture · Loulé',venueCity:'Loulé, Algarve',admissionInfo:'Example only · no event booking',poster:location.origin+'/assets/club.jpg',eventLogo:location.origin+'/assets/soundbunker-logo.png',organiserName:'SoundBunker Algarve',wallet:{apple:false,google:false}};
+   t={title:'After Dark · Live Sessions',tier:'DESIGN PREVIEW · NOT VALID FOR ENTRY',holderName:'Sample guest',admissionNumber:1,date:'2030-12-14T21:00:00Z',endDate:'2030-12-15T02:00:00Z',timezone:'Europe/Lisbon',venue:'Loulé, Algarve',venueCity:'Loulé, Algarve',admissionInfo:'Example only · no event booking',poster:location.origin+'/assets/club.jpg',eventLogo:location.origin+'/assets/soundbunker-logo.png',organiserName:'SoundBunker Algarve',wallet:{apple:false,google:false}};
    document.querySelector('.ticket-intro h1').textContent='A ticket worth keeping.';
    document.querySelector('.ticket-intro p').textContent='Design preview only. This sample is not a real booking and cannot be used for entry.';
    document.querySelector('.ticket-masthead span').textContent='DESIGN PREVIEW · NOT VALID FOR ENTRY';

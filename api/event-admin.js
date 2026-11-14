@@ -42,7 +42,7 @@ export default async function handler(req,res){
     }
     if(action==='create'){
       const title=safeText(input.title,160),slug=safeText(input.slug,160).toLowerCase(),
-        startsAt=String(input.startsAt||''),venue=safeText(input.venue,180)||'The Hub Culture, Loulé';
+        startsAt=String(input.startsAt||''),venue=safeText(input.venue,180)||'Loulé, Algarve';
       if(title.length<3||!(/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug))||!Number.isFinite(Date.parse(startsAt))||Date.parse(startsAt)<=Date.now())
         return json(res,{error:'Enter a valid title, URL slug and future date'},400);
       const added=await db.from('sb_events').insert({

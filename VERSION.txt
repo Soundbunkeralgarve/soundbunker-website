@@ -1,6 +1,6 @@
 SoundBunker Algarve Premium Portal + Studio Control
 Build date: 22 September 2026
-Source: latest 21 September 2026 Premium Portal ZIP, including Hub Academy redesign.
+Source: latest 21 September 2026 Premium Portal build.
 Added: full admin controls, client inbox and updates, booking approvals, VIP codes, live calendar,
 Google reviews integration, gift voucher redemption and one-use prize voucher generator.
 Voucher refinement: exact no-charge booking for purchased gift experiences.

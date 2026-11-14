@@ -70,7 +70,6 @@ export async function createCalendarEvent(metadata, stripeSessionId) {
     description: metadata.voucher_code && Number(metadata.paid_now ?? metadata.deposit) === 0
       ? `Voucher booking · no payment due\nVoucher code: ${metadata.voucher_code}\nPhone: ${metadata.phone}\nNotes: ${metadata.notes || 'None'}\nBooking reference: ${stripeSessionId}`
       : `Paid via Stripe: €${metadata.paid_now || metadata.deposit}\nSession total: €${metadata.total}\nBalance due on session day: €${(Number(metadata.total) - Number(metadata.paid_now || metadata.deposit)).toFixed(2)}\nDiscount code: ${metadata.discount_code || 'None'}\nPhone: ${metadata.phone}\nNIF: ${metadata.tax_id || "Not supplied"}\nNotes: ${metadata.notes || "None"}\nStripe session: ${stripeSessionId}`,
-    location: "The Hub Culture / SoundBunker Algarve, R. Ataíde de Oliveira 27, 8100-269 Loulé",
     start: { dateTime: `${metadata.date}T${metadata.start}:00`, timeZone: TIME_ZONE },
     end: { dateTime: `${metadata.date}T${endTime}:00`, timeZone: TIME_ZONE },
     attendees: metadata.customer_email ? [{ email: metadata.customer_email, displayName: metadata.customer_name }] : []

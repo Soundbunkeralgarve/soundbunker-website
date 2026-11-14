@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { json, parseJson, safeText } from './lib/http.js';
 import { requireAdmin } from './lib/supabase-auth.js';
-import { serviceList } from './lib/site-services.js';
+import { onlineMixingOnly, serviceList } from './lib/site-services.js';
 
 export default async function handler(request, response) {
   if (request.method === 'GET') {
@@ -10,7 +10,7 @@ export default async function handler(request, response) {
     const { data, error } = await db.from('service_overrides').select('*');
     if (error) return json(response, { error: 'Service settings unavailable; run the admin migration' }, 503);
     const overrides = Object.fromEntries((data || []).map(item => [item.service_id, item]));
-    return json(response, { services: serviceList().map(item => ({
+    return json(response, { onlineMixingOnly, services: serviceList().map(item => ({
       ...item, price: Number(overrides[item.id]?.price_eur ?? item.price),
       deposit: Number(overrides[item.id]?.deposit_eur ?? item.deposit),
       enabled: overrides[item.id]?.enabled ?? true

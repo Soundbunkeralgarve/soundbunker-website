@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import { isIsoDate } from './lib/catalog.js';
-import { effectiveSession } from './lib/site-services.js';
+import { effectiveBookableSession } from './lib/site-services.js';
 import { bookingInstant, endInstant } from './lib/booking-time.js';
 import { quoteDiscount } from './lib/discounts.js';
 import { quoteVoucher } from './lib/redeem.js';
@@ -22,8 +22,9 @@ export default async function handler(request, response) {
     const booking = { service: safeText(input.service, 50), date: safeText(input.date, 10), time: safeText(input.time, 5),
       name: safeText(input.name, 120), email: safeText(input.email, 200).toLowerCase(), phone: safeText(input.phone, 60),
       taxId: safeText(input.taxId, 40), notes: safeText(input.notes, 450), language: safeText(input.language, 2) };
-    const session = await effectiveSession(booking.service, admin);
-    if (!session || !booking.name || !booking.phone || !validEmail(booking.email)) return json(response, { error: 'Check your booking details and selected service' }, 400);
+    const session = await effectiveBookableSession(booking.service, admin);
+    if (!session) return json(response, { error: 'This service is currently unavailable' }, 400);
+    if (!booking.name || !booking.phone || !validEmail(booking.email)) return json(response, { error: 'Check your booking details' }, 400);
     const voucherCode=safeText(input.voucherCode,50);
     const promoCode=safeText(input.promoCode,40);
     if (voucherCode && promoCode) return json(response,{error:'Use either a voucher or a VIP code, not both'},400);

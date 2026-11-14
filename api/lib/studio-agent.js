@@ -1,22 +1,20 @@
 // "Ask the Studio" (Cyborg Lofty): one assistant for the website chat and the studio WhatsApp.
-// It answers from the published site copy and the live price list, checks real
-// availability, and hands the conversation to the team when a person is needed.
+// It answers from the published site copy and live price list and can hand a conversation to the team.
 import Anthropic from '@anthropic-ai/sdk';
 import { createClient } from '@supabase/supabase-js';
-import { isIsoDate, TIME_ZONE } from './catalog.js';
-import { effectiveSession, serviceList } from './site-services.js';
-import { openSlots } from './slot-availability.js';
+import { TIME_ZONE } from './catalog.js';
+import { effectiveBookableSession, serviceList } from './site-services.js';
 import { listProducts } from './plugin-licences.js';
 import { studioKnowledge } from './studio-knowledge.js';
 
 export const STUDIO_MODEL = process.env.STUDIO_AGENT_MODEL || 'claude-opus-5-5';
 const MAX_STEPS = 5;
 
-const instructions = `You are the assistant for SoundBunker Algarve, a recording studio inside The Hub Culture next to the Loulé Municipal Market (Rua Ataíde de Oliveira 27, 8100-269 Loulé, Portugal). You talk with clients on the website chat and on the studio's WhatsApp.
+const instructions = `You are the assistant for SoundBunker Algarve. You talk with clients on the website chat and on the studio's WhatsApp.
 
 What the studio does:
-- SoundBunker focuses on vocals, instruments and music production. Drum recording is limited: the studio is not set up for recording full drum kits or tracking a whole band live in the room.
-- For drum or full-band live recording enquiries, say this honestly and kindly, mention what the studio does best (vocals, instruments, production, and bands recording parts one at a time where that suits them), and hand over to the team so they can advise. Never promise drum or live band tracking.
+- SoundBunker currently takes orders for online mixing, mastering and combined mix + master packages. Customers upload audio after paying and receive the finished files in their client area.
+- For enquiries about another service or a visit, explain that orders are limited to online mixing and mastering. For an existing booking or voucher, help the customer reach the team. Use the current information here if an earlier chat mentions previous services or locations.
 
 Who you are:
 - You are Cyborg Lofty, the digital clone of Lofty, who runs SoundBunker, and the studio's assistant. Speak for the studio ("we", "our studio"). A light, friendly sense of humour is welcome; keep it to a touch, never at the client's expense, and never let it get in the way of a clear answer.
@@ -35,7 +33,7 @@ How to answer:
 - Keep replies short and conversational, like a helpful person at the studio: usually two to five sentences. No markdown headings or tables; on WhatsApp plain text reads best. Short lists are fine.
 - Only state facts that are in the studio information below or that a tool returns. For prices, deposits and what a package includes, call list_services first and quote those figures; they include VAT. Never invent prices, discounts, dates, people's names or policies.
 - For SoundBunker audio plug-ins (Armoury, NUCLEAR, SHRAPNEL, FALLOUT, SENTINEL, NAPALM, RECON and bundles), call list_plugins for current prices and what is on sale; downloads and licences are at https://www.soundbunker.pt/plugins.
-- To answer "is X free on <date>", call check_availability. Bookings are made and paid online: point clients to https://www.soundbunker.pt/#book or the relevant service page. You cannot take payments or confirm bookings yourself.
+- Mixing and mastering do not require an appointment. Point customers to https://www.soundbunker.pt/mixing-mastering.html#book to order and pay. You cannot take payments or confirm bookings yourself.
 - If you do not know, or the question needs a human decision, say so plainly and offer to pass it to the team.
 
 When to hand over to the team (call request_human):
@@ -49,7 +47,7 @@ ${studioKnowledge}`;
 const tools = [
   {
     name: 'list_services',
-    description: 'Current bookable services with VAT-inclusive prices, deposits and session length in hours. Use before quoting any price.',
+    description: 'Current online mixing and mastering packages with VAT-inclusive prices. Use before quoting a service price.',
     input_schema: { type: 'object', properties: {}, additionalProperties: false },
     strict: true,
   },
@@ -57,20 +55,6 @@ const tools = [
     name: 'list_plugins',
     description: 'SoundBunker audio plug-ins and bundles currently listed in the plug-in shop, with prices in EUR (VAT included) and what each includes.',
     input_schema: { type: 'object', properties: {}, additionalProperties: false },
-    strict: true,
-  },
-  {
-    name: 'check_availability',
-    description: 'Open start times for one service on one date (studio time, Europe/Lisbon). Services without fixed slots (mixing, mastering, vouchers) return none.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        service_id: { type: 'string', description: 'An id from list_services, e.g. recording-2h' },
-        date: { type: 'string', description: 'YYYY-MM-DD' },
-      },
-      required: ['service_id', 'date'],
-      additionalProperties: false,
-    },
     strict: true,
   },
   {
@@ -96,23 +80,16 @@ const database = () => process.env.SUPABASE_URL && process.env.SUPABASE_SECRET_K
   ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SECRET_KEY, { auth: { persistSession: false } })
   : null;
 
-async function runTool(name, input, db) {
+async function runTool(name, db) {
   if (name === 'list_services') {
     const rows = [];
     for (const service of serviceList()) {
-      const current = await effectiveSession(service.id, db || undefined);
-      if (current) rows.push({ id: service.id, name: current.name, group: current.group, price_eur: current.price, deposit_eur: current.deposit, hours: current.hours || null, pay_in_full: Boolean(current.fullPayment) });
+      const current = await effectiveBookableSession(service.id, db || undefined);
+      if (current) rows.push({ id: service.id, name: current.name, price_eur: current.price });
     }
     return rows;
   }
   if (name === 'list_plugins') return listProducts();
-  if (name === 'check_availability') {
-    if (!isIsoDate(input.date)) return { error: 'Use a date in YYYY-MM-DD format.' };
-    const session = await effectiveSession(input.service_id, db || undefined);
-    if (!session) return { error: 'Unknown or unavailable service id. Call list_services for valid ids.' };
-    if (session.noSlot) return { service: session.name, date: input.date, slots: [], note: 'This service has no fixed session time; it is booked and delivered online.' };
-    return { service: session.name, date: input.date, open_start_times: await openSlots(input.date, session, db || undefined) };
-  }
   return { error: `Unknown tool ${name}` };
 }
 
@@ -156,7 +133,7 @@ export async function askStudio(history, { channel }) {
           handoff = call.input;
           results.push({ type: 'tool_result', tool_use_id: call.id, content: 'Passed to the team. Tell the client Lofty or the team will reply personally as soon as they are free (they may be in a studio session), normally the same day, and that you can keep helping meanwhile.' });
         } else {
-          results.push({ type: 'tool_result', tool_use_id: call.id, content: JSON.stringify(await runTool(call.name, call.input, db)) });
+          results.push({ type: 'tool_result', tool_use_id: call.id, content: JSON.stringify(await runTool(call.name, db)) });
         }
       } catch {
         results.push({ type: 'tool_result', tool_use_id: call.id, content: 'This lookup is temporarily unavailable.', is_error: true });

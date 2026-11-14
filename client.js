@@ -357,7 +357,7 @@ function dateLabel(value) {
 function renderVouchers(vouchers) {
   $('#voucherCount').textContent = String(vouchers.length);
   if (!vouchers.length) {
-    $('#voucherList').innerHTML = '<article class="client-voucher-empty"><div><span>NO VOUCHERS YET</span><h3>Your gift experiences will appear here automatically.</h3><p>Buy a voucher while signed in, or use the same email address as your Client Area account.</p></div><a href="gift-vouchers.html">Explore Gift Experiences</a></article>';
+    $('#voucherList').innerHTML = '<article class="client-voucher-empty"><div><span>NO VOUCHERS YET</span><h3>Your existing vouchers will appear here.</h3><p>Sign in using the email address on your voucher.</p></div></article>';
     return;
   }
   $('#voucherList').innerHTML = vouchers.map(item => {
@@ -506,14 +506,14 @@ async function loadBookings() {
       const pending = data.moves.find(move => move.booking_id === booking.id && move.status === 'pending');
       const eligible = booking.start_at && Date.parse(booking.start_at) - Date.now() > 86400000 && booking.status === 'confirmed';
       return `<article class="client-booking-card"><div><strong>${escapeHtml(booking.service_name || 'Studio session')}</strong>
-        <small>${escapeHtml(booking.local_date || 'Date to be arranged')} · ${escapeHtml(booking.local_time || '')} · ${escapeHtml(booking.status)}</small>
+        <small>${escapeHtml(booking.local_date ? [booking.local_date, booking.local_time].filter(Boolean).join(' · ') : 'Online order')} · ${escapeHtml(booking.status)}</small>
         <small>Booking ref: ${escapeHtml(booking.booking_ref || booking.id)}</small></div>
         ${pending ? `<p>Move requested: ${escapeHtml(pending.proposed_date)} at ${escapeHtml(pending.proposed_time)} · Awaiting studio approval.</p>` :
-          eligible ? `<form class="client-move-form" data-booking-id="${escapeHtml(booking.id)}" data-service-id="${escapeHtml(booking.service_id)}" data-current-day="${escapeHtml(booking.local_date)}">
+          eligible ? `<form class="client-move-form" data-booking-id="${escapeHtml(booking.id)}" data-current-day="${escapeHtml(booking.local_date)}">
           <label>Propose a different date<input name="date" type="date" required min="${new Date().toISOString().slice(0,10)}"></label>
           <label>Available time<select name="time" required disabled><option value="">Choose a date first</option></select></label>
           <button type="submit">Request move</button></form>` :
-          booking.start_at && booking.status === 'confirmed' ? '<p>The free change window has closed. A new booking and deposit are needed to choose another slot.</p>' : ''}
+          booking.start_at && booking.status === 'confirmed' ? '<p>The online change window has closed. Contact SoundBunker about your booking.</p>' : ''}
         </article>`;
     }).join('') : '<p>No website bookings are attached to this account yet. If an earlier booking is missing, contact the studio to have it linked.</p>';
   } catch (err) { $('#myBookings').textContent = err.message; }
@@ -527,7 +527,7 @@ async function refreshMoveSlots(form) {
     select.innerHTML = '<option value="">Choose a different day</option>'; return;
   }
   try {
-    const result = await fetch(`/api/availability?date=${encodeURIComponent(day)}&service=${encodeURIComponent(form.dataset.serviceId)}`).then(r=>r.json());
+    const result = await portalApi('/api/bookings', { action: 'availability', bookingId: form.dataset.bookingId, date: day });
     select.innerHTML = result.slots?.length ? '<option value="">Choose a time</option>' +
       result.slots.map(slot => `<option value="${escapeHtml(slot)}">${escapeHtml(slot)}</option>`).join('') : '<option value="">No slots available</option>';
     select.disabled = !result.slots?.length;

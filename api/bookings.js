@@ -40,8 +40,10 @@ export default async function handler(request, response) {
     return json(response, { bookings: records || [], moves: requests.data || [] });
   }
   const input = await parseJson(request);
-  if (input.action === 'propose') {
-    if (!uuid.test(String(input.bookingId || '')) || !isIsoDate(input.date) || !/^\d{2}:\d{2}$/.test(input.time || ''))
+  if (input.action === 'availability' || input.action === 'propose') {
+    const checkingAvailability = input.action === 'availability';
+    if (!uuid.test(String(input.bookingId || '')) || !isIsoDate(input.date) ||
+        (!checkingAvailability && !/^\d{2}:\d{2}$/.test(input.time || '')))
       return json(response, { error: 'Choose your booking and a new date and time' }, 400);
     const { data: booking, error } = await ctx.admin.from('bookings').select('*').eq('id', input.bookingId).maybeSingle();
     if (error || !booking || !ownBooking(booking, ctx)) return json(response, { error: 'Booking not found' }, 404);
@@ -50,6 +52,7 @@ export default async function handler(request, response) {
     if (input.date === booking.local_date) return json(response, { error: 'Choose a different day' }, 400);
     const session = await effectiveSession(booking.service_id, ctx.admin);
     if (!session || session.noSlot) return json(response, { error: 'This session cannot be moved online. Contact the studio.' }, 409);
+    if (checkingAvailability) return json(response, { slots: await openSlots(input.date, session, ctx.admin) });
     const proposedStart = bookingInstant(input.date, input.time);
     if (Date.parse(proposedStart) <= Date.now()) return json(response, { error: 'Choose a future time' }, 400);
     const slots = await openSlots(input.date, session, ctx.admin);

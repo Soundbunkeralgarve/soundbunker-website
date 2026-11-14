@@ -33,21 +33,20 @@ function fakeAnthropic(responses) {
 const agentMocks = Anthropic => ({
   '@anthropic-ai/sdk': { default: Anthropic },
   '@supabase/supabase-js': { createClient: () => null },
-  './catalog.js': { isIsoDate: v => /^\d{4}-\d{2}-\d{2}$/.test(v), TIME_ZONE: 'Europe/Lisbon' },
-  './site-services.js': { serviceList: () => [{ id: 'recording-2h' }, { id: 'mix-12' }], effectiveSession: async id => ({ 'recording-2h': { name: 'Recording · 2 hours', price: 250, deposit: 100, hours: 2, group: 'recording' }, 'mix-12': { name: 'Mixing', price: 125, deposit: 125, noSlot: true, fullPayment: true, group: 'mixing' } })[id] || null },
-  './slot-availability.js': { openSlots: async () => ['10:00', '16:00'] },
+  './catalog.js': { TIME_ZONE: 'Europe/Lisbon' },
+  './site-services.js': { serviceList: () => [{ id: 'mix-12' }], effectiveBookableSession: async id => id === 'mix-12' ? { name: 'Mixing', price: 125 } : null },
   './plugin-licences.js': { listProducts: async () => [{ id: 'nuclear', name: 'NUCLEAR', price_eur: 25 }] },
   './studio-knowledge.js': { studioKnowledge: 'STUDIO COPY' },
 });
 
 test('answers from live prices, sending tool results back in one turn with caching and fallbacks', async () => {
   const { Anthropic, requests } = fakeAnthropic([
-    { stop_reason: 'tool_use', content: [{ type: 'tool_use', id: 't1', name: 'list_services', input: {} }, { type: 'tool_use', id: 't2', name: 'check_availability', input: { service_id: 'recording-2h', date: '2026-11-05' } }] },
-    { stop_reason: 'end_turn', content: [{ type: 'text', text: 'Recording is €250 and 10:00 is free.' }] },
+    { stop_reason: 'tool_use', content: [{ type: 'tool_use', id: 't1', name: 'list_services', input: {} }] },
+    { stop_reason: 'end_turn', content: [{ type: 'text', text: 'Online mixing starts at €125.' }] },
   ]);
   const { askStudio } = await load('api/lib/studio-agent.js', agentMocks(Anthropic));
-  const result = await askStudio([{ role: 'user', content: 'Quanto custa gravar na quinta?' }], { channel: 'web' });
-  assert.equal(result.reply, 'Recording is €250 and 10:00 is free.');
+  const result = await askStudio([{ role: 'user', content: 'Quanto custa a mistura?' }], { channel: 'web' });
+  assert.equal(result.reply, 'Online mixing starts at €125.');
   assert.equal(result.handoff, null);
   const first = requests[0];
   assert.equal(first.model, 'claude-opus-5-5');
@@ -55,12 +54,13 @@ test('answers from live prices, sending tool results back in one turn with cachi
   assert.deepEqual(first.betas, ['server-side-fallback-2026-07-01']);
   assert.deepEqual(first.system[0].cache_control, { type: 'ephemeral', ttl: '1h' });
   assert.match(first.system[0].text, /STUDIO COPY/);
+  assert.match(first.system[0].text, /currently takes orders for online mixing/);
+  assert.ok(!first.tools.some(tool => tool.name === 'check_availability'));
   assert.doesNotMatch(first.system[0].text, /Today is/);
   const results = requests[1].messages.at(-1);
   assert.equal(results.role, 'user');
-  assert.equal(results.content.length, 2);
-  assert.match(results.content[0].content, /"price_eur":250/);
-  assert.match(results.content[1].content, /10:00/);
+  assert.equal(results.content.length, 1);
+  assert.deepEqual(JSON.parse(results.content[0].content), [{ id: 'mix-12', name: 'Mixing', price_eur: 125 }]);
 });
 
 test('request_human returns the handover and refusals fall back to a safe reply', async () => {

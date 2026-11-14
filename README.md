@@ -1,6 +1,6 @@
 # SoundBunker Algarve — Studio Control build
 
-Updated 22 September 2026 from the current Premium Portal master. The existing Hub Academy redesign, Gift Experiences, SoundBunker Social, Dropbox folders and website assets remain in this ZIP.
+SoundBunker Algarve website. New studio service orders are currently limited to online mixing and mastering.
 
 ## Included
 

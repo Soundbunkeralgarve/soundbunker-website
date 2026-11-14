@@ -5,7 +5,7 @@ create table if not exists public.sb_events (
  title text not null check (char_length(title) between 3 and 160),
  description text not null default '',
  organiser text not null default 'SoundBunker Algarve',
- venue text not null default 'The Hub Culture, Loulé',
+ venue text not null default 'Loulé, Algarve',
  image_url text,
  starts_at timestamptz not null,
  ends_at timestamptz,

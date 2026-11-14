@@ -28,7 +28,7 @@ export async function createCheckoutSession({ session, booking, origin, bookingR
     mode: "payment",
     submit_type: "book",
     success_url: `${origin}/success.html?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/#book`,
+    cancel_url: `${origin}${session.group === 'mixing' ? '/mixing-mastering.html#book' : '/#book'}`,
     customer_email: booking.email,
     customer_creation: "always",
     locale,

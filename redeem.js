@@ -49,7 +49,7 @@ async function checkCode(useSelectedService=false) {
   $('#slotFields').hidden=Boolean(result.noSlot);
   $('#date').required=!result.noSlot;$('#time').required=!result.noSlot;
   $('#redeemForm').hidden=false;
-  $('#redeemForm button[type=submit]').textContent=result.due===0?'Confirm free booking':`Continue to payment · ${money(result.due)}`;
+  $('#redeemForm button[type=submit]').textContent=result.due===0?'Confirm redemption':`Continue to payment · ${money(result.due)}`;
   if($('#date').value&&!result.noSlot)await loadSlots();
  }catch(error){status.textContent=error.message;}
 }
@@ -90,7 +90,7 @@ $('#redeemForm').addEventListener('submit',async event=>{
  event.preventDefault();
  if(!quote||!event.currentTarget.reportValidity())return;
  const button=event.currentTarget.querySelector('button[type=submit]');
- button.disabled=true;$('#redeemStatus').textContent='Securing your session…';
+ button.disabled=true;$('#redeemStatus').textContent='Applying your voucher…';
  const form=Object.fromEntries(new FormData(event.currentTarget));
  try{
   const result=await api('/api/create-checkout',{...form,service:quote.serviceId,
