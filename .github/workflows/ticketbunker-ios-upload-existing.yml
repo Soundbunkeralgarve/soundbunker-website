@@ -1,9 +1,6 @@
 name: Upload verified TicketBunker iOS build 13
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths: [.github/workflows/ticketbunker-ios-upload-existing.yml]
 permissions:
   contents: read
 concurrency:
