@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 
 const source = file => readFileSync(new URL(`../${file}`, import.meta.url), 'utf8');
 async function load(file, mocks, env = {}) {
-  const context = vm.createContext({ console: { error() {} }, URL, URLSearchParams, AbortSignal, Buffer, Date, Intl, JSON, Math, Promise, process: { env }, setTimeout, fetch: (...args) => globalThis.fetch(...args) });
+  const context = vm.createContext({ console: { error() {}, warn() {} }, URL, URLSearchParams, AbortSignal, Buffer, Date, Intl, JSON, Math, Promise, process: { env }, setTimeout, fetch: (...args) => globalThis.fetch(...args) });
   const module = new vm.SourceTextModule(source(file), { context });
   await module.link(async spec => {
     if (spec.startsWith('node:')) {
@@ -76,6 +76,41 @@ test('request_human returns the handover and refusals fall back to a safe reply'
   const refused = await agent.askStudio([{ role: 'user', content: '…' }], { channel: 'web' });
   assert.match(refused.reply, /bookings@soundbunker\.pt/);
   assert.ok(refused.handoff);
+});
+
+test('handover emails lead with English and keep the original chat on both channels', async () => {
+  const message = 'Olá, podem enviar um orçamento até sexta-feira?';
+  const handoff = { summary: 'Pede um orçamento até sexta-feira.', client_name: 'Ana', contact: 'ana@example.org', language: 'Portuguese' };
+  const translation = { summary: 'Asks for a quote by Friday.', message: 'Hello, can you send a quote by Friday?' };
+  const replies = [
+    { stop_reason: 'end_turn', content: [{ type: 'text', text: JSON.stringify(translation) }] },
+    { stop_reason: 'end_turn', content: [{ type: 'text', text: JSON.stringify(translation) }] },
+    { stop_reason: 'refusal', content: [] },
+  ];
+  const { Anthropic, requests } = fakeAnthropic(replies);
+  const emails = [], updates = [];
+  const { notifyHandoff } = await load('api/lib/studio-chat-store.js', {
+    '@anthropic-ai/sdk': { default: Anthropic },
+    '@supabase/supabase-js': { createClient: () => null },
+    './notify.js': { sendStudioEmail: async (to, subject, body) => emails.push(body) },
+    './studio-agent.js': { STUDIO_MODEL: 'studio-model' },
+  });
+  const db = { from: () => ({
+    update: values => ({ eq: () => updates.push(values) }),
+    select: () => ({ eq: () => ({ order: () => ({ limit: () => ({ data: [{ role: 'client', body: message }] }) }) }) }),
+  }) };
+  for (const channel of ['web', 'whatsapp']) {
+    const summary = await notifyHandoff(db, { id: 'thread', channel }, handoff, { message, whatsappNumber: channel === 'whatsapp' ? '351910000000' : undefined });
+    assert.equal(summary, translation.summary);
+    assert.equal(updates.at(-1).handoff_summary, translation.summary);
+    assert.deepEqual(JSON.parse(requests.at(-1).messages[0].content), { summary: handoff.summary, message });
+    const email = emails.at(-1);
+    assert.ok(email.includes(`Latest customer message in English:\n${translation.message}`));
+    assert.ok(email.includes(`Client: ${message}`));
+    assert.ok(email.includes(channel === 'whatsapp' ? 'https://wa.me/351910000000' : 'Reply to: ana@example.org'));
+  }
+  await notifyHandoff(db, { id: 'thread', channel: 'web' }, handoff, { message });
+  assert.ok(emails.at(-1).includes(`English translation unavailable):\n${message}`));
 });
 
 // WhatsApp webhook with an in-memory store.

@@ -86,7 +86,7 @@ async function handleClientMessage(db, message, contact) {
   await saveMessage(db, thread.id, 'assistant', result.reply, sentId);
   if (result.handoff) {
     await holdForHuman(db, thread.id);
-    await notifyHandoff(db, thread, result.handoff, { whatsappNumber: message.from });
+    await notifyHandoff(db, thread, result.handoff, { message: body.slice(0, 4000), whatsappNumber: message.from });
   }
 }
 

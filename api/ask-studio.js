@@ -29,8 +29,8 @@ export default async function handler(request, response) {
     const { reply, handoff } = await askStudio(await threadHistory(db, thread.id), { channel: 'web' });
     await saveMessage(db, thread.id, 'assistant', reply);
     if (!handoff) return json(response, { reply });
-    await notifyHandoff(db, thread, handoff);
-    const note = `Hi SoundBunker!${handoff.client_name ? ` I'm ${handoff.client_name}.` : ''} I was chatting with Ask the Studio on your website. ${handoff.summary}`;
+    const summary = await notifyHandoff(db, thread, handoff, { message });
+    const note = `Hi SoundBunker!${handoff.client_name ? ` I'm ${handoff.client_name}.` : ''} I was chatting with Ask the Studio on your website. ${summary}`;
     return json(response, { reply, handoff: true, whatsappUrl: `https://wa.me/${STUDIO_WHATSAPP}?text=${encodeURIComponent(note.slice(0, 900))}` });
   } catch (error) {
     console.error('Ask the Studio failed', error?.constructor?.name, error?.status || '', error?.message);
