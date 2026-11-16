@@ -44,8 +44,15 @@ function invoiceIdentityMatches(invoice,id,expected,total){
 }
 
 const seriesName=value=>String(value||'').toLowerCase().replace(/[^a-z0-9]/g,'');
-const showsSeries=(invoice,series)=>[invoice.sequence_number,invoice.inverted_sequence_number,invoice.serie].some(number=>
- String(number||'').split('/').some(part=>seriesName(part)===seriesName(series.serie)));
+const sequenceId = doc => String(doc?.sequence_id ?? '').trim();
+const hasSequenceId = doc => /^[1-9]\d*$/.test(sequenceId(doc));
+const seriesNames = doc => [doc.serie, ...[doc.sequence_number, doc.inverted_sequence_number]
+  .flatMap(number => String(number || '').includes('/') ? String(number).split('/') : [])]
+  .map(seriesName).filter(name => name && !/^\d+$/.test(name) && !['draft','rascunho','nd','na'].includes(name));
+const showsSeries = (doc, series) => seriesNames(doc).includes(seriesName(series.serie));
+const conflictsWithSeries = (doc, series, expected) =>
+  (hasSequenceId(doc) && sequenceId(doc) !== String(expected.sequence_id)) ||
+  seriesNames(doc).some(name => name !== seriesName(series.serie));
 
 function crudeCityDraftUpdate(invoice,id,expected,fiscalTotal){
  if(invoice?.status!=='draft'||String(invoice.id)!==String(id)||invoice.reference!==expected.reference)return null;
@@ -100,7 +107,14 @@ export async function processInvoiceJob(row,{db,request,table=TABLE,brand=row.br
         throw error;
       }
       const created=extract(data);if(!created?.id)throw Error('InvoiceXpress returned no document id');
-      await write({ix_document_id:created.id});
+      const selected = { serie: 'Crude-City' };
+      if (brand === 'crude-city' && type === 'invoice_receipts' && created.status === 'draft' &&
+          /^[1-9]\d*$/.test(String(expected.sequence_id)) && !conflictsWithSeries(created, selected, expected) &&
+          invoiceIdentityMatches(created, created.id, expected, fiscalTotal)) {
+        // The create request explicitly selected this sequence. Some draft GETs omit it until issuance.
+        payload.creation_series = { document_id: String(created.id), sequence_id: String(expected.sequence_id) };
+      }
+      await write({ix_document_id:created.id,request_payload:payload});
     }
   }
   let invoice=extract(await api('/'+type+'/'+row.ix_document_id+'.json'));
@@ -112,8 +126,10 @@ export async function processInvoiceJob(row,{db,request,table=TABLE,brand=row.br
     sequenceLookup??=api('/sequences.json');
     const {sequences}=await sequenceLookup;
     const series=(Array.isArray(sequences)?sequences:[sequences]).find(s=>seriesName(s?.serie)==='crudecity'&&String(s.current_invoice_receipt_sequence_id)===String(expected.sequence_id));
-    if(!series)return false;
+    if(!series || conflictsWithSeries(invoice, series, expected))return false;
     if(invoice.status==='draft'){
+      const created=payload.creation_series;
+      if(created?.document_id===String(row.ix_document_id)&&created.sequence_id===String(expected.sequence_id))return true;
       // An operator can verify the exact draft's series in the authenticated InvoiceXpress account.
       const verified=payload.verified_draft_sequence;
       if(verified?.document_id===String(row.ix_document_id)&&verified.sequence_id===String(expected.sequence_id)&&seriesName(verified.series)===seriesName(series.serie))return true;
@@ -123,11 +139,30 @@ export async function processInvoiceJob(row,{db,request,table=TABLE,brand=row.br
     const validation=String(series.current_invoice_receipt_validation_code||'');
     const hasRegisteredNumber=doc=>/^[a-z0-9]{4,}$/i.test(validation)&&showsSeries(doc,series)&&String(doc.atcud||'').startsWith(validation+'-');
     if(hasRegisteredNumber(invoice))return true;
+    const findInList = async query => {
+      const listing=await api('/invoices.json?'+query);
+      return { listed: listing.invoices?.find(doc=>doc.status===invoice.status&&
+        invoiceIdentityMatches(doc,row.ix_document_id,expected,fiscalTotal)), pages: Number(listing.pagination?.total_pages || 1) };
+    };
+    const accepts = listed => Boolean(listed && !conflictsWithSeries(listed, series, expected) &&
+      (sequenceId(listed)===String(expected.sequence_id) ||
+       (listed.status==='draft' ? showsSeries(listed,series) : hasRegisteredNumber(listed))));
     const query=new URLSearchParams({text:expected.reference,per_page:'30','type[]':'InvoiceReceipt'});
-    const listing=await api('/invoices.json?'+query);
-    const listed=listing.invoices?.find(doc=>doc.status===invoice.status&&invoiceIdentityMatches(doc,row.ix_document_id,expected,fiscalTotal));
-    return Boolean(listed&&(String(listed.sequence_id)===String(expected.sequence_id)||
-      (!/^[1-9]\d*$/.test(String(listed.sequence_id??'').trim())&&(listed.status==='draft'?showsSeries(listed,series):hasRegisteredNumber(listed)))));
+    const byReference=(await findInList(query)).listed;
+    if (byReference && conflictsWithSeries(byReference, series, expected)) return false;
+    if (accepts(byReference)) return true;
+    // InvoiceXpress's text search can omit drafts with machine-generated payment references.
+    if (!/^\d{2}\/\d{2}\/\d{4}$/.test(expected.date || '')) return false;
+    query.delete('text');
+    query.set('date[from]',expected.date);
+    query.set('date[to]',expected.date);
+    for (let page=1;page<=3;page++) {
+      query.set('page',String(page));
+      const {listed,pages}=await findInList(query);
+      if (listed) return accepts(listed);
+      if (page>=pages) break;
+    }
+    return false;
   };
   let verified=await matches();
   let repairRejected=false;

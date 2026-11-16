@@ -159,3 +159,42 @@ test('GBP invoice recovery checks the EUR accounting total and emails the origin
  assert.equal(count(api,'/invoice_receipts.json','POST'),1);assert.match(db.rows[0].email_payload.message.body,/GBP 12.30/);assert.match(db.rows[0].email_payload.message.body,/EUR 14.47/);assert.ok(db.rows[0].email_sent_at);
 });
 
+
+test('existing Crude City drafts omitted by text search are verified by date and exact identity',async()=>{
+ const input=fixture();input.brand='crude-city';
+ const db=database();await queueWebsiteInvoice(input,db);
+ const row=db.rows[0];row.ix_document_id=42;
+ const draft={id:42,status:'draft',reference:row.document_reference,total:12.30,sequence_number:'Draft',permalink:'https://web.invoicexpress.com/documents/example'};
+ const request=async path=>{
+  if(path==='/sequences.json')return {response:{ok:true},data:{sequences:[{serie:'Crude-City',current_invoice_receipt_sequence_id:123}]}};
+  if(path.startsWith('/invoices.json?')){
+   const query=new URLSearchParams(path.split('?')[1]);
+   if(query.has('text'))return {response:{ok:true},data:{invoices:[]}};
+   assert.equal(query.get('date[from]'),'21/10/2026');
+   return {response:{ok:true},data:{invoices:[{...draft,id:41,sequence_number:'Other/-'},{...draft,sequence_number:'Crude-City/-'}]}};
+  }
+  if(path.endsWith('/change-state.json')){draft.status='settled';draft.sequence_id=123;draft.sequence_number='2/Crude-City';}
+  return {response:{ok:true},data:{invoice_receipt:{...draft}}};
+ };
+ await processInvoiceJob(row,{db,request});
+ assert.equal(row.document_number,'2/Crude-City');
+ assert.ok(row.email_sent_at);
+});
+
+test('Crude City journals the explicit create sequence and rechecks before emailing',async()=>{
+ const input=fixture();input.brand='crude-city';
+ const db=database();await queueWebsiteInvoice(input,db);
+ const row=db.rows[0];
+ const draft={id:42,status:'draft',reference:row.document_reference,total:12.30,sequence_number:'Draft',permalink:'https://web.invoicexpress.com/documents/example'};
+ let emailCalls=0;
+ const request=async(path,options={})=>{
+  if(path==='/invoice_receipts.json')assert.equal(options.body.invoice_receipt.sequence_id,'123');
+  if(path==='/sequences.json')return {response:{ok:true},data:{sequences:[{serie:'Crude-City',current_invoice_receipt_sequence_id:123}]}};
+  if(path.endsWith('/change-state.json')){draft.status='settled';draft.sequence_id=321;draft.sequence_number='2/Wrong-Series';}
+  if(path.endsWith('/email-document.json'))emailCalls++;
+  return {response:{ok:true},data:{invoice_receipt:{...draft}}};
+ };
+ await assert.rejects(processInvoiceJob(row,{db,request}),/Finalized invoice contents do not match/);
+ assert.deepEqual(row.request_payload.creation_series,{document_id:'42',sequence_id:'123'});
+ assert.equal(emailCalls,0);
+});
