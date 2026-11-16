@@ -159,3 +159,21 @@ export async function dropboxEntryLink(path, folder) {
   const result = await callDropbox('/files/get_temporary_link', { path });
   return result.link;
 }
+
+const guestArtworkFolder = '/SoundBunker Clients Uploads/Crude City/Guest List Artwork';
+
+export async function listCrudeCityGuestArtwork() {
+  const files = [];
+  let page = await callDropbox('/files/list_folder', { path: guestArtworkFolder, recursive: true, limit: 200 });
+  for (let i = 0; i < 5; i++) {
+    for (const entry of page.entries || []) {
+      if (entry['.tag'] !== 'file' || !entry.id || !entry.rev || !entry.path_display || !entry.server_modified) continue;
+      const path = entry.path_display.split('/').map(encodeURIComponent).join('/');
+      files.push({ id: entry.id, revision: entry.rev, name: entry.name, modifiedAt: entry.server_modified,
+        url: 'https://www.dropbox.com/preview' + path });
+    }
+    if (!page.has_more) return { files, partial: false };
+    if (i < 4) page = await callDropbox('/files/list_folder/continue', { cursor: page.cursor });
+  }
+  return { files, partial: true };
+}

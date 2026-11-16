@@ -1,3 +1,4 @@
+import { listCrudeCityGuestArtwork } from './lib/dropbox.js';
 import {invoiceDB,listWebsiteInvoices} from './lib/invoice-journal.js';
 import { timingSafeEqual } from "node:crypto";
 import { json, parseJson } from "./lib/http.js";
@@ -15,6 +16,15 @@ export default async function handler(request, response) {
   if (!authorized(request)) return json(response, { error: "Unauthorized" }, 401);
   try {
     const input = await parseJson(request);
+    if (input?.action === 'guest-artwork') {
+      response.setHeader('Cache-Control','private, no-store');
+      try {
+        return json(response, await listCrudeCityGuestArtwork());
+      } catch (error) {
+        console.error('Crude City artwork listing failed', error.status || 'unavailable');
+        return json(response, { error: 'Guest artwork is temporarily unavailable' }, 503);
+      }
+    }
     if (input?.action === "probe") return json(response, await probeCrudeCityInvoiceXpress());
     if(input?.action==='list'){
       if(typeof input.email!=='string'||!/^\S+@\S+\.\S+$/.test(input.email))return json(response,{error:'Invalid email'},400);
