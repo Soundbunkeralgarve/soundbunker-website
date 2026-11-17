@@ -21,5 +21,5 @@ currencySelect?.addEventListener('change',renderRates);renderRates();
  const url=new URL(release.url);if(url.protocol!=='https:'||url.hostname!=='apps.apple.com')return;
  const link=document.querySelector('#organiser-store-link');if(!link)return;
  link.href=url.href;link.hidden=false;
- document.querySelector('#organiser-store-status').textContent='iPhone / iPad: available on the App Store. Android test APK: Organiser Portal → App Downloads. Google Play listing is not yet available.';
+ document.querySelector('#organiser-store-status').innerHTML='iPhone / iPad: available on the App Store. Android: <a href="https://play.google.com/store/apps/details?id=pt.soundbunker.ticketbunkerscanner" rel="noopener">get it on Google Play ↗</a>.';
 }catch{ /* Keep the accurate pending state if a listing cannot be verified. */ }})();
