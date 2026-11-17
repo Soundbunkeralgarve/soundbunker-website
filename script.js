@@ -337,6 +337,7 @@ let availabilityRequest;
 let promoTimer;
 let promoSequence = 0;
 let supabaseSdkPromise;
+let bookingClientPromise;
 
 function getText(key) {
   const [section, label] = key.split('.');
@@ -422,13 +423,40 @@ function loadSupabaseSdk() {
   return supabaseSdkPromise;
 }
 
-async function bookingBearer() {
-  await loadSupabaseSdk();
-  const cfg = await fetch('/api/supabase-config').then(response => response.json());
-  if (!cfg.url || !cfg.key) return '';
-  const auth = window.supabase.createClient(cfg.url, cfg.key, { auth: { persistSession: true, autoRefreshToken: true } });
+async function bookingSession() {
+  bookingClientPromise ||= (async () => {
+    await loadSupabaseSdk();
+    const response = await fetch('/api/supabase-config');
+    const cfg = await response.json();
+    if (!response.ok || !cfg.url || !cfg.key) throw new Error('Booking sign-in is temporarily unavailable');
+    return window.supabase.createClient(cfg.url, cfg.key, { auth: { persistSession: true, autoRefreshToken: true } });
+  })().catch(error => {
+    bookingClientPromise = null;
+    throw error;
+  });
+  const auth = await bookingClientPromise;
   const { data: { session } } = await auth.auth.getSession();
-  return session?.access_token || '';
+  return session?.user?.email_confirmed_at && session.user.email ? session : null;
+}
+
+async function bookingBearer() {
+  return (await bookingSession())?.access_token || '';
+}
+
+async function showSignedInBooking() {
+  const fields = document.querySelector('#authenticated-booking');
+  const gate = document.querySelector('#booking-account');
+  let session;
+  try {
+    session = await bookingSession();
+  } catch {
+    return;
+  }
+  if (!session) return;
+  form.elements.email.value = session.user.email;
+  form.elements.email.readOnly = true;
+  if (fields) fields.hidden = false;
+  if (gate) gate.hidden = true;
 }
 
 function schedulePromoQuote() {
@@ -552,7 +580,12 @@ if (form) {
     const payload = Object.fromEntries(new FormData(form));
     payload.language = currentLanguage;
     try {
-      const bearer = await bookingBearer().catch(() => '');
+      const bearer = await bookingBearer();
+      if (!bearer) {
+        const signIn = document.querySelector('#booking-account a');
+        if (signIn) { location.assign(signIn.href); return; }
+        throw new Error('Sign in to your client account before booking');
+      }
       const response = await fetch('/api/create-checkout', {
         method: 'POST',
         headers: { 'content-type': 'application/json', ...(bearer ? { authorization: `Bearer ${bearer}` } : {}) },
@@ -567,5 +600,6 @@ if (form) {
       formStatus.textContent = error.message || getText('form.error');
     }
   });
+  showSignedInBooking();
   loadLiveServices();
 }

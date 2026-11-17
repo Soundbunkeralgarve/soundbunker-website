@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="v5-styles.css">
 
 
-<script src="script.js?v=20261114-remote" defer></script>
+<script src="script.js?v=20261117-account" defer></script>
 <link rel="stylesheet" href="calendar-picker.css">
 <script defer src="calendar-picker.js"></script>
 <link rel="canonical" href="https://www.soundbunker.pt/photography.html">
@@ -47,7 +47,12 @@
     <section class="booking section" id="book">
       <div class="wrap detail-book-intro"><p class="eyebrow" data-i18n="booking.eyebrow">Online booking</p><h2 data-i18n="booking.title">Book your photoshoot.</h2><p data-i18n="booking.copy">Pick a package and an available time. We’ll confirm the shoot location by email.</p></div>
       <div class="wrap booking-grid"><div class="booking-copy"><p>Prices include VAT. Pay the deposit at checkout and the remaining balance on the day of the shoot.</p></div>
-        <form class="booking-form" id="booking-form" novalidate>
+        <div class="booking-form" id="booking-account">
+          <p>A verified SoundBunker client account is required to book.</p>
+          <a class="button" href="/client?next=%2Fphotography.html%23book">Sign in or create an account</a>
+        </div>
+        <div id="authenticated-booking" hidden>
+          <form class="booking-form" id="booking-form" novalidate>
           <div class="field full-field"><label for="service" data-i18n="form.service">Session</label><select id="service" name="service" required></select></div>
           <div class="field"><label for="date" data-i18n="form.date">Date</label><input id="date" name="date" type="date" required></div>
           <div class="field"><label for="time" data-i18n="form.time">Start time</label><select id="time" name="time" required disabled><option value="" data-i18n="form.chooseDate">Choose a date first</option></select></div>
@@ -61,6 +66,7 @@
           <div class="booking-total full-field"><div><span data-i18n="form.total">Session total</span><b id="session-total">—</b></div><div><span data-i18n="form.due">Due now</span><b id="deposit-total">—</b></div></div>
           <button class="button full full-field" type="submit" data-i18n="form.pay" disabled>Continue to secure payment</button><p class="form-status full-field" id="form-status" role="status" aria-live="polite"></p>
         </form>
+        </div>
       </div>
     </section>
   </main>

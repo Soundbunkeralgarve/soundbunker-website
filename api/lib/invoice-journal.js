@@ -11,13 +11,16 @@ async function checked(query) { const r=await query; if(r.error) throw Error('In
 export function documentLink(value) {
   try {const u=new URL(value); return u.protocol==='https:' && (u.hostname==='app.invoicexpress.com'||u.hostname.endsWith('.invoicexpress.com')) && u.pathname.startsWith('/documents/') ? u.href : null;} catch {return null;}
 }
+export function invoiceAvailableInPortal(row) {
+  return Boolean(row.finalized_at && (row.email_sent_at || row.request_payload?.portal_delivery === true));
+}
 export function publicInvoice(row) {
   return {id:row.id,reference:row.document_reference||row.source_key,description:row.description,
     amount_cents:Number(row.amount_cents),currency:row.currency,document_type:row.document_type,
     document_number:row.document_number,url:row.finalized_at?documentLink(row.document_url):null,
     created_at:row.created_at,issued:!!row.finalized_at,email_sent:!!row.email_sent_at,
     paid_cents:Number(row.request_payload?.paid_cents??(row.paid?Number(row.amount_cents):0))+Number(row.balance_paid_cents||0),
-    pay_url:row.finalized_at&&row.email_sent_at?invoicePaymentLink(row):null,
+    pay_url:invoiceAvailableInPortal(row)?invoicePaymentLink(row):null,
     receipt_url:documentLink(row.balance_receipt_url)};
 }
 export async function queueWebsiteInvoice({brand,sessionId,body,paidCents,documentType='invoice_receipts'},db=invoiceDB()) {
@@ -231,6 +234,10 @@ export async function processInvoiceJob(row,{db,request,table=TABLE,brand=row.br
   }
   const link=documentLink(invoice.permalink);if(!link)throw Error('Invoice document link is missing');
   await write({document_number:invoice.sequence_number||String(invoice.id),document_url:link,finalized_at:row.finalized_at||new Date().toISOString(),last_error:null});
+  if (brand === 'soundbunker' && type === 'invoices' && payload.portal_delivery === true) {
+    await write({next_attempt_at:'infinity'});
+    return publicInvoice(row);
+  }
   if(!row.email_sent_at) {
     const email=String(row.recipient?.email||expected.client?.email||'').trim().toLowerCase();
     if(!/^\S+@\S+\.\S+$/.test(email))throw Error('Invoice recipient requires review');

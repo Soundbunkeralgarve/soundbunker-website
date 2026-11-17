@@ -72,7 +72,10 @@ function pluginCheckoutReturn(value) {
   return '/plugins.html?' + safe;
 }
 
+const bookingReturns = ["/production.html#booking","/photography.html#book","/mixing-mastering.html#book"];
+
 function safeAccountReturn(next){
+ if (bookingReturns.includes(next)) return next;
  if(['/redeem','/organiser','/client#my-tickets','/plugins#try-free','/client#plugin-affiliates'].includes(next))return next;
  if(/^\/event-scanner\?(?:invite=[a-f0-9]{64}|eventId=[a-f0-9-]{36})$/i.test(String(next||'')))return next;
  return pluginCheckoutReturn(next);
@@ -155,6 +158,10 @@ async function enterPortal(session) {
   const next = new URLSearchParams(location.search).get('next');
   if (next === '/redeem') { location.replace('/redeem'); return; }
   if (next === '/organiser') { location.replace('/organiser'); return; }
+  if (bookingReturns.includes(next) && session.user.email_confirmed_at) {
+    location.replace(next);
+    return;
+  }
   const checkout = pluginCheckoutReturn(next);
   if (checkout) {
     if (returningToPlugins) return;

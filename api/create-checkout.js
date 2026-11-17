@@ -6,7 +6,7 @@ import { bookingInstant, endInstant } from './lib/booking-time.js';
 import { quoteDiscount } from './lib/discounts.js';
 import { quoteVoucher } from './lib/redeem.js';
 import { createCalendarEvent, findCalendarEvent, removeCalendarEvent } from './lib/google-calendar.js';
-import { optionalUser, requireUser } from './lib/supabase-auth.js';
+import { requireUser } from './lib/supabase-auth.js';
 import { openSlots } from './lib/slot-availability.js';
 import { json, parseJson, safeText, validEmail } from './lib/http.js';
 import { createCheckoutSession } from './lib/stripe.js';
@@ -16,12 +16,18 @@ export default async function handler(request, response) {
   if (request.method !== 'POST') return json(response, { error: 'Method not allowed' }, 405);
   let held, calendarEventId, ref, voucherBooking=false, freeConfirmed=false;
   try {
-    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SECRET_KEY) throw new Error('Bookings are not configured');
-    const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SECRET_KEY, { auth: { persistSession: false } });
+    const auth = await requireUser(request, { loadProfile: false });
+    if (auth.error) return json(response, { error: 'Sign in to your client account before booking' }, auth.status);
+    const { admin, user } = auth;
+    if (!user.email_confirmed_at || !user.email)
+      return json(response, { error: 'Verify your client account email before booking' }, 403);
     const input = await parseJson(request);
     const booking = { service: safeText(input.service, 50), date: safeText(input.date, 10), time: safeText(input.time, 5),
       name: safeText(input.name, 120), email: safeText(input.email, 200).toLowerCase(), phone: safeText(input.phone, 60),
       taxId: safeText(input.taxId, 40), notes: safeText(input.notes, 450), language: safeText(input.language, 2) };
+    if (booking.email !== user.email.trim().toLowerCase())
+      return json(response, { error: 'Book using the email address on your client account' }, 403);
+    const userId = user.id;
     const session = await effectiveBookableSession(booking.service, admin);
     if (!session) return json(response, { error: 'This service is currently unavailable' }, 400);
     if (!booking.name || !booking.phone || !validEmail(booking.email)) return json(response, { error: 'Check your booking details' }, 400);
@@ -39,12 +45,6 @@ export default async function handler(request, response) {
       const slots = await openSlots(booking.date, session, admin);
       if (!slots.includes(booking.time)) return json(response, { error: 'That time is no longer available' }, 409);
     }
-    const auth = voucherCode ? await requireUser(request) : null;
-    if (auth?.error) return json(response, { error: 'Sign in to your client account before redeeming a voucher' }, auth.status);
-    const user = auth?.user || await optionalUser(request);
-    if (voucherCode && user.email?.toLowerCase() !== booking.email)
-      return json(response, { error: 'Book using the email address on your client account' }, 403);
-    const userId = user?.email?.toLowerCase() === booking.email ? user.id : null;
     const voucher=voucherCode?await quoteVoucher(admin,voucherCode,session,booking.service,request):null;
     if (session.prizeOnly && voucher?.source!=='prize') return json(response,{error:'This session requires its prize code'},400);
     if (session.voucherOnly && voucher?.source!=='gift') return json(response,{error:'This experience requires a purchased gift voucher'},400);

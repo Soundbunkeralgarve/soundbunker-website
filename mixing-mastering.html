@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="mixing-flow.css?v=20261114">
   <script src="service-page.js?v=20261114" defer></script>
 
-<script src="script.js?v=20261114" defer></script>
+<script src="script.js?v=20261117-account" defer></script>
 <link rel="canonical" href="https://www.soundbunker.pt/mixing-mastering.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="SoundBunker Algarve">
@@ -105,7 +105,12 @@
     <section class="section wrap mix-submission" id="submit-audio"><div class="section-head"><div><p class="eyebrow">File checklist</p><h2>Send the right files once.</h2></div><p>After payment, log in with the same email and upload everything through your private client area.</p></div><div class="submission-box"><div><h3>For mixing</h3><p>Consolidated WAV/AIFF stems from the same start point, your rough mix, BPM and 2–3 reference tracks.</p></div><div><h3>For mastering</h3><p>A full-resolution stereo premaster with headroom and no limiter on the master bus where possible, plus a reference.</p></div><div><h3>Name it clearly</h3><p>Use YOUR NAME + SONG TITLE so the upload matches your order immediately.</p></div><a class="button" href="/client#session-upload">Login &amp; upload files ↗</a></div></section><section class="booking section" id="book">
       <div class="wrap detail-book-intro"><p class="eyebrow">Order online</p><h2>Book your mix or master.</h2><p>Choose the price above or use this selector, enter your project details, and pay the full VAT-inclusive price. Upload through your client account.</p></div>
       <div class="wrap booking-grid"><div class="booking-copy"><ul><li>Choose the channel count and service</li><li>Enter contact and project notes</li><li>Pay securely in full</li><li>Submit stems or premaster in My Music</li></ul><p class="policy">No studio date or start time is needed. Each order covers one track.</p><a class="button button-outline" href="/client#my-files">Open file upload ↗</a></div>
-        <form class="booking-form" id="booking-form" novalidate>
+        <div class="booking-form" id="booking-account">
+          <p>A verified SoundBunker client account is required to book.</p>
+          <a class="button" href="/client?next=%2Fmixing-mastering.html%23book">Sign in or create an account</a>
+        </div>
+        <div id="authenticated-booking" hidden>
+          <form class="booking-form" id="booking-form" novalidate>
           <div class="field full-field"><label for="service" data-i18n="form.service">Service</label><select id="service" name="service" required></select></div>
           <div class="field"><label for="name" data-i18n="form.name">Full name</label><input id="name" name="name" autocomplete="name" required></div>
           <div class="field"><label for="email" data-i18n="form.email">Email</label><input id="email" name="email" type="email" autocomplete="email" required></div>
@@ -117,6 +122,7 @@
           <div class="booking-total full-field"><div><span data-i18n="form.total">Order total</span><b id="session-total">€125</b></div><div><span data-i18n="form.due">Due now</span><b id="deposit-total">€125</b></div></div>
           <button class="button full full-field" type="submit" data-i18n="form.pay" disabled>Continue to secure payment</button><p class="form-status full-field" id="form-status" role="status" aria-live="polite"></p>
         </form>
+        </div>
       </div>
     </section>
 </main>

@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="site-navigation.css?v=20261102b-nav">
   <link rel="stylesheet" href="detail-styles.css?v=20261114-remote">
   <link rel="stylesheet" href="ask-studio.css?v=20261101">
-  <script src="script.js?v=20261114-remote" defer></script>
+  <script src="script.js?v=20261117-account" defer></script>
   <script src="site-navigation.js?v=20261114-remote" defer></script>
   <script src="ask-studio.js?v=20261114-remote" defer></script>
   <meta property="og:type" content="website">
@@ -85,7 +85,12 @@
           <p data-i18n="remote.orderCopy">Choose the payment plan or pay in full. Lofty will get in touch by email to go through your brief and arrange the remote sessions.</p>
           <p data-i18n="remote.orderAudio">Upload any demos, references and vocal takes you already have through the client area.</p>
         </div>
-        <form class="booking-form" id="booking-form" novalidate>
+        <div class="booking-form" id="booking-account">
+          <p>A verified SoundBunker client account is required to book.</p>
+          <a class="button" href="/client?next=%2Fproduction.html%23booking">Sign in or create an account</a>
+        </div>
+        <div id="authenticated-booking" hidden>
+          <form class="booking-form" id="booking-form" novalidate>
           <div class="field full-field"><label for="service" data-i18n="form.service">Service</label><select id="service" name="service" required></select></div>
           <div class="field"><label for="name" data-i18n="form.name">Full name</label><input id="name" name="name" autocomplete="name" required></div>
           <div class="field"><label for="email" data-i18n="form.email">Email</label><input id="email" name="email" type="email" autocomplete="email" required></div>
@@ -97,6 +102,7 @@
           <div class="booking-total full-field"><div><span data-i18n="form.total">Order total</span><b id="session-total">—</b></div><div><span data-i18n="form.due">Due now</span><b id="deposit-total">—</b></div></div>
           <button class="button full full-field" type="submit" data-i18n="form.pay" disabled>Continue to secure payment</button><p class="form-status full-field" id="form-status" role="status" aria-live="polite"></p>
         </form>
+        </div>
       </div>
     </section>
     <section class="detail-band" id="book">

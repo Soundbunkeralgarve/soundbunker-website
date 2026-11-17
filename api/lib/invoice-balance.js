@@ -1,12 +1,12 @@
 import {randomUUID} from 'node:crypto';
 import {invoicePaymentLink} from './invoice-payment-link.js';
-import {documentLink,matchesSoundBunkerInvoiceSequence} from './invoice-journal.js';
+import {documentLink,invoiceAvailableInPortal,matchesSoundBunkerInvoiceSequence} from './invoice-journal.js';
 
 const TABLE='sb_invoice_balance_payments';
 async function checked(query){const r=await query;if(r.error)throw Error('Invoice payment storage is unavailable');return r.data;}
 async function ix(request,path,options){const r=await request(path,options);if(!r.response.ok)throw Error('Invoice payment verification is unavailable');return r.data;}
 export async function invoiceOutstanding(row,request){
- if(row.brand!=='soundbunker'||row.document_type!=='invoices'||!row.ix_document_id||!row.email_sent_at||row.currency!=='eur')throw Error('Invoice is not available for online balance payments');
+ if(row.brand!=='soundbunker'||row.document_type!=='invoices'||!row.ix_document_id||!invoiceAvailableInPortal(row)||row.currency!=='eur')throw Error('Invoice is not available for online balance payments');
  const expected=row.request_payload?.body?.invoice;
  const {invoice}=await ix(request,'/invoices/'+row.ix_document_id+'.json');
  if (!expected || !invoice || String(invoice.id) !== String(row.ix_document_id) ||
