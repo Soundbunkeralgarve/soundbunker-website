@@ -1,6 +1,6 @@
 import {randomUUID} from 'node:crypto';
 import {invoicePaymentLink} from './invoice-payment-link.js';
-import {documentLink} from './invoice-journal.js';
+import {documentLink,matchesSoundBunkerInvoiceSequence} from './invoice-journal.js';
 
 const TABLE='sb_invoice_balance_payments';
 async function checked(query){const r=await query;if(r.error)throw Error('Invoice payment storage is unavailable');return r.data;}
@@ -9,7 +9,11 @@ export async function invoiceOutstanding(row,request){
  if(row.brand!=='soundbunker'||row.document_type!=='invoices'||!row.ix_document_id||!row.email_sent_at||row.currency!=='eur')throw Error('Invoice is not available for online balance payments');
  const expected=row.request_payload?.body?.invoice;
  const {invoice}=await ix(request,'/invoices/'+row.ix_document_id+'.json');
- if(!expected||invoice?.reference!==expected.reference||String(invoice.sequence_id)!==String(expected.sequence_id)||Math.round(Number(invoice.total)*100)!==Number(row.amount_cents))throw Error('Invoice contents require review');
+ if (!expected || !invoice || String(invoice.id) !== String(row.ix_document_id) ||
+     invoice.reference !== expected.reference || Math.round(Number(invoice.total) * 100) !== Number(row.amount_cents) ||
+     !await matchesSoundBunkerInvoiceSequence(invoice, expected, row.request_payload.verified_draft_sequence, path => ix(request, path))) {
+   throw Error('Invoice contents require review');
+ }
  if(invoice.status==='settled')return 0;
  if(!['final','sent'].includes(invoice.status))throw Error('Invoice is not payable');
  const related=await ix(request,'/document/'+row.ix_document_id+'/related_documents.json');

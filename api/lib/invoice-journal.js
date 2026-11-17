@@ -54,6 +54,30 @@ const conflictsWithSeries = (doc, series, expected) =>
   (hasSequenceId(doc) && sequenceId(doc) !== String(expected.sequence_id)) ||
   seriesNames(doc).some(name => name !== seriesName(series.serie));
 
+export async function matchesSoundBunkerInvoiceSequence(invoice, expected, verifiedDraft, api) {
+  const expectedSequence = String(expected.sequence_id ?? '');
+  if (!/^[1-9]\d*$/.test(expectedSequence)) return false;
+  if (hasSequenceId(invoice)) return sequenceId(invoice) === expectedSequence;
+
+  // InvoiceXpress can omit sequence_id. Use the independently verified series of this draft.
+  const selected = { serie: 'SoundBunker' };
+  if (verifiedDraft?.document_id !== String(invoice.id) ||
+      verifiedDraft.sequence_id !== expectedSequence ||
+      seriesName(verifiedDraft.series) !== seriesName(selected.serie) ||
+      conflictsWithSeries(invoice, selected, expected)) return false;
+
+  const { sequences } = await api('/sequences.json');
+  const series = (Array.isArray(sequences) ? sequences : [sequences]).find(item =>
+    seriesName(item?.serie) === seriesName(selected.serie) &&
+    String(item.current_invoice_sequence_id) === expectedSequence);
+  if (!series) return false;
+  if (invoice.status === 'draft') return true;
+
+  const validation = String(series.current_invoice_validation_code || '');
+  return /^[a-z0-9]{4,}$/i.test(validation) && showsSeries(invoice, series) &&
+    String(invoice.atcud || '').startsWith(validation + '-');
+}
+
 function crudeCityDraftUpdate(invoice,id,expected,fiscalTotal){
  if(invoice?.status!=='draft'||String(invoice.id)!==String(id)||invoice.reference!==expected.reference)return null;
  const amount=Math.round(Number(invoice.total)*100);
@@ -121,6 +145,9 @@ export async function processInvoiceJob(row,{db,request,table=TABLE,brand=row.br
   let sequenceLookup;
   const matches=async()=>{
     if(!invoiceIdentityMatches(invoice,row.ix_document_id,expected,fiscalTotal))return false;
+    if (brand === 'soundbunker' && type === 'invoices') {
+      return matchesSoundBunkerInvoiceSequence(invoice, expected, payload.verified_draft_sequence, api);
+    }
     if(String(invoice.sequence_id)===String(expected.sequence_id))return true;
     if(brand!=='crude-city'||type!=='invoice_receipts'||/^[1-9]\d*$/.test(String(invoice.sequence_id??'').trim()))return false;
     sequenceLookup??=api('/sequences.json');

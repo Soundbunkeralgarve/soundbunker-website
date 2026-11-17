@@ -134,6 +134,39 @@ test('deposit receipt is reconciled after a timeout, never recorded twice',async
  const db=database();await queueWebsiteInvoice(fixture('invoices'),db);const api=provider({uncertainPayment:true});await assert.rejects(processInvoiceJob(db.rows[0],{db,request:api.request}));
  await processInvoiceJob(db.rows[0],{db,request:api.request});assert.equal(count(api,'/partial_payments.json','POST'),1);assert.ok(db.rows[0].email_sent_at);assert.match(db.rows[0].email_payload.message.body,/Remaining balance: EUR 7.30/);
 });
+test('a verified SoundBunker draft with an omitted sequence is issued in place and credits its deposit', async () => {
+ const db = database();
+ await queueWebsiteInvoice(fixture('invoices'), db);
+ const [row] = db.rows;
+ row.ix_document_id = 42;
+ const invoice = {id:42, status:'draft', total:12.30, reference:row.document_reference,
+   sequence_number:'Draft', permalink:'https://www.app.invoicexpress.com/documents/example'};
+ const calls = [];
+ const request = async (path, options = {}) => {
+  calls.push([path, options.method || 'GET']);
+  let data = {invoice};
+  if (path === '/sequences.json') {
+   data = {sequences:[{serie:'SoundBunker', current_invoice_sequence_id:123, current_invoice_validation_code:'SB123456'}]};
+  } else if (path.endsWith('/change-state.json')) {
+   Object.assign(invoice, {status:'final', sequence_number:'8/SoundBunker', atcud:'SB123456-8'});
+  } else if (path.endsWith('/related_documents.json')) {
+   data = {documents:[]};
+  } else if (path.endsWith('/partial_payments.json')) {
+   assert.equal(options.body.partial_payment.amount, 5);
+   data = {receipt:{id:99}};
+  }
+  return {response:{ok:true}, data};
+ };
+ await assert.rejects(processInvoiceJob(row, {db, request}), /sequence unknown/);
+ assert.equal(count({calls}, '/change-state.json', 'PUT'), 0);
+ row.request_payload.verified_draft_sequence = {document_id:'42', sequence_id:'123', series:'SoundBunker'};
+ await processInvoiceJob(row, {db, request});
+ assert.equal(count({calls}, '/change-state.json', 'PUT'), 1);
+ assert.equal(count({calls}, '/partial_payments.json', 'POST'), 1);
+ assert.equal(row.ix_document_id, 42);
+ assert.equal(row.document_number, '8/SoundBunker');
+ assert.match(row.email_payload.message.body, /Remaining balance: EUR 7.30/);
+});
 test('portal results are restricted to the verified email and requested brand',async()=>{
  const db=database([{id:'a',brand:'soundbunker',recipient:{email:'client@example.com'}},{id:'b',brand:'soundbunker',recipient:{email:'other@example.com'}},{id:'c',brand:'crude-city',recipient:{email:'client@example.com'}}]);
  const rows=await listWebsiteInvoices(db,'soundbunker','CLIENT@example.com');assert.deepEqual(rows.map(r=>r.id),['a']);

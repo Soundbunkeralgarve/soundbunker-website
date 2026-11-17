@@ -40,6 +40,25 @@ test('online amount is the issued invoice minus all final receipts; adjustments 
  const api=provider();assert.equal(await invoiceOutstanding(fixture(),api.request),7300);api.receipts.push({type:'Receipt',status:'final',total:10});assert.equal(await invoiceOutstanding(fixture(),api.request),6300);
  api.receipts.push({type:'CreditNote',status:'final',total:10});await assert.rejects(invoiceOutstanding(fixture(),api.request),/adjustments/);
 });
+test('online balance verifies the series and ATCUD when the provider omits its sequence id', async () => {
+ const row = fixture();
+ row.amount_cents = 25000;
+ row.request_payload.paid_cents = 10000;
+ row.request_payload.verified_draft_sequence = {document_id:'42', sequence_id:'123', series:'SoundBunker'};
+ const invoice = {id:42, status:'final', reference:'payment', total:250,
+   sequence_number:'8/SoundBunker', atcud:'SB123456-8'};
+ const request = async path => {
+  const data = path === '/sequences.json'
+   ? {sequences:[{serie:'SoundBunker', current_invoice_sequence_id:123, current_invoice_validation_code:'SB123456'}]}
+   : path.endsWith('/related_documents.json')
+     ? {documents:[{type:'Receipt', status:'final', total:100}]}
+     : {invoice};
+  return {response:{ok:true}, data};
+ };
+ assert.equal(await invoiceOutstanding(row, request), 15000);
+ invoice.atcud = 'UNRELATED-8';
+ await assert.rejects(invoiceOutstanding(row, request), /contents require review/);
+});
 test('concurrent checkout attempts cannot create two sessions and the Stripe amount is server derived',async()=>{
  const db=memory(),api=provider(),stripe=stripeProvider();const results=await Promise.allSettled([createBalanceCheckout(db.row,{db,request:api.request,stripe:stripe.stripe}),createBalanceCheckout(db.row,{db,request:api.request,stripe:stripe.stripe})]);
  assert.equal(results.filter(r=>r.status==='fulfilled').length,1);assert.equal(stripe.calls.filter(c=>c.method==='POST').length,1);assert.equal(stripe.session.amount_total,7300);assert.match(stripe.calls[0].idem,/invoice-balance/);assert.equal(stripe.calls[0].body.payment_method_types,undefined);
