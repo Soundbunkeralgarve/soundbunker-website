@@ -18,7 +18,7 @@
     card.querySelector('.hub-test-link').replaceWith(link);card.querySelector('p').textContent=version+' · signed & notarised DMG';
    }
    document.querySelector('[data-hub-mac-status]').textContent='Mac '+version+' is Apple-signed and notarised, with downloaded-app Gatekeeper checks passed.';
-   const help=document.querySelector('[data-hub-mac-help]');help.querySelector('strong').textContent='Installing on Mac';help.querySelector('p').textContent='Choose Apple silicon for an M-series Mac or Intel for an Intel Mac. Open the DMG, drag TicketBunker Check-in Hub to Applications, then launch it from Applications. Replace your previous test copy. If macOS reports damage, stop and report the warning.';
+   const help=document.querySelector('[data-hub-mac-help]');help.querySelector('strong').textContent='Installing on Mac';help.querySelector('p').textContent='Pick Apple silicon (M-series) or Intel, open the DMG and drag the Hub into Applications.';
    ready=true;
   }catch{ /* Keep the unavailable state when the release cannot be verified. */ }
   finally{busy=false;if(!ready)timer=setTimeout(refresh,60000);}
