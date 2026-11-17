@@ -1,6 +1,6 @@
-import {plans} from './pricing-rules.js';
+import {plans,planBands} from './pricing-rules.js';
 import {money} from './shared.js';
-const bands=['Up to 100 tickets','101–500 tickets','501–1,000 tickets','1,001–2,000 tickets'];
+const bands=planBands.map(b=>b+' tickets');
 document.querySelector('#organiser-rates').innerHTML=Object.values(plans).map((p,i)=>`<div><span>${bands[i]}</span><strong>${money(p.eur)}</strong></div>`).join('');
 // Download opens only when this exact app has a verified public store listing.
 (async()=>{try{

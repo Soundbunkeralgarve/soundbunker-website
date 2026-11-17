@@ -1,6 +1,6 @@
-import {plans,largeEventDeposit,additionalTicketRate} from './pricing-rules.js';
+import {plans,planBands,largeEventDeposit,additionalTicketRate} from './pricing-rules.js';
 const currencySelect=document.querySelector('#organiser-currency');
-const bands=['Up to 100 tickets','101–500 tickets','501–1,000 tickets','1,001–2,000 tickets'];
+const bands=planBands.map(b=>b+' tickets');
 function price(cents,currency){return new Intl.NumberFormat('en-GB',{style:'currency',currency:currency.toUpperCase(),minimumFractionDigits:cents%100?2:0,maximumFractionDigits:2}).format(cents/100);}
 function renderRates(){
  const currency=currencySelect?.value==='gbp'?'gbp':'eur',rates=document.querySelector('#organiser-rates');

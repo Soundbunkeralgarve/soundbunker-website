@@ -1,9 +1,9 @@
 import { eventsDatabase } from './events.js';
-// VAT-inclusive organiser service prices in minor currency units. Self-service drafts support three fixed-price brackets,
+// VAT-inclusive organiser service prices in minor currency units. Self-service drafts support fixed-price brackets,
 // each covering up to 2,000 event tickets. Larger festivals come later.
-import {commercialPlans} from './ticketbunker-commercial.js';
-export const listingPlans=Object.freeze(Object.fromEntries(['gbp','eur'].map(currency=>[currency,Object.freeze(Object.fromEntries(['starter','standard','headline','event_plus'].map(tier=>{const p=commercialPlans[tier];return [tier,Object.freeze({amount:p[currency],capacity:p.capacity,label:p.label})];})))])));
-export const listingOrder=Object.freeze(['starter','standard','headline','event_plus']);
+import {commercialPlans,planOrder} from './ticketbunker-commercial.js';
+export const listingPlans=Object.freeze(Object.fromEntries(['gbp','eur'].map(currency=>[currency,Object.freeze(Object.fromEntries(planOrder.map(tier=>{const p=commercialPlans[tier];return [tier,Object.freeze({amount:p[currency],capacity:p.capacity,label:p.label})];})))])));
+export const listingOrder=planOrder;
 export function quoteListing(currency,tier,sold=0){
  const plan=listingPlans[currency]?.[tier];
  if(!plan||!Number.isSafeInteger(sold)||sold<0||sold>plan.capacity)

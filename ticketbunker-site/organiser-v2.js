@@ -450,7 +450,8 @@ function drawReview(){if(!currentDraft)return;$('#review-summary').innerHTML='<d
 function renderListingPayment(){
  $('#request-review').textContent=currentDraft?.rescheduling?'Repost rescheduled event →':'Publish event →';
  const capacity=(currentDraft?.tiers||[]).reduce((s,t)=>s+t.quantity_total,0),paid=currentDraft?.fees?.some(f=>f.status==='paid'),offer=profile?.listingOffer,free=offer?.listing_discount_percent===100&&(!offer.valid_until||Date.parse(offer.valid_until)>Date.now()),waived=free||currentDraft?.charity?.status==='verified';
- const band=capacity<=100?['starter',9900]:capacity<=500?['standard',19900]:capacity<=1000?['headline',29900]:['event_plus',39900];
+ // Mirrors pricing-rules.js (this file is a classic script and cannot import it).
+ const band=[[50,'mini',2900],[100,'starter',4900],[250,'club',9900],[500,'standard',19900],[1000,'headline',29900],[2000,'event_plus',39900]].find(b=>capacity<=b[0])?.slice(1)||['event_plus',39900];
  const rate=offer&&(!offer.valid_until||Date.parse(offer.valid_until)>Date.now())?Number(offer.listing_discount_percent||0):0,amount=band[1]-Math.round(band[1]*rate/100),button=$('#pay-listing');
  button.hidden=paid||waived||!capacity;button.dataset.plan=band[0];button.disabled=connectState?.ticketSalesEnabled!==true;
  button.textContent='Pay '+money(amount,currentDraft?.currency||'eur')+' event listing →';
