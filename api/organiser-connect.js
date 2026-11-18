@@ -4,6 +4,7 @@ import { organiserForUser } from './organiser.js';
 import { json, parseJson } from './lib/http.js';
 import { ticketBunkerPaymentsEnabled } from './lib/ticketbunker-stripe.js';
 import { deliverOrganiserMailFor } from './lib/organiser-onboarding-mail.js';
+import { activateVerifiedOrganiser } from './lib/organiser-activation.js';
 const BASE='https://api.stripe.com';
 const PORTAL='https://theticketbunker.com/organiser';
 const VERSION='2026-09-30.endive';
@@ -69,8 +70,9 @@ export default async function handler(req,res){
    const status=await fetchConnectStatus(org.stripe_account_id);
    const saved=await ctx.admin.from('sb_event_organisers').update({stripe_capabilities_ready:status.ready}).eq('id',org.id).eq('stripe_account_id',org.stripe_account_id);
    if(saved.error)throw saved.error;
+   const activated=await activateVerifiedOrganiser(ctx.admin,org.id,status.ready);
    if(status.ready)await deliverOrganiserMailFor(ctx.admin,org.id);
-   return json(res,{...status,billingReviewComplete:org.tax_review_complete===true,platformPaymentsEnabled:ticketBunkerPaymentsEnabled(),ticketSalesEnabled:status.ready&&org.tax_review_complete===true&&ticketBunkerPaymentsEnabled()});
+   return json(res,{...status,billingReviewComplete:activated,platformPaymentsEnabled:ticketBunkerPaymentsEnabled(),ticketSalesEnabled:status.ready&&activated&&ticketBunkerPaymentsEnabled()});
   }
   let body;try{body=await parseJson(req);}catch{return json(res,{error:'Invalid request'},400);}
   if(!['onboard','embedded'].includes(body?.action))return json(res,{error:'Choose Validate your account to continue.'},400);

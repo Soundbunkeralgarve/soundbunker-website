@@ -9,6 +9,8 @@ import {fetchConnectStatus} from './organiser-connect.js';
 import {ticketBunkerStripe} from './lib/ticketbunker-stripe.js';
 import {fulfilPostponementCheckout} from './lib/ticketbunker-postponements.js';
 import {fulfilCancellationCheckout,queueCancelledPaidOrder} from './lib/ticketbunker-cancellations.js';
+import {activateVerifiedOrganiser} from './lib/organiser-activation.js';
+
 export const config={api:{bodyParser:false}};
 export default async function handler(req,res){
  if(req.method!=='POST')return json(res,{error:'Method not allowed'},405);
@@ -24,7 +26,7 @@ export default async function handler(req,res){
    if(event.type==='account.updated'){
     // A fresh server-side check grants readiness; a signed event alone cannot.
     // The database queues the personal welcome when verification first completes.
-    if(object.id===event.account){const status=await fetchConnectStatus(event.account);const saved=await db.from('sb_event_organisers').update({stripe_capabilities_ready:status.ready}).eq('stripe_account_id',event.account);if(saved.error)throw saved.error;}
+    if(object.id===event.account){const status=await fetchConnectStatus(event.account);const saved=await db.from('sb_event_organisers').update({stripe_capabilities_ready:status.ready}).eq('stripe_account_id',event.account).select('id');if(saved.error)throw saved.error;for(const o of saved.data||[])await activateVerifiedOrganiser(db,o.id,status.ready);}
    }
    if(['payout.paid','payout.failed','payout.canceled','payout.updated'].includes(event.type)){
     // Stripe can deliver older snapshots after newer ones. Read its current
