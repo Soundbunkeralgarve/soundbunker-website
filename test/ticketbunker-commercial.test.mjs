@@ -18,11 +18,13 @@ test('advertised fees contain IVA rather than adding tax on top',()=>{
  assert.deepEqual(taxExample(80735),{netCents:65638,taxCents:15097,totalCents:80735});
  for(const plan of Object.values(commercialPlans)){const t=taxExample(plan.eur);assert.equal(t.netCents+t.taxCents,plan.eur);}
 });
-test('repeat event quotes use 5% and 10% without accepting other event counts',()=>{
- assert.equal(prebookingQuote('standard','eur',4).totalCents,75620);
- assert.equal(prebookingQuote('standard','eur',8).totalCents,143280);
+test('5- and 10-event bundles save 10% and 15% without accepting other event counts',()=>{
+ assert.equal(prebookingQuote('standard','eur',5).totalCents,89550);
+ assert.equal(prebookingQuote('standard','eur',10).totalCents,169150);
+ assert.equal(prebookingQuote('mini','gbp',10).totalCents,24650);
+ assert.throws(()=>prebookingQuote('standard','eur',4));assert.throws(()=>prebookingQuote('standard','eur',8));
  assert.equal(prebookingQuote('event_plus','eur',1).totalCents,39900);
- assert.throws(()=>prebookingQuote('usage','eur',4));assert.throws(()=>prebookingQuote('starter','eur',2));
+ assert.throws(()=>prebookingQuote('usage','eur',5));assert.throws(()=>prebookingQuote('starter','eur',2));
 });
 test('admin authority requires verified email and server allowlist; metadata grants nothing',async()=>{
  let called=false;const admin={from(){called=true;return {select(){return this},eq(){return this},async maybeSingle(){return {data:null,error:null}}};}};

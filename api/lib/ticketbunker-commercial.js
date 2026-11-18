@@ -1,8 +1,9 @@
-import {plans,bundleRate} from '../../ticketbunker-site/pricing-rules.js';
+import {plans,bundleRate,bundleSizes,planOrder} from '../../ticketbunker-site/pricing-rules.js';
+export {planOrder};
 export {usageQuote} from '../../ticketbunker-site/pricing-rules.js';
 export const commercialPlans=plans;
 export function prebookingQuote(plan,currency,count=1){
- const p=plans[plan];if(!p||!['eur','gbp'].includes(currency)||![1,4,8].includes(count))throw Error('Choose a valid plan, currency and event count');
+ const p=plans[plan];if(!p||!['eur','gbp'].includes(currency)||!bundleSizes.includes(count))throw Error('Choose a valid plan, currency and event count');
  const subtotal=p[currency]*count,discount=Math.round(subtotal*bundleRate(count));return {subtotalCents:subtotal,discountCents:discount,totalCents:subtotal-discount,count,plan,currency};
 }
 export async function ticketBunkerAdmin(ctx){
