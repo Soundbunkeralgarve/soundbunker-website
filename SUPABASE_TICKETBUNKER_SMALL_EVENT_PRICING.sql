@@ -4,7 +4,7 @@
 -- Paid listings keep the amount they paid; upgrades still charge only the difference.
 ALTER TABLE public.sb_event_listing_fees DROP CONSTRAINT IF EXISTS sb_event_listing_fees_tier_code_check;
 ALTER TABLE public.sb_event_listing_fees ADD CONSTRAINT sb_event_listing_fees_tier_code_check
- CHECK (tier_code IN ('mini','starter','club','standard','headline','event_plus','festival','festival_pro'));
+ CHECK (tier_code IN ('mini','starter','club','standard','headline','event_plus','large','festival','festival_plus','festival_pro'));
 alter table public.tb_event_prebookings drop constraint if exists tb_event_prebookings_event_count_check;
 alter table public.tb_event_prebookings add constraint tb_event_prebookings_event_count_check check(event_count in (1,4,5,8,10));
 alter table public.tb_event_prebookings drop constraint if exists tb_event_prebookings_plan_check;
