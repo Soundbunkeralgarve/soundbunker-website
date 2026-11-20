@@ -74,3 +74,18 @@ test('manual clicker adjusts the shared count but never below zero',async()=>{
  const free=await one(db,'select tb_door_cash_sale($1,$2,$3,1,$4)',[req(20),rehearsal,freeTier,owner]);
  assert.equal(free.totalCents,0,'rehearsal door sales record no money');
 });
+
+test('an optional door price is charged at the door and leaves the online price alone',async()=>{
+ const db=await database();
+ await db.exec('reset role');
+ await db.exec(readFileSync(new URL('../SUPABASE_TICKETBUNKER_DOOR_PRICE.sql',import.meta.url),'utf8'));
+ await db.exec(readFileSync(new URL('../SUPABASE_TICKETBUNKER_DOOR_PRICE.sql',import.meta.url),'utf8'));
+ await assert.rejects(db.query('update sb_event_tiers set door_price_cents=50 where id=$1',[tier]),/door_price_check/);
+ await db.query('update sb_event_tiers set door_price_cents=1500 where id=$1',[tier]);
+ await db.exec('set role service_role');
+ const summary=await one(db,'select tb_door_summary($1,$2)',[event,crew]);
+ assert.equal(summary.tiers[0].priceCents,1500);assert.equal(summary.tiers[0].onlinePriceCents,1000);
+ assert.equal((await one(db,'select tb_door_cash_sale($1,$2,$3,2,$4)',[req(40),event,tier,crew])).totalCents,3000);
+ assert.equal((await db.query('select * from tb_door_card_reserve($1,$2,$3,1,$4)',[req(41),event,tier,crew])).rows[0].total_cents,1500);
+ assert.equal(await one(db,'select price_cents from sb_event_tiers where id=$1',[tier]),1000);
+});
