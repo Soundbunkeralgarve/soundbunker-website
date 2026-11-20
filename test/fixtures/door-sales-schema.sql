@@ -1,0 +1,17 @@
+create role anon;create role authenticated;create role service_role bypassrls;
+create schema auth;
+create table auth.users(id uuid primary key);
+create function auth.role() returns text language sql as $$select current_user::text$$;
+create table public.profiles(id uuid primary key,role text,full_name text);
+create table public.sb_event_organisers(id uuid primary key,owner_user_id uuid);
+create table public.sb_events(id uuid primary key,organiser_profile_id uuid,title text,status text,starts_at timestamptz,ends_at timestamptz,currency text default 'eur',internal_free_test boolean default false,test_expires_at timestamptz,public_beta_test boolean default false);
+create table public.sb_event_staff_access(id uuid primary key default gen_random_uuid(),event_id uuid,user_id uuid,revoked_at timestamptz);
+create table public.sb_event_tiers(id uuid primary key,event_id uuid,name text,price_cents integer,quantity_total integer);
+create table public.sb_event_orders(id uuid primary key default gen_random_uuid(),event_id uuid not null,tier_id uuid not null,customer_name text not null,customer_email text not null,quantity integer not null check(quantity between 1 and 8),total_cents integer not null,status text not null default 'reserved',reserved_until timestamptz not null,stripe_session_id text unique,paid_at timestamptz,currency text not null default 'eur',beta_test_order boolean not null default false,guest_allocation_id uuid,tb_checkout_key uuid unique,tb_payment_flow text check(tb_payment_flow is null or tb_payment_flow='separate_v1'),tb_recipient_account text);
+create table public.sb_event_tickets(id uuid primary key default gen_random_uuid(),order_id uuid not null,event_id uuid not null,tier_id uuid not null,sequence_number integer not null,checked_in_at timestamptz,checked_in_by uuid,holder_email text,unique(order_id,sequence_number));
+create function public.sb_guest_reserved(p_tier uuid) returns bigint language sql stable as $$select 0::bigint$$;
+create table public.tb_event_cancellations(event_id uuid primary key,cancelled_at timestamptz);
+create table public.tb_ticket_payments(order_id uuid primary key);
+create table public.tb_cancellation_refunds(order_id uuid primary key,event_id uuid,customer_email text,notice_recipients jsonb);
+grant usage on schema public,auth to service_role;
+grant all on all tables in schema public,auth to service_role;

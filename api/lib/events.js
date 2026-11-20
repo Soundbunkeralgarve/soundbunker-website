@@ -45,6 +45,16 @@ export async function fulfillEventCheckout(checkout, db=eventsDatabase(), connec
   }
   if(done.data!=='paid') throw new Error('Unexpected event payment status');
   if(order.ticket_email_sent_at)return {status:'paid',tickets:order.quantity};
+  if(order.door_sale){
+    // Bought at the door: the buyer walks straight in, so admit the tickets and keep
+    // their Stripe email for refund notices instead of sending tickets to show at the door.
+    const admitted=await db.rpc('tb_door_admit_order',{p_order:id});
+    if(admitted.error)throw admitted.error;
+    const buyer=String(checkout.customer_details?.email||'').trim().toLowerCase();
+    const saved=await db.from('sb_event_orders').update({ticket_email_sent_at:new Date().toISOString(),...(/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(buyer)&&buyer.length<=254?{customer_email:buyer}:{})}).eq('id',id);
+    if(saved.error)throw saved.error;
+    return {status:'paid',tickets:order.quantity};
+  }
   const [tickets,event,tier]=await Promise.all([
     db.from('sb_event_tickets').select('id,sequence_number').eq('order_id',id).order('sequence_number'),
     db.from('sb_events').select('title,starts_at,venue,venue_timezone,image_url,event_logo_url,organiser,organiser_profile_id').eq('id',order.event_id).single(),
