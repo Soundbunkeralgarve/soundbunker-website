@@ -1,6 +1,9 @@
 // Display fixtures only. No database writes, real inventory or checkout identifiers.
 import {clubPreview} from './club-preview.js';
-const sample = ({slug,title,kind,venue,city,when,until,image,artist,price,art,tag,tone='green',story,programme,policy='Sample age policy: 18+ with photo ID'}) => ({
+// Sample dates roll forward in four-week steps, so demos never show a past date.
+const FOUR_WEEKS=28*24*60*60*1000;
+const upcoming=(when,until)=>{const shift=Math.max(0,Math.ceil((Date.now()-Date.parse(until))/FOUR_WEEKS))*FOUR_WEEKS;return [new Date(Date.parse(when)+shift).toISOString(),new Date(Date.parse(until)+shift).toISOString()];};
+const sample = ({slug,title,kind,venue,city,when:firstStart,until:firstEnd,image,artist,price,art,tag,tone='green',story,programme,policy='Sample age policy: 18+ with photo ID'}) => {const [when,until]=upcoming(firstStart,firstEnd);return {
  preview:true,id:'shop-preview-'+slug,slug,title,event_kind:kind,
  organiser:'TicketBunker Demo Organiser',venue:venue+' · fictional venue',venue_city:city,
  venue_timezone:'Europe/Lisbon',currency:'eur',starts_at:when,ends_at:until,
@@ -24,7 +27,7 @@ This venue is fictional. A real event page should list step-free access, accessi
 Ticket information:
 These example ticket tiers show how the shop works. This page cannot take payment, send a booking email, issue a ticket or grant admission.`,
  tiers:[{id:'sample-'+slug+'-early',name:'Early release · sample',price_cents:Math.max(0,price-400),remaining:0},{id:'sample-'+slug+'-general',name:'General admission · sample',price_cents:price,remaining:80},{id:'sample-'+slug+'-supporter',name:'Supporter ticket · sample',price_cents:price+1000,remaining:20}]
-});
+};};
 const previews=[
  sample({slug:'after-dark',title:'After Dark: Warehouse Sessions',kind:'club',venue:'The Warehouse',city:'Loulé',when:'2026-11-14T22:00:00Z',until:'2026-11-15T04:00:00Z',image:'/assets/club.jpg',artist:'Demo Selector One · Demo Selector Two',price:1500,art:'AFTER\nDARK',tag:'HOUSE / GARAGE / LATE NIGHTS',tone:'purple',story:'Low lights, deep bass and a room full of people who came to dance. A sample night that moves from warm house and garage into a late-night closing set.',programme:'22:00 · Doors and opening selector\n00:00 · Main-room session\n02:00 · Closing set',policy:'Sample age policy: 18+ with photo ID; sample last entry 01:00'}),
  sample({slug:'coastline-live',title:'Coastline Live: The Independent Sessions',kind:'show',venue:'The Electric Room',city:'Faro',when:'2026-11-20T20:00:00Z',until:'2026-11-20T23:30:00Z',image:'/assets/band.webp',artist:'The Sample Coast · Demo Support',price:2200,art:'COASTLINE\nLIVE',tag:'INDEPENDENT MUSIC / LIVE & LOUD',story:'Guitars up front, a close-up stage and a night for discovering your next favourite band. This sample show pairs a headline set with a local support slot.',programme:'20:00 · Doors\n20:30 · Demo support\n21:30 · The Sample Coast headline set'}),

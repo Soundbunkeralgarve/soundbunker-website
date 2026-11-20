@@ -13,7 +13,7 @@ let catalogue=[],catalogueError=false;
 const narrow=matchMedia('(max-width: 900px)');
 function render(){
  const term=$('#event-search').value.trim().toLowerCase(),category=$('#event-category').value;
- const list=[...catalogue,...shopPreviewEvents].filter(e=>(category==='all'||e.event_kind===category)&&(!term||[e.title,e.venue,e.venue_city,e.headline_artist,e.organiser].join(' ').toLowerCase().includes(term)));
+ const list=[...catalogue,...[...shopPreviewEvents].sort((a,b)=>Date.parse(a.starts_at)-Date.parse(b.starts_at))].filter(e=>(category==='all'||e.event_kind===category)&&(!term||[e.title,e.venue,e.venue_city,e.headline_artist,e.organiser].join(' ').toLowerCase().includes(term)));
  const examples=list.filter(e=>e.preview).length,real=list.length-examples;
  $('#event-count').textContent=[real?real+' event'+(real===1?'':'s'):'',examples?examples+' sample event'+(examples===1?'':'s'):''].filter(Boolean).join(' · ')||'No matches';
  document.querySelectorAll('[data-category]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.category===category)));
