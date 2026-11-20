@@ -24,9 +24,17 @@ export default async function handler(req,res){
  const o=await db.from('sb_event_organisers').select('id').eq('id',e.data.organiser_profile_id).eq('owner_user_id',c.user.id).maybeSingle();
  if(o.error||!o.data)return json(res,{error:'Event access denied'},403);
  if(req.method==='GET'){
- const [tiers,inv,alerts,changes]=await Promise.all([db.from('sb_event_tiers').select('id,name,quantity_total').eq('event_id',b.eventId),db.rpc('sb_capacity_inventory',{p_event:b.eventId}),db.from('sb_capacity_alerts').select('*').eq('event_id',b.eventId).order('created_at',{ascending:false}).limit(10),db.from('sb_capacity_changes').select('id,status,new_total,amount_cents,currency,created_at').eq('event_id',b.eventId).order('created_at',{ascending:false}).limit(10)]);
+ const [tiers,inv,alerts,changes]=await Promise.all([db.from('sb_event_tiers').select('id,name,quantity_total,price_cents,door_price_cents').eq('event_id',b.eventId),db.rpc('sb_capacity_inventory',{p_event:b.eventId}),db.from('sb_capacity_alerts').select('*').eq('event_id',b.eventId).order('created_at',{ascending:false}).limit(10),db.from('sb_capacity_changes').select('id,status,new_total,amount_cents,currency,created_at').eq('event_id',b.eventId).order('created_at',{ascending:false}).limit(10)]);
  if(tiers.error||inv.error||alerts.error||changes.error)throw Error('Capacity unavailable');
  return json(res,{tiers:tiers.data,inventory:inv.data,alerts:alerts.data,changes:changes.data,paymentsEnabled:enabled()});
+ }
+ if(b.action==='doorPrice'){
+ // A door price only changes what the scanner charges at the door; online prices stay as published.
+ const price=b.doorPriceCents===null||b.doorPriceCents===''?null:Number(b.doorPriceCents);
+ if(!ID.test(String(b.tierId||''))||(price!==null&&(!Number.isInteger(price)||price<100||price>10000000)))return json(res,{error:'Enter a door price of at least 1.00, or leave it empty to use the online price'},400);
+ const saved=await db.from('sb_event_tiers').update({door_price_cents:price}).eq('id',b.tierId).eq('event_id',b.eventId).select('id,name,price_cents,door_price_cents').maybeSingle();
+ if(saved.error)throw saved.error;if(!saved.data)return json(res,{error:'Ticket type unavailable'},404);
+ return json(res,{tier:saved.data});
  }
  if(!ID.test(String(b.tierId||''))||!Number.isSafeInteger(Number(b.quantity)))return json(res,{error:'Choose a ticket type and whole quantity'},400);
  const params={p_actor:c.user.id,p_event:b.eventId,p_tier:b.tierId,p_quantity:Number(b.quantity)};

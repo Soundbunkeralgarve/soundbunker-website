@@ -28,7 +28,7 @@ export default async function handler(req,res) {
       :{data:[],error:null};
     if(promotions.error)throw promotions.error;
     const featured=new Set(promotions.data.map(p=>p.event_id));
-    const tiers=ids.length?await db.from('sb_event_tiers').select('id,event_id,name,price_cents,quantity_total').in('event_id',ids):{data:[],error:null};
+    const tiers=ids.length?await db.from('sb_event_tiers').select('id,event_id,name,price_cents,door_price_cents,quantity_total').in('event_id',ids):{data:[],error:null};
     if(tiers.error) throw tiers.error;
     const inventory=await db.rpc('sb_event_inventory');
     if(inventory.error) throw inventory.error;
@@ -39,6 +39,7 @@ export default async function handler(req,res) {
       tiers:tiers.data.filter(t=>t.event_id===e.id).map(t=>({
        id:t.id,name:t.name,
        price_cents:e.public_beta_test?0:t.price_cents,
+       door_price_cents:e.public_beta_test?null:t.door_price_cents??null,
        remaining:Math.max(0,(e.public_beta_test?Math.min(t.quantity_total,50):t.quantity_total)-(used.get(t.id)||0))
       }))
     }))});
