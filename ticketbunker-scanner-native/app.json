@@ -11,7 +11,7 @@
     "ios": {
       "bundleIdentifier": "pt.soundbunker.ticketbunkerscanner",
       "supportsTablet": true,
-      "buildNumber": "13",
+      "buildNumber": "14",
       "infoPlist": {}
     },
     "android": {
