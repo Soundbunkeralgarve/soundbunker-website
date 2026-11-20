@@ -28,7 +28,7 @@ export async function processOrganiserMail(db,row){
    if(!(await fetchConnectStatus(org.data.stripe_account_id)).ready)throw Object.assign(Error('Stripe confirmation is incomplete'),{retryable:false});
    if(!org.data.tax_review_complete)throw Object.assign(Error('Billing review is incomplete'),{retryable:false});
    const billing=await db.from('tb_organiser_billing').select('legal_name,contact_name').eq('organiser_profile_id',org.data.id).maybeSingle();if(billing.error)throw billing.error;
-   if(!org.data.logo_url||!billing.data?.legal_name)throw Object.assign(Error('Account details are incomplete'),{retryable:false});
+   if(!billing.data?.legal_name)throw Object.assign(Error('Account details are incomplete'),{retryable:false});
    if(payload&&payload.to!==owner.data.user.email)throw Object.assign(Error('Owner email changed'),{retryable:false});
    if(!payload){
    payload=organiserOnboardingMessage(job.kind,{organiser:org.data,user:owner.data.user,billing:billing.data||{},paymentsEnabled:ticketBunkerPaymentsEnabled()});

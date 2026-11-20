@@ -1,0 +1,20 @@
+/* The home page header, self-contained so older pages can share it without home.css. */
+.tb-header{z-index:30;position:sticky;top:0;background:rgba(5,5,5,.97);backdrop-filter:blur(16px);color:#fff;border-bottom:1px solid #262c29;font-family:'DM Sans',Arial,sans-serif}
+.tb-header *{box-sizing:border-box}
+.tb-header a{text-decoration:none}
+.tb-header .header-inner{width:min(1240px,calc(100% - 72px));margin:0 auto;height:76px;display:flex;align-items:center;justify-content:space-between;gap:24px;position:relative}
+.tb-header .brand{display:inline-flex;align-items:center;flex:0 0 auto}
+.tb-header .brand img{width:205px;height:auto;display:block}
+.tb-header .navigation{display:flex;align-items:center;gap:22px;margin:auto}
+.tb-header .navigation a{font-size:12px;font-weight:800;color:#ddd;white-space:nowrap}
+.tb-header .navigation a:hover,.tb-header .navigation a[aria-current=page]{color:#00e0a6}
+.tb-header .navigation a[aria-current=page]{text-decoration:underline;text-underline-offset:7px}
+.tb-header .mobile-nav-link{display:none}
+.tb-header .nav-actions{display:flex;align-items:center;gap:20px;flex:0 0 auto}
+.tb-header .login{font-size:12px;font-weight:800;color:#fff}
+.tb-header .btn-teal{display:inline-flex;align-items:center;min-height:45px;padding:12px 20px;background:#00e0a6;color:#071c15;font-size:12px;font-weight:900;letter-spacing:.025em;white-space:nowrap}
+.tb-header .btn-teal:hover{background:#54f4c6}
+.tb-header .menu-toggle{display:none;align-items:center;gap:7px;background:none;border:0;color:#fff;font:800 12px 'DM Sans',Arial,sans-serif;min-height:44px;min-width:44px;padding:0 6px;cursor:pointer}
+@media(max-width:1120px){.tb-header .brand img{width:180px}.tb-header .navigation{gap:13px}.tb-header .navigation a{font-size:11px}.tb-header .btn-teal{padding:10px 14px}}
+@media(max-width:900px){.tb-header .header-inner{width:calc(100% - 42px)}.tb-header .navigation{display:none;position:absolute;left:-21px;right:-21px;top:76px;gap:0;flex-direction:column;align-items:stretch;padding:16px 24px 24px;background:#090e0b;border-bottom:1px solid #324139}.tb-header .navigation.open{display:flex}.tb-header .navigation a{padding:12px 0;border-bottom:1px solid #ffffff25}.tb-header .mobile-nav-link{display:block}.tb-header .menu-toggle{display:inline-flex}.tb-header .login{display:none}}
+@media(max-width:590px){.tb-header .header-inner{width:calc(100% - 32px);height:65px;gap:8px}.tb-header .navigation{top:65px;left:-16px;right:-16px}.tb-header .brand img{width:160px}.tb-header .btn-teal{display:none}}

@@ -9,6 +9,10 @@ let connectComponent=null;
 let pendingEmail='',signupMode=/[?&](signup|start)\b/.test(location.search)?'signup':'signin';
 const SIGNUP_RETURN='/login?role=organiser&next='+encodeURIComponent('/organiser');
 let feedbackAnchor=null;
+// The logo is optional: organisers can skip it during setup and add it later from Branding.
+const logoLaterKey=()=>'tb-logo-later:'+(profile?.id||'');
+function logoLater(){try{return !!profile?.id&&localStorage.getItem(logoLaterKey())==='1';}catch{return false;}}
+const logoDone=()=>!!profile?.logo_url||logoLater();
 document.addEventListener('submit',e=>{feedbackAnchor=e.submitter||e.target.querySelector('button[type=submit],button:not([type])');},true);
 document.addEventListener('click',e=>{const button=e.target.closest('button');if(button)feedbackAnchor=button;},true);
 function notice(msg,bad=false,anchor=feedbackAnchor){
@@ -63,7 +67,7 @@ async function fetchCapacityPage(){const id=$('#capacity-event').value;$('#capac
 $('#capacity-event').onchange=fetchCapacityPage;
 $('#capacity-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button');b.disabled=true;try{const input={eventId:$('#capacity-event').value,tierId:f.elements.tierId.value,quantity:Number(f.elements.quantity.value)};const r=await api('/api/event-capacity',{...input,action:'quote'}),q=r.quote;$('#capacity-quote').innerHTML='<div class="help-note"><h3>'+q.oldTotal+' → '+q.newTotal+' total places</h3><p>'+esc(q.currentBand.replaceAll('_',' '))+' → '+esc(q.targetBand.replaceAll('_',' '))+'</p><p><strong>Extra listing fee: '+esc(money(q.amountCents,q.currency))+'</strong></p>'+(q.amountCents&&!r.paymentsEnabled?'<p>Paid capacity upgrades are not available yet. Your capacity is unchanged.</p>':'<button class="primary" id="capacity-confirm">'+(q.amountCents?'Continue to secure payment':'Confirm capacity increase')+' →</button>')+'</div>';const confirmButton=$('#capacity-confirm');if(confirmButton)confirmButton.onclick=async()=>{confirmButton.disabled=true;try{const d=await api('/api/event-capacity',{...input,action:'confirm',expectedAmount:q.amountCents});if(d.url){const url=new URL(d.url);if(url.origin!=='https://checkout.stripe.com')throw Error('Invalid payment link');location.assign(url.href);return;}await fetchCapacityPage();notice('Capacity increased.');}catch(err){notice(err.message,true);confirmButton.disabled=false;}};}catch(err){notice(err.message,true);}finally{b.disabled=false;}};
 
-function renderOverview(){const offer=profile?.listingOffer,active=offer&&(!offer.valid_until||Date.parse(offer.valid_until)>Date.now())&&offer.listing_discount_percent>0;$('#listing-offer').hidden=!active;$('#listing-offer').textContent=active?(offer.listing_discount_percent===100?'Your account has free fixed-band listings.':offer.listing_discount_percent+'% account discount on fixed listing fees.')+' Applies to new quotes for events up to 2,000 tickets. Larger-event usage and payment processing stay separate.'+(offer.valid_until?' Valid until '+new Date(offer.valid_until).toLocaleString('en-GB')+'.':''):'';let visible=safeEvents();$('#greeting').textContent='Welcome, '+(profile?.display_name||'organiser')+'. Manage your events, ticket sales and door crew in one place.';$('#metric-events').textContent=visible.length;$('#metric-paid').textContent='—';$('#metric-scanned').textContent='—';$('#metric-money').textContent='—';let root=$('#overview-events');root.innerHTML=visible.length?visible.slice(0,4).map(drawEvent).join(''):empty('No events yet. Choose Create Event to build your first show.');wireRows(root);const published=visible.filter(e=>e.status==='published');if(published.length){fetchReport(published[0].id,true).then(()=>{}).catch(()=>{});}else{$('#metric-paid').textContent='0';$('#metric-scanned').textContent='0';$('#metric-money').textContent=money(0,profile.country_code==='GB'?'gbp':'eur');}}
+function renderOverview(){$('#logo-nudge').hidden=!!profile?.logo_url;const offer=profile?.listingOffer,active=offer&&(!offer.valid_until||Date.parse(offer.valid_until)>Date.now())&&offer.listing_discount_percent>0;$('#listing-offer').hidden=!active;$('#listing-offer').textContent=active?(offer.listing_discount_percent===100?'Your account has free fixed-band listings.':offer.listing_discount_percent+'% account discount on fixed listing fees.')+' Applies to new quotes for events up to 2,000 tickets. Larger-event usage and payment processing stay separate.'+(offer.valid_until?' Valid until '+new Date(offer.valid_until).toLocaleString('en-GB')+'.':''):'';let visible=safeEvents();$('#greeting').textContent='Welcome, '+(profile?.display_name||'organiser')+'. Manage your events, ticket sales and door crew in one place.';$('#metric-events').textContent=visible.length;$('#metric-paid').textContent='—';$('#metric-scanned').textContent='—';$('#metric-money').textContent='—';let root=$('#overview-events');root.innerHTML=visible.length?visible.slice(0,4).map(drawEvent).join(''):empty('No events yet. Choose Create Event to build your first show.');wireRows(root);const published=visible.filter(e=>e.status==='published');if(published.length){fetchReport(published[0].id,true).then(()=>{}).catch(()=>{});}else{$('#metric-paid').textContent='0';$('#metric-scanned').textContent='0';$('#metric-money').textContent=money(0,profile.country_code==='GB'?'gbp':'eur');}}
 function renderEvents(){const visible=safeEvents(),el=$('#all-events');el.innerHTML=visible.length?visible.map(drawEvent).join(''):empty('You have no new events. Start by creating your first event.');wireRows(el);}
 async function refresh(){
  const d=await api('/api/organiser');profile=d.organiser;events=d.events||[];
@@ -71,7 +75,7 @@ async function refresh(){
  $('#sidebar-name').textContent=profile.display_name;$('#sidebar-country').textContent=profile.country_code==='GB'?'United Kingdom':'Portugal';
  const verification=loadStripeStatus();
  await loadBilling();loadCapacityNotifications();
- if((!profile.logo_url||!billingComplete)&&currentPage!=='hub'){showOnboarding();return;}
+ if((!logoDone()||!billingComplete)&&currentPage!=='hub'){showOnboarding();return;}
  $('#page-app').hidden=false;$('#loading').hidden=true;page(currentPage||'overview');
  // External payout verification updates the visible status without blocking the workspace.
  void verification;
@@ -79,13 +83,13 @@ async function refresh(){
 function showOnboarding(){
  $('#page-app').hidden=false;$('#loading').hidden=true;$$('.page').forEach(x=>x.hidden=true);
  $('#onboarding').hidden=false;
- const signedIn=!!session&&!pendingEmail,verify=!!profile?.logo_url&&billingComplete;
+ const signedIn=!!session&&!pendingEmail,verify=logoDone()&&billingComplete;
  $('#setup-login-panel').hidden=signedIn;
  $('#signup-form').hidden=!!pendingEmail;$('#signup-confirm').hidden=!pendingEmail;
  $('#register-form').hidden=!signedIn||!!profile;
- $('#onboarding-logo').hidden=!signedIn||!profile||!!profile.logo_url;
- $('#onboarding-billing').hidden=!signedIn||!profile||!profile.logo_url||billingComplete;
- $('#setup-profile-panel').hidden=!signedIn||!!profile?.logo_url;
+ $('#onboarding-logo').hidden=!signedIn||!profile||logoDone();
+ $('#onboarding-billing').hidden=!signedIn||!profile||!logoDone()||billingComplete;
+ $('#setup-profile-panel').hidden=!signedIn||(!!profile&&logoDone());
  $('#onboarding-verify').hidden=!signedIn||!verify;
  if(signedIn&&verify)dockVerification(true);
  $('#sign-out').hidden=!session;$('#section-nav').hidden=!signedIn;$('#account-status').hidden=!signedIn;
@@ -99,7 +103,7 @@ function dockVerification(inSetup){
  if(inSetup)slot.append(panel);else slot.querySelector('.page-lead').after(panel);
 }
 function renderSetupSteps(){
- const s=connectState||{},done={login:!!session&&!pendingEmail,profile:!!profile,logo:!!profile?.logo_url,billing:!!profile?.logo_url&&billingComplete,verify:s.ready===true};
+ const s=connectState||{},done={login:!!session&&!pendingEmail,profile:!!profile,logo:logoDone(),billing:logoDone()&&billingComplete,verify:s.ready===true};
  const current=Object.keys(done).find(key=>!done[key]);
  $$('#setup-steps li').forEach(li=>{const key=li.dataset.step;li.dataset.state=done[key]?'done':key===current?'current':'todo';if(key===current)li.setAttribute('aria-current','step');else li.removeAttribute('aria-current');});
 }
@@ -190,14 +194,14 @@ function renderConnectStatus(){
  const s=connectState||{state:'checking'};
  let text={checking:'Checking your Stripe account…',not_started:'Your organiser account is saved. Verify your business and payout details here in TicketBunker using Stripe’s secure form.',action_required:'Action needed. Continue verification here to finish or update your details.',under_review:'Under review. Stripe is checking your submitted information. Check again later for the result.',verified:'Verified by Stripe for receiving transfers and bank payouts. Ticket sales and post-show payment release are activated separately.',restricted:'This Stripe connection needs support before it can receive payouts.',platform_blocked:'Your organiser details are saved. Verification is waiting for TicketBunker’s Stripe setup. You can continue preparing your events.',unavailable:'Live Stripe verification is temporarily unavailable. Your company details are saved.',error:'We could not check your Stripe verification. Please try Check verification status.'}[s.state]||'Check your Stripe verification status.';
  if(!profile)text='Create your organiser profile first.';
- else if(!profile.logo_url||!billingComplete)text='Save your organiser logo and Company & Billing details before starting Stripe verification.';
+ else if(!logoDone()||!billingComplete)text='Save your Company & Billing details before starting Stripe verification.';
  $('#billing-review-help').hidden=!(s.ready&&!s.billingReviewComplete);
  if(s.ready)text=s.ticketSalesEnabled?'Your account checks are complete. Add your event and ticket types, then complete any listing fee to publish.':s.billingReviewComplete?'Stripe verification is complete. Live ticket payments are awaiting platform activation. You can prepare your event now.':'Stripe verification is complete. Add your billing details to go live — you can prepare your event now.';
  const help=$('[data-connect-help]');if(help)help.textContent=s.ready?'Your verification is saved. Use Update verification details if your business or bank information changes. Ticket payouts are released separately after the event, the report and payment checks.':'Stripe may ask for legal business details, a tax number, an identity document and a bank account. Complete the secure form here in TicketBunker. Stripe may open a window to verify your email or phone. No payment is taken during verification.';
  const label=s.state==='platform_blocked'?'Payout setup temporarily unavailable':s.ready?'Update verification details →':'Continue verification →';
  $$('[data-connect-status], [data-connect-summary]').forEach(el=>el.textContent=text);
- $$('[data-connect-setup]').forEach(el=>el.hidden=!!profile?.logo_url&&billingComplete);
- $$('[data-connect-start]').forEach(el=>{el.disabled=connectBusy||!profile?.logo_url||!billingComplete||s.canOnboard!==true;el.hidden=!!connectComponent;el.textContent=connectBusy?'Loading secure form…':label;});
+ $$('[data-connect-setup]').forEach(el=>el.hidden=logoDone()&&billingComplete);
+ $$('[data-connect-start]').forEach(el=>{el.disabled=connectBusy||!logoDone()||!billingComplete||s.canOnboard!==true;el.hidden=!!connectComponent;el.textContent=connectBusy?'Loading secure form…':label;});
  $$('[data-connect-refresh]').forEach(el=>el.disabled=connectBusy||!profile);
  const ownerSetup=s.state==='platform_blocked'&&s.setupUrl==='https://dashboard.stripe.com/connect';
  $$('[data-connect-admin]').forEach(el=>el.hidden=!ownerSetup);
@@ -342,6 +346,11 @@ $('#brand-file').addEventListener('change',()=>checkSelectedLogo('brand'));
 $('#initial-logo-save').addEventListener('click',async()=>{
  const btn=$('#initial-logo-save');btn.disabled=true;
  try{await uploadCheckedLogo('initial')}catch(e){notice(e.message,true);btn.disabled=false;}
+});
+$('#initial-logo-skip').addEventListener('click',()=>{
+ try{localStorage.setItem(logoLaterKey(),'1');}catch{}
+ showOnboarding();renderSetupSteps();
+ notice('No problem. Your organiser name is shown until you add a logo under Branding. Next, save your company and billing details.',false,$('#save-billing'));
 });
 $('#brand-save').addEventListener('click',async()=>{
  const btn=$('#brand-save');btn.disabled=true;
