@@ -44,12 +44,12 @@ test('a failed parallel detail lookup never returns incomplete dashboard records
 });
 test('a pending Stripe check does not keep the dashboard loading screen open',async()=>{
  const nodes=new Map(),node=id=>{if(!nodes.has(id))nodes.set(id,{});return nodes.get(id)};let rendered='',stripeStarted=false;
- const context=vm.createContext({profile:null,events:[],currentPage:'overview',billingComplete:true,$:node,api:async()=>({organiser:{id:'org-one',logo_url:'https://example.test/logo.png'},events:[]}),loadBilling:async()=>{},loadStripeStatus:()=>{stripeStarted=true;return new Promise(()=>{})},loadCapacityNotifications:async()=>{},showOnboarding:()=>assert.fail('Complete account should open the dashboard'),page:name=>rendered=name});
+ const context=vm.createContext({profile:null,events:[],currentPage:'overview',billingComplete:true,logoDone:()=>true,$:node,api:async()=>({organiser:{id:'org-one',logo_url:'https://example.test/logo.png'},events:[]}),loadBilling:async()=>{},loadStripeStatus:()=>{stripeStarted=true;return new Promise(()=>{})},loadCapacityNotifications:async()=>{},showOnboarding:()=>assert.fail('Complete account should open the dashboard'),page:name=>rendered=name});
  new vm.Script(client.slice(client.indexOf('async function refresh(){'),client.indexOf('\nfunction showOnboarding'))).runInContext(context);
  const result=context.refresh();await new Promise(setImmediate);
  assert.equal(stripeStarted,true);assert.equal(node('#loading').hidden,true);assert.equal(node('#page-app').hidden,false);assert.equal(rendered,'overview');await result;
 });
 test('download page stays accessible while organiser setup is incomplete',async()=>{
- let rendered='';const nodes={};const context=vm.createContext({profile:null,events:[],currentPage:'hub',billingComplete:false,$:id=>nodes[id]??=( {}),api:async()=>({organiser:{id:'org-one'},events:[]}),loadBilling:async()=>{},loadStripeStatus:async()=>{},loadCapacityNotifications:async()=>{},showOnboarding:()=>assert.fail('Downloads should not require billing setup'),page:name=>rendered=name});
+ let rendered='';const nodes={};const context=vm.createContext({profile:null,events:[],currentPage:'hub',billingComplete:false,logoDone:()=>false,$:id=>nodes[id]??=( {}),api:async()=>({organiser:{id:'org-one'},events:[]}),loadBilling:async()=>{},loadStripeStatus:async()=>{},loadCapacityNotifications:async()=>{},showOnboarding:()=>assert.fail('Downloads should not require billing setup'),page:name=>rendered=name});
  new vm.Script(client.slice(client.indexOf('async function refresh(){'),client.indexOf('\nfunction showOnboarding'))).runInContext(context);await context.refresh();assert.equal(rendered,'hub');
 });

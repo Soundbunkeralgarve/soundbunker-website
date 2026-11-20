@@ -81,7 +81,7 @@ export default async function handler(req,res){
   // All IDs come from the authenticated owner's server record, never from the request.
   const billing=await ctx.admin.from('tb_organiser_billing').select('organiser_profile_id,legal_name,billing_email,address_line_1,city,postal_code').eq('organiser_profile_id',org.id).eq('owner_user_id',ctx.user.id).maybeSingle();
   if(billing.error)throw billing.error;
-  if(!org.logo_url||!billing.data||['legal_name','billing_email','address_line_1','city','postal_code'].some(k=>!String(billing.data[k]||'').trim()))return json(res,{error:'Save your organiser logo and company billing details first.',code:'setup_required'},409);
+  if(!billing.data||['legal_name','billing_email','address_line_1','city','postal_code'].some(k=>!String(billing.data[k]||'').trim()))return json(res,{error:'Save your company billing details first.',code:'setup_required'},409);
   let account=org.stripe_account_id;
   if(account&&!stripeId(account))throw Error('Invalid saved account');
   if(account){

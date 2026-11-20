@@ -165,3 +165,6 @@
 @media(max-width:900px){.hub-promo-layout{gap:28px}.hub-promo-graphic{padding:20px 5px}.hub-promo-intro{font-size:13px}}
 @media(max-width:650px){.hub-promo{padding:34px 0}.hub-promo-layout{grid-template-columns:1fr;gap:25px}.hub-promo h2{font-size:53px;margin:15px 0 19px}.hub-promo-graphic{padding:14px 6px 20px}.hub-promo-graphic figcaption{font-size:16px}.hub-promo-release{align-items:flex-start;flex-direction:column;gap:12px;margin-top:24px;padding-top:20px}.hub-promo-note{font-size:10px}.hub-promo-steps{gap:15px}.hub-promo .eyebrow{font-size:9px}}
 
+/* Bigger tap targets for the hero slideshow controls; the dots keep their thin look. */
+.shop-home .slide-dot{height:24px;padding:10px 0;background-clip:content-box;cursor:pointer}
+.shop-home .hero-pause{min-height:44px;min-width:44px;padding:6px 12px}

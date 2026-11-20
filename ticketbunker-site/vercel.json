@@ -21,6 +21,10 @@
   },
   "rewrites": [
     {
+      "source": "/sitemap.xml",
+      "destination": "/api/sitemap"
+    },
+    {
       "source": "/admin",
       "destination": "/control-room"
     },

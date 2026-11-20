@@ -12,7 +12,7 @@ const METHODS = {
   'supabase-config': ['GET'], events: ['GET'], 'event-ticket': ['GET'], 'event-wallet': ['GET'],
   organiser: ['GET', 'POST'], 'organiser-brand':['GET','POST'], 'event-media': ['POST'],
   'event-organiser-report': ['GET'], 'event-street-team': ['GET', 'POST'],
-  'event-staff': ['GET', 'POST'], 'event-scan': ['POST'],
+  'event-staff': ['GET', 'POST'], 'event-scan': ['POST'], 'event-door': ['GET', 'POST'],
   'my-event-tickets': ['GET'], 'my-event-ticket-transfer': ['POST'],
   'client-marketing-consent': ['GET', 'POST'],
   'organiser-connect':['GET','POST'], 'organiser-profile':['GET','POST'], 'settlement': ['GET'], 'refund-request': ['GET','POST']
