@@ -52,7 +52,7 @@ test('a bundle activates only from its own paid checkout amount',async()=>{
  assert.equal(await one(db,"select tb_mark_bundle_paid($1,'cs_live_bundle',44550,'eur')",[bundle]),'paid');
  assert.equal(await one(db,"select tb_mark_bundle_paid($1,'cs_live_bundle',44550,'eur')",[bundle]),'paid','webhook retries are harmless');
  const row=(await db.query('select * from tb_event_prebookings where id=$1',[bundle])).rows[0];
- assert.equal(row.status,'paid');assert.ok(row.valid_until>new Date(Date.now()+360*86400000));
+ assert.equal(row.status,'paid');assert.ok(row.valid_until>new Date(Date.now()+175*86400000)&&row.valid_until<new Date(Date.now()+190*86400000),'5-event bundles last 6 months');
  await db.exec('set role anon');await assert.rejects(db.query("select tb_mark_bundle_paid($1,'cs_live_bundle',44550,'eur')",[bundle]),/permission denied/);
 });
 
@@ -73,7 +73,7 @@ test('prepaid events cover listings of the bundle size or smaller and are invoic
  const invoices=(await db.query('select source_key,event_id,amount_cents,paid,document_type,description from tb_organiser_invoices')).rows;
  assert.equal(invoices.length,1,'one invoice for the bundle, none per event');
  assert.equal(invoices[0].source_key,'bundle:'+bundle);assert.equal(invoices[0].event_id,null);assert.equal(Number(invoices[0].amount_cents),44550);
- assert.equal(invoices[0].document_type,'invoice_receipts');assert.match(invoices[0].description,/5 prepaid Club events/);
+ assert.equal(invoices[0].document_type,'invoice_receipts');assert.match(invoices[0].description,/5 prepaid Club events, valid 6 months/);
 });
 
 test('a bundle cannot be overused, and expired bundles are ignored',async()=>{
@@ -93,4 +93,12 @@ test('the webhook only accepts a paid bundle checkout that names its own reserva
  assert.equal(verifyBundlePayment(good),bundle);
  for(const bad of [{payment_status:'unpaid'},{client_reference_id:ev(1)},{metadata:{purchase_type:'event_listing_fee',prebooking_id:bundle}},{currency:'usd'}])
   assert.throws(()=>verifyBundlePayment({...good,...bad}),/Bundle payment mismatch/);
+});
+
+test('10-event bundles last 12 months',async()=>{
+ const db=await database();
+ await db.exec('reset role');await db.query("update tb_event_prebookings set event_count=10,total_cents=84150,stripe_session_id='cs_live_ten',organiser_id=$1 where id=$2",[org,bundle]);await db.exec('set role service_role');
+ await db.query("select tb_mark_bundle_paid($1,'cs_live_ten',84150,'eur')",[bundle]);
+ const until=await one(db,'select valid_until from tb_event_prebookings where id=$1',[bundle]);
+ assert.ok(until>new Date(Date.now()+360*86400000));
 });

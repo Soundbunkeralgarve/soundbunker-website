@@ -1,7 +1,8 @@
 -- TicketBunker prepaid event bundles (Nov 2026).
 -- An organiser pays a 5- or 10-event bundle upfront through Stripe Checkout. The bundle is invoiced
 -- once, and each event listing then draws one prepaid event instead of a separate listing payment,
--- so those listings are never invoiced a second time. Bundles run for 12 months from payment.
+-- so those listings are never invoiced a second time. 10-event bundles run for 12 months from payment,
+-- smaller bundles for 6 months.
 alter table public.tb_event_prebookings add column if not exists organiser_id uuid references public.sb_event_organisers(id);
 alter table public.tb_event_prebookings add column if not exists stripe_session_id text;
 alter table public.tb_event_prebookings add column if not exists paid_at timestamptz;
@@ -29,7 +30,7 @@ begin
  if not found or b.stripe_session_id is distinct from p_session or b.total_cents<>p_amount or b.currency<>p_currency or b.plan='usage' then raise exception 'Bundle payment mismatch';end if;
  if b.status='paid' then return 'paid';end if;
  if b.status not in ('requested','approved') then return 'needs_attention';end if;
- update public.tb_event_prebookings set status='paid',paid_at=now(),valid_until=now()+interval '12 months' where id=p_id;
+ update public.tb_event_prebookings set status='paid',paid_at=now(),valid_until=now()+case when b.event_count>=10 then interval '12 months' else interval '6 months' end where id=p_id;
  return 'paid';
 end;$$;
 
@@ -67,7 +68,7 @@ begin
  if not found or b.total_cents<=0 then return;end if;
  if exists(select 1 from public.tb_organiser_billing x where x.organiser_profile_id=b.organiser_id and regexp_replace(coalesce(x.vat_number,''),'[^0-9]','','g')='517757478') then return;end if;
  insert into public.tb_organiser_invoices(source_key,organiser_id,event_id,category,description,amount_cents,currency,paid,document_type,stripe_session_id)
- values('bundle:'||b.id,b.organiser_id,null,'service','Event listing bundle: '||b.event_count||' prepaid '||initcap(replace(b.plan,'_',' '))||' events, valid 12 months',b.total_cents,b.currency,true,'invoice_receipts',b.stripe_session_id)
+ values('bundle:'||b.id,b.organiser_id,null,'service','Event listing bundle: '||b.event_count||' prepaid '||initcap(replace(b.plan,'_',' '))||' events, valid '||case when b.event_count>=10 then 12 else 6 end||' months',b.total_cents,b.currency,true,'invoice_receipts',b.stripe_session_id)
  on conflict(source_key) do nothing;
 end $$;
 

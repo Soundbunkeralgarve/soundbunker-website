@@ -34,7 +34,7 @@ async function payBundle(ctx,id){
   expires_at:String(Math.floor(Date.now()/1000)+1805),
   'line_items[0][quantity]':'1','line_items[0][price_data][currency]':b.currency,'line_items[0][price_data][unit_amount]':String(b.total_cents),
   'line_items[0][price_data][tax_behavior]':'inclusive','line_items[0][price_data][product_data][name]':'TicketBunker event bundle · '+name,
-  'line_items[0][price_data][product_data][description]':'Use one prepaid event listing per event within 12 months of payment.',
+  'line_items[0][price_data][product_data][description]':'Use one prepaid event listing per event within '+(b.event_count>=10?12:6)+' months of payment.',
   'tax_id_collection[enabled]':'true',customer_creation:'always',
   'metadata[purchase_type]':'listing_bundle','metadata[prebooking_id]':b.id};
  const session=await ticketBunkerStripe('/v1/checkout/sessions',{method:'POST',body:form,idem:'tb-bundle-'+b.id+'-'+(b.stripe_session_id||'first')});
