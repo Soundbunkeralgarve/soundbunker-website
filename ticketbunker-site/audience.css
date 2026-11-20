@@ -10,7 +10,7 @@ body{background-color:#ffffff;color:#111111}
 .audience-switch span{font-size:12px;color:#454b48}
 .account-shell{max-width:980px;margin:auto;min-height:55vh;padding:56px 24px 80px}
 .account-shell h1{font-size:clamp(40px,6vw,70px)}
-@media(max-width:680px){.audience-switch{padding:0 12px}.audience-switch a{padding:12px 8px;flex-direction:column;gap:3px;font-size:14px}.audience-switch span{font-size:10px}.role-tabs a{font-size:11px}.account-header{flex-wrap:wrap;gap:14px}.account-header nav{gap:14px}.account-header nav>a:first-child{display:inline}.account-shell{padding-top:32px}}
+@media(max-width:680px){.audience-switch{padding:0 12px}.audience-switch a{padding:12px 8px;flex-direction:column;gap:3px;font-size:14px}.audience-switch span{font-size:10px}.role-tabs a{font-size:11px}.account-header{flex-wrap:wrap;gap:14px}.account-header nav{gap:14px}.account-header nav>a:first-child{display:inline-flex;align-items:center}.account-shell{padding-top:32px}}
 @media print{.audience-switch{display:none!important}}
 /* Keep checkout in the TicketBunker palette. */
 body:has(.event-shell){--green:#00d7a6;--ink:#111111;--muted:#454b48;--paper:#ffffff;--line:#dce4df}

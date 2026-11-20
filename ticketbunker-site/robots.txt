@@ -1,0 +1,9 @@
+User-agent: *
+Disallow: /api/
+Disallow: /control-room
+Disallow: /checkout-complete
+Disallow: /door-paid
+Disallow: /event-ticket
+Disallow: /account
+
+Sitemap: https://theticketbunker.com/sitemap.xml
