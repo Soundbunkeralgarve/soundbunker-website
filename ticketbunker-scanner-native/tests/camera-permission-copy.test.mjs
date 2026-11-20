@@ -9,7 +9,9 @@ test('ticket scanning and hub pairing both use a neutral camera prompt (App Revi
  assert.match(app,/title=\{needsSettings\?'Open Settings':'Continue'\}/);
  assert.match(app,/onPress=\{needsSettings\?\(\)=>Linking\.openSettings\(\):requestPermission\}/);
  assert.equal([...app.matchAll(/<CameraPermissionPrompt permission=\{permission\} requestPermission=\{requestPermission\}/g)].length,2);
- assert.match(app,/!hubPairing&&\(permission\?\.granted\?<View style=\{s\.cameraFrame\}>/);
+ // The ticket camera lives on the full-screen Scan tab; hub pairing has its own camera in settings.
+ assert.match(app,/\{tab==='scan'&&<View style=\{s\.flex\}>\n    \{permission\?\.granted\?<View style=\{s\.scanStage\}>/);
+ assert.match(app,/const cameraActive=foreground&&doorMode&&tab==='scan'&&!manualOpen&&!hubPairing&&!cardSale;/);
 });
 
 test('sign-in screen is addressed to any organiser and links to free organiser sign-up (App Review 3.2)',()=>{

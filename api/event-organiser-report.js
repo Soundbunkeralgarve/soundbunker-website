@@ -38,7 +38,7 @@ export default async function handler(req,res){
   if(event.error||!event.data)return json(res,{error:'Event not found in your account'},403);
 
   const [orders,tiers,tickets,offlineClaims]=await Promise.all([
-   readReportRows(db,'sb_event_orders','id,tier_id,quantity,total_cents,status,beta_test_order,guest_allocation_id',eventId),
+   readReportRows(db,'sb_event_orders','id,tier_id,quantity,total_cents,status,beta_test_order,guest_allocation_id,door_sale',eventId),
    db.from('sb_event_tiers').select('id,name,quantity_total,price_cents')
     .eq('event_id',eventId).limit(200),
    readReportRows(db,'sb_event_tickets','id,sequence_number,tier_id,order_id,checked_in_at,checked_in_by',eventId),
@@ -103,6 +103,9 @@ export default async function handler(req,res){
    capacity:(tiers.data||[]).reduce((total,tier)=>total+Number(tier.quantity_total||0),0),
    paidTickets,testTickets,guestTickets:count(guestOrders),issuedTickets:paidTickets+testTickets+count(guestOrders),
    revenueCents:moneyTotal(paidOrders),
+   // Door sales are inside the paid totals; cash never reaches Stripe, so it is never paid out.
+   doorCardTickets:count(paidOrders.filter(o=>o.door_sale==='card')),doorCardCents:moneyTotal(paidOrders.filter(o=>o.door_sale==='card')),
+   doorCashTickets:count(paidOrders.filter(o=>o.door_sale==='cash')),doorCashCents:moneyTotal(paidOrders.filter(o=>o.door_sale==='cash')),
    // Attendance never changes revenue or Stripe settlement.
    guestCheckedIn:checked.filter(t=>!!approvedById.get(t.order_id).guest_allocation_id).length,checkedIn:checked.length,paidCheckedIn:paidCheckins.length,testCheckedIn:testCheckins.length,
    paidNotCheckedIn:Math.max(0,paidTickets-paidCheckins.length),

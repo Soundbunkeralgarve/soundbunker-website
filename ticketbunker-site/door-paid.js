@@ -1,0 +1,6 @@
+import {api} from './shared.js';
+const title=document.querySelector('#door-title'),status=document.querySelector('#door-status'),params=new URLSearchParams(location.search),id=params.get('session_id');
+let attempts=0;
+async function check(){try{const data=await api('event-checkout-status?session_id='+encodeURIComponent(id));if(data.status==='paid'){title.textContent='Paid. You’re in.';status.textContent='Show this screen to the door team. Your card receipt comes from Stripe.';return;}if(['cancelled','refunded'].includes(data.status)){title.textContent='Payment '+data.status+'.';status.textContent='Ask the door team to start a new sale.';return;}if(++attempts<20)setTimeout(check,3000);else{title.textContent='Still confirming.';status.textContent='Show this screen to the door team. Don’t pay again.';}}catch(error){title.textContent='Show this screen to the door team.';status.textContent=error.message;}}
+if(params.get('cancelled')){title.textContent='Payment cancelled.';status.textContent='Nothing was charged. Ask the door team if you’d like to try again.';}
+else if(!id||!/^cs_live_[A-Za-z0-9]{10,250}$/.test(id)){title.textContent='Show this screen to the door team.';status.textContent='They can check your payment on their scanner.';}else check();
