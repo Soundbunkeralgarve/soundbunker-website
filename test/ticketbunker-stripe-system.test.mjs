@@ -89,7 +89,7 @@ async function webhookFixture({recipient=false,payoutStatus='paid',payoutFails=f
  './lib/stripe.js':{verifyStripeSignature},'./lib/http.js':{json:(r,data,status=200)=>({data,status}),readRawBody:async r=>r.body},
  './lib/events.js':{eventsDatabase:()=>db,fulfillEventCheckout:async()=>calls.push('fulfill')},
  './lib/ticketbunker-payments.js':{chargeForTicketCheckout:async()=>calls.push('ledger'),refreshTicketCharge:async()=>calls.push('refresh')},
- './lib/event-listings.js':{fulfilListingCheckout:async()=>{}},'./lib/event-capacity.js':{fulfilCapacityCheckout:async()=>{}},'./lib/ticketbunker-premium-autosend.js':{fulfilPremiumPlacementCheckout:async()=>{}}
+ './lib/event-listings.js':{fulfilListingCheckout:async()=>{},fulfilBundleCheckout:async()=>{}},'./lib/event-capacity.js':{fulfilCapacityCheckout:async()=>{}},'./lib/ticketbunker-premium-autosend.js':{fulfilPremiumPlacementCheckout:async()=>{}}
  };
  const m=new vm.SourceTextModule(await readFile(new URL('../api/ticketbunker-stripe-webhook.js',import.meta.url),'utf8'),{context});await m.link(spec=>{const v=exports[spec];return new vm.SyntheticModule(Object.keys(v),function(){for(const [k,x]of Object.entries(v))this.setExport(k,x)},{context})});await m.evaluate();
  const event={id:'evt_synthetic',livemode:true,type:'checkout.session.completed',data:{object:{payment_status:'paid',metadata:{purchase_type:'event_ticket',ticketbunker_flow:'separate_v1'}}}};

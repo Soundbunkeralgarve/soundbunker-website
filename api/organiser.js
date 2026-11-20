@@ -39,15 +39,18 @@ export default async function handler(req,res){
        ['sb_event_charity_claims','event_id,registration_number,status,country_code,created_at'],
        ['sb_event_payment_terms_requests','event_id,status,payment_preference,ticket_capacity']
      ];
-     const [tiers,fees,showcases,festivalQuotes,charities,paymentTerms,listingOffer]=await Promise.all([
+     const [tiers,fees,showcases,festivalQuotes,charities,paymentTerms,listingOffer,bundles]=await Promise.all([
        ...queries.map(([table,columns])=>ids.length?db.from(table).select(columns).in('event_id',ids):{data:[],error:null}),
-       clientControl(db,organisation.id)
+       clientControl(db,organisation.id),
+       db.from('tb_event_prebookings').select('id,plan,currency,event_count,events_used,valid_until').eq('owner_user_id',ctx.user.id).eq('status','paid').gt('valid_until',new Date().toISOString())
      ]);
+     if(bundles.error)throw bundles.error;
      for(const result of [tiers,fees,showcases,festivalQuotes,charities,paymentTerms])if(result.error)throw result.error;
      return json(res,{organiser:{
        id:organisation.id,display_name:organisation.display_name,country_code:organisation.country_code,
        status:organisation.status,stripe_connected:!!organisation.stripe_account_id,
-       stripe_capabilities_ready:organisation.stripe_capabilities_ready,tax_review_complete:organisation.tax_review_complete,logo_url:organisation.logo_url||null,listingOffer
+       stripe_capabilities_ready:organisation.stripe_capabilities_ready,tax_review_complete:organisation.tax_review_complete,logo_url:organisation.logo_url||null,listingOffer,
+       bundles:bundles.data.filter(b=>b.events_used<b.event_count)
      },events:ev.data.map(e=>({...e,rescheduling:e.postponements?.some(p=>p.applied_at&&!p.published_at)||false,wallet_test:walletTestEvent(e),tiers:tiers.data.filter(t=>t.event_id===e.id),fees:fees.data.filter(f=>f.event_id===e.id),showcase:showcases.data.find(f=>f.event_id===e.id)||null,festivalQuote:festivalQuotes.data.find(f=>f.event_id===e.id)||null,
        flexibleTerms:paymentTerms.data.find(f=>f.event_id===e.id)||null,charity:charities.data.find(f=>f.event_id===e.id)||null}))});
    }
