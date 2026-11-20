@@ -4,12 +4,12 @@ import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 const server=readFileSync(new URL('../api/organiser.js',import.meta.url),'utf8');
 const client=readFileSync(new URL('../ticketbunker-site/organiser-v2.js',import.meta.url),'utf8');
-const detailTables=['sb_event_tiers','sb_event_listing_fees','sb_event_showcase_requests','sb_event_festival_quotes','sb_event_charity_claims','sb_event_payment_terms_requests','tb_client_controls'];
+const detailTables=['sb_event_tiers','sb_event_listing_fees','sb_event_showcase_requests','sb_event_festival_quotes','sb_event_charity_claims','sb_event_payment_terms_requests','tb_client_controls','tb_event_prebookings'];
 async function serverHarness(failingTable){
  const started=new Set(),filters=[];let release,authOptions;
  const gate=new Promise(resolve=>release=resolve);
  const db={from(table){
-  const q={select(){return q},eq(k,v){filters.push([table,k,v]);return q},in(k,v){filters.push([table,k,v]);return q},order(){return q},limit(){return q},maybeSingle(){return q},then(resolve,reject){
+  const q={select(){return q},eq(k,v){filters.push([table,k,v]);return q},in(k,v){filters.push([table,k,v]);return q},gt(){return q},order(){return q},limit(){return q},maybeSingle(){return q},then(resolve,reject){
    if(table==='sb_event_organisers')return Promise.resolve({data:{id:'org-one',display_name:'Test',country_code:'PT'}}).then(resolve,reject);
    if(table==='sb_events')return Promise.resolve({data:[{id:'event-one'}]}).then(resolve,reject);
    started.add(table);
@@ -36,7 +36,7 @@ test('portal starts all independent detail reads together and retains owner scop
  const r=await result;assert.equal(r.status,200);assert.equal(r.data.events[0].tiers.length,1);assert.equal(r.data.organiser.listingOffer.listing_discount_percent,25);
  assert.ok(h.filters.some(([table,key,value])=>table==='sb_event_organisers'&&key==='owner_user_id'&&value==='owner-one'));
  assert.ok(h.filters.some(([table,key,value])=>table==='sb_events'&&key==='organiser_profile_id'&&value==='org-one'));
- for(const table of detailTables.filter(t=>t!=='tb_client_controls'))assert.ok(h.filters.some(([t,key,ids])=>t===table&&key==='event_id'&&ids.length===1&&ids[0]==='event-one'));
+ for(const table of detailTables.filter(t=>!['tb_client_controls','tb_event_prebookings'].includes(t)))assert.ok(h.filters.some(([t,key,ids])=>t===table&&key==='event_id'&&ids.length===1&&ids[0]==='event-one'));
 });
 test('a failed parallel detail lookup never returns incomplete dashboard records',async()=>{
  const h=await serverHarness('sb_event_listing_fees'),result=h.run();h.release();const r=await result;

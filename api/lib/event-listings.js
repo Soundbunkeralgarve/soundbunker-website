@@ -55,3 +55,18 @@ export async function fulfilListingCheckout(checkout,db=eventsDatabase()){
  if(updated.error)throw updated.error;
  return {status:updated.data?'paid':'duplicate'};
 }
+// A paid bundle checkout activates the prepaid events. The database re-checks the amount and session.
+export function verifyBundlePayment(checkout){
+ const id=checkout?.metadata?.prebooking_id;
+ if(checkout?.metadata?.purchase_type!=='listing_bundle'||!/^[a-f0-9-]{36}$/i.test(id||'')||checkout.client_reference_id!==id||
+   checkout.payment_status!=='paid'||!Number.isSafeInteger(checkout.amount_total)||!['eur','gbp'].includes(checkout.currency?.toLowerCase()))throw Error('Bundle payment mismatch');
+ return id;
+}
+export async function fulfilBundleCheckout(checkout,db=eventsDatabase()){
+ if(process.env.VERCEL_ENV==='production'&&checkout.livemode!==true)throw Error('Test bundle payment cannot activate live bundles');
+ const id=verifyBundlePayment(checkout);
+ const marked=await db.rpc('tb_mark_bundle_paid',{p_id:id,p_session:checkout.id,p_amount:checkout.amount_total,p_currency:checkout.currency.toLowerCase()});
+ if(marked.error)throw marked.error;
+ if(marked.data==='needs_attention')console.error('Paid bundle needs manual attention',id);
+ return {status:marked.data};
+}

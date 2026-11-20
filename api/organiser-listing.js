@@ -24,6 +24,10 @@ export default async function handler(req,res){
    catch(e){return json(res,{error:e.message},400);}
    const discount=activeClientDiscount(await clientControl(ctx.admin,org.id));
    if(discount===100)return json(res,{waived:true,message:'Your approved account has free fixed-band listings. No listing payment is required.'});
+   // A prepaid bundle event covers this listing; it was invoiced when the bundle was paid.
+   const bundle=await ctx.admin.rpc('tb_use_listing_bundle',{p_event:event.data.id,p_owner:ctx.user.id});
+   if(bundle.error){const known=/already been paid|already pending|valid draft/.exec(bundle.error.message||'');if(known)return json(res,{error:bundle.error.message.replace(/^.*?ERROR:\s*/,'')},409);throw bundle.error;}
+   if(bundle.data)return json(res,{bundle:true,remaining:bundle.data.remaining,message:'One prepaid bundle event used. '+(bundle.data.remaining===1?'1 prepaid event left.':bundle.data.remaining+' prepaid events left.')});
    plan={...plan,amount:plan.amount-Math.round(plan.amount*discount/100)};
    // Festival / Festival Pro cannot use an automatic published price.
    // A bespoke agreement and separate authorised fee flow must be implemented.

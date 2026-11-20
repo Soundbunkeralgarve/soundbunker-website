@@ -2,7 +2,7 @@ import {verifyStripeSignature} from './lib/stripe.js';
 import {json,readRawBody} from './lib/http.js';
 import {eventsDatabase,fulfillEventCheckout} from './lib/events.js';
 import {chargeForTicketCheckout,refreshTicketCharge} from './lib/ticketbunker-payments.js';
-import {fulfilListingCheckout} from './lib/event-listings.js';
+import {fulfilListingCheckout,fulfilBundleCheckout} from './lib/event-listings.js';
 import {fulfilCapacityCheckout} from './lib/event-capacity.js';
 import {fulfilPremiumPlacementCheckout} from './lib/ticketbunker-premium-autosend.js';
 import {fetchConnectStatus} from './organiser-connect.js';
@@ -43,6 +43,7 @@ export default async function handler(req,res){
     await chargeForTicketCheckout(db,object);
     if(!await queueCancelledPaidOrder(db,object.metadata.event_order_id))await fulfillEventCheckout(object,db);
    }else if(type==='event_listing_fee')await fulfilListingCheckout(object,db);
+   else if(type==='listing_bundle')await fulfilBundleCheckout(object,db);
    else if(type==='event_capacity_upgrade')await fulfilCapacityCheckout(object,db);
    else if(type==='event_featured_promotion')await fulfilPremiumPlacementCheckout(object,db);
    else if(type==='event_cancellation')await fulfilCancellationCheckout(db,object);
