@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "enabled": false,
+  "providers": [
+    { "id": "ticketmaster", "status": "pending", "approvalReference": "", "countries": [], "allowedBookingHosts": [], "bookingLinks": [] },
+    { "id": "entradas", "status": "pending", "approvalReference": "", "countries": [], "allowedBookingHosts": [], "bookingLinks": [] },
+    { "id": "nos", "status": "pending", "approvalReference": "", "countries": [], "allowedBookingHosts": [], "bookingLinks": [] },
+    { "id": "tiqets", "status": "pending", "approvalReference": "", "countries": [], "allowedBookingHosts": [], "bookingLinks": [] }
+  ],
+  "listings": []
+}
