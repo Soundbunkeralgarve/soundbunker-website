@@ -82,9 +82,23 @@ export function partnerItem(l) {
   };
 }
 
-export function blend(nativeEvents = [], partnerListings = [], now = Date.now()) {
+// Dated events from an approved affiliate feed (api/partner-feed.js). The provider sells
+// the ticket; the link already carries our tracking reference.
+export function feedItem(f, now = Date.now()) {
+  if (!f || !f.id || !f.title || !Object.hasOwn(discoveryCategories, f.category)) return null;
+  if (!/^https:\/\//.test(f.url || '') || !(Date.parse(f.startsAt) > now)) return null;
+  return {
+    key: 'feed:' + f.id, source: f.provider, title: f.title, category: f.category, kind: '',
+    city: f.city || '', venue: f.venue || '', countryCode: f.countryCode || '', startsAt: f.startsAt, endsAt: f.endsAt || '',
+    timezone: f.timezone || 'Europe/London', priceCents: Number.isInteger(f.priceCents) ? f.priceCents : null,
+    currency: f.currency || '', soldOut: false, featured: false, image: f.image || '', organiser: '',
+    url: f.url, seller: f.seller, external: true, bookable: true
+  };
+}
+
+export function blend(nativeEvents = [], partnerListings = [], now = Date.now(), feedEvents = []) {
   const seen = new Set(), out = [];
-  for (const item of [...nativeEvents.map(e => nativeItem(e, now)), ...partnerListings.map(partnerItem)]) {
+  for (const item of [...nativeEvents.map(e => nativeItem(e, now)), ...partnerListings.map(partnerItem), ...feedEvents.map(f => feedItem(f, now))]) {
     if (!item || seen.has(item.key)) continue;
     seen.add(item.key); out.push(item);
   }
