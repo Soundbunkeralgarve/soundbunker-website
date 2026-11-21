@@ -230,3 +230,8 @@ a.tcard:hover .card-foot .get{background:var(--teal);color:#04140e}
 .trust-head{display:block!important;border:0!important;padding-bottom:18px}
 .trust-head h2{font-size:clamp(34px,3.4vw,54px);margin:0}
 .trust-head h2 em{color:var(--teal-deep)}
+
+/* GetYourGuide widget box: their cards, in our frame, clearly labelled. */
+.gyg-box{padding:48px 0 8px}
+.gyg-box .section-head{margin-bottom:16px}
+.gyg-slot{background:#fff;border:1px solid var(--line);border-radius:18px;padding:12px;min-height:240px}
