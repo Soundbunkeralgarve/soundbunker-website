@@ -75,3 +75,10 @@ test('kids and family listings go to the Family rail', () => {
   assert.equal(grotto[0].category, 'family');
   assert.equal(parseSkiddleFeed(feed(event({code: 'SEASONAL'})), {affiliateId: '1', now}).length, 0, 'other seasonal events stay out');
 });
+
+test('a chosen city gets a deeper list than the national picks', async () => {
+  const {pickListings} = await import('../api/partner-feed.js');
+  const items = Array.from({length: 100}, (_, n) => ({provider: 'skiddle', category: 'music', city: 'London', countryCode: 'GB', id: 'x' + n}));
+  assert.equal(pickListings(items, {city: 'London'}).length, 80);
+  assert.equal(pickListings(items).length, 2);
+});

@@ -15,7 +15,7 @@ const SKIDDLE_CATEGORIES = Object.freeze({LIVE: 'music', CLUB: 'club', FEST: 'fe
 const FAMILY = /\b(family|families|kids?|children|child|toddler|santa|grotto|panto(mime)?|junior|baby|zoo|aquarium|water ?park|theme park|farm)\b/i;
 const FAMILY_CODES = new Set(['KIDS', 'EXPER', 'SEASONAL', 'THEATRE']);
 const SPAIN = /\b(ibiza|eivissa|sant antoni|san antonio|playa d.?en bossa|santa eulalia|marbella|benidorm|tenerife|costa adeje|adeje|playa de las americas|los cristianos|magaluf|mallorca|lanzarote|gran canaria)\b/i;
-const PER_CATEGORY = 24, HORIZON_DAYS = 180, CACHE_MS = 3 * 60 * 60 * 1000;
+const PER_CATEGORY = 24, PER_CITY_CATEGORY = 80, HORIZON_DAYS = 180, CACHE_MS = 3 * 60 * 60 * 1000;
 
 const decode = value => String(value || '').replace(/^<!\[CDATA\[|\]\]>$/g, '')
   .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#0?39;|&apos;/g, "'")
@@ -88,7 +88,8 @@ export function pickListings(items, {city = '', country = ''} = {}) {
     if (country && item.countryCode !== country) return false;
     if (want && !place(item.city).includes(want) && !(item.provider === 'viator' && place(item.city) === 'algarve' && regionTown(want))) return false;
     const bucket = item.provider + '|' + item.category;
-    if ((counts[bucket] || 0) >= PER_CATEGORY) return false;
+    // A chosen city gets a much deeper list so its page can show everything that's on.
+    if ((counts[bucket] || 0) >= (want ? PER_CITY_CATEGORY : PER_CATEGORY)) return false;
     const town = bucket + '|' + place(item.city);
     if (!want && (perTown[town] || 0) >= (item.provider === 'viator' ? 6 : 2)) return false;
     perTown[town] = (perTown[town] || 0) + 1;

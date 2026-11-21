@@ -20,6 +20,8 @@ const PLACES=[['PT','Algarve'],['PT','Lisbon'],['PT','Porto'],['GB','London'],['
 const saved=(()=>{try{return JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch{return {};}})();
 // City pages (/london, /algarve …) open preset to their place.
 const pathCity=window.__TB_CITY||null;
+// A place's own page when it has one (/london), otherwise the homepage preset to it.
+const cityHref=name=>{const n=String(name||'').toLowerCase();const c=CITY_PAGES.find(([slug,label,,query])=>[slug,label.replace(/^the /,'').toLowerCase(),query.toLowerCase()].includes(n));return c?'/'+c[0]:'/?city='+encodeURIComponent(name);};
 let state=readState(location.search,pathCity?{city:pathCity.city,country:pathCity.country}:saved),events=[],partners=[],feed=[],loadError=false,limit=12;
 const form=$('#destination-search'),country=$('#ds-country'),city=$('#ds-city'),when=$('#ds-when'),from=$('#ds-from'),to=$('#ds-to'),category=$('#ds-category');
 
@@ -104,9 +106,29 @@ function mountRail(section,items,extra=''){
   const step=dir=>track.scrollBy({left:dir*track.clientWidth*.85,behavior:reduceMotion()?'auto':'smooth'});
   controls.onclick=e=>{const b=e.target.closest('[data-dir]');if(b)step(Number(b.dataset.dir));};
   track.onkeydown=e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();step(e.key==='ArrowRight'?1:-1);}};
-  new ResizeObserver(()=>{controls.hidden=track.scrollWidth<=track.clientWidth+4;}).observe(track);
+  // Easy scrolling: big side arrows over the cards, a progress bar that shows there is
+  // more to see (and can be tapped or dragged), and click-and-drag with a mouse.
+  const frame=document.createElement('div');frame.className='rail-frame';
+  track.before(frame);frame.append(track);
+  frame.insertAdjacentHTML('beforeend','<button type="button" class="rail-side rail-prev" data-dir="-1" aria-label="Scroll back" tabindex="-1">‹</button><button type="button" class="rail-side rail-next" data-dir="1" aria-label="Scroll forward" tabindex="-1">›</button><div class="rail-progress" aria-hidden="true"><i></i></div>');
+  frame.onclick=e=>{const b=e.target.closest('.rail-side');if(b)step(Number(b.dataset.dir));};
+  const bar=frame.querySelector('.rail-progress'),thumb=bar.querySelector('i');
+  const sync=()=>{const max=track.scrollWidth-track.clientWidth,more=max>4;controls.hidden=!more;frame.classList.toggle('can-scroll',more);
+   frame.classList.toggle('at-start',track.scrollLeft<=4);frame.classList.toggle('at-end',track.scrollLeft>=max-4);
+   const w=more?track.clientWidth/track.scrollWidth:1;thumb.style.width=w*100+'%';thumb.style.left=(more?track.scrollLeft/max*(1-w)*100:0)+'%';};
+  section.railSync=sync;
+  track.addEventListener('scroll',sync,{passive:true});new ResizeObserver(sync).observe(track);
+  const seek=x=>{const r=bar.getBoundingClientRect();track.scrollLeft=Math.min(1,Math.max(0,(x-r.left)/r.width))*(track.scrollWidth-track.clientWidth);};
+  bar.onpointerdown=e=>{bar.setPointerCapture(e.pointerId);track.style.scrollSnapType='none';seek(e.clientX);bar.onpointermove=m=>seek(m.clientX);};
+  bar.onpointerup=bar.onpointercancel=()=>{bar.onpointermove=null;track.style.scrollSnapType='';};
+  let drag=null;
+  track.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse'||e.button!==0)return;drag={x:e.clientX,left:track.scrollLeft,moved:false};});
+  addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.x;if(!drag.moved&&Math.abs(dx)>6){drag.moved=true;track.classList.add('dragging');}if(drag.moved)track.scrollLeft=drag.left-dx;});
+  addEventListener('pointerup',()=>{if(!drag)return;const moved=drag.moved;drag=null;track.classList.remove('dragging');
+   if(moved)track.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();},{capture:true,once:true});});
+  track.addEventListener('dragstart',e=>e.preventDefault());
  }
- requestAnimationFrame(()=>{controls.hidden=track.scrollWidth<=track.clientWidth+4;});
+ requestAnimationFrame(()=>section.railSync?.());
 }
 
 // Partner listings take turns by seller so no single feed fills a rail; paid features
@@ -198,7 +220,7 @@ function renderNear(now){
 $('#near-change').onclick=()=>{form.scrollIntoView({block:'center'});city.focus();};
 
 // Section tabs under the destination bar: one tap to any rail that has listings.
-const TAB_LABELS={'rail-near':'Near you','gyg-box':'Tours','big-feature':'Featured','rail-trip':'Heading away?','rail-featured':'Featured picks','rail-direct':'Bunker direct','rail-music':'Live music','rail-club':'Raves','rail-festival':'Festivals','rail-family':'Family','rail-comedy':'Comedy','rail-shows':'Theatre','rail-cinema':'Cinema','rail-boat':'Boat trips','rail-daysout':'Experiences','rail-weekend':'This weekend'};
+const TAB_LABELS={'city-hub':'Everything on','plan-trip':'Plan your trip','rail-near':'Near you','gyg-box':'Tours','big-feature':'Featured','rail-trip':'Heading away?','rail-featured':'Featured picks','rail-direct':'Bunker direct','rail-music':'Live music','rail-club':'Raves','rail-festival':'Festivals','rail-family':'Family','rail-comedy':'Comedy','rail-shows':'Theatre','rail-cinema':'Cinema','rail-boat':'Boat trips','rail-daysout':'Experiences','rail-weekend':'This weekend'};
 let tabObserver;
 function renderTabs(){
  const nav=$('#section-tabs');
@@ -235,12 +257,12 @@ function renderTrip(){
  $('#trip-chips').querySelectorAll('[data-trip]').forEach(b=>b.onclick=()=>loadTrip(b.dataset.trip));
  $('#trip-heading').textContent='Heading to '+tripPick+'?';
  $('#trip-all').textContent='Everything in '+tripPick+' ↗';
- $('#trip-all').onclick=()=>commit({city:tripPick,country:''},{scroll:true});
+ $('#trip-all').onclick=()=>{location.href=cityHref(tripPick);};
  const query=TRIPS.find(([l])=>l===tripPick)[1],list=tripCache.get(tripPick);
  const track=section.querySelector('[data-track]');
  if(!list){track.innerHTML='<p class="trip-loading">Loading '+esc(tripPick)+'…</p>';return;}
  const items=byType(sortItems(filterItems(blend(events,partners,Date.now(),list),{city:query,when:'any'})).filter(i=>!i.soldOut)).slice(0,16);
- mountRail(section,items.map(i=>card(i)),`<a class="tcard host-tile" href="/?city=${encodeURIComponent(tripPick)}"><div><span class="label">${esc(tripPick)}</span><h3>See it all.</h3><p>Every gig, night out, family day and tour we have in ${esc(tripPick)}.</p><span class="head-link">Everything in ${esc(tripPick)} ↗</span></div></a>`);
+ mountRail(section,items.map(i=>card(i)),`<a class="tcard host-tile" href="${esc(cityHref(tripPick))}"><div><span class="label">${esc(tripPick)}</span><h3>See it all.</h3><p>Every gig, night out, family day and tour we have in ${esc(tripPick)}.</p><span class="head-link">Everything in ${esc(tripPick)} ↗</span></div></a>`);
 }
 
 // "Plan your trip" for a chosen place: travel, stays and food partners, live once approved.
@@ -250,6 +272,41 @@ function renderPlan(){
  box.hidden=false;
  $('#plan-trip-h').textContent='Plan your trip to '+state.city+'.';
  $('#plan-grid').innerHTML=options.map(o=>`<div class="plan-col"><b>${esc(o.label)}</b><span>${esc(o.blurb)}</span>${o.partners.length?o.partners.map(p=>`<a class="plan-link" href="${esc(p.url)}" target="_blank" rel="sponsored noopener">${esc(p.name)} ↗</a>`).join('')+'<small>Booked on the partner\u2019s site; their fees may apply.</small>':'<em class="plan-soon">Coming soon</em>'}</div>`).join('');
+}
+
+// City pages: every listing in the place on one page, filterable by type, with the
+// travel, stays, food and tours around it one tap away.
+// Phones start shorter so the rails below stay within reach.
+const HUB_STEP=matchMedia('(max-width: 760px)').matches?8:24;let hubCat='',hubLimit=HUB_STEP;
+if(pathCity){$('#city-hub').after($('#plan-trip'),$('#gyg-box'));}
+function renderHub(all,now){
+ const box=$('#city-hub');
+ if(!pathCity||state.city!==pathCity.city){box.hidden=true;return;}
+ const name=pathCity.city,list=sortItems(filterItems(all,placeOnly(),now)).filter(i=>!i.soldOut);
+ box.hidden=false;$('#rail-near').hidden=true;
+ const counts={};for(const i of list)counts[i.category]=(counts[i.category]||0)+1;
+ if(hubCat&&!counts[hubCat])hubCat='';
+ const shown=hubCat?list.filter(i=>i.category===hubCat):list;
+ $('#city-hub-h').textContent='Everything on in '+name+'.';
+ $('#city-hub-count').textContent=list.length?list.length.toLocaleString('en-GB')+' on sale':'Loading what\u2019s on\u2026';
+ const jump=(id,label,note)=>`<button type="button" class="amenity" data-go="${id}"><b>${esc(label)}</b><small>${esc(note)}</small></button>`;
+ const plan=tripOptions(state.country||pathCity.country||'',name),live=k=>plan.find(o=>o.kind===k)?.partners.length?'Book with partners':'Coming soon';
+ $('#city-amenities').innerHTML=[
+  jump('city-grid','What\u2019s on',list.length?list.length.toLocaleString('en-GB')+' events':'Gigs, nights, shows'),
+  !$('#gyg-box').hidden&&jump('gyg-box','Tours & experiences','Day trips and activities'),
+  jump('plan-trip','Get there',live('travel')),
+  jump('plan-trip','Stay nearby',live('stay')),
+  jump('plan-trip','Eat nearby',live('eat')),
+  jump('rail-trip','Other cities','Tickets further afield')
+ ].filter(Boolean).join('');
+ $('#city-amenities').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>document.getElementById(b.dataset.go).scrollIntoView({behavior:reduceMotion()?'auto':'smooth',block:'start'}));
+ const cats=Object.keys(discoveryCategories).filter(k=>counts[k]);
+ $('#city-filters').innerHTML=[['','All',list.length],...cats.map(k=>[k,discoveryCategories[k],counts[k]])].map(([k,l,n])=>`<button type="button" class="${k===hubCat?'active':''}" aria-pressed="${k===hubCat}" data-hub="${k}">${esc(l)} <small>${n}</small></button>`).join('');
+ $('#city-filters').querySelectorAll('[data-hub]').forEach(b=>b.onclick=()=>{hubCat=b.dataset.hub;hubLimit=HUB_STEP;render();});
+ $('#city-grid').innerHTML=shown.slice(0,hubLimit).map(i=>card(i)).join('');
+ $('#city-more').hidden=shown.length<=hubLimit;
+ $('#city-more').textContent='Show more ('+(shown.length-hubLimit)+' left)';
+ $('#city-more').onclick=()=>{hubLimit+=HUB_STEP;render();};
 }
 
 function render(){
@@ -304,6 +361,7 @@ function render(){
 
  $('#partner-note').hidden=!all.some(i=>i.external);
  renderGygBox($('#gyg-box'),state);
+ renderHub(all,now);
  renderTabs();
  $('#show-more').onclick=()=>{limit+=12;render();};
  const cities=[...new Set(all.filter(i=>!state.country||i.countryCode===state.country).map(i=>i.city).filter(Boolean))].sort();
