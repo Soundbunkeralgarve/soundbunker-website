@@ -5,7 +5,7 @@ import {approvedPartnerListings} from './partner-listings-model.js?v=20261121-ci
 import {discoveryCategories,blend,filterItems,sortItems,featureFor,readState,stateQuery} from './discovery-model.js?v=20261121-viator';
 import {homeRails} from './sample-listings.js?v=20261121-real';
 import {selectFeaturedEvents} from './featured-selection.js';
-import {renderGygBox} from './gyg-box.js?v=20261121b';
+import {renderGygBox} from './gyg-box.js?v=20261121c';
 const $=s=>document.querySelector(s);
 const reduceMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 
