@@ -72,6 +72,9 @@ export function parseSkiddleFeed(xml, {affiliateId, now = Date.now()} = {}) {
   return out.sort((a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt));
 }
 
+// Algarve towns, so a search for e.g. Lagos still finds trips Viator files under "Algarve".
+const ALGARVE = new Set(['albufeira', 'alvor', 'armacao de pera', 'carvoeiro', 'faro', 'ferragudo', 'lagoa', 'lagos', 'loule', 'monte gordo', 'olhao', 'portimao', 'quarteira', 'sagres', 'silves', 'tavira', 'vilamoura', 'almancil', 'algarve']);
+const regionTown = want => ALGARVE.has(want);
 const place = value => String(value || '').normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase().trim();
 // The soonest listings per category, optionally narrowed to one town or city. Without a
 // town, no more than a few per town so the national picks span the whole country.
@@ -79,12 +82,13 @@ export function pickListings(items, {city = '', country = ''} = {}) {
   const want = place(city), counts = {}, perTown = {};
   return items.filter(item => {
     if (country && item.countryCode !== country) return false;
-    if (want && !place(item.city).includes(want)) return false;
-    if ((counts[item.category] || 0) >= PER_CATEGORY) return false;
-    const town = item.category + '|' + place(item.city);
-    if (!want && (perTown[town] || 0) >= 2) return false;
+    if (want && !place(item.city).includes(want) && !(item.provider === 'viator' && place(item.city) === 'algarve' && regionTown(want))) return false;
+    const bucket = item.provider + '|' + item.category;
+    if ((counts[bucket] || 0) >= PER_CATEGORY) return false;
+    const town = bucket + '|' + place(item.city);
+    if (!want && (perTown[town] || 0) >= (item.provider === 'viator' ? 6 : 2)) return false;
     perTown[town] = (perTown[town] || 0) + 1;
-    counts[item.category] = (counts[item.category] || 0) + 1;
+    counts[bucket] = (counts[bucket] || 0) + 1;
     return true;
   });
 }
@@ -97,10 +101,68 @@ export async function loadSkiddle(env = process.env, {fetcher = fetch, now = Dat
   return parseSkiddleFeed(await response.text(), {affiliateId, now});
 }
 
+// Viator (Tripadvisor): Partner API, basic access. Products are open-dated tours and
+// experiences; productUrl already carries our partner tracking. The key lives only in
+// the VIATOR_API_KEY environment variable, so nothing runs until it is set.
+const VIATOR_API = 'https://api.viator.com/partner';
+const VIATOR_HOSTS = new Set(['www.viator.com', 'viator.com']);
+// Places searched, with the country they belong to (name as Viator lists it → our label).
+export const VIATOR_PLACES = Object.freeze([
+  ['Algarve', 'PT'], ['Lisbon', 'PT'], ['Porto', 'PT'], ['Madeira', 'PT'],
+  ['Barcelona', 'ES'], ['Madrid', 'ES'], ['Seville', 'ES'], ['Malaga', 'ES'], ['Ibiza', 'ES'],
+  ['Paris', 'FR'], ['Amsterdam', 'NL'], ['Rome', 'IT'], ['Dublin', 'IE'], ['London', 'GB'], ['Edinburgh', 'GB']
+]);
+const VIATOR_PER_PLACE = 30;
+const BOAT = /\b(boat|cruise|catamaran|sail(ing)?|yacht|dolphin|whale|benagil|grotto|cave tour|sea cave|rib\b|speedboat|river tour)/i;
+
+export function viatorItem(raw, {place, countryCode}) {
+  const title = String(raw?.title || '').replace(/\s+/g, ' ').trim().slice(0, 140);
+  let url;
+  try { url = new URL(String(raw?.productUrl || '')); } catch { return null; }
+  if (!title || !raw.productCode || url.protocol !== 'https:' || !VIATOR_HOSTS.has(url.hostname)) return null;
+  const cover = (raw.images || []).find(i => i.isCover) || (raw.images || [])[0];
+  const variant = (cover?.variants || []).filter(v => v.width >= 400).sort((a, b) => a.width - b.width)[0] || (cover?.variants || []).slice(-1)[0];
+  let image = '';
+  try { const u = new URL(variant?.url || ''); if (u.protocol === 'https:') image = u.href; } catch { /* no image */ }
+  const from = Number(raw.pricing?.summary?.fromPrice);
+  return {
+    id: 'viator:' + String(raw.productCode).replace(/[^\w-]/g, '').slice(0, 40), provider: 'viator', seller: 'Viator', title,
+    category: BOAT.test(title) ? 'boat' : 'daysout', city: place, venue: '', countryCode,
+    startsAt: '', endsAt: '', timezone: '', priceCents: Number.isFinite(from) && from >= 0 ? Math.round(from * 100) : null,
+    currency: String(raw.pricing?.currency || 'EUR').toLowerCase(), image, thumb: false, url: url.href,
+    rating: Number(raw.reviews?.combinedAverageRating) || 0, reviews: Number(raw.reviews?.totalReviews) || 0
+  };
+}
+
+export async function loadViator(env = process.env, {fetcher = fetch} = {}) {
+  const key = env.VIATOR_API_KEY;
+  if (!key) return [];
+  const headers = {'exp-api-key': key, Accept: 'application/json;version=2.0', 'Accept-Language': 'en-GB', 'Content-Type': 'application/json'};
+  const res = await fetcher(VIATOR_API + '/destinations', {headers, signal: AbortSignal.timeout(20000)});
+  if (!res.ok) throw Error('Viator destinations ' + res.status);
+  const all = (await res.json()).destinations || [];
+  const settled = await Promise.allSettled(VIATOR_PLACES.map(async ([place, countryCode]) => {
+    const dest = all.find(d => d.name === place && /CITY|REGION|ISLAND/.test(d.type || '')) || all.find(d => d.name === place);
+    if (!dest) return [];
+    const r = await fetcher(VIATOR_API + '/products/search', {method: 'POST', headers, signal: AbortSignal.timeout(20000), body: JSON.stringify({
+      filtering: {destination: String(dest.destinationId)}, sorting: {sort: 'TRAVELER_RATING', order: 'DESCENDING'},
+      pagination: {start: 1, count: VIATOR_PER_PLACE}, currency: 'EUR'})});
+    if (!r.ok) throw Error('Viator search ' + r.status + ' for ' + place);
+    return ((await r.json()).products || []).map(p => viatorItem(p, {place, countryCode})).filter(Boolean);
+  }));
+  const seen = new Set();
+  return settled.flatMap(s => s.status === 'fulfilled' ? s.value : []).filter(i => !seen.has(i.id) && seen.add(i.id));
+}
+
 let cached, loading;
 async function listings() {
   if (cached && cached.until > Date.now()) return cached.items;
-  loading ||= loadSkiddle().then(items => { cached = {until: Date.now() + CACHE_MS, items}; return items; })
+  // Each provider fails on its own; one outage never empties the others.
+  loading ||= Promise.allSettled([loadSkiddle(), loadViator()])
+    .then(([skiddle, viator]) => {
+      const items = [...(skiddle.value || cached?.items.filter(i => i.provider === 'skiddle') || []), ...(viator.value || cached?.items.filter(i => i.provider === 'viator') || [])];
+      cached = {until: Date.now() + (skiddle.status === 'fulfilled' ? CACHE_MS : 5 * 6e4), items}; return items;
+    })
     .catch(() => { cached = {until: Date.now() + 5 * 6e4, items: cached?.items || []}; return cached.items; })
     .finally(() => { loading = null; });
   return loading;

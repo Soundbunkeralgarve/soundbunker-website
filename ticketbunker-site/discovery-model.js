@@ -24,7 +24,9 @@ export function cityMatches(city, query) {
   const want = placeText(query);
   if (!want) return true;
   const have = placeText(city);
-  return have.includes(want) || (Object.hasOwn(regionTowns, want) && regionTowns[want].includes(have));
+  // A region matches its towns both ways: "Algarve" finds Lagos, and "Lagos" finds region-wide tours.
+  return have.includes(want) || (Object.hasOwn(regionTowns, want) && regionTowns[want].includes(have)) ||
+    (Object.hasOwn(regionTowns, have) && regionTowns[have].includes(want));
 }
 
 const ymd = (instant, zone) => {
@@ -86,7 +88,8 @@ export function partnerItem(l) {
 // the ticket; the link already carries our tracking reference.
 export function feedItem(f, now = Date.now()) {
   if (!f || !f.id || !f.title || !Object.hasOwn(discoveryCategories, f.category)) return null;
-  if (!/^https:\/\//.test(f.url || '') || !(Date.parse(f.startsAt) > now)) return null;
+  // Dated events must still be ahead; open-dated tours (no startsAt) are bookable any day.
+  if (!/^https:\/\//.test(f.url || '') || (f.startsAt && !(Date.parse(f.startsAt) > now))) return null;
   return {
     key: 'feed:' + f.id, source: f.provider, title: f.title, category: f.category, kind: '',
     city: f.city || '', venue: f.venue || '', countryCode: f.countryCode || '', startsAt: f.startsAt, endsAt: f.endsAt || '',
