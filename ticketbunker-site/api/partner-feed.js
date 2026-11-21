@@ -144,7 +144,8 @@ export async function loadViator(env = process.env, {fetcher = fetch} = {}) {
     // Diagnose a refused key without exposing it: does Viator's sandbox accept it instead?
     let sandbox = 'untested';
     try { sandbox = String((await fetcher('https://api.sandbox.viator.com/partner/destinations', {headers, signal: AbortSignal.timeout(10000)})).status); } catch { sandbox = 'unreachable'; }
-    throw Error('Viator destinations ' + res.status + ' (key length ' + key.length + ', sandbox answers ' + sandbox + ')');
+    const shape = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(key) ? 'key-shaped' : /^[\u2022*.]+$/.test(key) ? 'masked dots' : 'not key-shaped';
+    throw Error('Viator destinations ' + res.status + ' (key length ' + key.length + ', ' + shape + ', sandbox answers ' + sandbox + ')');
   }
   const all = (await res.json()).destinations || [];
   if (!all.length) throw Error('Viator returned no destinations');
