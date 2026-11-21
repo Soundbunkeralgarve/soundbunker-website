@@ -142,7 +142,10 @@ let sceneAt=0,sceneTimer,scenePaused=false;
 function clipFor(i){
  const el=scenes[i];let v=el.querySelector('video');
  if(!v&&!stillOnly()){v=document.createElement('video');v.muted=true;v.playsInline=true;v.preload='auto';v.setAttribute('muted','');v.setAttribute('playsinline','');
-  v.src='/assets/hero/'+el.dataset.clip+(small?'-m':'')+'.mp4';el.append(v);}
+  v.src='/assets/hero/'+el.dataset.clip+(small?'-m':'')+'.mp4';
+  // Rave scenes run in slow motion (data-rate on the scene).
+  if(el.dataset.rate){v.defaultPlaybackRate=v.playbackRate=Number(el.dataset.rate);v.addEventListener('loadeddata',()=>{v.playbackRate=Number(el.dataset.rate);});}
+  el.append(v);}
  return v;
 }
 function showScene(i){

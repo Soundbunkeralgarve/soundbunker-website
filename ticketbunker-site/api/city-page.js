@@ -23,7 +23,7 @@ export function cityHtml(shell, [slug, name, country, , pitch], listings = []) {
     .replace(/<link rel="canonical" href="[^"]*"\/>/, `<link rel="canonical" href="${url}"/>`)
     .replace(/<meta property="og:title" content="[^"]*"\/>/, `<meta property="og:title" content="${esc('Things to do in ' + inName + ' | The Ticket Bunker')}"/>`)
     .replace(/<meta property="og:url" content="[^"]*"\/>/, `<meta property="og:url" content="${url}"/>`)
-    .replace('<span class="h1-outline">One bunker.</span>', `<span class="h1-outline">In ${esc(inName)}.</span>`)
+    .replace('<span class="h1-outline">Head out.</span>', `<span class="h1-outline">Head out in ${esc(inName)}.</span>`)
     .replace('<span>Algarve to Berlin</span>', `<span>${esc(plain)}</span>`)
     .replace('</head>', `<script>window.__TB_CITY=${JSON.stringify({city: slug === 'algarve' ? 'Algarve' : name, country, slug}).replace(/</g, '\\u003c')}</script>${ld.length ? `<script type="application/ld+json">${JSON.stringify({'@context': 'https://schema.org', '@type': 'ItemList', name: 'Upcoming events in ' + inName, itemListElement: ld.map((e, n) => ({'@type': 'ListItem', position: n + 1, item: e}))}).replace(/</g, '\\u003c')}</script>` : ''}</head>`)
     .replace('<section class="faq-section"', guide + '<section class="faq-section"');
