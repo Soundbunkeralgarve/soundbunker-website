@@ -16,9 +16,10 @@ test('partners that have not approved us stay as Coming soon (no links)', () => 
   for (const kind of ['travel', 'stay', 'eat']) assert.equal(steps.find(s => s.kind === kind).links.length, 0);
 });
 
-test('things to do links to GetYourGuide with our partner id where we cover the city', () => {
+test('things to do links to GetYourGuide with our partner id, by place or by search', () => {
   assert.match(tourLink('London', 'GB'), /^https:\/\/www\.getyourguide\.com\/london-l57\/\?partner_id=KNICMG4/);
-  assert.equal(tourLink('Wigan', 'GB'), '');
+  assert.match(tourLink('Wigan', 'GB'), /^https:\/\/www\.getyourguide\.com\/s\/\?q=Wigan&partner_id=KNICMG4/);
+  assert.equal(tourLink('', 'GB'), '');
 });
 
 test('My trip keeps one entry per event, ticks tickets, and drops past nights', () => {

@@ -447,3 +447,30 @@ a.tcard:hover .card-foot .get{background:var(--teal);color:#04140e}
 @media(max-width:560px){.np-head{padding:20px 18px 4px}.np-list{padding:8px 14px 4px}.np-night{padding:14px}.np-step{grid-template-columns:30px 1fr;}.np-act{grid-column:2;justify-content:flex-start}.np-all,.np-note{margin-left:18px;margin-right:18px}.my-trip-btn{right:12px;bottom:12px}}
 /* "Everything in <city>" must wrap on phones, never widen the page */
 @media(max-width:560px){.rail-trip .section-head{flex-wrap:wrap;gap:10px}.rail-trip .rail-controls{max-width:100%;min-width:0}#trip-all{white-space:normal;text-align:left}}
+
+/* Pick a country, pick a city: near me, map, country tabs */
+.place-tools{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:6px 0 14px}
+.place-tool{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:999px;padding:11px 18px;font:700 14px var(--body);cursor:pointer}
+.place-tool+.place-tool{background:transparent;color:var(--ink)}
+.place-tool:hover{background:var(--teal);border-color:var(--teal);color:#04110c}
+.place-near-out{flex-basis:100%;margin:0;font-size:14px;line-height:1.8}
+.place-near-out a{display:inline-flex;gap:5px;align-items:baseline;margin-right:8px;padding:4px 12px;border-radius:999px;background:#fff;border:1px solid #cfc9bd;font-weight:700}
+.place-near-out small{opacity:.6;font:500 10px var(--mono)}
+.place-map{height:440px;border-radius:18px;overflow:hidden;border:1px solid #cfc9bd;margin:0 0 18px;background:#e9e6de;z-index:0;position:relative}
+.place-map-loading{padding:20px;margin:0;opacity:.7}
+.map-pop{display:flex;flex-direction:column;gap:2px;color:var(--ink);text-decoration:none;font:600 14px var(--body)}
+.map-pop span{font:500 11px var(--mono);color:#08805e}
+.place-countries{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:14px;scrollbar-width:thin}
+.place-countries button{flex:none;border:1px solid #cfc9bd;background:transparent;border-radius:999px;padding:8px 14px;font:600 13px var(--body);cursor:pointer;color:inherit}
+.place-countries button.active{background:var(--teal);border-color:var(--teal);color:#04110c}
+.place-group h3{font-size:18px;margin:18px 0 8px}
+.place-group h3 small{font:500 10px var(--mono);letter-spacing:.1em;text-transform:uppercase;opacity:.55;margin-left:6px}
+.place-group .place-links{margin-top:0}
+.city-empty{grid-column:1/-1;border:1px dashed #cfc9bd;border-radius:18px;padding:22px;background:#fff}
+.city-empty h3{margin:0 0 6px;font-size:22px}
+.city-empty p{margin:0 0 12px;opacity:.75}
+.ds-city{position:relative}
+.ds-near{position:absolute;right:10px;bottom:10px;border:1px solid #cfc9bd;background:#fff;border-radius:999px;padding:5px 10px;font:600 12px var(--body);cursor:pointer;color:var(--ink)}
+.ds-near:hover{background:var(--teal);border-color:var(--teal)}
+.ds-city input{padding-right:104px}
+@media(max-width:560px){.place-map{height:360px}.place-tool{flex:1;justify-content:center}}

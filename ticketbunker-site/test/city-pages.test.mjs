@@ -37,3 +37,11 @@ test('every city has a route, a sitemap entry and a homepage link', () => {
   }
   assert.equal(cityBySlug('nowhere'), null);
 });
+
+test('every city page has a map position, and Near me picks the closest', async () => {
+  const {CITY_COORDS, nearestCities} = await import('../city-coords.js');
+  for (const [slug] of CITY_PAGES) assert.ok(Array.isArray(CITY_COORDS[slug]), slug + ' has coordinates');
+  assert.ok(['algarve', 'albufeira'].includes(nearestCities([37.1, -8.3])[0].slug));
+  assert.equal(nearestCities([51.51, -0.12])[0].slug, 'london');
+  assert.equal(nearestCities([53.74, -0.33])[0].slug, 'hull');
+});
