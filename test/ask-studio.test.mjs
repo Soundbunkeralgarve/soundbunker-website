@@ -114,7 +114,7 @@ test('handover emails lead with English and keep the original chat on both chann
 });
 
 // WhatsApp webhook with an in-memory store.
-async function webhook({ held = false, extraEnv = {}, onPause } = {}) {
+async function webhook({ held = false, extraEnv = {}, onPause, agentResult } = {}) {
   const sent = [], saved = [], holds = [], handoffs = [], background = [];
   const thread = { id: '00000000-0000-4000-8000-000000000001', channel: 'whatsapp', human_until: held ? '2999-01-01T00:00:00Z' : null };
   const seen = new Set();
@@ -122,12 +122,12 @@ async function webhook({ held = false, extraEnv = {}, onPause } = {}) {
   let latestClient = null;
   const namespace = await load('api/whatsapp-webhook.js', {
     '@vercel/functions': { waitUntil: promise => background.push(promise) },
-    './lib/studio-agent.js': { askStudio: async () => ({ reply: 'Olá! Gravação de 2 horas: €250.', handoff: null }), fallbackReply: () => 'fallback' },
+    './lib/studio-agent.js': { askStudio: async () => agentResult || ({ reply: 'Olá! Gravação de 2 horas: €250.', handoff: null }), fallbackReply: () => 'fallback' },
     './lib/studio-chat-store.js': {
       chatDatabase: () => ({}), openThread: async () => thread, isHeldForHuman: t => Boolean(t.human_until),
       saveMessage: async (db, id, role, body, ext) => { if (ext && seen.has(ext)) return false; if (ext) seen.add(ext); if (role === 'client') latestClient = ext; saved.push({ role, body }); return true; },
       latestClientMessageId: async () => { await onPause?.(thread); return latestClient; },
-      threadHistory: async () => [{ role: 'user', content: 'Olá' }], holdForHuman: async id => holds.push(id), releaseToAssistant: async () => {},
+      threadHistory: async () => [{ role: 'user', content: 'Olá' }], holdForHuman: async (db, id) => { holds.push(id); thread.human_until = '2999-01-01T00:00:00Z'; }, releaseToAssistant: async () => {},
       notifyHandoff: async (...args) => handoffs.push(args), validResumeSignature: () => false,
     },
     './lib/http.js': { readRawBody: async request => request.raw },
@@ -181,6 +181,30 @@ test('a reply from the WhatsApp Business app pauses the assistant in that chat',
   await Promise.all(h.background);
   assert.deepEqual(h.saved, [{ role: 'team', body: 'Olá Ana, é o Steve!' }]);
   assert.equal(h.holds.length, 1);
+});
+
+test('keeps helping after requesting Steve, then stops when Steve replies', async () => {
+  const h = await webhook({ agentResult: {
+    reply: "I'll pass your message to Steve. I'm happy to help with any questions in the meantime.",
+    handoff: { summary: 'Ana would like to speak to Steve.', client_name: 'Ana', contact: '', language: 'English', urgent: false },
+  } });
+  const posts = [], realFetch = globalThis.fetch;
+  globalThis.fetch = async (url, options) => { posts.push(JSON.parse(options.body)); return { ok: true, json: async () => ({ messages: [{ id: `wamid.reply${posts.length}` }] }) }; };
+  const deliver = async raw => {
+    await h.namespace.default({ method: 'POST', url: '/api/whatsapp-webhook', headers: { host: 'x', 'x-hub-signature-256': sign(raw) }, raw }, response());
+    await Promise.all(h.background);
+  };
+  try {
+    await deliver(inbound('wamid.handoff1', 'Could I speak to Steve?'));
+    assert.equal(h.handoffs.length, 1);
+    assert.equal(h.holds.length, 0);
+    await deliver(inbound('wamid.handoff2', 'Can you also help with mastering?'));
+    assert.equal(posts.length, 2);
+    await deliver(JSON.stringify({ entry: [{ changes: [{ field: 'smb_message_echoes', value: { message_echoes: [{ to: '351910000000', id: 'wamid.steve', type: 'text', text: { body: 'Hi Ana, Steve here.' } }] } }] }] }));
+    await deliver(inbound('wamid.handoff3', 'Thanks Steve.'));
+    assert.equal(h.holds.length, 1);
+    assert.equal(posts.length, 2);
+  } finally { globalThis.fetch = realFetch; }
 });
 
 test('360dialog: keyed webhook URL is accepted, a wrong key is refused, and replies go out through 360dialog', async () => {

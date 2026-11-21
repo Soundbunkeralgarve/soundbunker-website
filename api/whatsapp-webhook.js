@@ -3,7 +3,7 @@
 // clients; as soon as someone replies from the app, it stays quiet in that chat so the person is
 // in charge. Meta's Cloud API directly is still supported (WHATSAPP_TOKEN + WHATSAPP_APP_SECRET).
 // Replies go out about WHATSAPP_REPLY_DELAY_SECONDS (default 30) after the client's message, with
-// the message marked read and "typing…" shown shortly before, so it feels like a person answering.
+// the message marked read and "typing…" shown shortly before the digital assistant's reply.
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { waitUntil } from '@vercel/functions';
 import { askStudio, fallbackReply } from './lib/studio-agent.js';
@@ -68,7 +68,7 @@ async function handleClientMessage(db, message, contact) {
 
   let result;
   if (!messageText(message)) {
-    result = { reply: "Thanks! I can only read text messages, so I've passed this to the SoundBunker team and they'll get back to you here.", handoff: { summary: `The client sent a ${message.type} message that the assistant cannot read.`, client_name: contact?.profile?.name || '', contact: '', language: '', urgent: false } };
+    result = { reply: "I'm SoundBunker's digital assistant and can only read text messages. I'll pass your message to Steve. I'm happy to help with any text questions in the meantime.", handoff: { summary: `The client sent a ${message.type} message that the assistant cannot read.`, client_name: contact?.profile?.name || '', contact: '', language: '', urgent: false } };
   } else {
     try { result = await askStudio(await threadHistory(db, thread.id), { channel: 'whatsapp' }); }
     catch { result = { reply: fallbackReply(), handoff: { summary: 'The assistant failed to answer; please reply to the client.', client_name: contact?.profile?.name || '', contact: '', language: '', urgent: false } }; }
@@ -85,7 +85,7 @@ async function handleClientMessage(db, message, contact) {
   const sentId = await sendWhatsApp(message.from, result.reply);
   await saveMessage(db, thread.id, 'assistant', result.reply, sentId);
   if (result.handoff) {
-    await holdForHuman(db, thread.id);
+    // Keep helping while Steve is yet to reply. His Business app reply pauses the assistant.
     await notifyHandoff(db, thread, result.handoff, { message: body.slice(0, 4000), whatsappNumber: message.from });
   }
 }

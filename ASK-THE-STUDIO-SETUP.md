@@ -6,6 +6,8 @@ checks real session availability, and hands over to the team when a person is ne
 
 ## How it behaves
 
+- **Identity:** introduces itself as SoundBunker's digital assistant, offers to pass messages to
+  Steve and answer questions in the meantime. It uses a professional tone and promises no reply time.
 - **Website:** an "Ask the studio" button sits bottom-right on every public page. When the
   assistant hands over, the team gets an email with the summary and the client gets a
   "Continue on WhatsApp" button with their request already written.
@@ -18,8 +20,8 @@ checks real session availability, and hands over to the team when a person is ne
   to the assistant straight away.
 - **Handover triggers:** quotes, group/corporate work, discounts, refunds, changing or cancelling
   a booking, complaints, payment/file problems, urgent requests, voice notes and photos, or when
-  the client asks for a person. When the assistant hands over it also goes quiet in that
-  WhatsApp chat so it never talks over you.
+  the client asks for a person. The assistant can keep answering questions while the client
+  waits for Steve. It goes quiet when you reply from the WhatsApp Business app.
 - It never takes payments or confirms bookings; it points clients to the booking form.
 - All conversations are saved in Supabase (`studio_chat_threads`, `studio_chat_messages`).
 

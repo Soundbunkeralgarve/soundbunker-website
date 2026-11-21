@@ -53,7 +53,7 @@ for (const page of (await readdir(root)).filter(name => name.endsWith('.html')).
   if (/src="(service-page|legal)\.js/.test(html)) languages = languages.filter(code => code !== 'de');
   const next = html.replace(pattern, header(page, { languages: [...new Set(languages)], basket }))
     .replace(/site-navigation\.js\?v=[^"]+/, 'site-navigation.js?v=20261114-remote')
-    .replace(/ask-studio\.js\?v=[^"]+/, 'ask-studio.js?v=20261114-remote');
+    .replace(/ask-studio\.js\?v=[^"]+/, 'ask-studio.js?v=20261121-assistant');
   if (next !== html) {
     await writeFile(file, next);
     changed++;
