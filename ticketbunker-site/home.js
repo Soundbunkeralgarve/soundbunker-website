@@ -41,6 +41,7 @@ function commit(next,{scroll=false}={}){
  history.replaceState(null,'',location.pathname+stateQuery(state)+location.hash);
  syncForm();render();
  if(next.city!==undefined&&next.city!==feedCity)loadFeed().then(render);
+ if(next.city!==undefined)loadNear();
  if(scroll)(searching()?$('#discover'):$('#rails')).scrollIntoView({behavior:reduceMotion()?'auto':'smooth'});
 }
 form.onsubmit=e=>{e.preventDefault();commit({country:country.value,city:city.value.trim(),when:when.value,category:category.value,range:{from:from.value,to:to.value}},{scroll:true});};
@@ -144,11 +145,39 @@ $('#reel-pause').onclick=e=>{scenePaused=!scenePaused;e.currentTarget.textConten
 document.addEventListener('visibilitychange',playScenes);
 showScene(0);playScenes();
 
+// "Near you": the visitor's chosen town, or a best guess from their timezone (no location
+// prompt). Mixes types so the first row offers a gig, a club night, a family day and more.
+const ZONE_PLACE={'Europe/Lisbon':'Algarve','Atlantic/Madeira':'Madeira','Europe/London':'London','Europe/Dublin':'Dublin','Europe/Madrid':'Madrid','Europe/Paris':'Paris','Europe/Amsterdam':'Amsterdam','Europe/Berlin':'Berlin','Europe/Rome':'Rome','Europe/Brussels':'Brussels','Europe/Vienna':'Vienna','Europe/Prague':'Prague','Europe/Budapest':'Budapest','Europe/Warsaw':'Krakow','Europe/Athens':'Athens','Europe/Copenhagen':'Copenhagen','Europe/Stockholm':'Stockholm'};
+const nearPlace=()=>{if(state.city)return state.city;try{return ZONE_PLACE[Intl.DateTimeFormat().resolvedOptions().timeZone]||'';}catch{return '';}};
+let nearFeed=[],nearFor=null;
+async function loadNear(){
+ const place=nearPlace();if(!place||place===nearFor)return;nearFor=place;
+ try{const r=await fetch('/api/partner-feed?city='+encodeURIComponent(place),{signal:AbortSignal.timeout(45000)});if(r.ok&&nearFor===place){const d=await r.json();nearFeed=Array.isArray(d.events)?d.events:[];}}catch{nearFeed=[];}
+ render();
+}
+function byType(items){
+ const groups=new Map();for(const i of items){if(!groups.has(i.category))groups.set(i.category,[]);groups.get(i.category).push(i);}
+ const out=[],queues=[...groups.values()];while(queues.some(q=>q.length))for(const q of queues)if(q.length)out.push(q.shift());return out;
+}
+function renderNear(now){
+ const place=nearPlace(),section=$('#rail-near');
+ if(!place){section.hidden=true;return;}
+ const pool=blend(events,partners,now,state.city?feed:nearFeed);
+ const items=byType(sortItems(filterItems(pool,{city:place,when:'any'},now)).filter(i=>!i.soldOut)).slice(0,16);
+ section.hidden=items.length<3;
+ if(section.hidden)return;
+ $('#near-heading').textContent='Near you in '+place+'.';
+ $('#near-label').textContent=state.city?'Coming up in your chosen place':'Coming up near you · mixed picks';
+ mountRail(section,items.map(i=>card(i)));
+}
+$('#near-change').onclick=()=>{form.scrollIntoView({block:'center'});city.focus();};
+
 function render(){
  const now=Date.now(),all=blend(events,partners,now,feed),place=placeOnly(),where=placeLabel();
  $('#db-summary').textContent=[state.category?discoveryCategories[state.category]:'Everything',where||'Anywhere',whenLabel()].filter(Boolean).join(' · ');
  $('#db-clear').hidden=!(state.country||state.city||state.category||state.when!=='any');
  renderBigFeature();
+ renderNear(now);
 
  // Search view: every live listing that matches.
  const isSearch=searching();
@@ -205,15 +234,21 @@ async function loadPartners(){
  try{const r=await fetch('/partner-listings-config.json',{cache:'no-store',signal:AbortSignal.timeout(10000)});if(r.ok)partners=approvedPartnerListings(await r.json());}catch{partners=[];}
 }
 // Partner feed listings for the chosen town (or the soonest nationwide when none is set).
-let feedCity=null;
+let feedCity=null,feedTotal=0;
+// Honest headline count: every listing on sale right now across our own events and partner feeds.
+function liveCount(){
+ const own=events.filter(e=>!e.preview&&!e.public_beta_test&&!e.internal_free_test).length,n=own+feedTotal;
+ if(n>0)$('#live-count').textContent=n.toLocaleString('en-GB')+' events on sale';
+}
 async function loadFeed(){
  const want=state.city;feedCity=want;
- try{const r=await fetch('/api/partner-feed'+(want?'?city='+encodeURIComponent(want):''),{signal:AbortSignal.timeout(45000)});if(r.ok&&feedCity===want){const d=await r.json();feed=Array.isArray(d.events)?d.events:[];}}catch{if(feedCity===want)feed=[];}
+ try{const r=await fetch('/api/partner-feed'+(want?'?city='+encodeURIComponent(want):''),{signal:AbortSignal.timeout(45000)});if(r.ok&&feedCity===want){const d=await r.json();feed=Array.isArray(d.events)?d.events:[];if(Number.isInteger(d.total)&&d.total>0)feedTotal=d.total;}}catch{if(feedCity===want)feed=[];}
+ liveCount();
 }
 async function load(){
  try{const response=await getPublicEvents();events=Array.isArray(response.events)?response.events:[];loadError=false;}catch{loadError=true;}
  fillCountries();render();
 }
 fillCountries();syncForm();render();
-Promise.all([loadPartners(),loadFeed(),load()]).then(()=>{fillCountries();syncForm();render();});
+Promise.all([loadPartners(),loadFeed(),load()]).then(()=>{fillCountries();syncForm();render();loadNear();});
 if(location.pathname==='/events')$('#rails').scrollIntoView();
