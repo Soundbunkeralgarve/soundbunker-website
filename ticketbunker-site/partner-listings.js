@@ -1,4 +1,4 @@
-import {approvedPartnerListings, partnerCategories} from './partner-listings-model.js';
+import {approvedPartnerListings, partnerCategories, partnerCategoryMatches} from './partner-listings-model.js?v=20261121-city';
 
 const root = document.querySelector('[data-partner-listings]');
 const countryNames = new Intl.DisplayNames(['en'], {type: 'region'});
@@ -42,22 +42,31 @@ async function loadPartnerListings() {
     if (!listings.length) return;
     const category = root.querySelector('[data-partner-category]');
     const country = root.querySelector('[data-partner-country]');
+    const city = root.querySelector('[data-partner-city]');
+    const citySuggestions = root.querySelector('[data-partner-cities]');
     const grid = root.querySelector('[data-partner-grid]');
     const status = root.querySelector('[data-partner-status]');
     for (const code of [...new Set(listings.map(l => l.countryCode))].sort((a, b) => countryName(a).localeCompare(countryName(b)))) {
       option(country, code, countryName(code));
     }
     for (const [key, label] of Object.entries(partnerCategories)) {
-      if (listings.some(l => l.category === key)) option(category, key, label);
+      if (listings.some(l => partnerCategoryMatches(l.category, key))) option(category, key, label);
     }
     const render = () => {
       // Reapply expiry checks on every render, including a page left open overnight.
-      const selected = approvedPartnerListings(config, {country: country.value, category: category.value});
+      const filters = {country: country.value, category: category.value};
+      const destinations = approvedPartnerListings(config, filters);
+      citySuggestions.replaceChildren();
+      for (const name of [...new Set(destinations.map(l => l.city))].sort((a, b) => a.localeCompare(b))) {
+        option(citySuggestions, name, name);
+      }
+      const selected = approvedPartnerListings(config, {...filters, city: city.value});
       grid.replaceChildren(...selected.map(card));
-      status.textContent = selected.length ? `${selected.length} partner listing${selected.length === 1 ? '' : 's'}` : 'No partner listings match these choices. Try another destination or activity.';
+      status.textContent = selected.length ? `${selected.length} partner listing${selected.length === 1 ? '' : 's'}` : 'No partner listings match these choices. Try another country, town or city, or activity.';
     };
     country.addEventListener('change', render);
     category.addEventListener('change', render);
+    city.addEventListener('input', render);
     render();
     root.hidden = false;
   } catch {

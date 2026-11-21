@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&amp;family=DM+Sans:wght@400;500;600;700;800&amp;display=swap"/>
 <link rel="stylesheet" href="/home.css"/><link rel="stylesheet" href="/home-shop.css?v=20261120"/><link rel="stylesheet" href="/public-pages.css?v=20261020"/>
-<link rel="stylesheet" href="/partner-listings.css?v=20261121"/><script src="/public-navigation.js" type="module"></script>
+<link rel="stylesheet" href="/partner-listings.css?v=20261121-city"/><script src="/public-navigation.js" type="module"></script>
 <style>
 .preview-banner{background:#123c2b;color:#fff;padding:1.25rem 0;font-size:1rem;line-height:1.6}.preview-banner strong{display:block;font-size:1.125rem}.preview-banner p{margin:.3rem 0 0;color:#d9eee3}.preview-badge{display:inline-block;font-size:.875rem;font-weight:800;letter-spacing:.04em;background:#e8f7ef;color:#123c2b;padding:.35rem .6rem;border:1px solid #9dbfac;border-radius:.2rem;margin-bottom:1.25rem}.partner-card[hidden]{display:none!important}.partner-card .btn:disabled{background:#e7ece8;color:#435c4e;border:1px solid #b2c6b9;cursor:default;opacity:1}.preview-footer{padding:1.5rem 0;background:#0b1711;color:#d9eee3;font-size:.875rem;line-height:1.6}.preview-footer a{color:#fff;text-decoration:underline;text-underline-offset:3px}
 </style></head><body class="shop-home">
@@ -17,31 +17,45 @@
 <div class="preview-banner"><div class="wrap"><strong>Partner section preview — bookings not available</strong><p>Layout preview only. Waiting for supplier approval. Destinations below are examples.</p></div></div>
 <section class="partner-discovery" id="preview" aria-labelledby="partner-heading"><div class="wrap">
 <span class="eyebrow">DISCOVER MORE</span><h2 id="partner-heading">More ways to get out.</h2>
-<p class="partner-intro">The planned home for concerts, cinema and days out.</p>
-<p class="partner-disclosure">Our aim is to let you book here and keep your tickets in TicketBunker. Booking, ticket branding and wallet options will depend on each supplier’s approval. This page previews the layout only.</p>
-<div class="partner-filters"><label>Where are you going?<select id="preview-country"><option value="">All example destinations</option><option value="PT">Portugal</option><option value="ES">Spain</option><option value="GB">United Kingdom</option></select></label><label>What would you like to do?<select id="preview-category"><option value="">All activities</option><option value="events">Concerts &amp; events</option><option value="cinema">Cinema</option><option value="attractions">Attractions &amp; experiences</option></select></label></div>
-<p class="partner-status" id="preview-status" role="status" aria-live="polite">3 layout preview cards · bookings not available</p>
+<p class="partner-intro">The planned home for live music, comedy, cinema, attractions and activities across the UK and Europe. Search by destination, wherever you live.</p>
+<p class="partner-disclosure">Our aim is to let you book here and keep your tickets in TicketBunker. Coverage, booking, ticket branding and wallet options will depend on each supplier’s approval and catalogue. This page previews the layout only; the example cities do not limit future destinations.</p>
+<div class="partner-filters"><label>Country<select id="preview-country"><option value="">All example destinations</option><option value="FR">France</option><option value="NL">Netherlands</option><option value="PT">Portugal</option><option value="ES">Spain</option><option value="GB">United Kingdom</option></select></label><label>Town or city<input type="search" id="preview-city" list="preview-cities" placeholder="Try London or Edinburgh" maxlength="100" autocomplete="off"/><datalist id="preview-cities"></datalist></label><label>What would you like to do?<select id="preview-category"><option value="">All activities</option><option value="events">Concerts &amp; events</option><option value="music">Live music</option><option value="comedy">Comedy</option><option value="cinema">Cinema</option><option value="attractions">Attractions &amp; activities</option></select></label></div>
+<p class="partner-status" id="preview-status" role="status" aria-live="polite">6 layout preview cards · bookings not available</p>
 <div class="partner-grid">
-<article class="partner-card" data-preview-card data-country="GB" data-category="events"><span class="preview-badge">Layout preview</span><p class="partner-card-category">Concerts &amp; events</p><h3>Find your next live night.</h3><p class="partner-card-place">United Kingdom · Example destination</p><p class="partner-card-description">A space for authorised concert and event listings once our partner application is approved. No event or ticket is offered here.</p><p class="partner-card-supplier">Waiting for supplier approval</p><button class="btn btn-black" type="button" disabled>Bookings not available</button></article>
-<article class="partner-card" data-preview-card data-country="PT" data-category="cinema"><span class="preview-badge">Layout preview</span><p class="partner-card-category">Cinema</p><h3>Make it a cinema night.</h3><p class="partner-card-place">Portugal · Example destination</p><p class="partner-card-description">A space for cinema options from approved partners. Film listings, sessions and booking details will appear when authorised access is available.</p><p class="partner-card-supplier">Waiting for supplier approval</p><button class="btn btn-black" type="button" disabled>Bookings not available</button></article>
-<article class="partner-card" data-preview-card data-country="ES" data-category="attractions"><span class="preview-badge">Layout preview</span><p class="partner-card-category">Attractions &amp; experiences</p><h3>Get more out of your day.</h3><p class="partner-card-place">Spain · Example destination</p><p class="partner-card-description">A space for approved attractions and experiences. These cards show the planned layout; no attraction, price or availability is being advertised.</p><p class="partner-card-supplier">Waiting for supplier approval</p><button class="btn btn-black" type="button" disabled>Bookings not available</button></article>
+<article class="partner-card" data-preview-card data-country="GB" data-city="London" data-category="music"><span class="preview-badge">Layout preview</span><p class="partner-card-category">Live music</p><h3>Find your next live night.</h3><p class="partner-card-place">London · United Kingdom · Example destination</p><p class="partner-card-description">A space for authorised concert and event listings once our partner application is approved. No event or ticket is offered here.</p><p class="partner-card-supplier">Waiting for supplier approval</p><button class="btn btn-black" type="button" disabled>Bookings not available</button></article>
+<article class="partner-card" data-preview-card data-country="GB" data-city="Edinburgh" data-category="comedy"><span class="preview-badge">Layout preview</span><p class="partner-card-category">Comedy</p><h3>Plan a night out.</h3><p class="partner-card-place">Edinburgh · United Kingdom · Example destination</p><p class="partner-card-description">An example of searching for comedy in another town or city. Actual listings and destinations will depend on the approved supplier catalogue.</p><p class="partner-card-supplier">Waiting for supplier approval</p><button class="btn btn-black" type="button" disabled>Bookings not available</button></article>
+<article class="partner-card" data-preview-card data-country="PT" data-city="Lisbon" data-category="cinema"><span class="preview-badge">Layout preview</span><p class="partner-card-category">Cinema</p><h3>Make it a cinema night.</h3><p class="partner-card-place">Lisbon · Portugal · Example destination</p><p class="partner-card-description">A space for cinema options from approved partners. Film listings, sessions and booking details will appear when authorised access is available.</p><p class="partner-card-supplier">Waiting for supplier approval</p><button class="btn btn-black" type="button" disabled>Bookings not available</button></article>
+<article class="partner-card" data-preview-card data-country="FR" data-city="Paris" data-category="attractions"><span class="preview-badge">Layout preview</span><p class="partner-card-category">Attractions &amp; activities</p><h3>Discover a day out.</h3><p class="partner-card-place">Paris · France · Example destination</p><p class="partner-card-description">An example destination for the planned attractions section. No attraction, price or availability is being advertised.</p><p class="partner-card-supplier">Waiting for supplier approval</p><button class="btn btn-black" type="button" disabled>Bookings not available</button></article>
+<article class="partner-card" data-preview-card data-country="NL" data-city="Amsterdam" data-category="attractions"><span class="preview-badge">Layout preview</span><p class="partner-card-category">Attractions &amp; activities</p><h3>Explore somewhere new.</h3><p class="partner-card-place">Amsterdam · Netherlands · Example destination</p><p class="partner-card-description">A layout example showing how an overseas destination could appear. Supplier approval and inventory are required before any offer can be shown.</p><p class="partner-card-supplier">Waiting for supplier approval</p><button class="btn btn-black" type="button" disabled>Bookings not available</button></article>
+<article class="partner-card" data-preview-card data-country="ES" data-city="Barcelona" data-category="attractions"><span class="preview-badge">Layout preview</span><p class="partner-card-category">Attractions &amp; activities</p><h3>Get more out of your day.</h3><p class="partner-card-place">Barcelona · Spain · Example destination</p><p class="partner-card-description">A space for approved attractions and experiences. These cards show the planned layout; no attraction, price or availability is being advertised.</p><p class="partner-card-supplier">Waiting for supplier approval</p><button class="btn btn-black" type="button" disabled>Bookings not available</button></article>
 </div></div></section>
 </main>
 <footer class="preview-footer"><div class="wrap">The TicketBunker · Powered by SoundBunker Algarve<br/><a href="/">Back to TicketBunker</a></div></footer>
 <script type="module" data-preview-filters>
+import {partnerCityMatches, partnerCategoryMatches} from './partner-listings-model.js?v=20261121-city';
 const country = document.getElementById('preview-country');
+const city = document.getElementById('preview-city');
+const citySuggestions = document.getElementById('preview-cities');
 const category = document.getElementById('preview-category');
 const cards = [...document.querySelectorAll('[data-preview-card]')];
 const status = document.getElementById('preview-status');
 function filterCards() {
   let visible = 0;
+  const destinationCards = cards.filter(card => (!country.value || card.dataset.country === country.value) && partnerCategoryMatches(card.dataset.category, category.value));
+  citySuggestions.replaceChildren(...[...new Set(destinationCards.map(card => card.dataset.city))].sort((a, b) => a.localeCompare(b)).map(name => {
+    const option = document.createElement('option');
+    option.value = name;
+    return option;
+  }));
   for (const card of cards) {
-    card.hidden = Boolean((country.value && card.dataset.country !== country.value) || (category.value && card.dataset.category !== category.value));
+    card.hidden = !destinationCards.includes(card) || !partnerCityMatches(card.dataset.city, city.value);
     if (!card.hidden) visible++;
   }
-  status.textContent = visible ? `${visible} layout preview card${visible === 1 ? '' : 's'} · bookings not available` : 'No preview cards match these choices. Try another example destination or activity.';
+  status.textContent = visible ? `${visible} layout preview card${visible === 1 ? '' : 's'} · bookings not available` : 'No preview cards match these choices. These are example destinations only; supplier coverage is pending.';
 }
 country.addEventListener('change', filterCards);
 category.addEventListener('change', filterCards);
+city.addEventListener('input', filterCards);
+filterCards();
 </script>
 </body></html>

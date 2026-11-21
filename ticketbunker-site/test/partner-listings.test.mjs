@@ -71,6 +71,54 @@ test('country coverage is bounded by both the agreement and the provider market'
   assert.deepEqual(select(config), []);
 });
 
+test('town and city search accepts partial names, case, spacing and accents across approved countries', () => {
+  const config = configuration();
+  config.providers[0].id = 'tiqets';
+  config.providers[0].countries = ['GB', 'CA', 'BR', 'JP'];
+  const template = {...config.listings[0], providerId: 'tiqets', category: 'attractions'};
+  config.listings = [
+    {id: 'london-gb', city: 'London', countryCode: 'GB'},
+    {id: 'london-ca', city: 'London', countryCode: 'CA'},
+    {id: 'edinburgh', city: 'Edinburgh', countryCode: 'GB'},
+    {id: 'wrexham', city: 'Wrexham', countryCode: 'GB'},
+    {id: 'sao-paulo', city: 'São Paulo', countryCode: 'BR'},
+    {id: 'kyoto', city: '京都', countryCode: 'JP'}
+  ].map(listing => ({...template, ...listing}));
+  assert.deepEqual(select(config, {city: '  LONd  '}).map(l => l.id), ['london-gb', 'london-ca']);
+  assert.deepEqual(select(config, {city: 'EdIn'}).map(l => l.id), ['edinburgh']);
+  assert.deepEqual(select(config, {city: 'wrex'}).map(l => l.id), ['wrexham']);
+  assert.deepEqual(select(config, {city: '  SAO   PAULO '}).map(l => l.id), ['sao-paulo']);
+  assert.deepEqual(select(config, {city: 'Sa\u0303o Paulo'}).map(l => l.id), ['sao-paulo']);
+  assert.deepEqual(select(config, {city: '京都'}).map(l => l.id), ['kyoto']);
+  assert.equal(select(config, {city: '   '}).length, 6);
+  for (const city of ['unknown town', null, 123, 'x'.repeat(101)]) assert.deepEqual(select(config, {city}), []);
+});
+
+test('country, city and activity filters combine without expanding approved inventory', () => {
+  const config = configuration();
+  const linkProvider = config.providers[0];
+  config.providers.push(
+    {...structuredClone(linkProvider), id: 'ticketmaster', countries: ['GB']},
+    {...structuredClone(linkProvider), id: 'tiqets', countries: ['GB', 'ES']}
+  );
+  const template = config.listings[0];
+  config.listings.push(
+    {...template, id: 'london-event', providerId: 'ticketmaster', countryCode: 'GB', city: 'London', category: 'events'},
+    {...template, id: 'edinburgh-event', providerId: 'ticketmaster', countryCode: 'GB', city: 'Edinburgh', category: 'events'},
+    {...template, id: 'london-attraction', providerId: 'tiqets', countryCode: 'GB', city: 'London', category: 'attractions'},
+    {...template, id: 'madrid-attraction', providerId: 'tiqets', countryCode: 'ES', city: 'Madrid', category: 'attractions'}
+  );
+  assert.deepEqual(select(config, {country: 'GB', city: 'London', category: 'events'}).map(l => l.id), ['london-event']);
+  assert.deepEqual(select(config, {country: 'GB', city: 'lond', category: 'attractions'}).map(l => l.id), ['london-attraction']);
+  assert.deepEqual(select(config, {country: 'ES', city: 'MAD', category: 'cinema'}).map(l => l.id), ['cinema-es']);
+  assert.deepEqual(select(config, {country: 'ES', city: 'MAD', category: 'attractions'}).map(l => l.id), ['madrid-attraction']);
+  assert.deepEqual(select(config, {country: 'ES', city: 'London'}), []);
+  config.providers[1].status = 'pending';
+  assert.deepEqual(select(config, {country: 'GB', city: 'London', category: 'events'}), []);
+  config.providers[2].bookingLinks[0].expiresAt = now.toISOString();
+  assert.deepEqual(select(config, {country: 'GB', city: 'London'}), []);
+});
+
 test('NOS and Ticketmaster are not enabled outside their supported initial markets', () => {
   const config = configuration();
   config.providers[0].id = 'nos'; config.listings[0].providerId = 'nos';
@@ -82,6 +130,28 @@ test('NOS and Ticketmaster are not enabled outside their supported initial marke
   assert.deepEqual(select(config), []);
   config.providers[0].countries = ['GB']; config.listings[0].countryCode = 'GB';
   assert.equal(select(config)[0].providerName, 'Ticketmaster');
+});
+
+test('live music and comedy can be selected separately while generic events includes both', () => {
+  const config = configuration();
+  config.providers[0].id = 'ticketmaster';
+  config.providers[0].countries = ['GB'];
+  const template = {...config.listings[0], providerId: 'ticketmaster', countryCode: 'GB'};
+  config.listings = [
+    {id: 'generic-event', city: 'London', category: 'events'},
+    {id: 'music-event', city: 'London', category: 'music'},
+    {id: 'comedy-event', city: 'Edinburgh', category: 'comedy'}
+  ].map(listing => ({...template, ...listing}));
+  assert.deepEqual(select(config, {category: 'events'}).map(l => l.id), ['generic-event', 'music-event', 'comedy-event']);
+  assert.deepEqual(select(config, {country: 'GB', city: 'london', category: 'music'}).map(l => l.id), ['music-event']);
+  assert.deepEqual(select(config, {country: 'GB', city: 'edin', category: 'comedy'}).map(l => l.id), ['comedy-event']);
+  assert.deepEqual(select(config, {country: 'GB', city: 'london', category: 'comedy'}), []);
+  // A broad event record is not automatically labelled as music or comedy.
+  config.listings = [config.listings[0]];
+  assert.deepEqual(select(config, {category: 'music'}), []);
+  assert.deepEqual(select(config, {category: 'comedy'}), []);
+  config.providers[0].status = 'pending';
+  assert.deepEqual(select(config, {category: 'events'}), []);
 });
 
 test('Tiqets supports only approved destinations and attraction listings', () => {
