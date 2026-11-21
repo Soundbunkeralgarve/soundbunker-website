@@ -216,3 +216,6 @@ a.tcard:hover .card-media img.thumb-art{transform:translate(-50%,-50%) scale(1.0
 a.tcard:hover .card-foot .get{background:var(--teal);color:#04140e}
 .rail-featured .card-foot .get{background:var(--teal);color:#04140e}
 .rail-featured .card-foot .via{color:#8f9a95}
+
+.partner-note{margin-top:28px;margin-bottom:-8px;padding:12px 16px;border:1px solid var(--line);border-radius:12px;background:#fff;font:400 13px/1.5 var(--body);color:var(--muted)}
+.partner-note b{color:var(--ink);font-weight:600}
