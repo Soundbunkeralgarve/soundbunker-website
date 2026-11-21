@@ -131,21 +131,38 @@ function renderBigFeature(){
  $('#big-feature-card').innerHTML=`<div class="bf-card"><div class="bf-media">${image(pick)}<span class="badge badge-featured">Featured</span></div><div class="bf-body"><span class="card-cat">${esc(catLabel(pick))}</span><p class="card-date">${esc(dateLine(pick))}</p><h3>${esc(pick.title)}</h3><p class="card-place">${esc(place)}</p><div class="bf-foot"><strong>${esc(priceLine(pick))}</strong></div><a class="btn-solid" href="${esc(pick.url)}">Get tickets ↗</a></div></div>`;
 }
 
-// Hero slideshow: slow crossfade with a gentle zoom; pauses when hidden, on request or for reduced motion.
-const scenes=[...document.querySelectorAll('.hero-scene')],dots=[...document.querySelectorAll('[data-scene]')],sceneNames=['Festivals','Club nights','Raves','Live music','Big nights out'];
+// Hero film: six short graded clips (one plays at a time, the next preloads), crossfading
+// over their own stills. Phones get lighter files; reduced motion or data saver keep stills.
+const scenes=[...document.querySelectorAll('.hero-scene')],dots=[...document.querySelectorAll('[data-scene]')];
+const sceneNames=['Festivals','Club nights','Live shows','Boat trips & tours','Family days out','Trains to the show'];
+const stillOnly=()=>reduceMotion()||navigator.connection?.saveData===true;
+const small=matchMedia('(max-width: 760px)').matches;
 let sceneAt=0,sceneTimer,scenePaused=false;
+function clipFor(i){
+ const el=scenes[i];let v=el.querySelector('video');
+ if(!v&&!stillOnly()){v=document.createElement('video');v.muted=true;v.playsInline=true;v.preload='auto';v.setAttribute('muted','');v.setAttribute('playsinline','');
+  v.src='/assets/hero/'+el.dataset.clip+(small?'-m':'')+'.mp4';el.append(v);}
+ return v;
+}
 function showScene(i){
- sceneAt=i;scenes.forEach((el,j)=>el.classList.toggle('active',i===j));
+ sceneAt=i;
+ scenes.forEach((el,j)=>{el.classList.toggle('active',i===j);const v=el.querySelector('video');if(v&&j!==i)v.pause();});
  dots.forEach((el,j)=>{el.classList.toggle('active',i===j);el.setAttribute('aria-pressed',String(i===j));});
  $('#scene-label').textContent=sceneNames[i];$('#scene-count').textContent=String(i+1).padStart(2,'0')+' / '+String(scenes.length).padStart(2,'0');
+ const v=clipFor(i);if(v&&!scenePaused&&!document.hidden){v.currentTime=0;v.play().catch(()=>{});}
+ clipFor((i+1)%scenes.length);
 }
 function playScenes(){
- const still=scenePaused||document.hidden||reduceMotion();
+ const still=scenePaused||document.hidden;
  $('.hero-scenes').classList.toggle('motion-paused',still);clearInterval(sceneTimer);
+ const v=scenes[sceneAt].querySelector('video');if(v){still?v.pause():v.play().catch(()=>{});}
  if(!still)sceneTimer=setInterval(()=>showScene((sceneAt+1)%scenes.length),6000);
 }
 dots.forEach(d=>d.onclick=()=>{showScene(Number(d.dataset.scene));playScenes();});
-$('#reel-pause').onclick=e=>{scenePaused=!scenePaused;e.currentTarget.textContent=scenePaused?'Play':'Pause';e.currentTarget.setAttribute('aria-label',(scenePaused?'Play':'Pause')+' hero slideshow');playScenes();};
+// The caption takes you to what is on screen.
+$('#reel-now').onclick=()=>{const target=document.getElementById(dots[sceneAt].dataset.jumpTo)||document.getElementById('rail-'+dots[sceneAt].dataset.jumpTo);
+ if(target&&!target.hidden)target.scrollIntoView({behavior:reduceMotion()?'auto':'smooth'});else commit({category:dots[sceneAt].dataset.jumpTo},{scroll:true});};
+$('#reel-pause').onclick=e=>{scenePaused=!scenePaused;e.currentTarget.textContent=scenePaused?'Play':'Pause';e.currentTarget.setAttribute('aria-label',(scenePaused?'Play':'Pause')+' hero video');playScenes();};
 document.addEventListener('visibilitychange',playScenes);
 showScene(0);playScenes();
 

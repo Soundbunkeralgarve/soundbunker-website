@@ -328,3 +328,32 @@ a.tcard:hover .card-foot .get{background:var(--teal);color:#04140e}
 .fee-promise{margin:16px auto 0;max-width:760px;font:400 13.5px/1.55 var(--body);color:#dfe8e3}
 .fee-promise b{color:var(--teal);font-weight:700}
 @media(max-width:650px){.hero-pillars{grid-template-columns:1fr 1fr;gap:8px}.hero-pillars li{padding:10px 12px}.hero-pillars b{font-size:13px}.fee-promise{font-size:12.5px;text-align:left}}
+
+/* Hero film: graded clips over their own stills, crossfading; progress fills each dot. */
+.shop-home .hero-scene{background-position:center;filter:none;transform:scale(1.04);transition:opacity 1.2s ease,transform 7s linear}
+.shop-home .hero-scene.active{transform:scale(1)}
+.hero-scene video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .8s ease}
+.hero-scene.active video{opacity:1}
+.hero-scenes.motion-paused .hero-scene{transform:none}
+.reel-now{display:inline-flex;align-items:center;gap:8px;border:1px solid #ffffff2e;background:#05060680;backdrop-filter:blur(8px);color:#fff;border-radius:999px;padding:7px 14px;font:600 12px var(--body);cursor:pointer;letter-spacing:0;text-transform:none}
+.reel-now .reel-k{font:500 10px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:#9fe9cf}
+.reel-now:hover{border-color:var(--teal)}
+.reel-dot{overflow:hidden;width:34px}
+.reel-dot i{position:absolute;inset:0;width:0;background:var(--teal)}
+.reel-dot.active{background:#ffffff4d;box-shadow:none}
+.reel-dot.active i{animation:reelfill 6s linear forwards}
+.hero-scenes.motion-paused ~ .wrap .reel-dot.active i,.hero-sales:has(.motion-paused) .reel-dot.active i{animation-play-state:paused}
+@keyframes reelfill{to{width:100%}}
+#scene-label{min-width:0;color:#fff;text-align:left}
+@media(max-width:650px){.reel-now .reel-k{display:none}.reel-dot{width:18px}.hero-reel{gap:8px}}
+@media(prefers-reduced-motion:reduce){.reel-dot.active i{animation:none;width:100%}.shop-home .hero-scene{transform:none!important}}
+
+.hero-host{margin:12px auto 0;font:400 13px var(--body);color:#c9d4cf}
+.hero-host a{color:#fff;font-weight:600;border-bottom:1px solid var(--teal);padding-bottom:1px}
+.hero-host a:hover{color:var(--teal)}
+.tabs-row{display:flex;align-items:center;gap:12px}
+.tabs-row .tabs-track{flex:1;min-width:0}
+.tabs-host{flex:0 0 auto;font:700 12.5px var(--body);background:var(--teal);color:#04140e;border-radius:999px;padding:7px 14px;white-space:nowrap}
+.tabs-host:hover{background:#4ff2c4}
+@media(max-width:650px){.tabs-row{padding-right:12px}.tabs-host{font-size:11.5px;padding:6px 10px}.hero-host{font-size:12px;text-align:left}}
+.shop-home .hero-shade{background:radial-gradient(120% 90% at 50% 45%,#05060614 0%,#0506069c 64%,#050606ec 100%),linear-gradient(0deg,#050606 0%,#05060600 28%)}
