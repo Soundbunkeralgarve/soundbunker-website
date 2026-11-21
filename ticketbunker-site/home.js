@@ -2,7 +2,7 @@ import {getPublicEvents} from './featured-events.js?v=20261020';
 import {escapeHtml as esc,money,safeUrl} from './shared.js';
 import {eventKind} from './event-content.js';
 import {approvedPartnerListings} from './partner-listings-model.js?v=20261121-city';
-import {discoveryCategories,blend,filterItems,sortItems,featureFor,readState,stateQuery} from './discovery-model.js?v=20261121-feed';
+import {discoveryCategories,blend,filterItems,sortItems,featureFor,readState,stateQuery} from './discovery-model.js?v=20261121-viator';
 import {homeRails} from './sample-listings.js?v=20261121-real';
 import {selectFeaturedEvents} from './featured-selection.js';
 const $=s=>document.querySelector(s);
@@ -102,6 +102,15 @@ function mountRail(section,items,extra=''){
  requestAnimationFrame(()=>{controls.hidden=track.scrollWidth<=track.clientWidth+4;});
 }
 
+// Partner listings take turns by seller so no single feed fills a rail; paid features
+// and our own tickets keep their place at the front.
+function mixSellers(items){
+ const lead=items.filter(i=>i.featured||i.source==='ticketbunker'),groups=new Map();
+ for(const i of items)if(!lead.includes(i)){if(!groups.has(i.source))groups.set(i.source,[]);groups.get(i.source).push(i);}
+ const out=[...lead],queues=[...groups.values()];
+ while(queues.some(q=>q.length))for(const q of queues)if(q.length)out.push(q.shift());
+ return out;
+}
 const placeOnly=()=>({country:state.country,city:state.city,category:'',when:'any'});
 
 // One large paid placement under the hero: a real featured event for this place,
@@ -169,7 +178,7 @@ function render(){
  for(const [k] of homeRails){
   const section=document.getElementById('rail-'+k);
   // Paid features first, then our own events, then partner feeds; long rails are capped.
-  const real=sortItems(filterItems(all,{...place,category:k},now)).sort((a,b)=>Number(b.featured)-Number(a.featured)||Number(b.source==='ticketbunker')-Number(a.source==='ticketbunker')).slice(0,24);
+  const real=mixSellers(sortItems(filterItems(all,{...place,category:k},now)).sort((a,b)=>Number(b.featured)-Number(a.featured)||Number(b.source==='ticketbunker')-Number(a.source==='ticketbunker'))).slice(0,24);
   section.hidden=!real.length;
   if(real.length)mountRail(section,real.map(i=>card(i)));
  }
