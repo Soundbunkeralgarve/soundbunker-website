@@ -357,3 +357,5 @@ a.tcard:hover .card-foot .get{background:var(--teal);color:#04140e}
 .tabs-host:hover{background:#4ff2c4}
 @media(max-width:650px){.tabs-row{padding-right:12px}.tabs-host{font-size:11.5px;padding:6px 10px}.hero-host{font-size:12px;text-align:left}}
 .shop-home .hero-shade{background:radial-gradient(120% 90% at 50% 45%,#05060614 0%,#0506069c 64%,#050606ec 100%),linear-gradient(0deg,#050606 0%,#05060600 28%)}
+/* "One bunker." in solid teal */
+.shop-home .h1-outline,.shop-home .hero-sales .h1-outline{color:var(--teal);-webkit-text-stroke:0;text-shadow:0 0 50px #00e0a655,0 8px 40px #0008}
