@@ -219,3 +219,14 @@ a.tcard:hover .card-foot .get{background:var(--teal);color:#04140e}
 
 .partner-note{margin-top:28px;margin-bottom:-8px;padding:12px 16px;border:1px solid var(--line);border-radius:12px;background:#fff;font:400 13px/1.5 var(--body);color:var(--muted)}
 .partner-note b{color:var(--ink);font-weight:600}
+
+/* Our own tickets stand out: teal ring, "Bunker direct" stamp and their own rail. */
+.tcard.is-direct{box-shadow:0 0 0 2px var(--teal),0 18px 40px -24px #0a6b5080}
+.badge-direct{right:12px;left:auto;background:var(--ink);color:var(--teal);border:1px solid #00e0a666}
+.tcard.is-direct .card-foot .get{background:var(--teal);color:#04140e}
+.rail-direct{background:linear-gradient(180deg,#e6f7f0 0%,var(--cream) 100%)}
+.rail-direct h2 em{color:var(--teal-deep)}
+.direct-tile{background:var(--ink)!important;color:#fff}
+.trust-head{display:block!important;border:0!important;padding-bottom:18px}
+.trust-head h2{font-size:clamp(34px,3.4vw,54px);margin:0}
+.trust-head h2 em{color:var(--teal-deep)}

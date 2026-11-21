@@ -71,14 +71,16 @@ function priceLine(item){
 const catLabel=item=>item.kind?eventKind(item.kind):discoveryCategories[item.category]||'Event';
 function card(item,{featured=false}={}){
  const place=[item.venue,item.city].filter(Boolean).join(' · ');
- const badges=`${item.featured||featured?'<span class="badge badge-featured">Featured</span>':''}`;
+ const direct=item.source==='ticketbunker';
+ const badges=`${item.featured||featured?'<span class="badge badge-featured">Featured</span>':''}${direct?'<span class="badge badge-direct">Bunker direct</span>':''}`;
  // One quiet line says who sells the ticket: partners are named, never hidden.
  const via=item.external?`<small class="via">via ${esc(item.seller)} · fees may apply</small>`:item.soldOut?'':'<small class="via via-tb">No booking fee</small>';
  const action=item.soldOut?'':`<span class="get">${item.external?'Get tickets ↗':'Get tickets'}</span>`;
  const body=`<div class="card-media">${image(item)}<span class="card-cat">${esc(catLabel(item))}</span>${badges}</div><div class="card-body"><p class="card-date">${esc(dateLine(item))}</p><h3>${esc(item.title)}</h3><p class="card-place">${esc(place)}</p><div class="card-foot"><div class="price"><strong>${esc(priceLine(item))}</strong>${via}</div>${action}</div></div>`;
  const ext=item.external?` target="_blank" rel="sponsored noopener noreferrer" aria-label="${esc(item.title)}: tickets via ${esc(item.seller)} (opens in a new tab)"`:'';
- return `<a class="tcard${item.soldOut?' is-soldout':''}" href="${esc(item.url)}"${ext}>${body}</a>`;
+ return `<a class="tcard${direct?' is-direct':''}${item.soldOut?' is-soldout':''}" href="${esc(item.url)}"${ext}>${body}</a>`;
 }
+const directTile=()=>`<a class="tcard host-tile direct-tile" href="/for-organisers"><div><span class="label">Organisers</span><h3>Sell direct here.</h3><p>No booking fee for your crowd, wallet tickets and a door app.</p><span class="head-link">Host your event ↗</span></div></a>`;
 const hostTile=()=>`<a class="tcard host-tile" href="/featured"><div><span class="label">Your event here</span><h3>Get featured.</h3><p>Put your event in the spotlight and at the front of these rails.</p><span class="head-link">Featured placement ↗</span></div></a>`;
 
 // Rails with visible controls; arrow keys scroll when the track has focus.
@@ -171,6 +173,10 @@ function render(){
   section.hidden=!real.length;
   if(real.length)mountRail(section,real.map(i=>card(i)));
  }
+ // Our own tickets get their own rail first: no booking fee, wallet passes and our support.
+ const direct=sortItems(filterItems(all,place,now)).filter(i=>i.source==='ticketbunker'&&!i.soldOut).slice(0,24);
+ $('#rail-direct').hidden=!direct.length;
+ if(direct.length)mountRail($('#rail-direct'),direct.map(i=>card(i)),directTile());
  const weekend=sortItems(filterItems(all,{...place,when:'weekend'},now)).filter(i=>!i.soldOut).slice(0,24);
  $('#rail-weekend').hidden=!weekend.length;
  if(weekend.length)mountRail($('#rail-weekend'),weekend.map(i=>card(i)));
