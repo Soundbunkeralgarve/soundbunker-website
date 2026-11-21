@@ -5,7 +5,8 @@ import {selectFeaturedEvents} from './featured-selection.js';
 
 export const discoveryCategories = Object.freeze({
   music: 'Live music', club: 'Club nights', comedy: 'Comedy', festival: 'Festivals',
-  cinema: 'Cinema', daysout: 'Days out', events: 'Concerts & events', other: 'More events'
+  shows: 'Theatre & shows', cinema: 'Cinema', boat: 'Boat trips', daysout: 'Experiences & days out',
+  events: 'Concerts & events', other: 'More events'
 });
 const nativeCategory = {show: 'music', club: 'club', comedy: 'comedy', festival: 'festival'};
 const partnerCategory = {music: 'music', comedy: 'comedy', cinema: 'cinema', attractions: 'daysout', events: 'events'};
