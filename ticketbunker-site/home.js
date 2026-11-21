@@ -2,7 +2,7 @@ import {getPublicEvents} from './featured-events.js?v=20261020';
 import {escapeHtml as esc,money,safeUrl} from './shared.js';
 import {eventKind} from './event-content.js';
 import {approvedPartnerListings} from './partner-listings-model.js?v=20261121-city';
-import {discoveryCategories,blend,filterItems,sortItems,featureFor,readState,stateQuery} from './discovery-model.js?v=20261121b';
+import {discoveryCategories,blend,filterItems,sortItems,featureFor,readState,stateQuery} from './discovery-model.js?v=20261121-feed';
 import {sampleListings,homeRails} from './sample-listings.js?v=20261121';
 import {selectFeaturedEvents} from './featured-selection.js';
 const $=s=>document.querySelector(s);
@@ -15,13 +15,13 @@ const POPULAR=['PT','GB','IE','ES','FR','NL','DE','IT','BE'];
 const ALL=('AD AL AT BA BE BG BY CH CY CZ DE DK EE ES FI FR GB GI GR HR HU IE IS IT LI LT LU LV MC MD ME MK MT NL NO PL PT RO RS SE SI SK SM UA VA US CA AU NZ').split(' ');
 const PLACES=[['PT','Algarve'],['PT','Lisbon'],['PT','Porto'],['GB','London'],['GB','Edinburgh'],['GB','Manchester'],['IE','Dublin'],['ES','Madrid'],['ES','Barcelona'],['FR','Paris'],['NL','Amsterdam'],['DE','Berlin']];
 const saved=(()=>{try{return JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch{return {};}})();
-let state=readState(location.search,saved),events=[],partners=[],loadError=false,limit=12;
+let state=readState(location.search,saved),events=[],partners=[],feed=[],loadError=false,limit=12;
 const form=$('#destination-search'),country=$('#ds-country'),city=$('#ds-city'),when=$('#ds-when'),from=$('#ds-from'),to=$('#ds-to'),category=$('#ds-category');
 
 const opt=(v,l)=>{const o=document.createElement('option');o.value=v;o.textContent=l;return o;};
 const sorted=codes=>[...new Set(codes)].sort((a,b)=>countryName(a).localeCompare(countryName(b)));
 function fillCountries(){
- const known=new Set([...events.map(e=>String(e.country_code||'').toUpperCase()),...partners.map(p=>p.countryCode)].filter(c=>/^[A-Z]{2}$/.test(c)));
+ const known=new Set([...events.map(e=>String(e.country_code||'').toUpperCase()),...partners.map(p=>p.countryCode),...feed.map(f=>f.countryCode)].filter(c=>/^[A-Z]{2}$/.test(c)));
  const pinned=sorted([...POPULAR,...known]),rest=sorted(ALL.filter(c=>!pinned.includes(c)));
  country.replaceChildren(opt('','Anywhere'));
  const g1=document.createElement('optgroup');g1.label='Popular';pinned.forEach(c=>g1.append(opt(c,countryName(c))));
@@ -61,7 +61,7 @@ function dateLine(item){
  try{return new Intl.DateTimeFormat('en-GB',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:item.timezone}).format(new Date(item.startsAt));}catch{return '';}
 }
 function priceLine(item){
- if(item.external)return 'Price on partner site';
+ if(item.external)return Number.isInteger(item.priceCents)?(item.priceCents===0?'Free':'From '+money(item.priceCents,item.currency)):'Price on partner site';
  if(item.soldOut)return 'Sold out';
  return item.priceCents===0?'Free':'From '+money(item.priceCents,item.currency);
 }
@@ -130,7 +130,7 @@ document.addEventListener('visibilitychange',playScenes);
 showScene(0);playScenes();
 
 function render(){
- const now=Date.now(),all=blend(events,partners,now),place=placeOnly(),where=placeLabel();
+ const now=Date.now(),all=blend(events,partners,now,feed),place=placeOnly(),where=placeLabel();
  $('#db-summary').textContent=[state.category?discoveryCategories[state.category]:'Everything',where||'Anywhere',whenLabel()].filter(Boolean).join(' · ');
  $('#db-clear').hidden=!(state.country||state.city||state.category||state.when!=='any');
  renderBigFeature();
@@ -166,13 +166,14 @@ function render(){
  for(const [k] of homeRails){
   const section=document.getElementById('rail-'+k);
   // Featured events lead their category rail; samples only fill a thin rail.
-  const real=sortItems(filterItems(all,{...place,category:k},now)).sort((a,b)=>Number(b.featured)-Number(a.featured));
+  // Paid features first, then our own events, then partner feeds; long rails are capped.
+  const real=sortItems(filterItems(all,{...place,category:k},now)).sort((a,b)=>Number(b.featured)-Number(a.featured)||Number(b.source==='ticketbunker')-Number(a.source==='ticketbunker')).slice(0,24);
   const samples=real.length>=6?[]:samplesFor({...place,category:k}).slice(0,8-real.length);
   samplesShown+=samples.length;
   section.hidden=!real.length&&!samples.length;
   if(!section.hidden)mountRail(section,[...real.map(i=>card(i)),...samples.map(i=>card(i))]);
  }
- const weekend=sortItems(filterItems(all,{...place,when:'weekend'},now)).filter(i=>!i.soldOut);
+ const weekend=sortItems(filterItems(all,{...place,when:'weekend'},now)).filter(i=>!i.soldOut).slice(0,24);
  $('#rail-weekend').hidden=!weekend.length;
  if(weekend.length)mountRail($('#rail-weekend'),weekend.map(i=>card(i)));
  $('#sample-note').hidden=!samplesShown;
@@ -188,10 +189,13 @@ document.querySelectorAll('[data-place]').forEach(a=>a.onclick=e=>{e.preventDefa
 async function loadPartners(){
  try{const r=await fetch('/partner-listings-config.json',{cache:'no-store',signal:AbortSignal.timeout(10000)});if(r.ok)partners=approvedPartnerListings(await r.json());}catch{partners=[];}
 }
+async function loadFeed(){
+ try{const r=await fetch('/api/partner-feed',{signal:AbortSignal.timeout(15000)});if(r.ok){const d=await r.json();feed=Array.isArray(d.events)?d.events:[];}}catch{feed=[];}
+}
 async function load(){
  try{const response=await getPublicEvents();events=Array.isArray(response.events)?response.events:[];loadError=false;}catch{loadError=true;}
  fillCountries();render();
 }
 fillCountries();syncForm();render();
-Promise.all([loadPartners(),load()]).then(()=>{fillCountries();syncForm();render();});
+Promise.all([loadPartners(),loadFeed(),load()]).then(()=>{fillCountries();syncForm();render();});
 if(location.pathname==='/events')$('#rails').scrollIntoView();
