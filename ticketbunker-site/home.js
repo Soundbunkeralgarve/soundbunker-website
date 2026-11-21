@@ -5,6 +5,7 @@ import {approvedPartnerListings} from './partner-listings-model.js?v=20261121-ci
 import {discoveryCategories,blend,filterItems,sortItems,featureFor,readState,stateQuery} from './discovery-model.js?v=20261121-viator';
 import {homeRails} from './sample-listings.js?v=20261121-real';
 import {selectFeaturedEvents} from './featured-selection.js';
+import {renderGygBox} from './gyg-box.js?v=20261121b';
 const $=s=>document.querySelector(s);
 const reduceMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -191,6 +192,7 @@ function render(){
  if(weekend.length)mountRail($('#rail-weekend'),weekend.map(i=>card(i)));
 
  $('#partner-note').hidden=!all.some(i=>i.external);
+ renderGygBox($('#gyg-box'),state);
  $('#show-more').onclick=()=>{limit+=12;render();};
  const cities=[...new Set(all.filter(i=>!state.country||i.countryCode===state.country).map(i=>i.city).filter(Boolean))].sort();
  $('#ds-cities').replaceChildren(...[...(state.country==='PT'||!state.country?['Algarve']:[]),...cities].map(c=>opt(c,c)));
