@@ -99,19 +99,41 @@ function mountRail(section,items,extra=''){
 const placeOnly=()=>({country:state.country,city:state.city,category:'',when:'any'});
 const samplesFor=filters=>filterItems(sampleListings,filters);
 
-function renderSpotlight(){
+// One large paid placement under the hero: a real featured event for this place,
+// otherwise a labelled sample that invites organisers to take the spot.
+function renderBigFeature(){
  const real=featureFor(events,placeOnly());
  const local=samplesFor(placeOnly());
- const pick=real||local.find(s=>s.category==='boat')||local[0]||sampleListings.find(s=>s.key==='sample:b1');
- const isSample=!real;
- $('#spotlight').innerHTML=`<div class="spot-card${isSample?' is-sample':''}"><div class="spot-media">${image(pick,true)}<span class="badge badge-featured">Spotlight</span>${isSample?'<span class="badge badge-sample">SAMPLE</span>':''}</div><div class="spot-body"><p class="card-date">${esc([dateLine(pick),pick.city].filter(Boolean).join(' · '))}</p><h2>${esc(pick.title)}</h2><div class="spot-foot"><strong>${esc(priceLine(pick))}</strong>${isSample?'<a class="head-link" href="/featured">Feature your event here ↗</a>':`<a class="btn-solid" href="${esc(pick.url)}">Get tickets ↗</a>`}</div></div></div>`;
+ const showcase=['f3','f1','f2','f4','c4','c5','m3','c2','n2','t2','n3','m2'].map(id=>'sample:'+id);
+ const pick=real||showcase.map(k=>local.find(s=>s.key===k)).find(Boolean)||local[0]||sampleListings.find(s=>s.key==='sample:f3');
+ const isSample=!real,place=[pick.venue,pick.city].filter(Boolean).join(' · ');
+ const action=isSample?'<a class="btn-solid" href="/featured">Feature your event here ↗</a>':`<a class="btn-solid" href="${esc(pick.url)}">Get tickets ↗</a>`;
+ $('#big-feature-card').innerHTML=`<div class="bf-card${isSample?' is-sample':''}"><div class="bf-media">${image(pick)}<span class="badge badge-featured">Featured</span>${isSample?'<span class="badge badge-sample">SAMPLE</span>':''}</div><div class="bf-body"><span class="card-cat">${esc(catLabel(pick))}</span><p class="card-date">${esc(dateLine(pick))}</p><h3>${esc(pick.title)}</h3><p class="card-place">${esc(place)}</p><div class="bf-foot"><strong>${esc(priceLine(pick))}</strong>${isSample?'<span class="seller seller-sample">Sample · not on sale</span>':''}</div>${action}</div></div>`;
 }
+
+// Hero slideshow: slow crossfade with a gentle zoom; pauses when hidden, on request or for reduced motion.
+const scenes=[...document.querySelectorAll('.hero-scene')],dots=[...document.querySelectorAll('[data-scene]')],sceneNames=['Festivals','Club nights','Raves','Live music','Big nights out'];
+let sceneAt=0,sceneTimer,scenePaused=false;
+function showScene(i){
+ sceneAt=i;scenes.forEach((el,j)=>el.classList.toggle('active',i===j));
+ dots.forEach((el,j)=>{el.classList.toggle('active',i===j);el.setAttribute('aria-pressed',String(i===j));});
+ $('#scene-label').textContent=sceneNames[i];$('#scene-count').textContent=String(i+1).padStart(2,'0')+' / '+String(scenes.length).padStart(2,'0');
+}
+function playScenes(){
+ const still=scenePaused||document.hidden||reduceMotion();
+ $('.hero-scenes').classList.toggle('motion-paused',still);clearInterval(sceneTimer);
+ if(!still)sceneTimer=setInterval(()=>showScene((sceneAt+1)%scenes.length),6000);
+}
+dots.forEach(d=>d.onclick=()=>{showScene(Number(d.dataset.scene));playScenes();});
+$('#reel-pause').onclick=e=>{scenePaused=!scenePaused;e.currentTarget.textContent=scenePaused?'Play':'Pause';e.currentTarget.setAttribute('aria-label',(scenePaused?'Play':'Pause')+' hero slideshow');playScenes();};
+document.addEventListener('visibilitychange',playScenes);
+showScene(0);playScenes();
 
 function render(){
  const now=Date.now(),all=blend(events,partners,now),place=placeOnly(),where=placeLabel();
  $('#db-summary').textContent=[state.category?discoveryCategories[state.category]:'Everything',where||'Anywhere',whenLabel()].filter(Boolean).join(' · ');
  $('#db-clear').hidden=!(state.country||state.city||state.category||state.when!=='any');
- renderSpotlight();
+ renderBigFeature();
 
  // Search view: real listings first, then matching samples (never counted as results).
  const isSearch=searching();
