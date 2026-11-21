@@ -135,11 +135,12 @@ export function viatorItem(raw, {place, countryCode}) {
 }
 
 export async function loadViator(env = process.env, {fetcher = fetch} = {}) {
-  const key = env.VIATOR_API_KEY;
+  // Pasted keys often carry stray spaces or line breaks; Viator then answers 401.
+  const key = String(env.VIATOR_API_KEY || '').trim();
   if (!key) return [];
   const headers = {'exp-api-key': key, Accept: 'application/json;version=2.0', 'Accept-Language': 'en-GB', 'Content-Type': 'application/json'};
   const res = await fetcher(VIATOR_API + '/destinations', {headers, signal: AbortSignal.timeout(20000)});
-  if (!res.ok) throw Error('Viator destinations ' + res.status);
+  if (!res.ok) throw Error('Viator destinations ' + res.status + ' (key length ' + key.length + ')');
   const all = (await res.json()).destinations || [];
   if (!all.length) throw Error('Viator returned no destinations');
   const settled = await Promise.allSettled(VIATOR_PLACES.map(async ([place, countryCode]) => {
