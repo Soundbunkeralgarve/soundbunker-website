@@ -21,7 +21,8 @@ test('a city page has its own title, description, canonical, heading and preset 
 
 test('the Algarve page reads naturally and presets the region', () => {
   const html = cityHtml(shell, cityBySlug('algarve'), []);
-  assert.match(html, /Things to do in Algarve:/);
+  assert.match(html, /Things to do in the Algarve:/);
+  assert.match(html, /In the Algarve.<\/span>/);
   assert.match(html, /"city":"Algarve","country":"PT"/);
   assert.doesNotMatch(html, /city-list/, 'no empty list');
 });
