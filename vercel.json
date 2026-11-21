@@ -192,6 +192,12 @@
     "api/ticketbunker-finance.js": {
       "maxDuration": 60
     },
+    "api/ticketbunker-support.js": {
+      "maxDuration": 60
+    },
+    "api/ticketbunker-support-notifications.js": {
+      "maxDuration": 60
+    },
     "api/ticketbunker-settle.js": {
       "maxDuration": 60
     },
@@ -224,6 +230,10 @@
     }
   },
   "crons": [
+    {
+      "path": "/api/ticketbunker-support-notifications",
+      "schedule": "*/5 * * * *"
+    },
     {
       "path": "/api/ticketbunker-organiser-mail",
       "schedule": "*/5 * * * *"

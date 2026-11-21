@@ -6,7 +6,7 @@ const oldRole=location.hash==='#organisers'?'organiser':'';
 const next=safeNext(params.get('next'));
 const role=params.get('role')==='organiser'||oldRole||next.startsWith('/organiser')?'organiser':'buyer';
 let mode='login',sb,session,tickets=[],change=null,busy=false;
-const adminMode=next==='/control-room';
+const adminMode=next==='/control-room'||next.split('?')[0]==='/support-admin';
 const returnTo=next||(role==='organiser'?'/organiser':'/my-tickets');
 const loginPath='/login?role='+role+(next?'&next='+encodeURIComponent(next):'');
 function message(text,bad=false){$('#auth-message').textContent=text;$('#auth-message').classList.toggle('error',bad);}
@@ -116,7 +116,7 @@ $('#preferences-form').onsubmit=async e=>{e.preventDefault();const b=e.submitter
 $('#ticket-list').onclick=e=>{
  const b=e.target.closest('[data-change]');if(!b)return;
  const ticket=tickets.find(t=>t.id===b.dataset.ticket);if(!ticket||(b.dataset.change!=='refund'&&!ticket.canManage))return;
- change={ticket,action:b.dataset.change};const transfer=change.action==='transfer',refund=change.action==='refund';
+ change={ticket,action:b.dataset.change,clientRequestId:crypto.randomUUID()};const transfer=change.action==='transfer',refund=change.action==='refund';
  $('#refund-field').hidden=!refund;$('#refund-reason').required=refund;$('#refund-reason').value='';$('#holder-field').hidden=refund;$('#holder-name').required=!refund;$('#save-ticket-change').textContent=refund?'Submit refund request':'Save change';
  $('#dialog-heading').textContent=refund?'Request a refund.':transfer?'Transfer your ticket.':'Change attendee name.';
  $('#dialog-description').textContent=refund?'Changed plans or non-attendance do not normally qualify for a refund. The original purchaser can ask for review of a cancellation, event change or other problem, including after the event. Your legal rights remain protected. Explain what happened; submitting this form does not issue a refund.':transfer?'This moves the ticket to the recipient’s verified email account. Your old QR code will stop working. TicketBunker does not collect a resale payment.':'Enter the name of the person attending. Use the updated ticket after saving.';
@@ -125,7 +125,7 @@ $('#ticket-list').onclick=e=>{
 $('#close-dialog').onclick=()=>$('#ticket-dialog').close();
 $('#ticket-form').onsubmit=async e=>{
  e.preventDefault();if(!change)return;$('#save-ticket-change').disabled=true;
- try{if(change.action==='refund'){const r=await api('refund-request',{ticketId:change.ticket.id,reason:$('#refund-reason').value.trim()},await currentToken());$('#ticket-dialog').close();$('#tickets-status').textContent=r.message;return;}const result=await api('my-event-ticket-transfer',{ticketId:change.ticket.id,action:change.action,name:$('#holder-name').value.trim(),recipientEmail:$('#recipient-email').value.trim()},await currentToken());$('#ticket-dialog').close();await loadTickets();$('#tickets-status').textContent=result.transferred?(result.emailSent?'Ticket transferred. The recipient has been emailed.':'Ticket transferred. The recipient can find it by signing in with their email; the notification email could not be sent.'):'Attendee name updated.';}catch(err){$('#ticket-change-status').textContent=err.message;$('#ticket-change-status').classList.add('error');}finally{$('#save-ticket-change').disabled=false;}
+ try{if(change.action==='refund'){const r=await api('ticketbunker-support',{action:'create',clientRequestId:change.clientRequestId,category:'refund',ticketId:change.ticket.id,subject:'Refund review: '+String(change.ticket.title||'Ticket booking').slice(0,140),body:$('#refund-reason').value.trim()},await currentToken());$('#ticket-dialog').close();const status=$('#tickets-status');status.textContent='Refund enquiry saved'+(r.case?.reference?' · '+r.case.reference:'')+'. Submitting a request does not issue a refund.'+(r.notification?.state==='queued'?' The email acknowledgement is queued.':'');if(r.case?.id){const link=document.createElement('a');link.href='/support?case='+encodeURIComponent(r.case.id);link.textContent=' View case and updates ↗';status.append(link);}return;}const result=await api('my-event-ticket-transfer',{ticketId:change.ticket.id,action:change.action,name:$('#holder-name').value.trim(),recipientEmail:$('#recipient-email').value.trim()},await currentToken());$('#ticket-dialog').close();await loadTickets();$('#tickets-status').textContent=result.transferred?(result.emailSent?'Ticket transferred. The recipient has been emailed.':'Ticket transferred. The recipient can find it by signing in with their email; the notification email could not be sent.'):'Attendee name updated.';}catch(err){$('#ticket-change-status').textContent=err.message;$('#ticket-change-status').classList.add('error');}finally{$('#save-ticket-change').disabled=false;}
 };
 (async()=>{
  try{
