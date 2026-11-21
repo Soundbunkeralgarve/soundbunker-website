@@ -413,3 +413,37 @@ a.tcard:hover .card-foot .get{background:var(--teal);color:#04140e}
 .rail-progress{background:#0000001a}
 .rail-trip .rail-progress,.rail-featured .rail-progress{background:#ffffff26}
 .city-hub-count{color:#08805e}
+
+/* Make a night of it / My trip */
+.night-planner{width:min(620px,calc(100vw - 24px));max-height:calc(100dvh - 32px);border:1px solid var(--line);border-radius:22px;padding:0;background:#f6f4ee;color:var(--ink);box-shadow:0 30px 80px #000a;overflow:auto}
+.night-planner::backdrop{background:#030504b3;backdrop-filter:blur(4px)}
+.np-head{display:flex;justify-content:space-between;gap:16px;padding:26px 26px 6px}
+.np-title{font-size:clamp(30px,5vw,44px);margin:6px 0 8px}
+.np-lead{margin:0;opacity:.75;font-size:15px;line-height:1.45}
+.np-close{flex:none;width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:#fff;font:400 24px/1 var(--body);cursor:pointer}
+.np-list{padding:10px 26px 4px;display:grid;gap:18px}
+.np-night{border:1px solid var(--line);border-radius:18px;background:#fff;padding:18px}
+.np-night h3{margin:4px 0 12px;font-size:22px}
+.np-when{margin:0;font:500 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:#08805e}
+.np-steps{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.np-step{display:grid;grid-template-columns:34px 1fr auto;gap:12px;align-items:center;padding:12px;border-radius:14px;background:#f3f1ea}
+.np-num{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--ink);color:#fff;font:700 13px var(--body)}
+.np-step.is-done .np-num{background:var(--teal);color:#04110c}
+.np-step.is-soon{opacity:.6}
+.np-body{display:flex;flex-direction:column;gap:2px;min-width:0}
+.np-body b{font-size:15px}.np-body span{font-size:13px;opacity:.7}
+.np-act{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.np-act em{font:500 10px var(--mono);letter-spacing:.12em;text-transform:uppercase;font-style:normal;opacity:.8}
+.np-link{display:inline-flex;align-items:center;padding:8px 12px;border-radius:999px;background:var(--ink);color:#fff;font:600 13px var(--body);text-decoration:none;white-space:nowrap}
+.np-step.is-done .np-link{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.np-tick{padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:transparent;font:600 13px var(--body);cursor:pointer}
+.np-remove{margin-top:12px;border:0;background:none;padding:0;font:500 12px var(--body);text-decoration:underline;opacity:.6;cursor:pointer}
+.np-all{margin:12px 26px 0}
+.np-note{margin:14px 26px 24px;font-size:12px;opacity:.6;line-height:1.45}
+.np-empty{opacity:.7}
+.my-trip-btn{position:fixed;right:18px;bottom:18px;z-index:60;display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border-radius:999px;border:0;background:var(--ink);color:#fff;font:700 14px var(--body);box-shadow:0 12px 30px #0006;cursor:pointer}
+.my-trip-btn b{display:grid;place-items:center;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:var(--teal);color:#04110c;font-size:12px}
+.my-trip-btn[hidden]{display:none}
+@media(max-width:560px){.np-head{padding:20px 18px 4px}.np-list{padding:8px 14px 4px}.np-night{padding:14px}.np-step{grid-template-columns:30px 1fr;}.np-act{grid-column:2;justify-content:flex-start}.np-all,.np-note{margin-left:18px;margin-right:18px}.my-trip-btn{right:12px;bottom:12px}}
+/* "Everything in <city>" must wrap on phones, never widen the page */
+@media(max-width:560px){.rail-trip .section-head{flex-wrap:wrap;gap:10px}.rail-trip .rail-controls{max-width:100%;min-width:0}#trip-all{white-space:normal;text-align:left}}

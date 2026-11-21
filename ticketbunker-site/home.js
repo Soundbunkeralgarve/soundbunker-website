@@ -6,6 +6,7 @@ import {discoveryCategories,blend,filterItems,sortItems,featureFor,readState,sta
 import {homeRails} from './sample-listings.js?v=20261121-real';
 import {selectFeaturedEvents} from './featured-selection.js';
 import {renderGygBox} from './gyg-box.js?v=20261121c';
+import {openPlanner,mountMyTrip} from './night-planner.js?v=20261121';
 const $=s=>document.querySelector(s);
 const reduceMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -78,7 +79,9 @@ function priceLine(item){
  return item.priceCents===0?'Free':'From '+money(item.priceCents,item.currency);
 }
 const catLabel=item=>item.kind?eventKind(item.kind):discoveryCategories[item.category]||'Event';
+const cardItems=new Map();
 function card(item,{featured=false}={}){
+ if(item.external)cardItems.set(item.url,item);
  const place=[item.venue,item.city].filter(Boolean).join(' · ');
  const direct=item.source==='ticketbunker';
  const badges=`${item.featured||featured?'<span class="badge badge-featured">Featured</span>':''}${direct?'<span class="badge badge-direct">Bunker direct</span>':''}`;
@@ -128,7 +131,7 @@ function mountRail(section,items,extra=''){
    if(moved)track.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();},{capture:true,once:true});});
   track.addEventListener('dragstart',e=>e.preventDefault());
  }
- requestAnimationFrame(()=>section.railSync?.());
+ section.railSync?.();requestAnimationFrame(()=>section.railSync?.());
 }
 
 // Partner listings take turns by seller so no single feed fills a rail; paid features
@@ -371,6 +374,13 @@ function render(){
 // Real links to the city pages, so people and search engines can reach every place.
 $('#place-links').innerHTML=CITY_PAGES.map(([slug,name,c])=>`<a href="/${slug}">${esc(name.replace(/^the /,''))} <small>${esc(countryName(c))}</small></a>`).join('');
 document.querySelectorAll('[data-place]').forEach(a=>a.onclick=e=>{e.preventDefault();const [c,p]=a.dataset.place.split('|');commit({country:c,city:p},{scroll:true});});
+
+// Partner tickets open in a new tab; this tab then offers the rest of the night.
+document.addEventListener('click',e=>{
+ const a=e.target.closest('a.tcard[target="_blank"]');if(!a||e.defaultPrevented||e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey)return;
+ const item=cardItems.get(a.getAttribute('href'));if(item)setTimeout(()=>openPlanner(item),150);
+});
+mountMyTrip();
 
 async function loadPartners(){
  try{const r=await fetch('/partner-listings-config.json',{cache:'no-store',signal:AbortSignal.timeout(10000)});if(r.ok)partners=approvedPartnerListings(await r.json());}catch{partners=[];}
