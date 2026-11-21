@@ -1,21 +1,14 @@
-import {shopPreviewEvents} from './shop-preview-events.js';
-import {eventCard} from './event-cards.js';
 import {getPublicEvents} from './featured-events.js?v=20261020';
 import {escapeHtml as esc,money,safeUrl} from './shared.js';
 import {eventKind} from './event-content.js';
 import {approvedPartnerListings} from './partner-listings-model.js?v=20261121-city';
-import {discoveryCategories,blend,filterItems,sortItems,featureFor,organisersIn,categoryCounts,readState,stateQuery} from './discovery-model.js?v=20261121';
+import {discoveryCategories,blend,filterItems,sortItems,featureFor,readState,stateQuery} from './discovery-model.js?v=20261121b';
+import {sampleListings,homeRails} from './sample-listings.js?v=20261121';
+import {selectFeaturedEvents} from './featured-selection.js';
 const $=s=>document.querySelector(s);
+const reduceMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// Hero slideshow
-const scenes=[...document.querySelectorAll('.hero-image')],dots=[...document.querySelectorAll('[data-scene]')],labels=['LIVE CROWDS','DJS & DANCEFLOORS','BANDS & LIVE MUSIC'];let current=0,timer,paused=false;
-function scene(i){current=i;scenes.forEach((s,j)=>s.classList.toggle('active',i===j));dots.forEach((s,j)=>{s.classList.toggle('active',i===j);s.setAttribute('aria-pressed',String(i===j));});$('#scene-label').textContent=labels[i];$('#scene-count').textContent=String(i+1).padStart(2,'0')+' / 03';}
-function play(){document.querySelector('.hero-images').classList.toggle('motion-paused',paused||document.hidden);clearInterval(timer);if(!paused&&!document.hidden&&!matchMedia('(prefers-reduced-motion: reduce)').matches)timer=setInterval(()=>scene((current+1)%scenes.length),6500);}
-dots.forEach(d=>d.onclick=()=>{scene(Number(d.dataset.scene));play();});
-const pause=document.createElement('button');pause.type='button';pause.className='hero-pause';pause.textContent='Pause';pause.setAttribute('aria-label','Pause hero slideshow');$('.hero-counter').append(pause);pause.onclick=()=>{paused=!paused;pause.textContent=paused?'Play':'Pause';pause.setAttribute('aria-label',paused?'Play hero slideshow':'Pause hero slideshow');play();};
-document.addEventListener('visibilitychange',play);matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change',play);scene(0);play();
-
-// Destination discovery
+// Destination state
 const KEY='tb-destination';
 const countryNames=new Intl.DisplayNames(['en'],{type:'region'}),countryName=c=>{try{return countryNames.of(c)||c;}catch{return c;}};
 const POPULAR=['PT','GB','IE','ES','FR','NL','DE','IT','BE'];
@@ -35,95 +28,140 @@ function fillCountries(){
  const g2=document.createElement('optgroup');g2.label='More countries';rest.forEach(c=>g2.append(opt(c,countryName(c))));
  country.append(g1,g2);country.value=state.country;
 }
-category.append(...Object.entries(discoveryCategories).filter(([k])=>k!=='events'&&k!=='other').map(([k,l])=>opt(k,l)));
+category.append(...homeRails.map(([k,l])=>opt(k,l)));
 
 function syncForm(){country.value=state.country;city.value=state.city;when.value=state.when;category.value=state.category;from.value=state.range.from;to.value=state.range.to;$('#ds-dates').hidden=state.when!=='dates';}
-function placeLabel(s=state){return s.city?(s.country?s.city+', '+countryName(s.country):s.city):s.country?countryName(s.country):'anywhere';}
-function whenLabel(s=state){return {tonight:'tonight',weekend:'this weekend',week:'in the next 7 days',dates:[s.range.from&&'from '+s.range.from,s.range.to&&'to '+s.range.to].filter(Boolean).join(' ')||'on your dates'}[s.when]||'';}
+const placeLabel=(s=state)=>s.city?(s.country?s.city+', '+countryName(s.country):s.city):s.country?countryName(s.country):'';
+const whenLabel=(s=state)=>({tonight:'tonight',weekend:'this weekend',week:'in the next 7 days',dates:[s.range.from&&'from '+s.range.from,s.range.to&&'to '+s.range.to].filter(Boolean).join(' ')||'on your dates'}[s.when]||'');
+const searching=()=>!!(state.category||state.when!=='any');
 function commit(next,{scroll=false}={}){
  state={...state,...next};if(state.when!=='dates')state.range={from:'',to:''};limit=12;
  try{localStorage.setItem(KEY,JSON.stringify({country:state.country,city:state.city}));}catch{}
  history.replaceState(null,'',location.pathname+stateQuery(state)+location.hash);
- syncForm();render();if(scroll)$('#discover').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+ syncForm();render();
+ if(scroll)(searching()?$('#discover'):$('#rails')).scrollIntoView({behavior:reduceMotion()?'auto':'smooth'});
 }
 form.onsubmit=e=>{e.preventDefault();commit({country:country.value,city:city.value.trim(),when:when.value,category:category.value,range:{from:from.value,to:to.value}},{scroll:true});};
 when.onchange=()=>{$('#ds-dates').hidden=when.value!=='dates';};
 document.querySelectorAll('[data-quick-when]').forEach(b=>b.onclick=()=>commit({when:b.dataset.quickWhen},{scroll:true}));
-document.querySelectorAll('[data-quick-cat]').forEach(b=>b.onclick=()=>commit({category:b.dataset.quickCat},{scroll:true}));
-document.querySelectorAll('[data-see-when]').forEach(b=>b.onclick=()=>commit({when:b.dataset.seeWhen},{scroll:true}));
-document.querySelectorAll('[data-see-cat]').forEach(b=>b.onclick=()=>commit({category:b.dataset.seeCat},{scroll:true}));
+document.querySelectorAll('[data-jump]').forEach(b=>b.onclick=()=>{
+ const rail=document.getElementById('rail-'+b.dataset.jump);
+ if(rail&&!rail.hidden&&!searching())rail.scrollIntoView({behavior:reduceMotion()?'auto':'smooth'});else commit({category:b.dataset.jump},{scroll:true});
+});
 $('#db-change').onclick=()=>{form.scrollIntoView({block:'center'});city.focus();};
 $('#db-clear').onclick=()=>commit({country:'',city:'',category:'',when:'any'});
 
-function image(item){
+// Cards
+function image(item,eager=false){
  const src=safeUrl(item.image);
- return src?`<img src="${esc(src)}" alt="" loading="lazy" width="600" height="450">`:`<div class="no-poster">${esc(discoveryCategories[item.category]||'Event')}</div>`;
+ return src?`<img src="${esc(src)}" alt="" ${eager?'fetchpriority="high"':'loading="lazy"'} width="800" height="600">`:`<div class="no-poster">${esc(discoveryCategories[item.category]||'Event')}</div>`;
 }
 function dateLine(item){
- if(!item.startsAt)return 'Choose a date with the partner';
- try{return new Intl.DateTimeFormat('en-GB',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:item.timezone}).format(new Date(item.startsAt))+' · local time';}catch{return '';}
+ if(!item.startsAt)return item.external||item.sample?'Choose your date':'';
+ try{return new Intl.DateTimeFormat('en-GB',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:item.timezone}).format(new Date(item.startsAt));}catch{return '';}
 }
 function priceLine(item){
  if(item.external)return 'Price on partner site';
  if(item.soldOut)return 'Sold out';
  return item.priceCents===0?'Free':'From '+money(item.priceCents,item.currency);
 }
-function card(item){
- const place=[item.venue,item.city].filter(Boolean).join(', ')+(item.countryCode&&item.countryCode!==state.country?' · '+countryName(item.countryCode):'');
- const label=item.external?`Sold by ${esc(item.seller)} · opens their site`:'Tickets by TicketBunker';
- const attrs=item.external?' target="_blank" rel="sponsored noopener noreferrer"':'';
- const aria=item.external?` aria-label="${esc(item.title)}: book with ${esc(item.seller)} (opens in a new tab)"`:'';
- return `<a class="disco-card${item.external?' is-partner':''}${item.soldOut?' is-soldout':''}" href="${esc(item.url)}"${attrs}${aria}><div class="disco-media">${image(item)}<span class="disco-cat">${esc(item.kind?eventKind(item.kind):discoveryCategories[item.category])}</span>${item.featured?'<span class="disco-paid">Featured · paid placement</span>':''}</div><div class="disco-copy"><p class="disco-date">${esc(dateLine(item))}</p><h3>${esc(item.title)}</h3><p class="disco-place">${esc(place)}</p>${item.description?`<p class="disco-desc">${esc(item.description)}</p>`:''}<div class="disco-foot"><strong>${esc(priceLine(item))}</strong><span class="disco-seller ${item.external?'seller-partner':'seller-tb'}">${label}</span></div></div></a>`;
+const catLabel=item=>item.kind?eventKind(item.kind):discoveryCategories[item.category]||'Event';
+function card(item,{featured=false}={}){
+ const place=[item.venue,item.city].filter(Boolean).join(' · ');
+ const badges=`${item.sample?'<span class="badge badge-sample">SAMPLE</span>':''}${item.featured||featured&&!item.sample?'<span class="badge badge-featured">Featured</span>':''}`;
+ const seller=item.sample?'<span class="seller seller-sample">Sample · not on sale</span>':item.external?`<span class="seller seller-partner">Sold by ${esc(item.seller)}</span>`:'<span class="seller seller-tb">Tickets by TicketBunker</span>';
+ const body=`<div class="card-media">${image(item)}<span class="card-cat">${esc(catLabel(item))}</span>${badges}</div><div class="card-body"><p class="card-date">${esc(dateLine(item))}</p><h3>${esc(item.title)}</h3><p class="card-place">${esc(place)}</p><div class="card-foot"><strong>${esc(priceLine(item))}</strong>${seller}</div></div>`;
+ if(item.sample)return `<article class="tcard is-sample" aria-label="${esc(item.title)}, sample listing, not on sale">${body}</article>`;
+ const ext=item.external?` target="_blank" rel="sponsored noopener noreferrer" aria-label="${esc(item.title)}: book with ${esc(item.seller)} (opens in a new tab)"`:'';
+ return `<a class="tcard${item.soldOut?' is-soldout':''}" href="${esc(item.url)}"${ext}>${body}</a>`;
 }
-function rail(id,items){const host=$('#'+id);host.hidden=!items.length;host.querySelector('[data-rail-grid]').innerHTML=items.slice(0,4).map(card).join('');}
+const hostTile=()=>`<a class="tcard host-tile" href="/featured"><div><span class="label">Your event here</span><h3>Get featured.</h3><p>Put your event in the spotlight and at the front of these rails.</p><span class="head-link">Featured placement ↗</span></div></a>`;
 
-function emptyState(all){
- const wider=[];
- if(state.city&&state.country&&filterItems(all,{...state,city:''}).length)wider.push(`<button type="button" class="btn btn-light" data-widen='{"city":""}'>Show all of ${esc(countryName(state.country))}</button>`);
- if(state.when!=='any'&&filterItems(all,{...state,when:'any'}).length)wider.push(`<button type="button" class="btn btn-light" data-widen='{"when":"any"}'>Show any date</button>`);
- if(state.category&&filterItems(all,{...state,category:''}).length)wider.push(`<button type="button" class="btn btn-light" data-widen='{"category":""}'>Show everything here</button>`);
- if((state.city||state.country)&&all.length)wider.push(`<button type="button" class="btn btn-light" data-widen='{"country":"","city":""}'>Show everywhere</button>`);
- const what=state.category?discoveryCategories[state.category].toLowerCase():'events';
- const heading=[state.category?'No '+discoveryCategories[state.category].toLowerCase()+' listed':'Nothing listed',state.city||state.country?'in '+placeLabel():'',whenLabel(),'yet.'].filter(Boolean).join(' ');
- return `<div class="listing-empty"><h3>${esc(heading)}</h3><p>${all.length?`We couldn’t find ${esc(what)} for this search. Widen it below; we won’t change your place without asking.`:'The bunker’s quiet here for now. New TicketBunker events and approved partner tickets are being added, and organisers can list an event today.'}</p><div class="empty-actions">${wider.join('')}<a class="btn btn-teal" href="/for-organisers">List your event ↗</a></div></div>`;
+// Rails with visible controls; arrow keys scroll when the track has focus.
+function mountRail(section,items,extra=''){
+ const track=section.querySelector('[data-track]');
+ track.innerHTML=items.join('')+extra;
+ track.setAttribute('tabindex','0');track.setAttribute('role','region');
+ track.setAttribute('aria-label',section.querySelector('h2')?.textContent||'Listings');
+ let controls=section.querySelector('.rail-arrows');
+ if(!controls){
+  controls=document.createElement('div');controls.className='rail-arrows';
+  controls.innerHTML='<button type="button" data-dir="-1" aria-label="Scroll back">←</button><button type="button" data-dir="1" aria-label="Scroll forward">→</button>';
+  (section.querySelector('.rail-controls')||section.querySelector('.section-head')).append(controls);
+  const step=dir=>track.scrollBy({left:dir*track.clientWidth*.85,behavior:reduceMotion()?'auto':'smooth'});
+  controls.onclick=e=>{const b=e.target.closest('[data-dir]');if(b)step(Number(b.dataset.dir));};
+  track.onkeydown=e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();step(e.key==='ArrowRight'?1:-1);}};
+  new ResizeObserver(()=>{controls.hidden=track.scrollWidth<=track.clientWidth+4;}).observe(track);
+ }
+ requestAnimationFrame(()=>{controls.hidden=track.scrollWidth<=track.clientWidth+4;});
+}
+
+const placeOnly=()=>({country:state.country,city:state.city,category:'',when:'any'});
+const samplesFor=filters=>filterItems(sampleListings,filters);
+
+function renderSpotlight(){
+ const real=featureFor(events,placeOnly());
+ const local=samplesFor(placeOnly());
+ const pick=real||local.find(s=>s.category==='boat')||local[0]||sampleListings.find(s=>s.key==='sample:b1');
+ const isSample=!real;
+ $('#spotlight').innerHTML=`<div class="spot-card${isSample?' is-sample':''}"><div class="spot-media">${image(pick,true)}<span class="badge badge-featured">Spotlight</span>${isSample?'<span class="badge badge-sample">SAMPLE</span>':''}</div><div class="spot-body"><p class="card-date">${esc([dateLine(pick),pick.city].filter(Boolean).join(' · '))}</p><h2>${esc(pick.title)}</h2><div class="spot-foot"><strong>${esc(priceLine(pick))}</strong>${isSample?'<a class="head-link" href="/featured">Feature your event here ↗</a>':`<a class="btn-solid" href="${esc(pick.url)}">Get tickets ↗</a>`}</div></div></div>`;
 }
 
 function render(){
- const all=blend(events,partners),now=Date.now();
- const here=sortItems(filterItems(all,{...state,when:'any',category:''},now));
- const results=sortItems(filterItems(all,state,now)),open=results.filter(i=>!i.soldOut).length;
- $('#db-summary').textContent=[state.category?discoveryCategories[state.category]:'Everything',placeLabel(),whenLabel()].filter(Boolean).join(' · ').replace('anywhere','Anywhere');
+ const now=Date.now(),all=blend(events,partners,now),place=placeOnly(),where=placeLabel();
+ $('#db-summary').textContent=[state.category?discoveryCategories[state.category]:'Everything',where||'Anywhere',whenLabel()].filter(Boolean).join(' · ');
  $('#db-clear').hidden=!(state.country||state.city||state.category||state.when!=='any');
- $('#results-heading').textContent=(state.category?discoveryCategories[state.category]:'What’s on')+(state.city||state.country?' in '+placeLabel():'')+(state.when!=='any'?' '+whenLabel():'')+'.';
- $('#event-count').textContent=results.length?`${open} on sale${results.length>open?' · '+(results.length-open)+' sold out':''}`:'';
- $('#results-grid').innerHTML=results.slice(0,limit).map(card).join('');
- $('#results-more').hidden=results.length<=limit;
- $('#event-status').innerHTML=loadError?'<p class="catalogue-status">Live listings are temporarily unavailable. <button type="button" id="retry-events">Try again</button></p>'+(results.length?'':emptyState(all)):results.length?'':emptyState(all);
- $('#retry-events')?.addEventListener('click',load);
- document.querySelectorAll('[data-widen]').forEach(b=>b.onclick=()=>commit(JSON.parse(b.dataset.widen)));
- // Date rails only when browsing any date, and only with real matches.
- const scoped=filterItems(all,{...state,when:'any'},now);
- // With a small catalogue the main grid already shows everything; skip rails that would only repeat it.
- const roomy=state.when==='any'&&results.length>limit;
- rail('rail-tonight',roomy?sortItems(filterItems(scoped,{when:'tonight'},now)).filter(i=>!i.soldOut):[]);
- rail('rail-weekend',roomy?sortItems(filterItems(scoped,{when:'weekend'},now)).filter(i=>!i.soldOut&&!filterItems([i],{when:'tonight'},now).length):[]);
- rail('rail-daysout',state.category?[]:here.filter(i=>i.category==='daysout'));
- const counts=categoryCounts(here),moods=Object.entries(counts).filter(([k])=>k!=='other');
- $('#moods').hidden=moods.length<2||!!state.category;
- $('#mood-grid').innerHTML=moods.map(([k,n])=>`<button type="button" class="mood-tile mood-${esc(k)}" data-mood="${esc(k)}"><span>${esc(discoveryCategories[k])}</span><small>${n} on sale</small></button>`).join('');
- document.querySelectorAll('[data-mood]').forEach(b=>b.onclick=()=>commit({category:b.dataset.mood},{scroll:true}));
- const feature=featureFor(events,state,now),ed=$('#editorial');ed.hidden=!feature;
- ed.innerHTML=feature?`<div class="wrap editorial-inner"><div class="editorial-media">${image(feature)}</div><div class="editorial-copy"><span class="eyebrow">IN THE SPOTLIGHT · PAID PLACEMENT</span><h2>${esc(feature.title)}</h2><p class="disco-date">${esc(dateLine(feature))}</p><p>${esc([feature.venue,feature.city].filter(Boolean).join(', '))}${feature.organiser?' · presented by '+esc(feature.organiser):''}</p><p class="editorial-price">${esc(priceLine(feature))} · Tickets by TicketBunker</p><a class="btn btn-teal" href="${esc(feature.url)}">View tickets ↗</a></div></div>`:'';
- const orgs=organisersIn(here).slice(0,6);
- $('#organiser-list').innerHTML=orgs.map(o=>`<a class="organiser-chip" href="${esc(o.next.url)}">${safeUrl(o.logo)?`<img src="${esc(safeUrl(o.logo))}" alt="" width="48" height="48" loading="lazy">`:'<span class="organiser-initial" aria-hidden="true">'+esc(o.name.slice(0,1))+'</span>'}<span><strong>${esc(o.name)}</strong><small>${o.count} event${o.count===1?'':'s'} on TicketBunker</small></span></a>`).join('');
+ renderSpotlight();
+
+ // Search view: real listings first, then matching samples (never counted as results).
+ const isSearch=searching();
+ $('#discover').hidden=!isSearch;$('#rails').hidden=isSearch;
+ if(isSearch){
+  const real=sortItems(filterItems(all,state,now)),samples=samplesFor(state),open=real.filter(i=>!i.soldOut).length,list=[...real,...samples];
+  $('#results-heading').textContent=(state.category?discoveryCategories[state.category]:'What’s on')+(where?' in '+where:'')+(state.when!=='any'?' '+whenLabel():'')+'.';
+  $('#event-count').textContent=[real.length?`${open} on sale`:'No live listings yet',samples.length?`${samples.length} sample${samples.length===1?'':'s'}`:''].filter(Boolean).join(' · ');
+  $('#results-grid').innerHTML=list.slice(0,limit).map(i=>card(i)).join('');
+  $('#results-more').hidden=list.length<=limit;
+  const widen=[state.city&&state.country&&[{city:''},'All of '+countryName(state.country)],state.when!=='any'&&[{when:'any'},'Any date'],state.category&&[{category:''},'Everything'],[{country:'',city:''},'Everywhere']].filter(Boolean);
+  $('#event-status').innerHTML=(loadError?'<p class="catalogue-status">Live listings are temporarily unavailable. <button type="button" id="retry-events">Try again</button></p>':'')+(list.length?'':`<div class="listing-empty"><h3>${esc(['Nothing listed',where&&'in '+where,whenLabel(),'yet.'].filter(Boolean).join(' '))}</h3><p>Try a wider search; we won’t change your place without asking.</p><div class="empty-actions">${widen.map(([v,l])=>`<button type="button" class="btn-quiet" data-widen='${esc(JSON.stringify(v))}'>${esc(l)}</button>`).join('')}</div></div>`);
+  $('#retry-events')?.addEventListener('click',load);
+  document.querySelectorAll('[data-widen]').forEach(b=>b.onclick=()=>commit(JSON.parse(b.dataset.widen)));
+ }
+
+ // Rails view
+ let samplesShown=0;
+ const featuredHere=filterItems(selectFeaturedEvents(events,{now}).map(e=>blend([e],[],now)[0]).filter(Boolean),place,now);
+ const featuredSamples=featuredHere.length>=4?[]:['b1','c1','f1','n2','e2','m2'].map(id=>sampleListings.find(s=>s.key==='sample:'+id)).filter(s=>filterItems([s],place).length).slice(0,6-featuredHere.length);
+ samplesShown+=featuredSamples.length;
+ mountRail($('#rail-featured'),[...featuredHere.map(i=>card(i,{featured:true})),...featuredSamples.map(i=>card(i))],hostTile());
+ $('#featured-heading').textContent='Featured'+(where?' in '+where:' this week')+'.';
+
+ const host=$('#category-rails');
+ if(!host.children.length){
+  host.innerHTML=homeRails.map(([k,l,sub])=>`<section class="rail" id="rail-${k}" aria-labelledby="rail-${k}-h"><div class="wrap"><div class="section-head"><div><span class="label">${esc(sub)}</span><h2 id="rail-${k}-h">${esc(l)}.</h2></div><div class="rail-controls"><button type="button" class="head-link" data-see="${k}">See all ↗</button></div></div><div class="rail-track" data-track></div></div></section>`).join('');
+  host.querySelectorAll('[data-see]').forEach(b=>b.onclick=()=>commit({category:b.dataset.see},{scroll:true}));
+ }
+ for(const [k] of homeRails){
+  const section=document.getElementById('rail-'+k);
+  // Featured events lead their category rail; samples only fill a thin rail.
+  const real=sortItems(filterItems(all,{...place,category:k},now)).sort((a,b)=>Number(b.featured)-Number(a.featured));
+  const samples=real.length>=6?[]:samplesFor({...place,category:k}).slice(0,8-real.length);
+  samplesShown+=samples.length;
+  section.hidden=!real.length&&!samples.length;
+  if(!section.hidden)mountRail(section,[...real.map(i=>card(i)),...samples.map(i=>card(i))]);
+ }
+ const weekend=sortItems(filterItems(all,{...place,when:'weekend'},now)).filter(i=>!i.soldOut);
+ $('#rail-weekend').hidden=!weekend.length;
+ if(weekend.length)mountRail($('#rail-weekend'),weekend.map(i=>card(i)));
+ $('#sample-note').hidden=!samplesShown;
+
  $('#show-more').onclick=()=>{limit+=12;render();};
- const cities=[...new Set(all.filter(i=>!state.country||i.countryCode===state.country).map(i=>i.city).filter(Boolean))].sort();
+ const cities=[...new Set([...all,...sampleListings].filter(i=>!state.country||i.countryCode===state.country).map(i=>i.city).filter(Boolean))].sort();
  $('#ds-cities').replaceChildren(...[...(state.country==='PT'||!state.country?['Algarve']:[]),...cities].map(c=>opt(c,c)));
 }
 
-$('#place-links').innerHTML=PLACES.map(([c,p])=>`<a href="/?country=${c}&amp;city=${encodeURIComponent(p)}#discover" data-place="${c}|${esc(p)}">${esc(p)} <small>${esc(countryName(c))}</small></a>`).join('');
+$('#place-links').innerHTML=PLACES.map(([c,p])=>`<a href="/?country=${c}&amp;city=${encodeURIComponent(p)}" data-place="${c}|${esc(p)}">${esc(p)} <small>${esc(countryName(c))}</small></a>`).join('');
 document.querySelectorAll('[data-place]').forEach(a=>a.onclick=e=>{e.preventDefault();const [c,p]=a.dataset.place.split('|');commit({country:c,city:p},{scroll:true});});
-$('#sample-grid').innerHTML=[...shopPreviewEvents].sort((a,b)=>Date.parse(a.starts_at)-Date.parse(b.starts_at)).slice(0,6).map(eventCard).join('');
 
 async function loadPartners(){
  try{const r=await fetch('/partner-listings-config.json',{cache:'no-store',signal:AbortSignal.timeout(10000)});if(r.ok)partners=approvedPartnerListings(await r.json());}catch{partners=[];}
@@ -134,21 +172,4 @@ async function load(){
 }
 fillCountries();syncForm();render();
 Promise.all([loadPartners(),load()]).then(()=>{fillCountries();syncForm();render();});
-if(location.pathname==='/events')$('#discover').scrollIntoView();
-
-// "Where the money goes" example, from the same published plans as checkout.
-import('./pricing-rules.js').then(({plans,planForCapacity})=>{
- const price=$('#calc-price'),qty=$('#calc-qty');if(!price||!qty)return;
- const eur=c=>new Intl.NumberFormat('en-GB',{style:'currency',currency:'EUR',maximumFractionDigits:c%100?2:0}).format(c/100);
- const update=()=>{
-  const p=Number(price.value)*100,n=Number(qty.value),plan=plans[planForCapacity(n)];
-  const gross=p*n,stripe=Math.round(n*(p*.015+25)),fee=plan.eur,keep=gross-stripe-fee;
-  $('#calc-price-out').textContent=eur(p);$('#calc-qty-out').textContent=n.toLocaleString('en-GB');
-  $('#calc-buyer').textContent=eur(p);$('#calc-keep').textContent=eur(Math.round(keep/100)*100);$('#calc-stripe').textContent=eur(Math.round(stripe/100)*100);$('#calc-tb').textContent=eur(fee);$('#calc-plan').textContent=plan.label;
-  const pct=v=>Math.max(0,v/gross*100).toFixed(2)+'%';
-  $('#bar-keep').style.width=pct(keep);$('#bar-stripe').style.width=pct(stripe);$('#bar-tb').style.width=pct(fee);
-  $('#money-calc').dataset.keepShare=Math.round(keep/gross*100);
-  $('#calc-keep').title=Math.round(keep/gross*1000)/10+'% of ticket sales';
- };
- price.oninput=qty.oninput=update;update();
-});
+if(location.pathname==='/events')$('#rails').scrollIntoView();

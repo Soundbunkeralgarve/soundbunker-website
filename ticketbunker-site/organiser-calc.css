@@ -1,0 +1,28 @@
+/* "Where the money goes" calculator on the organiser page. */
+.money-section{background:#070908;color:#fff;padding:90px 0}
+.money-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:60px;align-items:center}
+.money-label{display:block;font:700 11px/1.2 'DM Sans',Arial,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#9fe9cf;margin-bottom:14px}
+.money-head h2{font-size:clamp(50px,5.6vw,96px);line-height:.9;margin:0 0 20px}
+.money-head h2 em{font-style:normal;color:var(--teal)}
+.money-head p{color:#cfd7d3;max-width:520px}
+.money-calc{background:#0d1210;border:1px solid #23302a;border-radius:16px;padding:28px}
+.calc-inputs{display:grid;gap:8px;margin-bottom:24px}
+.calc-inputs label{display:flex;justify-content:space-between;align-items:baseline;font:700 11px 'DM Sans',Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#9fe9cf}
+.calc-inputs output{font:900 30px/1 'Barlow Condensed',Impact,sans-serif;color:#fff;letter-spacing:0}
+.calc-inputs input[type=range]{width:100%;accent-color:var(--teal);margin:2px 0 14px;min-height:28px}
+.calc-row{display:grid;grid-template-columns:1fr auto;align-items:baseline;gap:2px 12px;border-bottom:1px solid #2d3b34;padding-bottom:14px;margin-bottom:16px}
+.calc-row span{font:700 11px 'DM Sans',Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#cfd7d3}
+.calc-row strong{font:900 44px/1 'Barlow Condensed',Impact,sans-serif;color:var(--teal)}
+.calc-row small{grid-column:1/-1;color:#93a19a;font-size:12px}
+.calc-bar{display:flex;height:14px;background:#1a2420;border-radius:7px;margin-bottom:16px;overflow:hidden}
+.calc-bar i{display:block;height:100%;transition:width .25s}
+.bar-keep,.dot-keep{background:var(--teal)}.bar-stripe,.dot-stripe{background:#8a9a93}.bar-tb,.dot-tb{background:#f2c94c}
+.calc-split{margin:0;display:grid;gap:10px}
+.calc-split div{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+.calc-split dt{font-size:13px;color:#cfd7d3;display:flex;align-items:center;gap:8px}
+.calc-split dt i{width:10px;height:10px;border-radius:2px;flex:0 0 10px}
+.calc-split dd{margin:0;font:900 26px/1 'Barlow Condensed',Impact,sans-serif}
+.calc-note{font-size:11px;line-height:1.6;color:#8b9993;margin:18px 0 0}
+@media(max-width:900px){.money-wrap{grid-template-columns:1fr;gap:34px}}
+@media(max-width:650px){.money-section{padding:60px 0}.money-calc{padding:22px 18px}}
+@media(prefers-reduced-motion:reduce){.calc-bar i{transition:none}}
