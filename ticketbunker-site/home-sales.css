@@ -288,3 +288,13 @@ a.tcard:hover .card-foot .get{background:var(--teal);color:#04140e}
 .shop-home .hero-grid{justify-items:stretch}
 .shop-home .hero-copy{width:100%;max-width:1080px;margin:0 auto;min-width:0}
 .shop-home .hero-sales .category-nav{max-width:100%}
+
+/* Section tabs: sticky with the destination bar, swipeable, active tab follows the scroll. */
+.section-tabs{border-top:1px solid var(--line)}
+.tabs-track{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:8px 0}
+.tabs-track::-webkit-scrollbar{display:none}
+.tabs-track button{flex:0 0 auto;border:1px solid transparent;background:transparent;border-radius:999px;padding:7px 14px;font:600 13px var(--body);color:var(--muted);cursor:pointer;white-space:nowrap;transition:background .15s,color .15s}
+.tabs-track button:hover{color:var(--ink);background:#fff}
+.tabs-track button.active{background:var(--ink);color:#fff}
+#rails > section,#category-rails > section{scroll-margin-top:150px}
+@media(max-width:650px){.tabs-track{width:100%;padding:6px 16px;margin:0}.tabs-track button{font-size:12.5px;padding:6px 12px}#rails > section,#category-rails > section{scroll-margin-top:130px}}

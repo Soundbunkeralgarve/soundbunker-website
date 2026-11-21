@@ -172,6 +172,27 @@ function renderNear(now){
 }
 $('#near-change').onclick=()=>{form.scrollIntoView({block:'center'});city.focus();};
 
+// Section tabs under the destination bar: one tap to any rail that has listings.
+const TAB_LABELS={'rail-near':'Near you','big-feature':'Featured','gyg-box':'Tours','rail-featured':'Featured picks','rail-direct':'Bunker direct','rail-music':'Live music','rail-club':'Raves','rail-festival':'Festivals','rail-family':'Family','rail-comedy':'Comedy','rail-shows':'Theatre','rail-cinema':'Cinema','rail-boat':'Boat trips','rail-daysout':'Experiences','rail-weekend':'This weekend'};
+let tabObserver;
+function renderTabs(){
+ const nav=$('#section-tabs');
+ if(searching()){nav.hidden=true;return;}
+ const ids=[...document.querySelectorAll('#rails > section, #category-rails > section')].filter(el=>!el.hidden&&TAB_LABELS[el.id]).map(el=>el.id);
+ nav.hidden=ids.length<3;
+ const track=$('#tabs-track'),key=ids.join(',');
+ if(track.dataset.key===key)return;
+ track.dataset.key=key;
+ track.innerHTML=ids.map(id=>`<button type="button" data-tab="${id}">${TAB_LABELS[id]}</button>`).join('');
+ track.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>document.getElementById(b.dataset.tab).scrollIntoView({behavior:reduceMotion()?'auto':'smooth',block:'start'}));
+ tabObserver?.disconnect();
+ tabObserver=new IntersectionObserver(entries=>{for(const e of entries)if(e.isIntersecting){
+  track.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===e.target.id));
+  track.querySelector('.active')?.scrollIntoView({block:'nearest',inline:'center',behavior:'auto'});
+ }},{rootMargin:'-45% 0px -50% 0px'});
+ ids.forEach(id=>tabObserver.observe(document.getElementById(id)));
+}
+
 function render(){
  const now=Date.now(),all=blend(events,partners,now,feed),place=placeOnly(),where=placeLabel();
  $('#db-summary').textContent=[state.category?discoveryCategories[state.category]:'Everything',where||'Anywhere',whenLabel()].filter(Boolean).join(' · ');
@@ -222,6 +243,7 @@ function render(){
 
  $('#partner-note').hidden=!all.some(i=>i.external);
  renderGygBox($('#gyg-box'),state);
+ renderTabs();
  $('#show-more').onclick=()=>{limit+=12;render();};
  const cities=[...new Set(all.filter(i=>!state.country||i.countryCode===state.country).map(i=>i.city).filter(Boolean))].sort();
  $('#ds-cities').replaceChildren(...[...(state.country==='PT'||!state.country?['Algarve']:[]),...cities].map(c=>opt(c,c)));
