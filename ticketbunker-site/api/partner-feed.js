@@ -140,7 +140,12 @@ export async function loadViator(env = process.env, {fetcher = fetch} = {}) {
   if (!key) return [];
   const headers = {'exp-api-key': key, Accept: 'application/json;version=2.0', 'Accept-Language': 'en-GB', 'Content-Type': 'application/json'};
   const res = await fetcher(VIATOR_API + '/destinations', {headers, signal: AbortSignal.timeout(20000)});
-  if (!res.ok) throw Error('Viator destinations ' + res.status + ' (key length ' + key.length + ')');
+  if (!res.ok) {
+    // Diagnose a refused key without exposing it: does Viator's sandbox accept it instead?
+    let sandbox = 'untested';
+    try { sandbox = String((await fetcher('https://api.sandbox.viator.com/partner/destinations', {headers, signal: AbortSignal.timeout(10000)})).status); } catch { sandbox = 'unreachable'; }
+    throw Error('Viator destinations ' + res.status + ' (key length ' + key.length + ', sandbox answers ' + sandbox + ')');
+  }
   const all = (await res.json()).destinations || [];
   if (!all.length) throw Error('Viator returned no destinations');
   const settled = await Promise.allSettled(VIATOR_PLACES.map(async ([place, countryCode]) => {
