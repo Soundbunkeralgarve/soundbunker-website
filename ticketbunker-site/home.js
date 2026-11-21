@@ -85,7 +85,7 @@ function emptyState(all){
  if((state.city||state.country)&&all.length)wider.push(`<button type="button" class="btn btn-light" data-widen='{"country":"","city":""}'>Show everywhere</button>`);
  const what=state.category?discoveryCategories[state.category].toLowerCase():'events';
  const heading=[state.category?'No '+discoveryCategories[state.category].toLowerCase()+' listed':'Nothing listed',state.city||state.country?'in '+placeLabel():'',whenLabel(),'yet.'].filter(Boolean).join(' ');
- return `<div class="listing-empty"><h3>${esc(heading)}</h3><p>${all.length?`We couldn’t find ${esc(what)} for this search. Widen it below; we won’t change your place without asking.`:'New TicketBunker events and approved partner tickets are being added. Organisers can list an event today.'}</p><div class="empty-actions">${wider.join('')}<a class="btn btn-teal" href="/for-organisers">List your event ↗</a></div></div>`;
+ return `<div class="listing-empty"><h3>${esc(heading)}</h3><p>${all.length?`We couldn’t find ${esc(what)} for this search. Widen it below; we won’t change your place without asking.`:'The bunker’s quiet here for now. New TicketBunker events and approved partner tickets are being added, and organisers can list an event today.'}</p><div class="empty-actions">${wider.join('')}<a class="btn btn-teal" href="/for-organisers">List your event ↗</a></div></div>`;
 }
 
 function render(){
@@ -135,3 +135,20 @@ async function load(){
 fillCountries();syncForm();render();
 Promise.all([loadPartners(),load()]).then(()=>{fillCountries();syncForm();render();});
 if(location.pathname==='/events')$('#discover').scrollIntoView();
+
+// "Where the money goes" example, from the same published plans as checkout.
+import('./pricing-rules.js').then(({plans,planForCapacity})=>{
+ const price=$('#calc-price'),qty=$('#calc-qty');if(!price||!qty)return;
+ const eur=c=>new Intl.NumberFormat('en-GB',{style:'currency',currency:'EUR',maximumFractionDigits:c%100?2:0}).format(c/100);
+ const update=()=>{
+  const p=Number(price.value)*100,n=Number(qty.value),plan=plans[planForCapacity(n)];
+  const gross=p*n,stripe=Math.round(n*(p*.015+25)),fee=plan.eur,keep=gross-stripe-fee;
+  $('#calc-price-out').textContent=eur(p);$('#calc-qty-out').textContent=n.toLocaleString('en-GB');
+  $('#calc-buyer').textContent=eur(p);$('#calc-keep').textContent=eur(Math.round(keep/100)*100);$('#calc-stripe').textContent=eur(Math.round(stripe/100)*100);$('#calc-tb').textContent=eur(fee);$('#calc-plan').textContent=plan.label;
+  const pct=v=>Math.max(0,v/gross*100).toFixed(2)+'%';
+  $('#bar-keep').style.width=pct(keep);$('#bar-stripe').style.width=pct(stripe);$('#bar-tb').style.width=pct(fee);
+  $('#money-calc').dataset.keepShare=Math.round(keep/gross*100);
+  $('#calc-keep').title=Math.round(keep/gross*1000)/10+'% of ticket sales';
+ };
+ price.oninput=qty.oninput=update;update();
+});
