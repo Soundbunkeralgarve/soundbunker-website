@@ -308,3 +308,13 @@ a.tcard:hover .card-foot .get{background:var(--teal);color:#04140e}
 .trip-chips button.active{background:var(--teal);border-color:var(--teal);color:#04140e}
 .trip-loading{color:#9aa6a0;font:500 13px var(--mono);padding:40px 0}
 .rail-trip .rail-arrows button{border-color:#ffffff30;color:#fff;background:transparent}
+
+/* City guide (server-rendered on /london, /algarve …) */
+.city-guide{padding:56px 0 8px}
+.city-guide h2{font-size:clamp(32px,3.4vw,52px);margin:0 0 12px}
+.city-guide p{max-width:760px;color:var(--muted);line-height:1.6}
+.city-list{columns:2;column-gap:40px;padding-left:20px;margin:20px 0 0}
+.city-list li{break-inside:avoid;margin:0 0 10px;font-size:14px}
+.city-list a{font-weight:600;color:var(--ink)}
+.city-list span{display:block;color:var(--muted);font-size:12.5px}
+@media(max-width:650px){.city-list{columns:1}}

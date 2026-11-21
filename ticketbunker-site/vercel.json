@@ -24,9 +24,17 @@
       "regions": [
         "dub1"
       ]
+    },
+    "api/city-page.js": {
+      "maxDuration": 20,
+      "includeFiles": "{index.html,city-places.js}"
     }
   },
   "rewrites": [
+    {
+      "source": "/:slug(london|manchester|liverpool|glasgow|edinburgh|birmingham|brighton|bristol|leeds|newcastle|sheffield|nottingham|cardiff|belfast|dublin|algarve|lisbon|porto|madeira|barcelona|madrid|seville|malaga|ibiza|tenerife|mallorca|paris|amsterdam|berlin|rome|prague|vienna|budapest)",
+      "destination": "/api/city-page?slug=:slug"
+    },
     {
       "source": "/sitemap.xml",
       "destination": "/api/sitemap"
