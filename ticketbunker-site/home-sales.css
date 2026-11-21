@@ -357,7 +357,7 @@ a.tcard:hover .card-foot .get{background:var(--teal);color:#04140e}
 .tabs-host:hover{background:#4ff2c4}
 @media(max-width:650px){.tabs-row{padding-right:12px}.tabs-host{font-size:11.5px;padding:6px 10px}.hero-host{font-size:12px;text-align:left}}
 .shop-home .hero-shade{background:radial-gradient(120% 90% at 50% 45%,#05060614 0%,#0506069c 64%,#050606ec 100%),linear-gradient(0deg,#050606 0%,#05060600 28%)}
-/* "One bunker." in solid teal */
+/* "Head out." in solid teal */
 .shop-home .h1-outline,.shop-home .hero-sales .h1-outline{color:var(--teal);-webkit-text-stroke:0;text-shadow:0 0 50px #00e0a655,0 8px 40px #0008}
 .hero-tagline{margin:-6px auto 14px;font:600 clamp(18px,2vw,26px)/1.2 var(--body);letter-spacing:.01em;color:#fff}
 @media(max-width:650px){.hero-tagline{font-size:18px;margin:-4px 0 10px}}
@@ -373,3 +373,6 @@ a.tcard:hover .card-foot .get{background:var(--teal);color:#04140e}
 .plan-col small{color:var(--muted);font-size:11.5px}
 .plan-soon{font:500 10.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--teal-deep);font-style:normal}
 @media(max-width:760px){.plan-grid{grid-template-columns:1fr}}
+
+/* Hero grows with its content so the Now showing reel is never clipped. */
+.shop-home .hero-sales{max-height:none}
