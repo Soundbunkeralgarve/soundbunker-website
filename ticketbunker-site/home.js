@@ -73,7 +73,7 @@ function card(item,{featured=false}={}){
  const place=[item.venue,item.city].filter(Boolean).join(' · ');
  const badges=`${item.featured||featured?'<span class="badge badge-featured">Featured</span>':''}`;
  // One quiet line says who sells the ticket: partners are named, never hidden.
- const via=item.external?`<small class="via">via ${esc(item.seller)}</small>`:item.soldOut?'':'<small class="via via-tb">No booking fee</small>';
+ const via=item.external?`<small class="via">via ${esc(item.seller)} · fees may apply</small>`:item.soldOut?'':'<small class="via via-tb">No booking fee</small>';
  const action=item.soldOut?'':`<span class="get">${item.external?'Get tickets ↗':'Get tickets'}</span>`;
  const body=`<div class="card-media">${image(item)}<span class="card-cat">${esc(catLabel(item))}</span>${badges}</div><div class="card-body"><p class="card-date">${esc(dateLine(item))}</p><h3>${esc(item.title)}</h3><p class="card-place">${esc(place)}</p><div class="card-foot"><div class="price"><strong>${esc(priceLine(item))}</strong>${via}</div>${action}</div></div>`;
  const ext=item.external?` target="_blank" rel="sponsored noopener noreferrer" aria-label="${esc(item.title)}: tickets via ${esc(item.seller)} (opens in a new tab)"`:'';
@@ -175,6 +175,7 @@ function render(){
  $('#rail-weekend').hidden=!weekend.length;
  if(weekend.length)mountRail($('#rail-weekend'),weekend.map(i=>card(i)));
 
+ $('#partner-note').hidden=!all.some(i=>i.external);
  $('#show-more').onclick=()=>{limit+=12;render();};
  const cities=[...new Set(all.filter(i=>!state.country||i.countryCode===state.country).map(i=>i.city).filter(Boolean))].sort();
  $('#ds-cities').replaceChildren(...[...(state.country==='PT'||!state.country?['Algarve']:[]),...cities].map(c=>opt(c,c)));
