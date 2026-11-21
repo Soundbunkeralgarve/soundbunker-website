@@ -15,6 +15,7 @@ const countryNames=new Intl.DisplayNames(['en'],{type:'region'}),countryName=c=>
 const POPULAR=['PT','GB','IE','ES','FR','NL','DE','IT','BE'];
 const ALL=('AD AL AT BA BE BG BY CH CY CZ DE DK EE ES FI FR GB GI GR HR HU IE IS IT LI LT LU LV MC MD ME MK MT NL NO PL PT RO RS SE SI SK SM UA VA US CA AU NZ').split(' ');
 import {CITY_PAGES} from './city-places.js?v=20261121';
+import {tripOptions} from './trip-partners.js?v=20261121';
 const PLACES=[['PT','Algarve'],['PT','Lisbon'],['PT','Porto'],['GB','London'],['GB','Edinburgh'],['GB','Manchester'],['IE','Dublin'],['ES','Madrid'],['ES','Barcelona'],['FR','Paris'],['NL','Amsterdam'],['DE','Berlin']];
 const saved=(()=>{try{return JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch{return {};}})();
 // City pages (/london, /algarve …) open preset to their place.
@@ -239,12 +240,22 @@ function renderTrip(){
  mountRail(section,items.map(i=>card(i)),`<a class="tcard host-tile" href="/?city=${encodeURIComponent(tripPick)}"><div><span class="label">${esc(tripPick)}</span><h3>See it all.</h3><p>Every gig, night out, family day and tour we have in ${esc(tripPick)}.</p><span class="head-link">Everything in ${esc(tripPick)} ↗</span></div></a>`);
 }
 
+// "Plan your trip" for a chosen place: travel, stays and food partners, live once approved.
+function renderPlan(){
+ const box=$('#plan-trip');if(!state.city){box.hidden=true;return;}
+ const options=tripOptions(state.country||pathCity?.country||'',state.city);
+ box.hidden=false;
+ $('#plan-trip-h').textContent='Plan your trip to '+state.city+'.';
+ $('#plan-grid').innerHTML=options.map(o=>`<div class="plan-col"><b>${esc(o.label)}</b><span>${esc(o.blurb)}</span>${o.partners.length?o.partners.map(p=>`<a class="plan-link" href="${esc(p.url)}" target="_blank" rel="sponsored noopener">${esc(p.name)} ↗</a>`).join('')+'<small>Booked on the partner\u2019s site; their fees may apply.</small>':'<em class="plan-soon">Coming soon</em>'}</div>`).join('');
+}
+
 function render(){
  const now=Date.now(),all=blend(events,partners,now,feed),place=placeOnly(),where=placeLabel();
  $('#db-summary').textContent=[state.category?discoveryCategories[state.category]:'Everything',where||'Anywhere',whenLabel()].filter(Boolean).join(' · ');
  $('#db-clear').hidden=!(state.country||state.city||state.category||state.when!=='any');
  renderBigFeature();
  renderNear(now);
+ renderPlan();
  if(!searching()&&!tripCache.has(tripPick||tripDefault()))loadTrip(tripPick||tripDefault());else if(!searching())renderTrip();
 
  // Search view: every live listing that matches.
