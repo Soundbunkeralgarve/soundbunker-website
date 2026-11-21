@@ -235,3 +235,56 @@ a.tcard:hover .card-foot .get{background:var(--teal);color:#04140e}
 .gyg-box{padding:48px 0 8px}
 .gyg-box .section-head{margin-bottom:16px}
 .gyg-slot{background:#fff;border:1px solid var(--line);border-radius:18px;padding:12px;min-height:240px}
+
+/* Hero v3: centred, cinematic, one clear search. */
+.shop-home .hero-sales{min-height:calc(100svh - 112px);max-height:940px;align-items:center;justify-content:center;text-align:center}
+.shop-home .hero-shade{background:radial-gradient(120% 90% at 50% 45%,#05060630 0%,#050606b8 62%,#050606f2 100%),linear-gradient(0deg,#050606 0%,#05060600 30%)}
+.shop-home .hero-shade:after{content:"";position:absolute;inset:0;opacity:.18;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.shop-home .hero-grid{padding:72px 0 110px;justify-items:center}
+.shop-home .hero-copy{max-width:1080px;display:flex;flex-direction:column;align-items:center}
+.hero-kicker{display:inline-flex;align-items:center;gap:10px;padding:8px 16px;border:1px solid #ffffff2e;border-radius:999px;background:#05060680;backdrop-filter:blur(8px);font:500 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:#e6efea;margin-bottom:26px}
+.kicker-sep{opacity:.45}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--teal);animation:live 2s infinite}
+@keyframes live{0%{box-shadow:0 0 0 0 #00e0a6aa}70%{box-shadow:0 0 0 10px #00e0a600}100%{box-shadow:0 0 0 0 #00e0a600}}
+.shop-home .hero-sales h1{font-size:clamp(64px,11vw,188px);line-height:.84;letter-spacing:-.02em;margin:0 0 26px;max-width:none;text-shadow:none}
+.h1-solid,.h1-outline{display:block}
+.h1-solid{color:#fff;text-shadow:0 10px 50px #000a}
+.h1-outline{color:transparent;-webkit-text-stroke:2px var(--teal);text-shadow:0 0 60px #00e0a640}
+.shop-home .hero-sales .hero-intro{font-size:19px;color:#e8efeb;max-width:620px;margin:0 auto 34px}
+.shop-home .destination-search{width:min(1000px,100%);grid-template-columns:1.6fr 1fr 1fr 1fr auto;background:#fff;border:0;border-radius:999px;padding:8px;gap:0;box-shadow:0 30px 80px -20px #000d;backdrop-filter:none;text-align:left}
+.shop-home .ds-field{background:transparent;padding:8px 20px;border-right:1px solid #e6e2da;border-radius:0}
+.shop-home .ds-category{border-right:0}
+.shop-home .ds-field label{color:#6b716d;font-size:10px}
+.shop-home .ds-field select,.shop-home .ds-field input{color:#0b0c0c;background:transparent;font:600 15px var(--body)}
+.shop-home .ds-field input::placeholder{color:#9a9f9b;font-weight:500}
+.shop-home .ds-field select option,.shop-home .ds-field select optgroup{color:#0b0c0c}
+.shop-home .ds-submit{border-radius:999px;min-height:58px;padding:0 34px;background:var(--ink);color:#fff;font-size:15px}
+.shop-home .ds-submit:hover{background:var(--teal);color:#04140e}
+.shop-home .category-nav{justify-content:center;margin-top:22px}
+.shop-home .category-nav button{background:#05060666;backdrop-filter:blur(6px)}
+.shop-home .hero-reel{left:50%;right:auto;transform:translateX(-50%);bottom:28px}
+@media(max-width:1100px){.shop-home .destination-search{grid-template-columns:1.4fr 1fr 1fr 1fr;border-radius:22px}.shop-home .ds-submit{grid-column:1/-1;margin-top:6px}}
+@media(max-width:650px){
+.shop-home .hero-sales{min-height:0;max-height:none}
+.shop-home .hero-grid{padding:44px 0 86px}
+.hero-kicker{font-size:9.5px;letter-spacing:.1em;padding:7px 12px;margin-bottom:20px}
+.shop-home .hero-sales h1{font-size:clamp(56px,17vw,80px);margin-bottom:18px}
+.h1-outline{-webkit-text-stroke:1.5px var(--teal)}
+.shop-home .hero-sales .hero-intro{font-size:15px;margin-bottom:24px}
+.shop-home .destination-search{grid-template-columns:1fr 1fr;border-radius:18px;padding:6px}
+.shop-home .ds-field{border-right:0;border-bottom:1px solid #eeeae2;padding:10px 14px}
+.shop-home .ds-city{grid-column:1/-1}
+.shop-home .ds-country{border-right:1px solid #eeeae2}
+.shop-home .ds-category{grid-column:1/-1;border-bottom:0}
+.shop-home .ds-submit{grid-column:1/-1;min-height:52px;border-radius:14px}
+.shop-home .category-nav{justify-content:flex-start}
+.shop-home .hero-reel{left:16px;transform:none;bottom:24px}
+}
+@media(prefers-reduced-motion:reduce){.live-dot{animation:none}}
+
+.rail-near{padding-top:52px}
+.rail-near h2{font-size:clamp(36px,4vw,60px)}
+/* The swipeable chip row must never set the hero's width. */
+.shop-home .hero-grid{justify-items:stretch}
+.shop-home .hero-copy{width:100%;max-width:1080px;margin:0 auto;min-width:0}
+.shop-home .hero-sales .category-nav{max-width:100%}

@@ -10,6 +10,9 @@ const SKIDDLE_IMAGE_HOSTS = new Set(['d31fr2pwly4c4s.cloudfront.net']);
 // Skiddle event codes we list; anything else (sport, kids, conferences…) is left out.
 const SKIDDLE_CATEGORIES = Object.freeze({LIVE: 'music', CLUB: 'club', FEST: 'festival', COMEDY: 'comedy',
   THEATRE: 'shows', DANCE: 'shows', FILM: 'cinema', DRIVEIN: 'cinema', EXPER: 'daysout'});
+// Kid-friendly listings go to the Family rail whatever Skiddle files them under.
+const FAMILY = /\b(family|families|kids?|children|child|toddler|santa|grotto|panto(mime)?|junior|baby|zoo|aquarium|water ?park|theme park|farm)\b/i;
+const FAMILY_CODES = new Set(['KIDS', 'EXPER', 'SEASONAL', 'THEATRE']);
 const SPAIN = /\b(ibiza|eivissa|sant antoni|san antonio|playa d.?en bossa|santa eulalia|marbella|benidorm|tenerife|magaluf)\b/i;
 const PER_CATEGORY = 24, HORIZON_DAYS = 180, CACHE_MS = 3 * 60 * 60 * 1000;
 
@@ -36,8 +39,8 @@ function zonedInstant(day, time, zone) {
 // One <event> block → the shared listing shape, or null when it cannot be shown honestly:
 // cancelled, past, too far out, no ticket on sale, unknown category or a non-Skiddle link.
 export function skiddleEvent(id, link, body, {affiliateId, now = Date.now()} = {}) {
-  const category = SKIDDLE_CATEGORIES[tag(body, 'eventcode')];
-  const title = tag(body, 'name').slice(0, 140), day = tag(body, 'date');
+  const code = tag(body, 'eventcode'), title = tag(body, 'name').slice(0, 140), day = tag(body, 'date');
+  const category = code === 'KIDS' || (FAMILY_CODES.has(code) && FAMILY.test(title)) ? 'family' : SKIDDLE_CATEGORIES[code];
   const url = httpsUrl(link, SKIDDLE_HOSTS);
   if (!category || !title || !url || !affiliateId || tag(body, 'cancelled') !== '0' || !/^\d{4}-\d{2}-\d{2}$/.test(day)) return null;
   const venueXml = (body.match(/<venue[^>]*>([\s\S]*?)<\/venue>/) || [])[1] || '';
@@ -127,7 +130,7 @@ export function viatorItem(raw, {place, countryCode}) {
   const from = Number(raw.pricing?.summary?.fromPrice);
   return {
     id: 'viator:' + String(raw.productCode).replace(/[^\w-]/g, '').slice(0, 40), provider: 'viator', seller: 'Viator', title,
-    category: BOAT.test(title) ? 'boat' : 'daysout', city: place, venue: '', countryCode,
+    category: BOAT.test(title) ? 'boat' : FAMILY.test(title) ? 'family' : 'daysout', city: place, venue: '', countryCode,
     startsAt: '', endsAt: '', timezone: '', priceCents: Number.isFinite(from) && from >= 0 ? Math.round(from * 100) : null,
     currency: String(raw.pricing?.currency || 'EUR').toLowerCase(), image, thumb: false, url: url.href,
     rating: Number(raw.reviews?.combinedAverageRating) || 0, reviews: Number(raw.reviews?.totalReviews) || 0
@@ -188,6 +191,6 @@ export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({events: []});
   const city = String(req.query?.city || '').slice(0, 80);
   const country = /^[A-Z]{2}$/.test(String(req.query?.country || '')) ? req.query.country : '';
-  const events = pickListings(await listings(), {city, country});
-  return res.status(200).json({events});
+  const all = await listings();
+  return res.status(200).json({events: pickListings(all, {city, country}), total: all.length});
 }

@@ -4,6 +4,7 @@ export const homeRails = Object.freeze([
   ['music', 'Live music', 'Gigs and live sets.'],
   ['club', 'Raves & club nights', 'Warehouses, basements and terraces.'],
   ['festival', 'Festivals', 'Weekenders and day festivals.'],
+  ['family', 'Family days out', 'Perfect for the kids.'],
   ['comedy', 'Comedy', 'Stand-up and showcases.'],
   ['shows', 'Theatre & shows', 'Stage, cabaret and performance.'],
   ['cinema', 'Cinema', 'Big screens, open air and late nights.'],

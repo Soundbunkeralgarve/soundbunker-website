@@ -67,3 +67,11 @@ test('feed listings blend in as external, filterable homepage items', () => {
   assert.equal(filterItems(items, {country: 'GB', city: 'manchester', category: 'club'}, now).length, 1);
   assert.equal(feedItem({...f, category: 'nonsense'}, now), null);
 });
+
+test('kids and family listings go to the Family rail', () => {
+  const kids = parseSkiddleFeed(feed(event({code: 'KIDS'})), {affiliateId: '1', now});
+  assert.equal(kids[0].category, 'family');
+  const grotto = parseSkiddleFeed(feed(event({code: 'SEASONAL'}).replace('Warehouse &amp; Friends', 'Santa Grotto Family Day')), {affiliateId: '1', now});
+  assert.equal(grotto[0].category, 'family');
+  assert.equal(parseSkiddleFeed(feed(event({code: 'SEASONAL'})), {affiliateId: '1', now}).length, 0, 'other seasonal events stay out');
+});
