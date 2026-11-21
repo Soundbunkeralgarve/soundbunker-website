@@ -207,3 +207,12 @@ a.tcard:hover .card-media img.thumb-art{transform:translate(-50%,-50%) scale(1.0
 .card-media{overflow:hidden}
 .bf-ad .bf-media img{filter:brightness(.8)}
 .bf-ad:hover .bf-media img{transform:scale(1.03)}
+
+/* Card foot: price with a quiet seller line, and one clear action. */
+.card-foot .price{display:flex;flex-direction:column;gap:3px;min-width:0}
+.card-foot .via{font:500 10px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:#8a8f8b}
+.card-foot .via-tb{color:var(--teal-deep)}
+.card-foot .get{font:600 12.5px var(--body);padding:8px 14px;border-radius:999px;background:var(--ink);color:#fff;white-space:nowrap;transition:background .2s}
+a.tcard:hover .card-foot .get{background:var(--teal);color:#04140e}
+.rail-featured .card-foot .get{background:var(--teal);color:#04140e}
+.rail-featured .card-foot .via{color:#8f9a95}
