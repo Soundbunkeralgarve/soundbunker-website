@@ -13,7 +13,7 @@ const SKIDDLE_CATEGORIES = Object.freeze({LIVE: 'music', CLUB: 'club', FEST: 'fe
 // Kid-friendly listings go to the Family rail whatever Skiddle files them under.
 const FAMILY = /\b(family|families|kids?|children|child|toddler|santa|grotto|panto(mime)?|junior|baby|zoo|aquarium|water ?park|theme park|farm)\b/i;
 const FAMILY_CODES = new Set(['KIDS', 'EXPER', 'SEASONAL', 'THEATRE']);
-const SPAIN = /\b(ibiza|eivissa|sant antoni|san antonio|playa d.?en bossa|santa eulalia|marbella|benidorm|tenerife|magaluf)\b/i;
+const SPAIN = /\b(ibiza|eivissa|sant antoni|san antonio|playa d.?en bossa|santa eulalia|marbella|benidorm|tenerife|costa adeje|adeje|playa de las americas|los cristianos|magaluf|mallorca|lanzarote|gran canaria)\b/i;
 const PER_CATEGORY = 24, HORIZON_DAYS = 180, CACHE_MS = 3 * 60 * 60 * 1000;
 
 const decode = value => String(value || '').replace(/^<!\[CDATA\[|\]\]>$/g, '')
