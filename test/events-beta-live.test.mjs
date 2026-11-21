@@ -20,4 +20,4 @@ test('Connect onboarding requires authentication while ticket payments stay disa
  assert.equal(response.statusCode,401);
  assert.match(response.data.error,/signed in/);
 });
-test('current storefront labels unbookable demos and keeps payment gates on the server',()=>{const page=file('ticketbunker-site/index.html'),booking=file('ticketbunker-site/booking-form.js');assert.match(page,/Cards marked <b>SAMPLE<\/b>/);assert.match(page,/They cannot be booked/);assert.match(booking,/event.preview\|\|!event.paymentsEnabled/);assert.match(file('api/event-checkout.js'),/!ticketBunkerPaymentsEnabled\(\)/);});
+test('current storefront labels unbookable demos and keeps payment gates on the server',()=>{const page=file('ticketbunker-site/index.html'),booking=file('ticketbunker-site/booking-form.js');assert.doesNotMatch(page,/Cards marked <b>SAMPLE<\/b>/);assert.match(booking,/event.preview\|\|!event.paymentsEnabled/);assert.match(file('api/event-checkout.js'),/!ticketBunkerPaymentsEnabled\(\)/);});

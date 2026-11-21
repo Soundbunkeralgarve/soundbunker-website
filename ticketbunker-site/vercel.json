@@ -17,6 +17,13 @@
         "dub1"
       ],
       "maxDuration": 30
+    },
+    "api/partner-feed.js": {
+      "maxDuration": 60,
+      "memory": 1024,
+      "regions": [
+        "dub1"
+      ]
     }
   },
   "rewrites": [
