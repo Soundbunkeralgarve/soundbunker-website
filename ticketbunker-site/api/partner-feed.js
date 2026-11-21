@@ -1,3 +1,4 @@
+import {gunzipSync} from 'node:zlib';
 // Approved affiliate event feeds. Buyers always book on the provider's own site through
 // our tracked link; the provider sells, delivers and supports the ticket.
 //
@@ -169,16 +170,71 @@ export async function loadViator(env = process.env, {fetcher = fetch} = {}) {
   return settled.flatMap(s => s.status === 'fulfilled' ? s.value : []).filter(i => !seen.has(i.id) && seen.add(i.id));
 }
 
+// Awin product feeds (Create-a-Feed CSV download URLs, one per line in AWIN_FEED_URLS).
+// The URLs carry Awin's feed key, so they live only in the environment. Every product
+// link is Awin's own tracked deep link. Theatre Tickets Direct (1936) is London theatre.
+const AWIN_MERCHANTS = Object.freeze({1936: {city: 'London', countryCode: 'GB', category: 'shows', currency: 'gbp', timezone: 'Europe/London'}});
+const AWIN_HOSTS = new Set(['www.awin1.com', 'awin1.com']);
+export function parseCsv(text) {
+  const rows = []; let row = [], cell = '', quoted = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (quoted) { if (c === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else quoted = false; } else cell += c; continue; }
+    if (c === '"') quoted = true;
+    else if (c === ',') { row.push(cell); cell = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; }
+    else cell += c;
+  }
+  if (cell || row.length) { row.push(cell); rows.push(row); }
+  const [head = [], ...body] = rows.filter(r => r.some(Boolean));
+  return body.map(r => Object.fromEntries(head.map((h, i) => [h.trim(), (r[i] || '').trim()])));
+}
+const awinCategory = text => /comedy|stand.?up/i.test(text) ? 'comedy' : /festival/i.test(text) ? 'festival'
+  : /kids|family|children|theme park|zoo|aquarium/i.test(text) ? 'family' : /cinema|film/i.test(text) ? 'cinema'
+  : /concert|gig|music|tour\b/i.test(text) ? 'music' : /theatre|theater|musical|play|show|ballet|opera/i.test(text) ? 'shows' : 'daysout';
+export function awinItem(row) {
+  const mid = Number(row.merchant_id), known = AWIN_MERCHANTS[mid] || {};
+  const title = String(row.product_name || '').replace(/\s+/g, ' ').trim().slice(0, 140);
+  let url; try { url = new URL(row.aw_deep_link); } catch { return null; }
+  if (!title || url.protocol !== 'https:' || !AWIN_HOSTS.has(url.hostname)) return null;
+  let image = ''; for (const k of ['merchant_image_url', 'aw_image_url', 'large_image']) { try { const u = new URL(row[k]); if (u.protocol === 'https:') { image = u.href; break; } } catch { /* next */ } }
+  const price = Number(String(row.search_price || row.display_price || '').replace(/[^\d.]/g, ''));
+  return {
+    id: 'awin:' + mid + ':' + String(row.aw_product_id || row.merchant_product_id || title).replace(/[^\w-]/g, '').slice(0, 40),
+    provider: 'awin-' + mid, seller: String(row.merchant_name || 'Partner').trim().slice(0, 60), title,
+    category: known.category || awinCategory([row.category_name, row.merchant_category, title].join(' ')),
+    city: known.city || String(row.custom_1 || row.location || '').trim().slice(0, 80), venue: String(row.venue || row.custom_2 || '').trim().slice(0, 120),
+    countryCode: known.countryCode || '', startsAt: '', endsAt: '', timezone: known.timezone || '',
+    priceCents: Number.isFinite(price) && price > 0 ? Math.round(price * 100) : null,
+    currency: String(row.currency || known.currency || 'gbp').toLowerCase(), image, thumb: false, url: url.href
+  };
+}
+export async function loadAwin(env = process.env, {fetcher = fetch} = {}) {
+  const urls = String(env.AWIN_FEED_URLS || '').split(/[\s,]+/).filter(u => /^https:\/\/(productdata\.awin\.com\/|ui\.awin\.com\/productdata-darwin-download\/)/.test(u));
+  const settled = await Promise.allSettled(urls.map(async u => {
+    const r = await fetcher(u, {signal: AbortSignal.timeout(30000)});
+    if (!r.ok) throw Error('Awin feed ' + r.status);
+    // Awin serves feeds gzip-compressed; plain CSV is accepted too.
+    const bytes = Buffer.from(await r.arrayBuffer());
+    const text = bytes[0] === 0x1f && bytes[1] === 0x8b ? gunzipSync(bytes).toString('utf8') : bytes.toString('utf8');
+    return parseCsv(text).map(awinItem).filter(Boolean);
+  }));
+  const seen = new Set();
+  return settled.flatMap(s => s.status === 'fulfilled' ? s.value : []).filter(i => !seen.has(i.id) && seen.add(i.id));
+}
+
 let cached, loading;
 async function listings() {
   if (cached && cached.until > Date.now()) return cached.items;
   // Each provider fails on its own; one outage never empties the others.
-  loading ||= Promise.allSettled([loadSkiddle(), loadViator()])
-    .then(([skiddle, viator]) => {
+  loading ||= Promise.allSettled([loadSkiddle(), loadViator(), loadAwin()])
+    .then(([skiddle, viator, awin]) => {
       // Provider failures go to the function log (status and reason only, never credentials).
-      for (const [name, r] of [['skiddle', skiddle], ['viator', viator]]) if (r.status === 'rejected') console.error('partner-feed', name, String(r.reason?.message || r.reason).slice(0, 200));
+      for (const [name, r] of [['skiddle', skiddle], ['viator', viator], ['awin', awin]]) if (r.status === 'rejected') console.error('partner-feed', name, String(r.reason?.message || r.reason).slice(0, 200));
       if (viator.status === 'fulfilled') console.log('partner-feed viator', viator.value.length);
-      const items = [...(skiddle.value || cached?.items.filter(i => i.provider === 'skiddle') || []), ...(viator.value || cached?.items.filter(i => i.provider === 'viator') || [])];
+      if (awin.status === 'fulfilled') console.log('partner-feed awin', awin.value.length);
+      const keep = (r, test) => r.value || cached?.items.filter(test) || [];
+      const items = [...keep(skiddle, i => i.provider === 'skiddle'), ...keep(viator, i => i.provider === 'viator'), ...keep(awin, i => i.provider.startsWith('awin-'))];
       cached = {until: Date.now() + (skiddle.status === 'fulfilled' ? CACHE_MS : 5 * 6e4), items}; return items;
     })
     .catch(() => { cached = {until: Date.now() + 5 * 6e4, items: cached?.items || []}; return cached.items; })
