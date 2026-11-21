@@ -142,10 +142,12 @@ export async function loadViator(env = process.env, {fetcher = fetch} = {}) {
   const res = await fetcher(VIATOR_API + '/destinations', {headers, signal: AbortSignal.timeout(20000)});
   if (!res.ok) {
     // Diagnose a refused key without exposing it: does Viator's sandbox accept it instead?
+    let search = 'untested';
+    try { search = String((await fetcher(VIATOR_API + '/products/search', {method: 'POST', headers, signal: AbortSignal.timeout(10000), body: JSON.stringify({filtering: {destination: '479'}, pagination: {start: 1, count: 1}, currency: 'EUR'})})).status); } catch { search = 'unreachable'; }
     let sandbox = 'untested';
     try { sandbox = String((await fetcher('https://api.sandbox.viator.com/partner/destinations', {headers, signal: AbortSignal.timeout(10000)})).status); } catch { sandbox = 'unreachable'; }
     const shape = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(key) ? 'key-shaped' : /^[\u2022*.]+$/.test(key) ? 'masked dots' : 'not key-shaped';
-    throw Error('Viator destinations ' + res.status + ' (key length ' + key.length + ', ' + shape + ', sandbox answers ' + sandbox + ')');
+    throw Error('Viator destinations ' + res.status + ' (key length ' + key.length + ', ' + shape + ', search answers ' + search + ', sandbox answers ' + sandbox + ')');
   }
   const all = (await res.json()).destinations || [];
   if (!all.length) throw Error('Viator returned no destinations');
