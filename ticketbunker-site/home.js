@@ -14,9 +14,12 @@ const KEY='tb-destination';
 const countryNames=new Intl.DisplayNames(['en'],{type:'region'}),countryName=c=>{try{return countryNames.of(c)||c;}catch{return c;}};
 const POPULAR=['PT','GB','IE','ES','FR','NL','DE','IT','BE'];
 const ALL=('AD AL AT BA BE BG BY CH CY CZ DE DK EE ES FI FR GB GI GR HR HU IE IS IT LI LT LU LV MC MD ME MK MT NL NO PL PT RO RS SE SI SK SM UA VA US CA AU NZ').split(' ');
+import {CITY_PAGES} from './city-places.js?v=20261121';
 const PLACES=[['PT','Algarve'],['PT','Lisbon'],['PT','Porto'],['GB','London'],['GB','Edinburgh'],['GB','Manchester'],['IE','Dublin'],['ES','Madrid'],['ES','Barcelona'],['FR','Paris'],['NL','Amsterdam'],['DE','Berlin']];
 const saved=(()=>{try{return JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch{return {};}})();
-let state=readState(location.search,saved),events=[],partners=[],feed=[],loadError=false,limit=12;
+// City pages (/london, /algarve …) open preset to their place.
+const pathCity=window.__TB_CITY||null;
+let state=readState(location.search,pathCity?{city:pathCity.city,country:pathCity.country}:saved),events=[],partners=[],feed=[],loadError=false,limit=12;
 const form=$('#destination-search'),country=$('#ds-country'),city=$('#ds-city'),when=$('#ds-when'),from=$('#ds-from'),to=$('#ds-to'),category=$('#ds-category');
 
 const opt=(v,l)=>{const o=document.createElement('option');o.value=v;o.textContent=l;return o;};
@@ -38,7 +41,8 @@ const searching=()=>!!(state.category||state.when!=='any');
 function commit(next,{scroll=false}={}){
  state={...state,...next};if(state.when!=='dates')state.range={from:'',to:''};limit=12;
  try{localStorage.setItem(KEY,JSON.stringify({country:state.country,city:state.city}));}catch{}
- history.replaceState(null,'',location.pathname+stateQuery(state)+location.hash);
+ const onCityPage=pathCity&&state.city===pathCity.city&&(!state.country||state.country===pathCity.country);
+ history.replaceState(null,'',(pathCity&&!onCityPage?'/':location.pathname)+stateQuery(onCityPage?{...state,city:'',country:''}:state)+location.hash);
  syncForm();render();
  if(next.city!==undefined&&next.city!==feedCity)loadFeed().then(render);
  if(next.city!==undefined)loadNear();
@@ -275,7 +279,8 @@ function render(){
  $('#ds-cities').replaceChildren(...[...(state.country==='PT'||!state.country?['Algarve']:[]),...cities].map(c=>opt(c,c)));
 }
 
-$('#place-links').innerHTML=PLACES.map(([c,p])=>`<a href="/?country=${c}&amp;city=${encodeURIComponent(p)}" data-place="${c}|${esc(p)}">${esc(p)} <small>${esc(countryName(c))}</small></a>`).join('');
+// Real links to the city pages, so people and search engines can reach every place.
+$('#place-links').innerHTML=CITY_PAGES.map(([slug,name,c])=>`<a href="/${slug}">${esc(name.replace(/^the /,''))} <small>${esc(countryName(c))}</small></a>`).join('');
 document.querySelectorAll('[data-place]').forEach(a=>a.onclick=e=>{e.preventDefault();const [c,p]=a.dataset.place.split('|');commit({country:c,city:p},{scroll:true});});
 
 async function loadPartners(){
