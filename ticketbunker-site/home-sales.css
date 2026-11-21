@@ -318,3 +318,13 @@ a.tcard:hover .card-foot .get{background:var(--teal);color:#04140e}
 .city-list a{font-weight:600;color:var(--ink)}
 .city-list span{display:block;color:var(--muted);font-size:12.5px}
 @media(max-width:650px){.city-list{columns:1}}
+
+/* Hero: what you can book, and the fee promise in plain words */
+.hero-pillars{list-style:none;margin:26px auto 0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;width:min(1000px,100%)}
+.hero-pillars li{border:1px solid #ffffff24;background:#05060673;backdrop-filter:blur(8px);border-radius:14px;padding:12px 14px;text-align:left;display:grid;gap:3px}
+.hero-pillars b{font:700 14px var(--body);color:#fff}
+.hero-pillars span{font:400 12.5px/1.35 var(--body);color:#cfd9d4}
+.hero-pillars .soon{font:500 10.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:#9fe9cf}
+.fee-promise{margin:16px auto 0;max-width:760px;font:400 13.5px/1.55 var(--body);color:#dfe8e3}
+.fee-promise b{color:var(--teal);font-weight:700}
+@media(max-width:650px){.hero-pillars{grid-template-columns:1fr 1fr;gap:8px}.hero-pillars li{padding:10px 12px}.hero-pillars b{font-size:13px}.fee-promise{font-size:12.5px;text-align:left}}
