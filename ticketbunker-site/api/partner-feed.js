@@ -141,6 +141,7 @@ export async function loadViator(env = process.env, {fetcher = fetch} = {}) {
   const res = await fetcher(VIATOR_API + '/destinations', {headers, signal: AbortSignal.timeout(20000)});
   if (!res.ok) throw Error('Viator destinations ' + res.status);
   const all = (await res.json()).destinations || [];
+  if (!all.length) throw Error('Viator returned no destinations');
   const settled = await Promise.allSettled(VIATOR_PLACES.map(async ([place, countryCode]) => {
     const dest = all.find(d => d.name === place && /CITY|REGION|ISLAND/.test(d.type || '')) || all.find(d => d.name === place);
     if (!dest) return [];
@@ -150,6 +151,8 @@ export async function loadViator(env = process.env, {fetcher = fetch} = {}) {
     if (!r.ok) throw Error('Viator search ' + r.status + ' for ' + place);
     return ((await r.json()).products || []).map(p => viatorItem(p, {place, countryCode})).filter(Boolean);
   }));
+  const failed = settled.filter(s => s.status === 'rejected');
+  if (failed.length === settled.length) throw Error('All Viator searches failed: ' + String(failed[0].reason?.message).slice(0, 120));
   const seen = new Set();
   return settled.flatMap(s => s.status === 'fulfilled' ? s.value : []).filter(i => !seen.has(i.id) && seen.add(i.id));
 }
@@ -160,6 +163,9 @@ async function listings() {
   // Each provider fails on its own; one outage never empties the others.
   loading ||= Promise.allSettled([loadSkiddle(), loadViator()])
     .then(([skiddle, viator]) => {
+      // Provider failures go to the function log (status and reason only, never credentials).
+      for (const [name, r] of [['skiddle', skiddle], ['viator', viator]]) if (r.status === 'rejected') console.error('partner-feed', name, String(r.reason?.message || r.reason).slice(0, 200));
+      if (viator.status === 'fulfilled') console.log('partner-feed viator', viator.value.length);
       const items = [...(skiddle.value || cached?.items.filter(i => i.provider === 'skiddle') || []), ...(viator.value || cached?.items.filter(i => i.provider === 'viator') || [])];
       cached = {until: Date.now() + (skiddle.status === 'fulfilled' ? CACHE_MS : 5 * 6e4), items}; return items;
     })
