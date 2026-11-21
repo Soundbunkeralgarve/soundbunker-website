@@ -173,7 +173,7 @@ function renderNear(now){
 $('#near-change').onclick=()=>{form.scrollIntoView({block:'center'});city.focus();};
 
 // Section tabs under the destination bar: one tap to any rail that has listings.
-const TAB_LABELS={'rail-near':'Near you','big-feature':'Featured','gyg-box':'Tours','rail-featured':'Featured picks','rail-direct':'Bunker direct','rail-music':'Live music','rail-club':'Raves','rail-festival':'Festivals','rail-family':'Family','rail-comedy':'Comedy','rail-shows':'Theatre','rail-cinema':'Cinema','rail-boat':'Boat trips','rail-daysout':'Experiences','rail-weekend':'This weekend'};
+const TAB_LABELS={'rail-near':'Near you','gyg-box':'Tours','big-feature':'Featured','rail-trip':'Heading away?','rail-featured':'Featured picks','rail-direct':'Bunker direct','rail-music':'Live music','rail-club':'Raves','rail-festival':'Festivals','rail-family':'Family','rail-comedy':'Comedy','rail-shows':'Theatre','rail-cinema':'Cinema','rail-boat':'Boat trips','rail-daysout':'Experiences','rail-weekend':'This weekend'};
 let tabObserver;
 function renderTabs(){
  const nav=$('#section-tabs');
@@ -193,12 +193,38 @@ function renderTabs(){
  ids.forEach(id=>tabObserver.observe(document.getElementById(id)));
 }
 
+// "Heading to …?": tickets in another city, one tap per city, loaded on demand.
+const TRIPS=[['London','London'],['Manchester','Manchester'],['Liverpool','Liverpool'],['Glasgow','Glasgow'],['Edinburgh','Edinburgh'],['Birmingham','Birmingham'],['Brighton','Brighton'],['Bristol','Bristol'],['Leeds','Leeds'],['Newcastle','Newcastle'],['Dublin','Dublin'],['Tenerife','Costa Adeje']];
+const tripCache=new Map();let tripPick='';
+function tripDefault(){const near=nearPlace();return TRIPS.find(([l])=>l!==near&&l!==state.city)?.[0]||'London';}
+async function loadTrip(label){
+ tripPick=label;renderTrip();
+ if(tripCache.has(label))return;
+ const query=TRIPS.find(([l])=>l===label)[1];
+ try{const r=await fetch('/api/partner-feed?city='+encodeURIComponent(query),{signal:AbortSignal.timeout(45000)});tripCache.set(label,r.ok?((await r.json()).events||[]):[]);}catch{tripCache.set(label,[]);}
+ if(tripPick===label)renderTrip();
+}
+function renderTrip(){
+ const section=$('#rail-trip');if(!tripPick)tripPick=tripDefault();
+ $('#trip-chips').innerHTML=TRIPS.map(([l])=>`<button type="button" role="tab" aria-selected="${l===tripPick}" class="${l===tripPick?'active':''}" data-trip="${esc(l)}">${esc(l)}</button>`).join('');
+ $('#trip-chips').querySelectorAll('[data-trip]').forEach(b=>b.onclick=()=>loadTrip(b.dataset.trip));
+ $('#trip-heading').textContent='Heading to '+tripPick+'?';
+ $('#trip-all').textContent='Everything in '+tripPick+' ↗';
+ $('#trip-all').onclick=()=>commit({city:tripPick,country:''},{scroll:true});
+ const query=TRIPS.find(([l])=>l===tripPick)[1],list=tripCache.get(tripPick);
+ const track=section.querySelector('[data-track]');
+ if(!list){track.innerHTML='<p class="trip-loading">Loading '+esc(tripPick)+'…</p>';return;}
+ const items=byType(sortItems(filterItems(blend(events,partners,Date.now(),list),{city:query,when:'any'})).filter(i=>!i.soldOut)).slice(0,16);
+ mountRail(section,items.map(i=>card(i)),`<a class="tcard host-tile" href="/?city=${encodeURIComponent(tripPick)}"><div><span class="label">${esc(tripPick)}</span><h3>See it all.</h3><p>Every gig, night out, family day and tour we have in ${esc(tripPick)}.</p><span class="head-link">Everything in ${esc(tripPick)} ↗</span></div></a>`);
+}
+
 function render(){
  const now=Date.now(),all=blend(events,partners,now,feed),place=placeOnly(),where=placeLabel();
  $('#db-summary').textContent=[state.category?discoveryCategories[state.category]:'Everything',where||'Anywhere',whenLabel()].filter(Boolean).join(' · ');
  $('#db-clear').hidden=!(state.country||state.city||state.category||state.when!=='any');
  renderBigFeature();
  renderNear(now);
+ if(!searching()&&!tripCache.has(tripPick||tripDefault()))loadTrip(tripPick||tripDefault());else if(!searching())renderTrip();
 
  // Search view: every live listing that matches.
  const isSearch=searching();
