@@ -3,7 +3,7 @@ import {escapeHtml as esc,money,safeUrl} from './shared.js';
 import {eventKind} from './event-content.js';
 import {approvedPartnerListings} from './partner-listings-model.js?v=20261121-city';
 import {discoveryCategories,blend,filterItems,sortItems,featureFor,readState,stateQuery} from './discovery-model.js?v=20261121-feed';
-import {sampleListings,homeRails} from './sample-listings.js?v=20261121';
+import {homeRails} from './sample-listings.js?v=20261121-real';
 import {selectFeaturedEvents} from './featured-selection.js';
 const $=s=>document.querySelector(s);
 const reduceMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -39,6 +39,7 @@ function commit(next,{scroll=false}={}){
  try{localStorage.setItem(KEY,JSON.stringify({country:state.country,city:state.city}));}catch{}
  history.replaceState(null,'',location.pathname+stateQuery(state)+location.hash);
  syncForm();render();
+ if(next.city!==undefined&&next.city!==feedCity)loadFeed().then(render);
  if(scroll)(searching()?$('#discover'):$('#rails')).scrollIntoView({behavior:reduceMotion()?'auto':'smooth'});
 }
 form.onsubmit=e=>{e.preventDefault();commit({country:country.value,city:city.value.trim(),when:when.value,category:category.value,range:{from:from.value,to:to.value}},{scroll:true});};
@@ -54,10 +55,12 @@ $('#db-clear').onclick=()=>commit({country:'',city:'',category:'',when:'any'});
 // Cards
 function image(item,eager=false){
  const src=safeUrl(item.image);
+ // Partner feeds only supply small square artwork: show it whole over a soft blurred fill.
+ if(src&&item.thumb)return `<div class="thumb-fill" style="background-image:url('${esc(src)}')"></div><img class="thumb-art" src="${esc(src)}" alt="" loading="lazy" width="200" height="200">`;
  return src?`<img src="${esc(src)}" alt="" ${eager?'fetchpriority="high"':'loading="lazy"'} width="800" height="600">`:`<div class="no-poster">${esc(discoveryCategories[item.category]||'Event')}</div>`;
 }
 function dateLine(item){
- if(!item.startsAt)return item.external||item.sample?'Choose your date':'';
+ if(!item.startsAt)return item.external?'Choose your date':'';
  try{return new Intl.DateTimeFormat('en-GB',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:item.timezone}).format(new Date(item.startsAt));}catch{return '';}
 }
 function priceLine(item){
@@ -68,10 +71,9 @@ function priceLine(item){
 const catLabel=item=>item.kind?eventKind(item.kind):discoveryCategories[item.category]||'Event';
 function card(item,{featured=false}={}){
  const place=[item.venue,item.city].filter(Boolean).join(' · ');
- const badges=`${item.sample?'<span class="badge badge-sample">SAMPLE</span>':''}${item.featured||featured&&!item.sample?'<span class="badge badge-featured">Featured</span>':''}`;
- const seller=item.sample?'<span class="seller seller-sample">Sample · not on sale</span>':item.external?`<span class="seller seller-partner">Sold by ${esc(item.seller)}</span>`:'<span class="seller seller-tb">Tickets by TicketBunker</span>';
+ const badges=`${item.featured||featured?'<span class="badge badge-featured">Featured</span>':''}`;
+ const seller=item.external?`<span class="seller seller-partner">Sold by ${esc(item.seller)}</span>`:'<span class="seller seller-tb">Tickets by TicketBunker</span>';
  const body=`<div class="card-media">${image(item)}<span class="card-cat">${esc(catLabel(item))}</span>${badges}</div><div class="card-body"><p class="card-date">${esc(dateLine(item))}</p><h3>${esc(item.title)}</h3><p class="card-place">${esc(place)}</p><div class="card-foot"><strong>${esc(priceLine(item))}</strong>${seller}</div></div>`;
- if(item.sample)return `<article class="tcard is-sample" aria-label="${esc(item.title)}, sample listing, not on sale">${body}</article>`;
  const ext=item.external?` target="_blank" rel="sponsored noopener noreferrer" aria-label="${esc(item.title)}: book with ${esc(item.seller)} (opens in a new tab)"`:'';
  return `<a class="tcard${item.soldOut?' is-soldout':''}" href="${esc(item.url)}"${ext}>${body}</a>`;
 }
@@ -97,18 +99,17 @@ function mountRail(section,items,extra=''){
 }
 
 const placeOnly=()=>({country:state.country,city:state.city,category:'',when:'any'});
-const samplesFor=filters=>filterItems(sampleListings,filters);
 
 // One large paid placement under the hero: a real featured event for this place,
-// otherwise a labelled sample that invites organisers to take the spot.
+// otherwise an advert for the placement itself (never a made-up event).
 function renderBigFeature(){
- const real=featureFor(events,placeOnly());
- const local=samplesFor(placeOnly());
- const showcase=['f3','f1','f2','f4','c4','c5','m3','c2','n2','t2','n3','m2'].map(id=>'sample:'+id);
- const pick=real||showcase.map(k=>local.find(s=>s.key===k)).find(Boolean)||local[0]||sampleListings.find(s=>s.key==='sample:f3');
- const isSample=!real,place=[pick.venue,pick.city].filter(Boolean).join(' · ');
- const action=isSample?'<a class="btn-solid" href="/featured">Feature your event here ↗</a>':`<a class="btn-solid" href="${esc(pick.url)}">Get tickets ↗</a>`;
- $('#big-feature-card').innerHTML=`<div class="bf-card${isSample?' is-sample':''}"><div class="bf-media">${image(pick)}<span class="badge badge-featured">Featured</span>${isSample?'<span class="badge badge-sample">SAMPLE</span>':''}</div><div class="bf-body"><span class="card-cat">${esc(catLabel(pick))}</span><p class="card-date">${esc(dateLine(pick))}</p><h3>${esc(pick.title)}</h3><p class="card-place">${esc(place)}</p><div class="bf-foot"><strong>${esc(priceLine(pick))}</strong>${isSample?'<span class="seller seller-sample">Sample · not on sale</span>':''}</div>${action}</div></div>`;
+ const pick=featureFor(events,placeOnly());
+ if(!pick){
+  $('#big-feature-card').innerHTML=`<a class="bf-card bf-ad" href="/featured"><div class="bf-media"><img src="/assets/festival.webp" alt="" loading="lazy" width="800" height="600"></div><div class="bf-body"><span class="card-cat">Featured placement</span><h3>Your event here.</h3><p class="card-place">Put your event in this spot, in the Featured rail and at the front of its category, in front of everyone browsing The Ticket Bunker.</p><span class="btn-solid">Feature your event ↗</span></div></a>`;
+  return;
+ }
+ const place=[pick.venue,pick.city].filter(Boolean).join(' · ');
+ $('#big-feature-card').innerHTML=`<div class="bf-card"><div class="bf-media">${image(pick)}<span class="badge badge-featured">Featured</span></div><div class="bf-body"><span class="card-cat">${esc(catLabel(pick))}</span><p class="card-date">${esc(dateLine(pick))}</p><h3>${esc(pick.title)}</h3><p class="card-place">${esc(place)}</p><div class="bf-foot"><strong>${esc(priceLine(pick))}</strong></div><a class="btn-solid" href="${esc(pick.url)}">Get tickets ↗</a></div></div>`;
 }
 
 // Hero slideshow: slow crossfade with a gentle zoom; pauses when hidden, on request or for reduced motion.
@@ -135,13 +136,13 @@ function render(){
  $('#db-clear').hidden=!(state.country||state.city||state.category||state.when!=='any');
  renderBigFeature();
 
- // Search view: real listings first, then matching samples (never counted as results).
+ // Search view: every live listing that matches.
  const isSearch=searching();
  $('#discover').hidden=!isSearch;$('#rails').hidden=isSearch;
  if(isSearch){
-  const real=sortItems(filterItems(all,state,now)),samples=samplesFor(state),open=real.filter(i=>!i.soldOut).length,list=[...real,...samples];
+  const list=sortItems(filterItems(all,state,now)),open=list.filter(i=>!i.soldOut).length;
   $('#results-heading').textContent=(state.category?discoveryCategories[state.category]:'What’s on')+(where?' in '+where:'')+(state.when!=='any'?' '+whenLabel():'')+'.';
-  $('#event-count').textContent=[real.length?`${open} on sale`:'No live listings yet',samples.length?`${samples.length} sample${samples.length===1?'':'s'}`:''].filter(Boolean).join(' · ');
+  $('#event-count').textContent=list.length?`${open} on sale`:'No live listings yet';
   $('#results-grid').innerHTML=list.slice(0,limit).map(i=>card(i)).join('');
   $('#results-more').hidden=list.length<=limit;
   const widen=[state.city&&state.country&&[{city:''},'All of '+countryName(state.country)],state.when!=='any'&&[{when:'any'},'Any date'],state.category&&[{category:''},'Everything'],[{country:'',city:''},'Everywhere']].filter(Boolean);
@@ -151,11 +152,9 @@ function render(){
  }
 
  // Rails view
- let samplesShown=0;
  const featuredHere=filterItems(selectFeaturedEvents(events,{now}).map(e=>blend([e],[],now)[0]).filter(Boolean),place,now);
- const featuredSamples=featuredHere.length>=4?[]:['b1','c1','f1','n2','e2','m2'].map(id=>sampleListings.find(s=>s.key==='sample:'+id)).filter(s=>filterItems([s],place).length).slice(0,6-featuredHere.length);
- samplesShown+=featuredSamples.length;
- mountRail($('#rail-featured'),[...featuredHere.map(i=>card(i,{featured:true})),...featuredSamples.map(i=>card(i))],hostTile());
+ $('#rail-featured').hidden=!featuredHere.length;
+ if(featuredHere.length)mountRail($('#rail-featured'),featuredHere.map(i=>card(i,{featured:true})),hostTile());
  $('#featured-heading').textContent='Featured'+(where?' in '+where:' this week')+'.';
 
  const host=$('#category-rails');
@@ -165,21 +164,17 @@ function render(){
  }
  for(const [k] of homeRails){
   const section=document.getElementById('rail-'+k);
-  // Featured events lead their category rail; samples only fill a thin rail.
   // Paid features first, then our own events, then partner feeds; long rails are capped.
   const real=sortItems(filterItems(all,{...place,category:k},now)).sort((a,b)=>Number(b.featured)-Number(a.featured)||Number(b.source==='ticketbunker')-Number(a.source==='ticketbunker')).slice(0,24);
-  const samples=real.length>=6?[]:samplesFor({...place,category:k}).slice(0,8-real.length);
-  samplesShown+=samples.length;
-  section.hidden=!real.length&&!samples.length;
-  if(!section.hidden)mountRail(section,[...real.map(i=>card(i)),...samples.map(i=>card(i))]);
+  section.hidden=!real.length;
+  if(real.length)mountRail(section,real.map(i=>card(i)));
  }
  const weekend=sortItems(filterItems(all,{...place,when:'weekend'},now)).filter(i=>!i.soldOut).slice(0,24);
  $('#rail-weekend').hidden=!weekend.length;
  if(weekend.length)mountRail($('#rail-weekend'),weekend.map(i=>card(i)));
- $('#sample-note').hidden=!samplesShown;
 
  $('#show-more').onclick=()=>{limit+=12;render();};
- const cities=[...new Set([...all,...sampleListings].filter(i=>!state.country||i.countryCode===state.country).map(i=>i.city).filter(Boolean))].sort();
+ const cities=[...new Set(all.filter(i=>!state.country||i.countryCode===state.country).map(i=>i.city).filter(Boolean))].sort();
  $('#ds-cities').replaceChildren(...[...(state.country==='PT'||!state.country?['Algarve']:[]),...cities].map(c=>opt(c,c)));
 }
 
@@ -189,8 +184,11 @@ document.querySelectorAll('[data-place]').forEach(a=>a.onclick=e=>{e.preventDefa
 async function loadPartners(){
  try{const r=await fetch('/partner-listings-config.json',{cache:'no-store',signal:AbortSignal.timeout(10000)});if(r.ok)partners=approvedPartnerListings(await r.json());}catch{partners=[];}
 }
+// Partner feed listings for the chosen town (or the soonest nationwide when none is set).
+let feedCity=null;
 async function loadFeed(){
- try{const r=await fetch('/api/partner-feed',{signal:AbortSignal.timeout(15000)});if(r.ok){const d=await r.json();feed=Array.isArray(d.events)?d.events:[];}}catch{feed=[];}
+ const want=state.city;feedCity=want;
+ try{const r=await fetch('/api/partner-feed'+(want?'?city='+encodeURIComponent(want):''),{signal:AbortSignal.timeout(45000)});if(r.ok&&feedCity===want){const d=await r.json();feed=Array.isArray(d.events)?d.events:[];}}catch{if(feedCity===want)feed=[];}
 }
 async function load(){
  try{const response=await getPublicEvents();events=Array.isArray(response.events)?response.events:[];loadError=false;}catch{loadError=true;}

@@ -1,65 +1,69 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {skiddleItem, skiddlePrice, loadSkiddle, SKIDDLE_PLACES} from '../api/partner-feed.js';
+import {parseSkiddleFeed, pickListings, loadSkiddle} from '../api/partner-feed.js';
 import {feedItem, blend, filterItems} from '../discovery-model.js';
 
 const now = Date.parse('2026-11-21T12:00:00Z');
-const raw = (over = {}) => ({id: '41234', EventCode: 'CLUB', eventname: 'Warehouse Project', link: 'https://www.skiddle.com/whats-on/Manchester/Depot/Warehouse-Project/41234/',
-  startdate: '2026-11-28T22:00:00+00:00', enddate: '2026-11-29T04:00:00+00:00', entryprice: '£25.50', tickets: true,
-  largeimageurl: 'https://d31fr2pwly4c4s.cloudfront.net/a/b.jpg', venue: {name: 'Depot Mayfield', town: 'Manchester'}, ...over});
+const ticket = (code, face, fee = '1.00') => `<ticket id="1"><name><![CDATA[GA]]></name><faceValue>${face}</faceValue><bookingFee>${fee}</bookingFee><status statuscode="${code}">x</status></ticket>`;
+const event = ({id = '41234', code = 'CLUB', date = '2026-11-28', doors = '22:00', cancelled = '0', town = 'Manchester', tickets = [ticket(1, '20.00', '2.50'), ticket(1, '15.00'), ticket(100, '5.00')], link} = {}) =>
+  `<event id="${id}" link="${link || `https://www.skiddle.com/whats-on/Manchester/Depot/Warehouse/${id}/?sktag=XXX`}"><name><![CDATA[Warehouse &amp; Friends]]></name><date>${date}</date><eventcode>${code}</eventcode>` +
+  `<doorsopen>${doors}</doorsopen><cancelled>${cancelled}</cancelled><image>https://d31fr2pwly4c4s.cloudfront.net/a/b/c/1_x_th.jpg</image>` +
+  `<venue id="9"><name><![CDATA[Depot Mayfield,]]></name><address>Baring St</address><town>${town}</town></venue><tickets>${tickets.join('')}</tickets></event>`;
+const feed = (...events) => `<?xml version="1.0"?><affiliatefeed><events>${events.join('')}</events></affiliatefeed>`;
 
-test('Skiddle events become tracked, dated partner listings', () => {
-  const item = skiddleItem(raw(), {affiliateId: '12345', now});
+test('Skiddle feed events become tracked, dated listings at the cheapest on-sale price', () => {
+  const [item] = parseSkiddleFeed(feed(event()), {affiliateId: '15993', now});
+  assert.equal(item.title, 'Warehouse & Friends');
   assert.equal(item.category, 'club');
-  assert.equal(item.city, 'Manchester');
-  assert.equal(item.priceCents, 2550);
+  assert.equal(item.venue, 'Depot Mayfield');
+  assert.equal(item.priceCents, 1600, 'sold-out tickets are ignored; booking fee included');
+  assert.equal(item.startsAt, '2026-11-28T22:00:00.000Z');
+  assert.equal(new URL(item.url).searchParams.get('sktag'), '15993');
+  assert.equal(item.image, 'https://d31fr2pwly4c4s.cloudfront.net/a/b/c/1_x.jpg');
   assert.equal(item.seller, 'Skiddle');
-  assert.equal(new URL(item.url).searchParams.get('sktag'), '12345');
-  assert.equal(item.image, 'https://d31fr2pwly4c4s.cloudfront.net/a/b.jpg');
 });
 
-test('untracked, past, off-category or off-site Skiddle results are dropped', () => {
-  assert.equal(skiddleItem(raw(), {affiliateId: '', now}), null);
-  assert.equal(skiddleItem(raw({startdate: '2026-11-01T20:00:00Z'}), {affiliateId: '1', now}), null);
-  assert.equal(skiddleItem(raw({EventCode: 'SPORT'}), {affiliateId: '1', now}), null);
-  assert.equal(skiddleItem(raw({link: 'http://www.skiddle.com/x/'}), {affiliateId: '1', now}), null);
-  assert.equal(skiddleItem(raw({link: 'https://evil.example/x/'}), {affiliateId: '1', now}), null);
-  assert.equal(skiddleItem(raw({tickets: false}), {affiliateId: '1', now}), null);
-  assert.equal(skiddleItem(raw({largeimageurl: 'https://evil.example/a.jpg', imageurl: ''}), {affiliateId: '1', now}).image, '');
+test('summer dates convert from UK time and Ibiza listings are Spanish', () => {
+  const [uk] = parseSkiddleFeed(feed(event({date: '2027-04-10', doors: '21:00'})), {affiliateId: '1', now});
+  assert.equal(uk.startsAt, '2027-04-10T20:00:00.000Z');
+  const [ibiza] = parseSkiddleFeed(feed(event({town: 'Ibiza', date: '2027-04-10', doors: '23:00'})), {affiliateId: '1', now});
+  assert.equal(ibiza.countryCode, 'ES');
+  assert.equal(ibiza.startsAt, '2027-04-10T21:00:00.000Z');
 });
 
-test('prices parse or stay unknown', () => {
-  assert.equal(skiddlePrice('£10.00'), 1000);
-  assert.equal(skiddlePrice('1,250'), 125000);
-  assert.equal(skiddlePrice('Free entry'), null);
-  assert.equal(skiddlePrice(''), null);
+test('cancelled, past, far-off, sold-out, off-category or off-site events are dropped', () => {
+  const drop = e => assert.equal(parseSkiddleFeed(feed(e), {affiliateId: '1', now}).length, 0);
+  drop(event({cancelled: '1'}));
+  drop(event({date: '2026-11-01'}));
+  drop(event({date: '2100-01-01'}));
+  drop(event({tickets: [ticket(100, '10.00'), ticket(300, '8.00')]}));
+  drop(event({code: 'SPORT'}));
+  drop(event({link: 'https://evil.example/x/?sktag=XXX'}));
+  assert.equal(parseSkiddleFeed(feed(event()), {affiliateId: '', now}).length, 0);
 });
 
-test('the feed stays off until both the API key and affiliate ID are set', async () => {
-  let calls = 0;
-  const fetcher = async () => { calls++; return {ok: true, json: async () => ({error: 0, results: [raw()]})}; };
-  assert.deepEqual(await loadSkiddle({SKIDDLE_API_KEY: 'k'}, {fetcher, now}), []);
-  assert.deepEqual(await loadSkiddle({SKIDDLE_AFFILIATE_ID: '1'}, {fetcher, now}), []);
-  assert.equal(calls, 0);
-  const items = await loadSkiddle({SKIDDLE_API_KEY: 'k', SKIDDLE_AFFILIATE_ID: '1'}, {fetcher, now});
-  assert.equal(calls, SKIDDLE_PLACES.length);
-  assert.equal(items.length, 1, 'duplicates across cities are merged');
+test('listings are capped per category and can be narrowed to a town', () => {
+  const many = Array.from({length: 30}, (_, i) => event({id: String(i), town: i % 2 ? 'Leeds' : 'Manchester'}));
+  const items = parseSkiddleFeed(feed(...many), {affiliateId: '1', now});
+  assert.equal(pickListings(items).length, 4, 'national picks take at most two per town');
+  assert.equal(pickListings(items, {city: 'manchester'}).length, 15);
+  assert.ok(pickListings(items, {city: 'leeds'}).every(i => i.city === 'Leeds'));
+  assert.equal(pickListings(items, {country: 'ES'}).length, 0);
 });
 
-test('one failing city does not empty the feed', async () => {
-  let n = 0;
-  const fetcher = async () => { const id = String(n++); return id === '0' ? {ok: false, status: 500} : {ok: true, json: async () => ({error: 0, results: [raw({id})]})}; };
-  const items = await loadSkiddle({SKIDDLE_API_KEY: 'k', SKIDDLE_AFFILIATE_ID: '1'}, {fetcher, now});
-  assert.equal(items.length, SKIDDLE_PLACES.length - 1);
+test('the feed can be switched off and reports provider failures', async () => {
+  const ok = async () => ({ok: true, text: async () => feed(event())});
+  assert.deepEqual(await loadSkiddle({SKIDDLE_FEED_OFF: '1'}, {fetcher: ok, now}), []);
+  assert.equal((await loadSkiddle({}, {fetcher: ok, now})).length, 1);
+  await assert.rejects(loadSkiddle({}, {fetcher: async () => ({ok: false, status: 503}), now}));
 });
 
 test('feed listings blend in as external, filterable homepage items', () => {
-  const f = skiddleItem(raw(), {affiliateId: '1', now});
+  const [f] = parseSkiddleFeed(feed(event()), {affiliateId: '1', now});
   const items = blend([], [], now, [f, {...f, id: 'bad', url: 'javascript:alert(1)'}]);
   assert.equal(items.length, 1);
   assert.equal(items[0].external, true);
-  assert.equal(items[0].seller, 'Skiddle');
+  assert.equal(items[0].thumb, true);
   assert.equal(filterItems(items, {country: 'GB', city: 'manchester', category: 'club'}, now).length, 1);
-  assert.equal(filterItems(items, {country: 'PT'}, now).length, 0);
   assert.equal(feedItem({...f, category: 'nonsense'}, now), null);
 });

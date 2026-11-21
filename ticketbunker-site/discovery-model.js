@@ -91,7 +91,7 @@ export function feedItem(f, now = Date.now()) {
     key: 'feed:' + f.id, source: f.provider, title: f.title, category: f.category, kind: '',
     city: f.city || '', venue: f.venue || '', countryCode: f.countryCode || '', startsAt: f.startsAt, endsAt: f.endsAt || '',
     timezone: f.timezone || 'Europe/London', priceCents: Number.isInteger(f.priceCents) ? f.priceCents : null,
-    currency: f.currency || '', soldOut: false, featured: false, image: f.image || '', organiser: '',
+    currency: f.currency || '', soldOut: false, featured: false, image: f.image || '', thumb: f.thumb === true, organiser: '',
     url: f.url, seller: f.seller, external: true, bookable: true
   };
 }
