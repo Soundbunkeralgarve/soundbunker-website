@@ -23,7 +23,8 @@
       "memory": 1024,
       "regions": [
         "dub1"
-      ]
+      ],
+      "includeFiles": "partner-data/**"
     },
     "api/city-page.js": {
       "maxDuration": 20,
