@@ -45,6 +45,8 @@ export function skiddleEvent(id, link, body, {affiliateId, now = Date.now()} = {
   const url = httpsUrl(link, SKIDDLE_HOSTS);
   if (!category || !title || !url || !affiliateId || tag(body, 'cancelled') !== '0' || !/^\d{4}-\d{2}-\d{2}$/.test(day)) return null;
   const venueXml = (body.match(/<venue[^>]*>([\s\S]*?)<\/venue>/) || [])[1] || '';
+  // Skiddle's own test venue lists placeholder events ("KJHUBUBUK…"); never show them.
+  if (/^the skiddle basement,?$/i.test(tag(venueXml, 'name'))) return null;
   const city = tag(venueXml, 'town') || tag(venueXml, 'city');
   const spain = SPAIN.test(city + ' ' + tag(venueXml, 'address'));
   const zone = spain ? 'Europe/Madrid' : 'Europe/London';

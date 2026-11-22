@@ -1,0 +1,72 @@
+{
+  "expo": {
+    "name": "theticketbunker",
+    "slug": "theticketbunker",
+    "scheme": "theticketbunker",
+    "version": "1.0.0",
+    "orientation": "default",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#080e12",
+    "icon": "./assets/icon.png",
+    "ios": {
+      "bundleIdentifier": "pt.soundbunker.theticketbunker",
+      "supportsTablet": true,
+      "buildNumber": "1",
+      "associatedDomains": [],
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "theticketbunker uses your location on this phone to find events near you and rough travel times to the venue. It is never sent to us.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "pt.soundbunker.theticketbunker",
+      "versionCode": 1,
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ],
+      "blockedPermissions": [
+        "android.permission.ACCESS_BACKGROUND_LOCATION"
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#080e12"
+      },
+      "allowBackup": false
+    },
+    "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/brand-icon.png",
+          "imageWidth": 160,
+          "backgroundColor": "#080e12"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "theticketbunker uses your location on this phone to find events near you and rough travel times to the venue. It is never sent to us.",
+          "isAndroidBackgroundLocationEnabled": false,
+          "isIosBackgroundLocationEnabled": false
+        }
+      ],
+      "expo-secure-store",
+      "expo-web-browser",
+      "expo-font",
+      "expo-image",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "enableSceneSupport": true
+          }
+        }
+      ]
+    ],
+    "extra": {
+      "siteBase": "https://theticketbunker.com"
+    },
+    "owner": "soundbunker"
+  }
+}
