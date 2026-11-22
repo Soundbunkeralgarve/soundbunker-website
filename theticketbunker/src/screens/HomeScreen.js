@@ -11,7 +11,7 @@ import {locate} from '../state.js';
 const POPULAR = ['london', 'manchester', 'glasgow', 'dublin', 'algarve', 'lisbon', 'barcelona', 'ibiza', 'paris', 'amsterdam', 'berlin', 'bristol'];
 
 export default function HomeScreen({navigation}) {
-  const insets = useSafeAreaInsets(), {width} = useWindowDimensions(), wide = width >= WIDE;
+  const insets = useSafeAreaInsets(), {width, height} = useWindowDimensions(), wide = width >= WIDE, short = height < 760;
   const [place, setPlace] = useState(''), [when, setWhen] = useState('any'), [category, setCategory] = useState('');
   const [soon, setSoon] = useState(null), [count, setCount] = useState(0), [finding, setFinding] = useState(false);
 
@@ -28,10 +28,10 @@ export default function HomeScreen({navigation}) {
   }
 
   return <View style={s.screen}><ScrollView style={s.screen} contentContainerStyle={{paddingBottom: 40}} keyboardShouldPersistTaps="handled">
-    <ImageBackground source={require('../../assets/club.jpg')} style={[h.hero, {paddingTop: insets.top + 28}]} imageStyle={{opacity: 0.45}}>
+    <ImageBackground source={require('../../assets/club.jpg')} style={[h.hero, {paddingTop: insets.top + (short ? 12 : 28)}]} imageStyle={{opacity: 0.45}}>
       <View style={[h.heroInner, wide && {maxWidth: 760}]}>
         <Text style={s.eyebrow}>{count ? count.toLocaleString('en-GB') + ' events on sale' : 'Tickets on sale now'} · Algarve to Berlin</Text>
-        <Text style={[s.h1, h.title, wide && {fontSize: 72, lineHeight: 72}]}>Book it.{'\n'}<Text style={{color: C.teal}}>Head out.</Text></Text>
+        <Text style={[s.h1, h.title, wide && !short && {fontSize: 72, lineHeight: 72}]}>Book it.{'\n'}<Text style={{color: C.teal}}>Head out.</Text></Text>
         <Text style={h.tagline}>Your night out, sorted.</Text>
         <TextInput style={[s.input, {marginTop: 18}]} placeholder="Where? Town, city or region" placeholderTextColor={C.muted} value={place} onChangeText={setPlace}
           returnKeyType="search" onSubmitEditing={go} autoCorrect={false} accessibilityLabel="Where"/>

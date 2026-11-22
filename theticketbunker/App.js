@@ -29,7 +29,7 @@ function Tabs() {
     <Tab.Screen name="Discover" component={HomeScreen} options={{tabBarIcon: icon('⌂')}}/>
     <Tab.Screen name="Places" component={PlacesScreen} options={{tabBarIcon: icon('◎')}}/>
     <Tab.Screen name="Trip" component={TripScreen} options={{title: 'My trip', tabBarIcon: icon('☆'), tabBarBadge: trip.length || undefined, tabBarBadgeStyle: {backgroundColor: C.teal, color: C.tealInk}}}/>
-    <Tab.Screen name="Tickets" component={TicketsScreen} options={{title: 'My tickets', tabBarIcon: icon('▤')}}/>
+    <Tab.Screen name="Tickets" component={TicketsScreen} options={{title: 'Tickets', tabBarIcon: icon('▤')}}/>
   </Tab.Navigator>;
 }
 const EventScreen = ({route, navigation}) => <EventDetail item={route.params.item} onOpenTrip={() => navigation.navigate('Tabs', {screen: 'Trip'})}/>;
