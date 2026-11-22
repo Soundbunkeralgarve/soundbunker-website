@@ -54,18 +54,19 @@ test('webhook signatures support key rotation and reject stale or malformed sign
  assert.equal(verifyStripeSignature(raw,'t='+t+',v1='+sig+',v1='+'0'.repeat(64),secret),true);
  assert.equal(verifyStripeSignature(raw,'t='+(t-900)+',v1='+sig,secret),false);assert.equal(verifyStripeSignature(raw,'t=invalid,v1='+sig,secret),false);
 });
-async function checkoutFixture({ready=true,recipient=true,paid=true}={}){
+async function checkoutFixture({ready=true,recipient=true,paid=true,presale=null,vip=false,signedIn=false}={}){
  const id='11111111-1111-4111-8111-111111111111',tier='22222222-2222-4222-8222-222222222222',event='33333333-3333-4333-8333-333333333333',calls=[];
  const order={id,event_id:event,tier_id:tier,currency:'eur',quantity:2,total_cents:5000};
- const data={sb_event_tiers:{id:tier,event_id:event,name:'General'},sb_events:{id:event,slug:'synthetic-show',title:'Synthetic show',status:'published',currency:'eur',organiser_profile_id:'org',starts_at:'2099-01-01'},sb_event_organisers:{id:'org',status:'approved',stripe_account_id:'acct_Recipient',stripe_capabilities_ready:true,tax_review_complete:true},sb_event_listing_fees:paid?[{id:'listing'}]:[],sb_event_charity_claims:[],sb_event_orders:{id}};
- const db={from(table){const q={select(){return q},eq(){return q},limit(){return q},update(){return q},single:async()=>({data:data[table]}),maybeSingle:async()=>({data:data[table]}),then(resolve){return Promise.resolve({data:data[table]}).then(resolve)}};return q;},rpc:async()=>({data:order})};
+ const data={sb_event_tiers:{id:tier,event_id:event,name:'General'},sb_events:{id:event,slug:'synthetic-show',title:'Synthetic show',status:'published',currency:'eur',organiser_profile_id:'org',starts_at:'2099-01-01',vip_presale_until:presale},sb_event_organisers:{id:'org',status:'approved',stripe_account_id:'acct_Recipient',stripe_capabilities_ready:true,tax_review_complete:true},sb_event_listing_fees:paid?[{id:'listing'}]:[],sb_event_charity_claims:[],sb_event_orders:{id}};
+ const db={from(table){const q={select(){return q},eq(){return q},limit(){return q},update(){return q},single:async()=>({data:data[table]}),maybeSingle:async()=>({data:data[table]}),then(resolve){return Promise.resolve({data:data[table]}).then(resolve)}};return q;},rpc:async name=>name==='tb_is_vip'?{data:vip}:({data:order})};
  const context=vm.createContext({process:{env:{}},console,URL,URLSearchParams,Date,Number,encodeURIComponent});
  const exports={
  './lib/ticketbunker-owner.js':{clientControl:async()=>null,activeClientDiscount:()=>0},
  './lib/http.js':{json:(r,d,status=200)=>({data:d,status}),parseJson:async r=>r.body,safeText:(v,n)=>String(v||'').slice(0,n),validEmail:v=>v.includes('@')},
  './lib/events.js':{eventsDatabase:()=>db},
  './lib/ticketbunker-stripe.js':{ticketBunkerStripe:async(path,options)=>{calls.push({path,...options});return {livemode:true,id:'cs_live_synthetic',url:'https://checkout.stripe.com/synthetic'}},ticketBunkerPaymentsEnabled:()=>true,ticketBunkerPlatformReadiness:async()=>({ready}),ticketBunkerOrigin:'https://theticketbunker.com'},
- './organiser-connect.js':{fetchConnectStatus:async()=>({ready:recipient})}
+ './organiser-connect.js':{fetchConnectStatus:async()=>({ready:recipient})},
+ './lib/supabase-auth.js':{optionalUser:async()=>signedIn?{id:'vip-user'}:null}
  };
  const m=new vm.SourceTextModule(await readFile(new URL('../api/event-checkout.js',import.meta.url),'utf8'),{context});await m.link(spec=>{const values=exports[spec];return new vm.SyntheticModule(Object.keys(values),function(){for(const [k,v]of Object.entries(values))this.setExport(k,v)},{context})});await m.evaluate();
  return {calls,run:()=>m.namespace.default({method:'POST',body:{tier,requestId:id,quantity:2,name:'Synthetic guest',email:'guest@example.invalid',acceptTerms:true}},{})};
@@ -116,3 +117,10 @@ test('account updates use fresh verification rather than trusting event claims',
   const f=await webhookFixture({payoutFails:true});const e={id:'evt_retry',livemode:true,account:'acct_Synthetic',type:'payout.paid',data:{object:{id:'po_synthetic',status:'paid'}}};
   assert.equal((await f.run(e)).status,500);assert.equal(f.calls.length,1);assert.equal((await f.run(e)).status,500);assert.equal(f.calls.length,2);
  });
+
+test('during VIP early access only a signed-in VIP member can open checkout',async()=>{
+ const soon='2098-12-01T00:00:00Z';
+ for(const opts of [{presale:soon},{presale:soon,signedIn:true}]){const f=await checkoutFixture(opts);const r=await f.run();assert.equal(r.status,403);assert.equal(r.data.vipOnly,true);assert.equal(f.calls.length,0,'Stripe is never contacted');}
+ const member=await checkoutFixture({presale:soon,signedIn:true,vip:true});assert.equal((await member.run()).status,200);
+ const over=await checkoutFixture({presale:'2001-01-01T00:00:00Z'});assert.equal((await over.run()).status,200,'after early access anyone can book');
+});

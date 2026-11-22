@@ -26,7 +26,7 @@ export default async function handler(req,res){
    const organisation=await organiserForUser(db,ctx.user.id);
    if(req.method==='GET') {
      if(!organisation)return json(res,{organiser:null,events:[]});
-     const ev=await db.from('sb_events').select('id,slug,title,description,venue,starts_at,ends_at,status,country_code,currency,venue_timezone,event_kind,image_url,event_logo_url,headline_artist,venue_city,publish_requested_at,public_beta_test,beta_test_expires_at,created_at,internal_free_test,test_expires_at,postponements:tb_event_postponements(id,applied_at,published_at)')
+     const ev=await db.from('sb_events').select('id,slug,title,description,venue,starts_at,ends_at,vip_presale_until,status,country_code,currency,venue_timezone,event_kind,image_url,event_logo_url,headline_artist,venue_city,publish_requested_at,public_beta_test,beta_test_expires_at,created_at,internal_free_test,test_expires_at,postponements:tb_event_postponements(id,applied_at,published_at)')
        .eq('organiser_profile_id',organisation.id).order('starts_at',{ascending:false}).limit(200);
      if(ev.error)throw ev.error;
      const ids=ev.data.map(v=>v.id);
@@ -97,10 +97,15 @@ export default async function handler(req,res){
      try{endInstant=localEventInstant(endsAt,place.timezone)}catch(error){return json(res,{error:error.message,field:'endsAt'},400);}
      if(Date.parse(startInstant)<=Date.now())return json(res,{error:'Choose an event start in the future.',field:'startsAt'},400);
      if(Date.parse(endInstant)<=Date.parse(startInstant))return json(res,{error:'Set a finish time after the start time.',field:'endsAt'},400);
+     let vipUntil=null;
+     if(String(body.vipEarlyAccessUntil||'')){
+      try{vipUntil=localEventInstant(String(body.vipEarlyAccessUntil),place.timezone)}catch(error){return json(res,{error:error.message,field:'vipEarlyAccessUntil'},400);}
+      if(Date.parse(vipUntil)<=Date.now()||Date.parse(vipUntil)>=Date.parse(startInstant))return json(res,{error:'VIP early access must end in the future and before the event starts.',field:'vipEarlyAccessUntil'},400);
+     }
      const details={
        title,venue,organiser:organisation.display_name,organiser_profile_id:organisation.id,
        country_code:organisation.country_code,currency:place.currency,venue_timezone:place.timezone,
-       starts_at:startInstant,ends_at:endInstant,
+       starts_at:startInstant,ends_at:endInstant,vip_presale_until:vipUntil,
        event_logo_url:organisation.logo_url||null,
        event_kind:category,description,headline_artist:safeText(body.headlineArtist,120),venue_city:safeText(body.venueCity,120),
        image_url:/^https:\/\/[^\s]+$/i.test(body.imageUrl||'')?safeText(body.imageUrl,900):null,

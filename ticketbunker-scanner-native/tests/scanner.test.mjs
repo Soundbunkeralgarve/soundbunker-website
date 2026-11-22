@@ -8,3 +8,11 @@ test('accepts the TicketBunker signed QR without replacing its identity',()=>{as
 test('rejects forged, HTTP, off-domain and malformed ticket URLs',()=>{for(const url of ['http://'+valid.slice(8),valid.replace('theticketbunker.com','evil.example.com'),valid.replace('sig='+sig,'sig=wrong'),'hello',valid.replace('/event-ticket','/refund')])assert.throws(()=>ticketUrl(url));});
 test('accepts only signed scanner invite tokens on trusted domains',()=>{const token='b'.repeat(64);assert.equal(inviteToken('https://www.soundbunker.pt/event-scanner?invite='+token),token);assert.equal(inviteToken(token),token);assert.equal(inviteToken('https://evil.example.com/event-scanner?invite='+token),null);});
 test('test tickets cannot be presented as real admission',()=>{assert.equal(admissionResult({status:'valid',test:true}).kind,'warning');assert.equal(admissionResult({status:'valid',test:false}).kind,'approved');assert.equal(admissionResult({status:'used'}).heading,'ALREADY SCANNED');assert.equal(admissionResult({status:'wrong_event'}).kind,'rejected');});
+
+test('a VIP ticket holder shows VIP on the approval; others are unchanged', async () => {
+  const {admissionResult} = await import('../lib/scanLogic.js');
+  const vip = admissionResult({status:'valid',vip:true,event:'Club night',tier:'General'});
+  assert.equal(vip.kind,'approved');assert.equal(vip.heading,'VIP · ENTRY APPROVED');assert.match(vip.detail,/priority lane/);
+  assert.equal(admissionResult({status:'valid',event:'Club night'}).heading,'ENTRY APPROVED');
+  assert.equal(admissionResult({status:'used',vip:true}).heading,'ALREADY SCANNED');
+});
