@@ -33,7 +33,7 @@ test('ticket types: only priced rows, 1.00–100,000.00, whole quantities up to 
 });
 
 test('publishing needs tickets, a ready Stripe account and a paid or waived listing fee', () => {
-  const ready = {ticketSalesEnabled: true}, draft = {currency: 'eur', tiers: [{quantity_total: 80}, {quantity_total: 20}]};
+  const ready = {ticketSalesEnabled: true}, draft = {currency: 'eur', starts_at: '2026-12-05T20:00:00Z', tiers: [{quantity_total: 80}, {quantity_total: 20}]};
   let st = publishState(draft, {}, ready, NOW);
   assert.equal(st.capacity, 100); assert.equal(st.plan, 'starter'); assert.equal(st.amountCents, 4900);
   assert.equal(st.canPublish, false); assert.match(st.blocker, /listing fee/); assert.equal(st.needsPayment, true);
@@ -42,9 +42,11 @@ test('publishing needs tickets, a ready Stripe account and a paid or waived list
   assert.equal(publishState(draft, {listingOffer: {listing_discount_percent: 50, valid_until: '2027-01-01'}}, ready, NOW).amountCents, 2450);
   assert.equal(publishState(draft, {listingOffer: {listing_discount_percent: 50, valid_until: '2026-01-01'}}, ready, NOW).amountCents, 4900);
   assert.match(publishState(draft, {}, {ready: false}, NOW).blocker, /Stripe verification/);
-  assert.match(publishState({tiers: []}, {}, ready, NOW).blocker, /priced ticket/);
-  assert.match(publishState({tiers: [{quantity_total: 2500}]}, {}, ready, NOW).blocker, /2,000/);
-  assert.equal(publishState({tiers: [{quantity_total: 40}]}, {country_code: 'GB'}, ready, NOW).currency, 'gbp');
+  assert.match(publishState({starts_at: '2027-01-01', tiers: []}, {}, ready, NOW).blocker, /priced ticket/);
+  assert.match(publishState({starts_at: '2027-01-01', tiers: [{quantity_total: 2500}]}, {}, ready, NOW).blocker, /2,000/);
+  assert.equal(publishState({starts_at: '2027-01-01', tiers: [{quantity_total: 40}]}, {country_code: 'GB'}, ready, NOW).currency, 'gbp');
+  const old = publishState({...draft, starts_at: '2026-10-31T20:00:00Z'}, {}, ready, NOW);
+  assert.match(old.blocker, /date has passed/); assert.equal(old.needsPayment, false); assert.equal(old.canPublish, false);
   const bundle = publishState(draft, {bundles: [{currency: 'eur', plan: 'club', events_used: 1, event_count: 5}]}, ready, NOW);
   assert.equal(bundle.prepaid.plan, 'club');
 });

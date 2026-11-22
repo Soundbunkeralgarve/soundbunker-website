@@ -12,6 +12,8 @@ import {KINDS, eventInput, localStamp, stampDate} from '../../lib/organiser.js';
 
 const MAX_POSTER = 2000000;
 const toStamp = iso => { const d = iso ? new Date(iso) : null; return d && !isNaN(d) ? localStamp(d) : ''; };
+// A new date field opens on the same weekday next week at 20:00; the end defaults to five hours later.
+const suggested = () => { const d = new Date(Date.now() + 7 * 864e5); d.setHours(20, 0, 0, 0); return d; };
 const nice = st => { const d = stampDate(st); return d ? d.toLocaleString('en-GB', {weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'}) : 'Choose…'; };
 
 // Step 1 of creating an event (or editing a draft): details and poster. The draft stays
@@ -60,10 +62,14 @@ export default function EventFormScreen({route, navigation}) {
   }
   const dateRow = (which, label) => <View style={{gap: 6, flex: 1}}>
     <Text style={[s.body, {fontSize: 15, color: C.muted}]}>{label}</Text>
-    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={() => setPicker(picker === which ? '' : which)} style={[s.input, {justifyContent: 'center'}, error[which] && {borderColor: C.bad}]}>
+    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={() => {
+      if (picker === which) { setPicker(''); return; }
+      if (!form[which]) pickDate(which, which === 'endsAt' && stampDate(form.startsAt) ? new Date(stampDate(form.startsAt).getTime() + 5 * 3600000) : suggested());
+      setPicker(which);
+    }} style={[s.input, {justifyContent: 'center'}, error[which] && {borderColor: C.bad}]}>
       <Text style={[s.body, !form[which] && {color: C.muted}]}>{nice(form[which])}</Text>
     </Pressable>
-    {picker === which ? <DateTimePicker value={stampDate(form[which]) || new Date(Date.now() + 7 * 864e5)} mode={Platform.OS === 'ios' ? 'datetime' : 'date'}
+    {picker === which ? <DateTimePicker value={stampDate(form[which]) || suggested()} mode={Platform.OS === 'ios' ? 'datetime' : 'date'}
       display={Platform.OS === 'ios' ? 'inline' : 'default'} themeVariant="dark" accentColor={C.teal} minimumDate={new Date()}
       onChange={(e, v) => { if (Platform.OS === 'android' && v && e.type === 'set') { const base = v; setPicker(''); DateTimePickerAndroidTime(base, t => pickDate(which, t)); } else if (Platform.OS === 'ios') pickDate(which, v); else setPicker(''); }}/> : null}
     {error[which] ? <Text style={[s.muted, {color: C.bad}]}>{error[which]}</Text> : null}

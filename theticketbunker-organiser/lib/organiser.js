@@ -91,13 +91,15 @@ export function publishState(event, profile, connect, now = Date.now()) {
   const amountCents = base - Math.round(base * rate / 100);
   const prepaid = (profile?.bundles || []).find(b => b.currency === currency && planOrder.indexOf(b.plan) >= planOrder.indexOf(plan) && b.events_used < b.event_count);
   const accountReady = connect?.ticketSalesEnabled === true;
+  const past = Date.parse(event?.starts_at) <= now;
   let blocker = '';
-  if (!capacity) blocker = 'Add a priced ticket type to continue.';
+  if (past) blocker = 'This event’s date has passed. Edit the details and set a new date before publishing.';
+  else if (!capacity) blocker = 'Add a priced ticket type to continue.';
   else if (capacity > largeEventThreshold) blocker = 'Events above 2,000 tickets need an agreed larger-event plan. Contact Customer Services.';
   else if (!accountReady) blocker = connect?.ready ? (connect.billingReviewComplete ? 'Ticket payments are waiting for platform activation.' : 'Add your billing details on theticketbunker.com to finish account validation.') : 'Finish Stripe verification on theticketbunker.com before you can sell tickets.';
   else if (!(paid || waived)) blocker = 'Pay the event listing fee to publish.';
   return {capacity, currency, plan, planLabel: plans[plan].label, amountCents, paid, waived, prepaid: prepaid || null, accountReady,
-    needsPayment: Boolean(capacity && capacity <= largeEventThreshold && !paid && !waived), canPay: accountReady, canPublish: !blocker, blocker};
+    past, needsPayment: Boolean(!past && capacity && capacity <= largeEventThreshold && !paid && !waived), canPay: accountReady, canPublish: !blocker, blocker};
 }
 
 export function money(cents, currency = 'eur') {
