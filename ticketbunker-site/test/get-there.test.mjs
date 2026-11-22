@@ -66,3 +66,10 @@ test('rough travel times read naturally and drop walking for long trips', async 
   const far = travelEstimates([51.5074, -0.1278], [53.4808, -2.2426]); // London to Manchester
   assert.doesNotMatch(estimateText(far), /walk/);
 });
+
+test("Skiddle's own test venue never reaches the listings", () => {
+  const body = `<name>KJHUBUBUKBUJBubkjbkj</name><date>2026-12-05</date><eventcode>LIVE</eventcode><doorsopen>20:00</doorsopen><cancelled>0</cancelled>
+    <venue id="1"><name>The Skiddle Basement</name><address>Ashley Hall Farm</address><town>Preston</town><postcode>PR3 2EB</postcode></venue>
+    <tickets><ticket id="1"><faceValue>5.00</faceValue><status statuscode="1">On sale</status></ticket></tickets>`;
+  assert.equal(skiddleEvent('43156253', 'https://www.skiddle.com/whats-on/x/43156253/', body, {affiliateId: '15993', now: Date.parse('2026-11-22T00:00:00Z')}), null);
+});
