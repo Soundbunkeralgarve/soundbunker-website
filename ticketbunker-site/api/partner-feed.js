@@ -1,4 +1,5 @@
 import {gunzipSync} from 'node:zlib';
+import {readFile} from 'node:fs/promises';
 // Approved affiliate event feeds. Buyers always book on the provider's own site through
 // our tracked link; the provider sells, delivers and supports the ticket.
 //
@@ -204,6 +205,7 @@ export async function loadViator(env = process.env, {fetcher = fetch} = {}) {
 // link is Awin's own tracked deep link. Theatre Tickets Direct (1936) is London theatre.
 const AWIN_MERCHANTS = Object.freeze({1936: {city: 'London', countryCode: 'GB', category: 'shows', currency: 'gbp', timezone: 'Europe/London'}});
 const AWIN_HOSTS = new Set(['www.awin1.com', 'awin1.com']);
+const AWIN_HTTPS_IMAGE_HOSTS = new Set(['www.theatreticketsdirect.co.uk']);
 export function parseCsv(text) {
   const rows = []; let row = [], cell = '', quoted = false;
   for (let i = 0; i < text.length; i++) {
@@ -226,7 +228,14 @@ export function awinItem(row) {
   const title = String(row.product_name || '').replace(/\s+/g, ' ').trim().slice(0, 140);
   let url; try { url = new URL(row.aw_deep_link); } catch { return null; }
   if (!title || url.protocol !== 'https:' || !AWIN_HOSTS.has(url.hostname)) return null;
-  let image = ''; for (const k of ['merchant_image_url', 'aw_image_url', 'large_image']) { try { const u = new URL(row[k]); if (u.protocol === 'https:') { image = u.href; break; } } catch { /* next */ } }
+  let image = ''; for (const k of ['merchant_image_url', 'aw_image_url', 'large_image']) {
+    try {
+      const u = new URL(row[k]);
+      // Some merchants list http image links that also work over https (checked by hand).
+      if (u.protocol === 'http:' && AWIN_HTTPS_IMAGE_HOSTS.has(u.hostname)) u.protocol = 'https:';
+      if (u.protocol === 'https:') { image = u.href; break; }
+    } catch { /* next */ }
+  }
   const price = Number(String(row.search_price || row.display_price || '').replace(/[^\d.]/g, ''));
   return {
     id: 'awin:' + mid + ':' + String(row.aw_product_id || row.merchant_product_id || title).replace(/[^\w-]/g, '').slice(0, 40),
@@ -238,8 +247,16 @@ export function awinItem(row) {
     currency: String(row.currency || known.currency || 'gbp').toLowerCase(), image, thumb: false, url: url.href
   };
 }
-export async function loadAwin(env = process.env, {fetcher = fetch} = {}) {
+// Feeds downloaded from Awin by hand (no key inside), used until AWIN_FEED_URLS is set so
+// approved merchants still show. Same columns as a live feed, parsed the same way.
+const AWIN_SNAPSHOTS = ['awin-1936.csv.gz'];
+export async function loadAwinSnapshots(read = name => readFile(new URL('../partner-data/' + name, import.meta.url))) {
+  const settled = await Promise.allSettled(AWIN_SNAPSHOTS.map(async name => parseCsv(gunzipSync(await read(name)).toString('utf8')).map(awinItem).filter(Boolean)));
+  return settled.flatMap(s => s.status === 'fulfilled' ? s.value : []);
+}
+export async function loadAwin(env = process.env, {fetcher = fetch, snapshots = loadAwinSnapshots} = {}) {
   const urls = String(env.AWIN_FEED_URLS || '').split(/[\s,]+/).filter(u => /^https:\/\/(productdata\.awin\.com\/|ui\.awin\.com\/productdata-darwin-download\/)/.test(u));
+  if (!urls.length) return snapshots();
   const settled = await Promise.allSettled(urls.map(async u => {
     const r = await fetcher(u, {signal: AbortSignal.timeout(30000)});
     if (!r.ok) throw Error('Awin feed ' + r.status);
