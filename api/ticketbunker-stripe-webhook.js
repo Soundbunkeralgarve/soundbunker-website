@@ -10,6 +10,7 @@ import {ticketBunkerStripe} from './lib/ticketbunker-stripe.js';
 import {fulfilPostponementCheckout} from './lib/ticketbunker-postponements.js';
 import {fulfilCancellationCheckout,queueCancelledPaidOrder} from './lib/ticketbunker-cancellations.js';
 import {activateVerifiedOrganiser} from './lib/organiser-activation.js';
+import {fulfilVipCheckout,refreshVipSubscription} from './lib/ticketbunker-vip.js';
 
 export const config={api:{bodyParser:false}};
 export default async function handler(req,res){
@@ -48,11 +49,13 @@ export default async function handler(req,res){
    else if(type==='event_featured_promotion')await fulfilPremiumPlacementCheckout(object,db);
    else if(type==='event_cancellation')await fulfilCancellationCheckout(db,object);
    else if(type==='event_postponement')await fulfilPostponementCheckout(db,object);
+   else if(type==='vip_membership')await fulfilVipCheckout(db,object);
   }else if(event.type==='checkout.session.expired'||event.type==='checkout.session.async_payment_failed'){
    if(object.metadata?.purchase_type==='event_ticket'){
     const saved=await db.from('sb_event_orders').update({status:'cancelled'}).eq('id',object.metadata.event_order_id).eq('stripe_session_id',object.id).eq('status','reserved');if(saved.error)throw saved.error;
    }
-  }else if(['charge.refunded','charge.updated','charge.succeeded'].includes(event.type))await refreshTicketCharge(db,object.id);
+  }else if(['customer.subscription.updated','customer.subscription.deleted'].includes(event.type))await refreshVipSubscription(db,object);
+  else if(['charge.refunded','charge.updated','charge.succeeded'].includes(event.type))await refreshTicketCharge(db,object.id);
   else if(['refund.created','refund.updated','refund.failed'].includes(event.type)){
    if(object.charge)await refreshTicketCharge(db,typeof object.charge==='string'?object.charge:object.charge.id);
    const saved=await db.from('tb_refund_requests').update({status:object.status==='succeeded'?'refunded':object.status==='failed'?'approved':'processing',updated_at:new Date().toISOString()}).eq('stripe_refund_id',object.id);if(saved.error)throw saved.error;

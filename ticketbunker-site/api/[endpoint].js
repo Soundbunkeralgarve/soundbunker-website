@@ -7,6 +7,7 @@ const METHODS = {
   'organiser-invoices':['GET'],
   'event-postponement':['GET','POST'], 'event-cancellation':['GET','POST'], 'event-checkout':['POST'], 'event-checkout-status':['GET'], 'organiser-listing':['POST'], 'ticketbunker-finance':['GET','POST'],
   'ticketbunker-password-reset':['POST'],
+  'ticketbunker-vip':['GET','POST'],
   'event-prebookings':['GET','POST'], 'ticketbunker-admin':['GET','POST'],
   'promo-preferences':['GET','POST'], 'event-promotion':['GET','POST'],
   'event-guest-list':['GET','POST'], 'event-capacity':['GET','POST'],

@@ -46,8 +46,10 @@ async function enter(s){
  $('#boot-status').hidden=true;$('#auth').hidden=true;$('#account').hidden=false;
  $('#account-email').textContent=user.data.user.email;
  document.title='My tickets | TicketBunker';
- await Promise.allSettled([loadTickets(),loadPreferences(),loadWeekly(),loadCancellationRefunds(),loadPostponements()]);
+ await Promise.allSettled([loadTickets(),loadPreferences(),loadWeekly(),loadCancellationRefunds(),loadPostponements(),loadVip()]);
 }
+// VIP badge next to your email when your membership is running.
+async function loadVip(){const vip=await api('ticketbunker-vip',null,await currentToken());$('#vip-pill').hidden=!vip.member;}
 async function currentToken(){const {data,error}=await sb.auth.getSession();if(error||!data.session){showAuth();throw Error('Your session expired. Please sign in.');}session=data.session;return session.access_token;}
 async function loadTickets(){
  $('#tickets-status').textContent='Loading your tickets…';$('#refresh-tickets').disabled=true;
