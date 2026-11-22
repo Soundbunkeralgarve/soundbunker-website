@@ -158,3 +158,8 @@ test('VIP: early-access note only while the window is open; guestlist claims ask
   assert.match(memberLine({member: true, status: 'active', renewsOn: '2026-12-22T00:00:00Z'}), /Renews 22 December 2026/);
   assert.equal(memberLine({member: false}), '');
 });
+
+test('store submit config never points at another app (the scanner is 6823316315)', () => {
+  const eas = JSON.parse(readFileSync(new URL('../eas.json', import.meta.url)));
+  assert.notEqual(eas.submit?.production?.ios?.ascAppId, '6823316315');
+});
