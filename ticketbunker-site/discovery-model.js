@@ -98,7 +98,10 @@ export function feedItem(f, now = Date.now()) {
     city: f.city || '', venue: f.venue || '', countryCode: f.countryCode || '', startsAt: f.startsAt, endsAt: f.endsAt || '',
     timezone: f.timezone || 'Europe/London', priceCents: Number.isInteger(f.priceCents) ? f.priceCents : null,
     currency: f.currency || '', soldOut: false, featured: false, image: f.image || '', thumb: f.thumb === true, organiser: '',
-    url: f.url, seller: f.seller, external: true, bookable: true
+    url: f.url, seller: f.seller, external: true, bookable: true,
+    // Where the venue is, for "Get me there" (address always; map position when known).
+    address: typeof f.address === 'string' ? f.address.slice(0, 200) : '',
+    ...(Number.isFinite(f.lat) && Number.isFinite(f.lng) && Math.abs(f.lat) <= 90 && Math.abs(f.lng) <= 180 ? {lat: f.lat, lng: f.lng} : {})
   };
 }
 

@@ -6,9 +6,10 @@ const gig = {id: 'skiddle:1', title: 'Gig', startsAt: '2026-12-05T20:00:00Z', ci
 
 test('the plan runs tickets, travel, stay, food, then things to do', () => {
   const steps = plannerSteps(gig);
-  assert.deepEqual(steps.map(s => s.kind), ['tickets', 'travel', 'stay', 'eat', 'tours']);
+  assert.deepEqual(steps.map(s => s.kind), ['tickets', 'route', 'travel', 'stay', 'eat', 'tours']);
   assert.equal(steps[0].links[0].url, gig.url);
-  assert.match(steps[2].blurb, /O2/);
+  assert.match(steps[3].blurb, /O2/);
+  assert.match(steps[1].blurb, /O2/);
 });
 
 test('partners that have not approved us stay as Coming soon (no links)', () => {
