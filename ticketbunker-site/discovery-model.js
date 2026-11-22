@@ -20,12 +20,15 @@ export function regionFor(city) {
   const town = placeText(city);
   return Object.keys(regionTowns).find(region => regionTowns[region].includes(town)) || '';
 }
+// Whole-word place match: "Hull" finds "Hull" but not "Solihull"; "Newcastle" finds
+// "Newcastle Upon Tyne"; "Stoke" finds "Stoke-on-Trent".
+export const placeHas = (have, want) => (' ' + have.replace(/[^\p{L}\p{N}]+/gu, ' ') + ' ').includes(' ' + want.replace(/[^\p{L}\p{N}]+/gu, ' ').trim() + ' ');
 export function cityMatches(city, query) {
   const want = placeText(query);
   if (!want) return true;
   const have = placeText(city);
   // A region matches its towns both ways: "Algarve" finds Lagos, and "Lagos" finds region-wide tours.
-  return have.includes(want) || (Object.hasOwn(regionTowns, want) && regionTowns[want].includes(have)) ||
+  return placeHas(have, want) || (Object.hasOwn(regionTowns, want) && regionTowns[want].includes(have)) ||
     (Object.hasOwn(regionTowns, have) && regionTowns[have].includes(want));
 }
 

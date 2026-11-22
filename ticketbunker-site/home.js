@@ -6,7 +6,7 @@ import {discoveryCategories,blend,filterItems,sortItems,featureFor,readState,sta
 import {homeRails} from './sample-listings.js?v=20261121-real';
 import {selectFeaturedEvents} from './featured-selection.js';
 import {renderGygBox} from './gyg-box.js?v=20261121c';
-import {openPlanner,mountMyTrip} from './night-planner.js?v=20261121';
+import {openPlanner,mountMyTrip,tourLink} from './night-planner.js?v=20261122';
 const $=s=>document.querySelector(s);
 const reduceMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -15,14 +15,16 @@ const KEY='tb-destination';
 const countryNames=new Intl.DisplayNames(['en'],{type:'region'}),countryName=c=>{try{return countryNames.of(c)||c;}catch{return c;}};
 const POPULAR=['PT','GB','IE','ES','FR','NL','DE','IT','BE'];
 const ALL=('AD AL AT BA BE BG BY CH CY CZ DE DK EE ES FI FR GB GI GR HR HU IE IS IT LI LT LU LV MC MD ME MK MT NL NO PL PT RO RS SE SI SK SM UA VA US CA AU NZ').split(' ');
-import {CITY_PAGES} from './city-places.js?v=20261121';
+import {CITY_PAGES} from './city-places.js?v=20261122';
+import {mountPlaceFinder,mountNearButton} from './place-finder.js?v=20261122';
 import {tripOptions} from './trip-partners.js?v=20261121';
 const PLACES=[['PT','Algarve'],['PT','Lisbon'],['PT','Porto'],['GB','London'],['GB','Edinburgh'],['GB','Manchester'],['IE','Dublin'],['ES','Madrid'],['ES','Barcelona'],['FR','Paris'],['NL','Amsterdam'],['DE','Berlin']];
 const saved=(()=>{try{return JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch{return {};}})();
 // City pages (/london, /algarve …) open preset to their place.
 const pathCity=window.__TB_CITY||null;
 // A place's own page when it has one (/london), otherwise the homepage preset to it.
-const cityHref=name=>{const n=String(name||'').toLowerCase();const c=CITY_PAGES.find(([slug,label,,query])=>[slug,label.replace(/^the /,'').toLowerCase(),query.toLowerCase()].includes(n));return c?'/'+c[0]:'/?city='+encodeURIComponent(name);};
+const cityPage=name=>{const n=String(name||'').trim().toLowerCase();return n?CITY_PAGES.find(([slug,label,,query])=>[slug,label.replace(/^the /,'').toLowerCase(),query.toLowerCase()].includes(n))||null:null;};
+const cityHref=name=>{const c=cityPage(name);return c?'/'+c[0]:'/?city='+encodeURIComponent(name);};
 let state=readState(location.search,pathCity?{city:pathCity.city,country:pathCity.country}:saved),events=[],partners=[],feed=[],loadError=false,limit=12;
 const form=$('#destination-search'),country=$('#ds-country'),city=$('#ds-city'),when=$('#ds-when'),from=$('#ds-from'),to=$('#ds-to'),category=$('#ds-category');
 
@@ -52,7 +54,12 @@ function commit(next,{scroll=false}={}){
  if(next.city!==undefined)loadNear();
  if(scroll)(searching()?$('#discover'):$('#rails')).scrollIntoView({behavior:reduceMotion()?'auto':'smooth'});
 }
-form.onsubmit=e=>{e.preventDefault();commit({country:country.value,city:city.value.trim(),when:when.value,category:category.value,range:{from:from.value,to:to.value}},{scroll:true});};
+form.onsubmit=e=>{e.preventDefault();
+ const next={country:country.value,city:city.value.trim(),when:when.value,category:category.value,range:{from:from.value,to:to.value}};
+ // A place with its own page opens it, carrying any date or type filter along.
+ const page=cityPage(next.city);
+ if(page&&(!next.country||next.country===page[2])&&!(pathCity&&pathCity.slug===page[0])){location.href='/'+page[0]+stateQuery({...next,city:'',country:''});return;}
+ commit(next,{scroll:true});};
 when.onchange=()=>{$('#ds-dates').hidden=when.value!=='dates';};
 document.querySelectorAll('[data-quick-when]').forEach(b=>b.onclick=()=>commit({when:b.dataset.quickWhen},{scroll:true}));
 document.querySelectorAll('[data-jump]').forEach(b=>b.onclick=()=>{
@@ -291,12 +298,13 @@ function renderHub(all,now){
  if(hubCat&&!counts[hubCat])hubCat='';
  const shown=hubCat?list.filter(i=>i.category===hubCat):list;
  $('#city-hub-h').textContent='Everything on in '+name+'.';
- $('#city-hub-count').textContent=list.length?list.length.toLocaleString('en-GB')+' on sale':'Loading what\u2019s on\u2026';
+ const settled=feedCity===state.city&&feedDone;
+ $('#city-hub-count').textContent=list.length?list.length.toLocaleString('en-GB')+' on sale':settled?'Events coming soon':'Loading what\u2019s on\u2026';
  const jump=(id,label,note)=>`<button type="button" class="amenity" data-go="${id}"><b>${esc(label)}</b><small>${esc(note)}</small></button>`;
  const plan=tripOptions(state.country||pathCity.country||'',name),live=k=>plan.find(o=>o.kind===k)?.partners.length?'Book with partners':'Coming soon';
  $('#city-amenities').innerHTML=[
   jump('city-grid','What\u2019s on',list.length?list.length.toLocaleString('en-GB')+' events':'Gigs, nights, shows'),
-  !$('#gyg-box').hidden&&jump('gyg-box','Tours & experiences','Day trips and activities'),
+  !$('#gyg-box').hidden?jump('gyg-box','Tours & experiences','Day trips and activities'):`<a class="amenity" href="${esc(tourLink(name,pathCity.country))}" target="_blank" rel="sponsored noopener"><b>Tours &amp; experiences</b><small>On GetYourGuide ↗</small></a>`,
   jump('plan-trip','Get there',live('travel')),
   jump('plan-trip','Stay nearby',live('stay')),
   jump('plan-trip','Eat nearby',live('eat')),
@@ -306,11 +314,20 @@ function renderHub(all,now){
  const cats=Object.keys(discoveryCategories).filter(k=>counts[k]);
  $('#city-filters').innerHTML=[['','All',list.length],...cats.map(k=>[k,discoveryCategories[k],counts[k]])].map(([k,l,n])=>`<button type="button" class="${k===hubCat?'active':''}" aria-pressed="${k===hubCat}" data-hub="${k}">${esc(l)} <small>${n}</small></button>`).join('');
  $('#city-filters').querySelectorAll('[data-hub]').forEach(b=>b.onclick=()=>{hubCat=b.dataset.hub;hubLimit=HUB_STEP;render();});
- $('#city-grid').innerHTML=shown.slice(0,hubLimit).map(i=>card(i)).join('');
+ const near=CITY_PAGES.filter(([slug,,c])=>c===pathCity.country&&slug!==pathCity.slug).slice(0,8);
+ $('#city-grid').innerHTML=shown.length?shown.slice(0,hubLimit).map(i=>card(i)).join(''):settled?`<div class="city-empty"><h3>We\u2019re lining up event partners in ${esc(name)}.</h3><p>Tours and day trips are bookable now, and gigs and nights out will appear here as partners join.${near.length?' Meanwhile, see what\u2019s on nearby:':''}</p>${near.length?`<div class="place-links">${near.map(([slug,n])=>`<a href="/${slug}">${esc(n.replace(/^the /,''))}</a>`).join('')}</div>`:''}</div>`:'';
  $('#city-more').hidden=shown.length<=hubLimit;
  $('#city-more').textContent='Show more ('+(shown.length-hubLimit)+' left)';
  $('#city-more').onclick=()=>{hubLimit+=HUB_STEP;render();};
 }
+
+// Town suggestions follow the country picked: its city pages first, then towns in the feeds.
+let feedTowns=[];
+function fillCityList(){
+ const pages=CITY_PAGES.filter(([,,c])=>!country.value||c===country.value).map(([,n])=>n.replace(/^the /,''));
+ $('#ds-cities').replaceChildren(...[...new Set([...pages,...feedTowns])].map(c=>opt(c,c)));
+}
+country.addEventListener('change',fillCityList);
 
 function render(){
  const now=Date.now(),all=blend(events,partners,now,feed),place=placeOnly(),where=placeLabel();
@@ -368,11 +385,26 @@ function render(){
  renderTabs();
  $('#show-more').onclick=()=>{limit+=12;render();};
  const cities=[...new Set(all.filter(i=>!state.country||i.countryCode===state.country).map(i=>i.city).filter(Boolean))].sort();
- $('#ds-cities').replaceChildren(...[...(state.country==='PT'||!state.country?['Algarve']:[]),...cities].map(c=>opt(c,c)));
+ feedTowns=cities;fillCityList();
 }
 
-// Real links to the city pages, so people and search engines can reach every place.
-$('#place-links').innerHTML=CITY_PAGES.map(([slug,name,c])=>`<a href="/${slug}">${esc(name.replace(/^the /,''))} <small>${esc(countryName(c))}</small></a>`).join('');
+// Every city page is a real link in the HTML (for people and search engines); here the
+// list becomes one country at a time, starting with the visitor's own.
+const showCountry=(()=>{
+ const groups=[...document.querySelectorAll('.place-group')],bar=$('#place-countries');if(!groups.length)return ()=>{};
+ const zone=(()=>{try{return Intl.DateTimeFormat().resolvedOptions().timeZone;}catch{return '';}})();
+ const ZONE_CC={'Europe/London':'GB','Europe/Dublin':'IE','Europe/Lisbon':'PT','Atlantic/Madeira':'PT','Europe/Madrid':'ES','Atlantic/Canary':'ES','Europe/Paris':'FR','Europe/Rome':'IT','Europe/Berlin':'DE','Europe/Amsterdam':'NL','Europe/Brussels':'BE'};
+ const has=cc=>groups.some(g=>g.dataset.cc===cc);
+ let pick=[pathCity?.country,state.country,ZONE_CC[zone],'GB'].find(cc=>cc&&has(cc));
+ const show=cc=>{pick=cc;groups.forEach(g=>{g.hidden=cc!=='all'&&g.dataset.cc!==cc;});bar.querySelectorAll('button').forEach(b=>{b.classList.toggle('active',b.dataset.cc===cc);b.setAttribute('aria-pressed',String(b.dataset.cc===cc));});};
+ bar.innerHTML=groups.map(g=>`<button type="button" data-cc="${g.dataset.cc}">${esc(countryName(g.dataset.cc))}</button>`).join('')+'<button type="button" data-cc="all">All countries</button>';
+ bar.onclick=e=>{const b=e.target.closest('[data-cc]');if(b)show(b.dataset.cc);};
+ bar.hidden=false;show(pick);
+ return show;
+})();
+mountPlaceFinder({showCountry});
+// "Near me" in the search bar opens the closest city page.
+mountNearButton($('#ds-near'));
 document.querySelectorAll('[data-place]').forEach(a=>a.onclick=e=>{e.preventDefault();const [c,p]=a.dataset.place.split('|');commit({country:c,city:p},{scroll:true});});
 
 // Partner tickets open in a new tab; this tab then offers the rest of the night.
@@ -386,15 +418,16 @@ async function loadPartners(){
  try{const r=await fetch('/partner-listings-config.json',{cache:'no-store',signal:AbortSignal.timeout(10000)});if(r.ok)partners=approvedPartnerListings(await r.json());}catch{partners=[];}
 }
 // Partner feed listings for the chosen town (or the soonest nationwide when none is set).
-let feedCity=null,feedTotal=0;
+let feedCity=null,feedTotal=0,feedDone=false;
 // Honest headline count: every listing on sale right now across our own events and partner feeds.
 function liveCount(){
  const own=events.filter(e=>!e.preview&&!e.public_beta_test&&!e.internal_free_test).length,n=own+feedTotal;
  if(n>0)$('#live-count').textContent=n.toLocaleString('en-GB')+' events on sale';
 }
 async function loadFeed(){
- const want=state.city;feedCity=want;
+ const want=state.city;feedCity=want;feedDone=false;
  try{const r=await fetch('/api/partner-feed'+(want?'?city='+encodeURIComponent(want):''),{signal:AbortSignal.timeout(45000)});if(r.ok&&feedCity===want){const d=await r.json();feed=Array.isArray(d.events)?d.events:[];if(Number.isInteger(d.total)&&d.total>0)feedTotal=d.total;}}catch{if(feedCity===want)feed=[];}
+ if(feedCity===want)feedDone=true;
  liveCount();
 }
 async function load(){

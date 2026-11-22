@@ -79,6 +79,8 @@ export function parseSkiddleFeed(xml, {affiliateId, now = Date.now()} = {}) {
 // Algarve towns, so a search for e.g. Lagos still finds trips Viator files under "Algarve".
 const ALGARVE = new Set(['albufeira', 'alvor', 'armacao de pera', 'carvoeiro', 'faro', 'ferragudo', 'lagoa', 'lagos', 'loule', 'monte gordo', 'olhao', 'portimao', 'quarteira', 'sagres', 'silves', 'tavira', 'vilamoura', 'almancil', 'algarve']);
 const regionTown = want => ALGARVE.has(want);
+// Whole-word match, so "Hull" does not pick up "Solihull".
+const placeHas = (have, want) => (' ' + have.replace(/[^\p{L}\p{N}]+/gu, ' ') + ' ').includes(' ' + want.replace(/[^\p{L}\p{N}]+/gu, ' ').trim() + ' ');
 const place = value => String(value || '').normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase().trim();
 // The soonest listings per category, optionally narrowed to one town or city. Without a
 // town, no more than a few per town so the national picks span the whole country.
@@ -86,7 +88,7 @@ export function pickListings(items, {city = '', country = ''} = {}) {
   const want = place(city), counts = {}, perTown = {};
   return items.filter(item => {
     if (country && item.countryCode !== country) return false;
-    if (want && !place(item.city).includes(want) && !(item.provider === 'viator' && place(item.city) === 'algarve' && regionTown(want))) return false;
+    if (want && !placeHas(place(item.city), want) && !(item.provider === 'viator' && place(item.city) === 'algarve' && regionTown(want))) return false;
     const bucket = item.provider + '|' + item.category;
     // A chosen city gets a much deeper list so its page can show everything that's on.
     if ((counts[bucket] || 0) >= (want ? PER_CITY_CATEGORY : PER_CATEGORY)) return false;

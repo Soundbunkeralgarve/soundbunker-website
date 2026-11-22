@@ -9,8 +9,11 @@ const KEY = 'tb-my-trip', MAX = 12;
 const GYG_PARTNER = 'KNICMG4';
 
 export function tourLink(city, country) {
+  if (!city) return '';
   const key = gygPlace({city, country});
-  return key && city ? `https://www.getyourguide.com/${key}-l${GYG_PLACES[key]}/?partner_id=${GYG_PARTNER}&cmp=night-planner` : '';
+  // Places without a known GetYourGuide location ID use its search, still tagged with our partner ID.
+  return key ? `https://www.getyourguide.com/${key}-l${GYG_PLACES[key]}/?partner_id=${GYG_PARTNER}&cmp=night-planner`
+    : `https://www.getyourguide.com/s/?q=${encodeURIComponent(city)}&partner_id=${GYG_PARTNER}&cmp=night-planner`;
 }
 
 // The ordered steps for one event: tickets first, then getting there, a bed, food, extras.

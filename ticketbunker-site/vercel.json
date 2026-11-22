@@ -32,7 +32,7 @@
   },
   "rewrites": [
     {
-      "source": "/:slug(london|manchester|liverpool|glasgow|edinburgh|birmingham|brighton|bristol|leeds|newcastle|sheffield|nottingham|cardiff|belfast|dublin|algarve|lisbon|porto|madeira|barcelona|madrid|seville|malaga|ibiza|tenerife|mallorca|paris|amsterdam|berlin|rome|prague|vienna|budapest)",
+      "source": "/:slug(london|manchester|liverpool|glasgow|edinburgh|birmingham|brighton|bristol|leeds|newcastle|sheffield|nottingham|cardiff|belfast|dublin|algarve|lisbon|porto|madeira|barcelona|madrid|seville|malaga|ibiza|tenerife|mallorca|paris|amsterdam|berlin|rome|prague|vienna|budapest|preston|chester|southampton|portsmouth|leicester|derby|coventry|wolverhampton|solihull|stoke-on-trent|milton-keynes|northampton|peterborough|cambridge|oxford|reading|norwich|colchester|chelmsford|southend|canterbury|maidstone|tunbridge-wells|guildford|worthing|bournemouth|salisbury|bath|exeter|plymouth|cheltenham|worcester|lincoln|york|hull|bradford|doncaster|middlesbrough|sunderland|carlisle|kendal|blackpool|bolton|wigan|warrington|stockport|aberdeen|dundee|stirling|inverness|swansea|newport|derry|cork|galway|limerick|albufeira|coimbra|braga|valencia|bilbao|granada|alicante|benidorm|marbella|gran-canaria|lanzarote|san-sebastian|nice|lyon|marseille|bordeaux|toulouse|milan|florence|venice|naples|bologna|turin|munich|hamburg|cologne|frankfurt|rotterdam|utrecht|brussels|antwerp|bruges|ghent|salzburg|zurich|geneva|copenhagen|stockholm|oslo|helsinki|tallinn|riga|vilnius|krakow|warsaw|gdansk|bratislava|ljubljana|zagreb|split|dubrovnik|bucharest|sofia|athens|thessaloniki|mykonos|santorini|crete|corfu|rhodes|malta|ayia-napa|paphos|limassol)",
       "destination": "/api/city-page?slug=:slug"
     },
     {
