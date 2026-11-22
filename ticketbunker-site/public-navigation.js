@@ -5,6 +5,6 @@ if(nav&&toggle){
  nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',close));
  document.addEventListener('keydown',e=>{if(e.key==='Escape'){close();toggle.focus();}});
  const path=location.pathname.replace(/\.html$/,'');
- const route={'/':'tickets','/index':'tickets','/event':'tickets','/featured':'tickets','/for-organisers':'organisers','/pricing':'organisers','/about':'about'}[path]||(path.startsWith('/event/')?'tickets':'');
+ const route={'/':'tickets','/index':'tickets','/event':'tickets','/featured':'tickets','/for-organisers':'organisers','/pricing':'organisers','/about':'about','/vip':'vip'}[path]||(path.startsWith('/event/')?'tickets':'');
  if(route)nav.querySelector(`[data-route="${route}"]`)?.setAttribute('aria-current','page');
 }

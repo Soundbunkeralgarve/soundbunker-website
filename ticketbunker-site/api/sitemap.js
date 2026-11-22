@@ -1,7 +1,7 @@
 // The sitemap lists the fixed pages plus every upcoming public event, so search engines find new shows.
 import {CITY_PAGES} from '../city-places.js';
 const SITE='https://theticketbunker.com';
-const PAGES=[['/','daily','1.0'],...CITY_PAGES.map(([slug])=>['/'+slug,'daily','0.8']),['/for-organisers','weekly','0.9'],['/pricing','weekly','0.8'],['/about','monthly','0.6'],['/contact','monthly','0.5'],['/terms','monthly','0.3']];
+const PAGES=[['/','daily','1.0'],...CITY_PAGES.map(([slug])=>['/'+slug,'daily','0.8']),['/vip','weekly','0.8'],['/for-organisers','weekly','0.9'],['/pricing','weekly','0.8'],['/about','monthly','0.6'],['/contact','monthly','0.5'],['/terms','monthly','0.3']];
 const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
 export function publicEventUrls(events,now=Date.now()){
  return (events||[]).filter(e=>e?.slug&&e.status==='published'&&!e.public_beta_test&&!e.internal_free_test&&Date.parse(e.starts_at)>now).map(e=>SITE+'/event/'+encodeURIComponent(e.slug));
