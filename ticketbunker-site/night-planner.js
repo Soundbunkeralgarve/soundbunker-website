@@ -4,6 +4,7 @@
 // "Coming soon" rather than sending people somewhere we cannot stand behind.
 import {tripOptions, withClickRef} from './trip-partners.js?v=20261122';
 import {gygPlace, GYG_PLACES} from './gyg-box.js?v=20261121c';
+import {directionLinks, travelEstimates, estimateText} from './get-there.js?v=20261122c';
 
 const KEY = 'tb-my-trip', MAX = 12;
 const GYG_PARTNER = 'KNICMG4';
@@ -25,7 +26,8 @@ export function plannerSteps(item) {
   const tours = tourLink(city, country);
   return [
     {kind: 'tickets', label: 'Tickets', blurb: item.external ? `Booked on ${item.seller}.` : 'No booking fee with TicketBunker.', links: [{name: item.external ? item.seller : 'TicketBunker', url: item.external ? withClickRef(item.url, page, 'planner') : item.url}]},
-    partnerStep('travel', 'Get there', city ? `Trains, coaches and ferries to ${city}.` : 'Trains, coaches and ferries.'),
+    {kind: 'route', label: 'Get to the venue', blurb: item.venue ? `Directions to ${item.venue} from where you are.` : 'Directions from where you are.', links: directionLinks(item)},
+    partnerStep('travel', city ? `Travel to ${city}` : 'Travel there', 'Trains, coaches and ferries.'),
     partnerStep('stay', 'Stay nearby', item.venue ? `Hotels close to ${item.venue}.` : 'Hotels close to the venue.'),
     partnerStep('eat', 'Eat nearby', 'Food deals before or after.'),
     {kind: 'tours', label: 'Things to do', blurb: 'Tours and day trips while you are there.', links: tours ? [{name: 'GetYourGuide', url: tours}] : []}
@@ -45,6 +47,7 @@ export function saveNight(list, item, now = Date.now()) {
   const id = nightId(item), keep = list.find(n => n.id === id);
   const night = {id, title: item.title, startsAt: item.startsAt || '', timezone: item.timezone || '', city: item.city || '',
     countryCode: item.countryCode || '', venue: item.venue || '', seller: item.seller || '', url: item.url, external: Boolean(item.external),
+    address: item.address || '', ...(Number.isFinite(item.lat) && Number.isFinite(item.lng) ? {lat: item.lat, lng: item.lng} : {}),
     done: {...(keep?.done || {}), tickets: true}};
   return tidyTrip([night, ...list.filter(n => n.id !== id)], now);
 }
@@ -52,13 +55,30 @@ export function saveNight(list, item, now = Date.now()) {
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
 const when = n => { if (!n.startsAt) return ''; try { return new Intl.DateTimeFormat('en-GB', {weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: n.timezone || undefined}).format(new Date(n.startsAt)); } catch { return ''; } };
 
-let dialog, openId = '';
+let dialog, openId = '', installPrompt = null;
+// Installing the site as an app: Chrome and Android offer a prompt we can trigger; iPhone
+// needs Share → Add to Home Screen. Hidden once it is already running as the app.
+const standalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const iPhone = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
+function showInstall() {
+  if (!dialog) return;
+  const box = dialog.querySelector('.np-install'), btn = box.querySelector('.np-install-btn');
+  btn.hidden = !installPrompt;
+  box.querySelector('.np-ios').hidden = !(iPhone() && !installPrompt);
+  box.hidden = standalone() || (!installPrompt && !iPhone());
+}
+if (typeof window !== 'undefined') {
+  addEventListener('beforeinstallprompt', e => { e.preventDefault(); installPrompt = e; showInstall(); });
+  addEventListener('appinstalled', () => { installPrompt = null; showInstall(); });
+}
 function nightHtml(n) {
   const steps = plannerSteps(n);
   return `<article class="np-night" data-night="${esc(n.id)}"><header><p class="np-when">${esc([when(n), n.venue, n.city].filter(Boolean).join(' · '))}</p><h3>${esc(n.title)}</h3></header><ol class="np-steps">${steps.map((s, i) => {
     const done = Boolean(n.done?.[s.kind]), live = s.links.length > 0;
-    return `<li class="np-step${done ? ' is-done' : ''}${live ? '' : ' is-soon'}"><span class="np-num" aria-hidden="true">${done ? '✓' : i + 1}</span><div class="np-body"><b>${esc(s.label)}</b><span>${esc(s.blurb)}</span></div><div class="np-act">${live
-      ? s.links.map(l => `<a class="np-link" href="${esc(l.url)}" target="_blank" rel="sponsored noopener" data-step="${s.kind}">${esc(s.kind === 'tickets' && done ? 'Reopen ' + l.name : l.name)} ↗</a>`).join('') + (done || s.kind === 'tickets' ? '' : `<button type="button" class="np-tick" data-tick="${s.kind}">Done</button>`)
+    const times = s.kind === 'route' && Number.isFinite(n.lat) && Number.isFinite(n.lng) && navigator.geolocation
+      ? `<button type="button" class="np-times" data-times>How far is it from here?</button><span class="np-eta" aria-live="polite"></span>` : '';
+    return `<li class="np-step${done ? ' is-done' : ''}${live ? '' : ' is-soon'}" data-kind="${s.kind}"><span class="np-num" aria-hidden="true">${done ? '✓' : i + 1}</span><div class="np-body"><b>${esc(s.label)}</b><span>${esc(s.blurb)}</span>${times}</div><div class="np-act">${live
+      ? s.links.map(l => `<a class="np-link" href="${esc(l.url)}" target="_blank" rel="${s.kind === 'route' ? 'noopener' : 'sponsored noopener'}" data-step="${s.kind}" data-mode="${esc(l.kind || '')}">${esc(s.kind === 'tickets' && done ? 'Reopen ' + l.name : l.name)}<small class="np-mins"></small> ↗</a>`).join('') + (done || s.kind === 'tickets' ? '' : `<button type="button" class="np-tick" data-tick="${s.kind}">Done</button>`)
       : '<em>Coming soon</em>'}</div></li>`;
   }).join('')}</ol><button type="button" class="np-remove" data-remove="${esc(n.id)}">Remove from My trip</button></article>`;
 }
@@ -81,8 +101,10 @@ function ensure() {
   if (dialog) return;
   dialog = document.createElement('dialog');
   dialog.className = 'night-planner'; dialog.id = 'night-planner'; dialog.setAttribute('aria-labelledby', 'np-title');
-  dialog.innerHTML = '<div class="np-head"><div><span class="label">Plan your night</span><h2 class="np-title" id="np-title">Make a night of it.</h2><p class="np-lead"></p></div><button type="button" class="np-close" aria-label="Close">×</button></div><div class="np-list"></div><button type="button" class="np-all btn-quiet" hidden></button><p class="np-note">Partner bookings are made on each partner’s site and may include their fees. TicketBunker events never add a booking fee.</p>';
+  dialog.innerHTML = '<div class="np-head"><div><span class="label">Plan your night</span><h2 class="np-title" id="np-title">Make a night of it.</h2><p class="np-lead"></p></div><button type="button" class="np-close" aria-label="Close">×</button></div><div class="np-list"></div><button type="button" class="np-all btn-quiet" hidden></button><div class="np-install" hidden><span>Keep My trip on your home screen, with directions one tap away.</span><button type="button" class="np-install-btn">Add the app</button><small class="np-ios" hidden>On iPhone: tap Share, then \u201cAdd to Home Screen\u201d.</small></div><p class="np-note">Partner bookings are made on each partner’s site and may include their fees. TicketBunker events never add a booking fee.</p>';
   document.body.append(dialog);
+  dialog.querySelector('.np-install-btn').onclick = async () => { if (!installPrompt) return; installPrompt.prompt(); await installPrompt.userChoice.catch(() => {}); installPrompt = null; showInstall(); };
+  showInstall();
   dialog.addEventListener('click', e => {
     if (e.target === dialog || e.target.closest('.np-close')) return dialog.close();
     const night = e.target.closest('[data-night]')?.dataset.night;
@@ -93,6 +115,22 @@ function ensure() {
     const remove = e.target.closest('[data-remove]');
     if (remove) { write(read().filter(n => n.id !== remove.dataset.remove)); if (openId === remove.dataset.remove) openId = ''; render(); }
     if (e.target.closest('.np-all')) { openId = ''; render(); }
+    const ask = e.target.closest('[data-times]');
+    if (ask && night) {
+      // The visitor's position stays on the phone; it is only used for this sum.
+      const n = read().find(x => x.id === night), out = ask.nextElementSibling;
+      ask.disabled = true; out.textContent = 'Finding you\u2026';
+      navigator.geolocation.getCurrentPosition(p => {
+        const est = travelEstimates([p.coords.latitude, p.coords.longitude], [n.lat, n.lng]), li = ask.closest('li');
+        ask.hidden = true; out.textContent = estimateText(est) + '. Pick the one that suits you:';
+        // Each option shows its own time so people can compare before tapping.
+        const put = (mode, text) => { const m = li.querySelector(`[data-mode="${mode}"] .np-mins`); if (m) m.textContent = ' \u00b7 ' + text; };
+        if (est.walkMin <= 75) put('walk', '~' + est.walkMin + ' min'); else li.querySelector('[data-mode="walk"]')?.classList.add('is-far');
+        put('taxi', '~' + est.carMin + ' min');
+        put('transit', 'live times'); put('citymapper', 'live times');
+      },
+        () => { ask.disabled = false; out.textContent = 'Location is off, so the map apps below will work it out instead.'; }, {timeout: 12000, maximumAge: 3e5});
+    }
   });
 }
 

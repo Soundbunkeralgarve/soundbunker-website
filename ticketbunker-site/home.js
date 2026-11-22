@@ -2,11 +2,11 @@ import {getPublicEvents} from './featured-events.js?v=20261020';
 import {escapeHtml as esc,money,safeUrl} from './shared.js';
 import {eventKind} from './event-content.js';
 import {approvedPartnerListings} from './partner-listings-model.js?v=20261121-city';
-import {discoveryCategories,blend,filterItems,sortItems,featureFor,readState,stateQuery} from './discovery-model.js?v=20261121-viator';
+import {discoveryCategories,blend,filterItems,sortItems,featureFor,readState,stateQuery} from './discovery-model.js?v=20261122-route';
 import {homeRails} from './sample-listings.js?v=20261121-real';
 import {selectFeaturedEvents} from './featured-selection.js';
 import {renderGygBox} from './gyg-box.js?v=20261121c';
-import {openPlanner,mountMyTrip,tourLink} from './night-planner.js?v=20261122';
+import {openPlanner,mountMyTrip,tourLink} from './night-planner.js?v=20261122e';
 const $=s=>document.querySelector(s);
 const reduceMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -416,6 +416,8 @@ document.addEventListener('click',e=>{
  const item=cardItems.get(a.getAttribute('href'));if(item)setTimeout(()=>openPlanner(item),150);
 });
 mountMyTrip();
+// The site works as an installable app; the worker keeps the last pages for poor signal.
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));
 
 async function loadPartners(){
  try{const r=await fetch('/partner-listings-config.json',{cache:'no-store',signal:AbortSignal.timeout(10000)});if(r.ok)partners=approvedPartnerListings(await r.json());}catch{partners=[];}

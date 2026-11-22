@@ -45,3 +45,10 @@ test('every city page has a map position, and Near me picks the closest', async 
   assert.equal(nearestCities([51.51, -0.12])[0].slug, 'london');
   assert.equal(nearestCities([53.74, -0.33])[0].slug, 'hull');
 });
+
+test('location is allowed on our own pages (Near me) and the app worker is never cached stale', () => {
+  const all = vercel.headers.find(h => h.source === '/(.*)').headers.find(h => h.key === 'Permissions-Policy').value;
+  assert.match(all, /geolocation=\(self\)/);
+  assert.equal(vercel.headers.find(h => h.source === '/sw.js').headers.find(h => h.key === 'Cache-Control').value, 'no-cache');
+  assert.match(shell, /<link rel="manifest" href="\/site.webmanifest"\/>/);
+});

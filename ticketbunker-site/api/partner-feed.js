@@ -60,6 +60,9 @@ export function skiddleEvent(id, link, body, {affiliateId, now = Date.now()} = {
   return {
     id: 'skiddle:' + id, provider: 'skiddle', seller: 'Skiddle', title, category,
     city: city.slice(0, 80), venue: tag(venueXml, 'name').replace(/,$/, '').slice(0, 120), countryCode: spain ? 'ES' : 'GB',
+    // Street address for directions; UK postcodes are turned into a map position later.
+    address: [tag(venueXml, 'address'), city, tag(venueXml, 'postcode')].map(v => v.trim()).filter(Boolean).join(', ').slice(0, 200),
+    postcode: spain ? '' : tag(venueXml, 'postcode').trim().toUpperCase().slice(0, 10),
     startsAt: new Date(start).toISOString(), endsAt: '', timezone: zone,
     priceCents: Math.min(...prices), currency: spain ? 'eur' : 'gbp',
     image: image ? image.href : '', thumb: true, url: url.href
@@ -105,7 +108,28 @@ export async function loadSkiddle(env = process.env, {fetcher = fetch, now = Dat
   if (env.SKIDDLE_FEED_OFF === '1' || !/^\d{1,12}$/.test(affiliateId)) return [];
   const response = await fetcher(SKIDDLE_FEED, {redirect: 'follow', signal: AbortSignal.timeout(40000)});
   if (!response.ok) throw Error('Skiddle feed ' + response.status);
-  return parseSkiddleFeed(await response.text(), {affiliateId, now});
+  return placeUkVenues(parseSkiddleFeed(await response.text(), {affiliateId, now}), {fetcher});
+}
+
+// UK postcodes → map positions via postcodes.io (free, no key), 100 per request, so
+// "Get me there" can hand Uber an exact drop-off. Any failure just leaves the address.
+const POSTCODE = /^[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}$/;
+export async function placeUkVenues(items, {fetcher = fetch} = {}) {
+  const codes = [...new Set(items.map(i => i.postcode).filter(c => POSTCODE.test(c || '')))];
+  const where = new Map(), batches = [];
+  for (let n = 0; n < codes.length; n += 100) batches.push(codes.slice(n, n + 100));
+  const run = async batch => {
+    try {
+      const r = await fetcher('https://api.postcodes.io/postcodes', {method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({postcodes: batch}), signal: AbortSignal.timeout(8000)});
+      if (!r.ok) return;
+      for (const {query, result} of (await r.json()).result || []) {
+        if (result && Number.isFinite(result.latitude) && Number.isFinite(result.longitude)) where.set(query, [+result.latitude.toFixed(5), +result.longitude.toFixed(5)]);
+      }
+    } catch { /* directions fall back to the street address */ }
+  };
+  for (let n = 0; n < batches.length; n += 4) await Promise.all(batches.slice(n, n + 4).map(run));
+  return items.map(({postcode, ...item}) => where.has(postcode) ? {...item, lat: where.get(postcode)[0], lng: where.get(postcode)[1]} : item);
 }
 
 // Viator (Tripadvisor): Partner API, basic access. Products are open-dated tours and
