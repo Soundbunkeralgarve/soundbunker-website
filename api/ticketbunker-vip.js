@@ -52,7 +52,10 @@ export default async function handler(req,res){
     ...Object.fromEntries(Object.entries(meta).flatMap(([k,v])=>[['metadata['+k+']',v],['subscription_data[metadata]['+k+']',v]]))
    });
    if(CUS.test(current.data?.stripe_customer_id||''))form.set('customer',current.data.stripe_customer_id);else form.set('customer_email',email);
-   const checkout=await ticketBunkerStripe('/v1/checkout/sessions',{method:'POST',body:form,idem:'ticketbunker-vip-'+userId+'-'+plan+'-'+currency+'-'+new Date().toISOString().slice(0,13)});
+   // One key per tap on Join (sent by the page): a double tap reuses the same session,
+   // while a later retry never collides with an earlier attempt's key.
+   const tap=ID.test(String(body.requestId||''))?body.requestId:Date.now().toString(36);
+   const checkout=await ticketBunkerStripe('/v1/checkout/sessions',{method:'POST',body:form,idem:'ticketbunker-vip-'+userId+'-'+tap});
    if(checkout.livemode!==true||!/^https:\/\/checkout\.stripe\.com\//.test(checkout.url||''))throw Error('VIP secure checkout unavailable');
    return json(res,{url:checkout.url});
   }

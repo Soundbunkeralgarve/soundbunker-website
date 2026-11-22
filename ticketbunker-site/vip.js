@@ -57,7 +57,7 @@ document.addEventListener('click',async e=>{
  const b=e.target.closest('[data-plan]');if(!b)return;
  if(b.dataset.go==='signin')location.href='/login?role=buyer&next=%2Fvip';
  else if(b.dataset.go==='interest')go({action:'interest'});
- else if(b.dataset.go==='checkout')go({action:'checkout',plan:b.dataset.plan,currency});
+ else if(b.dataset.go==='checkout')go({action:'checkout',plan:b.dataset.plan,currency,requestId:crypto.randomUUID()});
 });
 showPrices();
 (async()=>{
