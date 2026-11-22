@@ -474,3 +474,16 @@ a.tcard:hover .card-foot .get{background:var(--teal);color:#04140e}
 .ds-near:hover{background:var(--teal);border-color:var(--teal)}
 .ds-city input{padding-right:104px}
 @media(max-width:560px){.place-map{height:360px}.place-tool{flex:1;justify-content:center}}
+
+/* Hero, clean pass: fewer words, one quiet row of what we cover, and a darker centre
+   behind the copy so every line reads over any clip. */
+.shop-home .hero-shade{background:radial-gradient(62% 52% at 50% 42%,#050606c4 0%,#05060680 55%,#05060626 100%),linear-gradient(0deg,#050606 0%,#05060600 30%),linear-gradient(180deg,#050606b3 0%,#05060600 22%)}
+.shop-home .hero-sales h1,.shop-home .hero-tagline{text-shadow:0 2px 24px #000a}
+.shop-home .hero-sales .hero-intro{text-shadow:0 1px 12px #000c;color:#f1f5f3;max-width:560px}
+.hero-pillars{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;width:auto;margin-top:20px}
+.hero-pillars li{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:#0506068c}
+.hero-pillars b{font:600 13px var(--body)}
+.hero-pillars .soon{font-size:9.5px;padding:2px 7px;border-radius:999px;background:#00e0a61f}
+#scene-count{display:none}
+.hero-host{margin-top:14px}
+@media(max-width:650px){.hero-pillars{justify-content:flex-start;gap:6px}.hero-pillars li{padding:7px 12px}.shop-home .hero-shade{background:linear-gradient(0deg,#050606 0%,#050606cc 45%,#05060699 100%)}}
