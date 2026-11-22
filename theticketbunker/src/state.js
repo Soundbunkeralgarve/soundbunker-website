@@ -48,6 +48,9 @@ export function AuthProvider({children}) {
       const {data, error} = await withDeadline(() => auth.auth.signInWithPassword({email: email.trim(), password}), 20000);
       if (error) throw Error(error.message === 'Invalid login credentials' ? 'That email and password do not match.' : error.message);
       if (!data.user?.email_confirmed_at) { await auth.auth.signOut(); throw Error('Confirm your email address using the email we sent before signing in.'); }
+      // The session must be saved in the Keychain/Keystore, or the ticket list would bounce back here.
+      try { await secureSessionStorage.getItem('probe'); }
+      catch { await auth.auth.signOut().catch(() => {}); throw Error('This phone could not store your sign-in securely. Restart the app and try again.'); }
       return data.session;
     },
     signOut: () => auth.auth.signOut(),
