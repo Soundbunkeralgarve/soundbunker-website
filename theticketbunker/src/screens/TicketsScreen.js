@@ -47,7 +47,12 @@ function TicketList({navigation}) {
   const load = useCallback(async () => {
     setError('');
     vipStatus(await auth.token().catch(() => '')).then(v => setVip(v.member === true)).catch(() => {});
-    try { setTickets(sortTickets(await myTickets(await auth.token()))); } catch (e) { setError(e.message); setTickets(t => t || []); }
+    try {
+      let list;
+      try { list = await myTickets(await auth.token()); }
+      catch (e) { if (e.status !== 401) throw e; list = await myTickets(await auth.renew()); }
+      setTickets(sortTickets(list));
+    } catch (e) { setError(e.message); setTickets(t => t || []); }
   }, [auth]);
   useEffect(() => { load(); }, [load]);
   const header = <View style={{gap: 8, marginBottom: 8}}>

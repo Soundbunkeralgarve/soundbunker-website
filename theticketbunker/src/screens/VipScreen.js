@@ -11,7 +11,10 @@ export default function VipScreen({navigation}) {
   const auth = useAuth();
   const [v, setV] = useState(null), [msg, setMsg] = useState(''), [busy, setBusy] = useState(''), [ask, setAsk] = useState(null), [name, setName] = useState('');
   const load = useCallback(async () => {
-    try { setV(await vipStatus(await auth.token())); setMsg(''); } catch (e) { setMsg(e.message); setV(x => x || {}); }
+    try {
+      let v; try { v = await vipStatus(await auth.token()); } catch (e) { if (e.status !== 401) throw e; v = await vipStatus(await auth.renew()); }
+      setV(v); setMsg('');
+    } catch (e) { setMsg(e.message); setV(x => x || {}); }
   }, [auth]);
   useEffect(() => { navigation.setOptions({title: 'TicketBunker VIP'}); load(); }, [load]);
   async function interest() {

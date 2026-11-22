@@ -10,6 +10,13 @@ import {SITE} from '../../lib/config.js';
 // Stripe's own onboarding runs. The app says what is missing and opens the right page.
 export default function AccountBanner({compact}) {
   const org = useOrganiser();
+  // A failed load is not the same as having no profile: say what went wrong and offer a retry.
+  if (!org.organiser && org.error) return <View style={[b.box, {margin: 18, borderColor: C.bad}]}>
+    <Text style={s.h2}>Couldn’t load your events</Text>
+    <Text style={s.body}>{org.error}</Text>
+    <Button title="Try again" onPress={org.reload}/>
+    <Button title="Sign out" kind="ghost" small onPress={org.signOut}/>
+  </View>;
   if (!org.organiser) return <View style={[b.box, {margin: 18}]}>
     <Text style={s.h2}>Finish setting up</Text>
     <Text style={s.body}>{org.email} is signed in, but has no organiser profile yet. Create it on theticketbunker.com (name, country, logo and payouts), then come back.</Text>
