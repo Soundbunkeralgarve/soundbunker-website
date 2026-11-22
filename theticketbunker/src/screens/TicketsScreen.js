@@ -6,6 +6,7 @@ import {C, F, s, WIDE} from '../theme.js';
 import {Button, Loading, Empty, StatusShade} from '../components/ui.js';
 import {useAuth} from '../state.js';
 import {myTickets, sortTickets, ticketStatus, ticketRef} from '../../lib/tickets.js';
+import {vipStatus} from '../../lib/vip.js';
 import {whenText} from '../../lib/format.js';
 import {openPage} from '../open.js';
 import {SITE} from '../../lib/config.js';
@@ -42,15 +43,20 @@ function SignIn() {
 
 function TicketList({navigation}) {
   const auth = useAuth(), insets = useSafeAreaInsets(), {width} = useWindowDimensions(), wide = width >= WIDE;
-  const [tickets, setTickets] = useState(null), [error, setError] = useState(''), [refreshing, setRefreshing] = useState(false);
+  const [tickets, setTickets] = useState(null), [error, setError] = useState(''), [refreshing, setRefreshing] = useState(false), [vip, setVip] = useState(false);
   const load = useCallback(async () => {
     setError('');
+    vipStatus(await auth.token().catch(() => '')).then(v => setVip(v.member === true)).catch(() => {});
     try { setTickets(sortTickets(await myTickets(await auth.token()))); } catch (e) { setError(e.message); setTickets(t => t || []); }
   }, [auth]);
   useEffect(() => { load(); }, [load]);
   const header = <View style={{gap: 8, marginBottom: 8}}>
     <Text style={[s.h1, {textTransform: 'uppercase'}]}>My tickets</Text>
-    <Text style={s.muted}>Signed in as {auth.email}</Text>
+    <View style={{flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap'}}>
+      {vip ? <Text style={k.vip}>VIP</Text> : null}
+      <Text style={s.muted}>Signed in as {auth.email}</Text>
+    </View>
+    <Button title={vip ? 'VIP · your perks & guestlist' : 'TicketBunker VIP'} kind="secondary" small onPress={() => navigation.navigate('Vip')}/>
     {error ? <Text style={[s.body, {color: C.bad}]}>{error}</Text> : null}
   </View>;
   if (tickets === null) return <View style={[s.screen, {paddingTop: insets.top}]}><Loading label="Loading your tickets…"/></View>;
@@ -79,5 +85,6 @@ const k = StyleSheet.create({
   noPoster: {alignItems: 'center', justifyContent: 'center'},
   tb: {fontFamily: F.display, color: C.teal, fontSize: 30},
   tag: {fontFamily: F.bold, color: C.teal, fontSize: 12, letterSpacing: 1},
-  open: {fontFamily: F.bold, color: C.teal, fontSize: 15, marginTop: 6}
+  open: {fontFamily: F.bold, color: C.teal, fontSize: 15, marginTop: 6},
+  vip: {fontFamily: F.display, color: '#1a1406', backgroundColor: '#d9b35b', paddingHorizontal: 10, paddingVertical: 2, borderRadius: 6, fontSize: 13, letterSpacing: 2, overflow: 'hidden'}
 });
