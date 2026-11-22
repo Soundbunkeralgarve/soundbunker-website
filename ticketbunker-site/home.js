@@ -16,7 +16,8 @@ const countryNames=new Intl.DisplayNames(['en'],{type:'region'}),countryName=c=>
 const POPULAR=['PT','GB','IE','ES','FR','NL','DE','IT','BE'];
 const ALL=('AD AL AT BA BE BG BY CH CY CZ DE DK EE ES FI FR GB GI GR HR HU IE IS IT LI LT LU LV MC MD ME MK MT NL NO PL PT RO RS SE SI SK SM UA VA US CA AU NZ').split(' ');
 import {CITY_PAGES} from './city-places.js?v=20261122';
-import {mountPlaceFinder,mountNearButton} from './place-finder.js?v=20261122';
+import {mountPlaceFinder,mountNearButton,locate} from './place-finder.js?v=20261122';
+import {nearestCities} from './city-coords.js?v=20261122';
 import {tripOptions,withClickRef} from './trip-partners.js?v=20261122';
 const PLACES=[['PT','Algarve'],['PT','Lisbon'],['PT','Porto'],['GB','London'],['GB','Edinburgh'],['GB','Manchester'],['IE','Dublin'],['ES','Madrid'],['ES','Barcelona'],['FR','Paris'],['NL','Amsterdam'],['DE','Berlin']];
 const saved=(()=>{try{return JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch{return {};}})();
@@ -205,10 +206,30 @@ $('#reel-pause').onclick=e=>{scenePaused=!scenePaused;e.currentTarget.textConten
 document.addEventListener('visibilitychange',playScenes);
 showScene(0);playScenes();
 
-// "Near you": the visitor's chosen town, or a best guess from their timezone (no location
-// prompt). Mixes types so the first row offers a gig, a club night, a family day and more.
+// "Near you" is only ever said when it comes from the visitor's real location (asked for
+// with "Use my location", or already allowed). Otherwise the rail is honest about its
+// source: a place they chose ("What's on in …") or a time-zone guess ("Popular in …").
 const ZONE_PLACE={'Europe/Lisbon':'Algarve','Atlantic/Madeira':'Madeira','Europe/London':'London','Europe/Dublin':'Dublin','Europe/Madrid':'Madrid','Europe/Paris':'Paris','Europe/Amsterdam':'Amsterdam','Europe/Berlin':'Berlin','Europe/Rome':'Rome','Europe/Brussels':'Brussels','Europe/Vienna':'Vienna','Europe/Prague':'Prague','Europe/Budapest':'Budapest','Europe/Warsaw':'Krakow','Europe/Athens':'Athens','Europe/Copenhagen':'Copenhagen','Europe/Stockholm':'Stockholm'};
-const nearPlace=()=>{if(state.city)return state.city;try{return ZONE_PLACE[Intl.DateTimeFormat().resolvedOptions().timeZone]||'';}catch{return '';}};
+const GEO_KEY='tb-near-city';
+// Only the nearest city's name is kept (for a day), never the visitor's coordinates.
+let geoPlace=(()=>{try{const g=JSON.parse(localStorage.getItem(GEO_KEY)||'null');return g&&Date.now()-g.at<864e5?g:null;}catch{return null;}})();
+const nearSource=()=>geoPlace&&!state.city?'location':state.city?'chosen':'zone';
+const nearPlace=()=>{if(state.city)return state.city;if(geoPlace)return geoPlace.query;try{return ZONE_PLACE[Intl.DateTimeFormat().resolvedOptions().timeZone]||'';}catch{return '';}};
+async function useMyLocation({quiet=false}={}){
+ const btn=$('#near-locate');
+ if(!navigator.geolocation){btn.hidden=true;return;}
+ if(!quiet){btn.disabled=true;btn.textContent='Finding you…';}
+ try{
+  const [best]=nearestCities(await locate(),1),page=CITY_PAGES.find(([slug])=>slug===best.slug);
+  geoPlace={name:page[1].replace(/^the /,''),query:page[3],slug:page[0],at:Date.now()};
+  try{localStorage.setItem(GEO_KEY,JSON.stringify(geoPlace));}catch{}
+  // A remembered search no longer outranks where the visitor actually is.
+  if(!pathCity&&state.city&&!new URLSearchParams(location.search).get('city'))commit({city:'',country:''});else{loadNear();render();}
+ }catch{if(!quiet){btn.textContent='Location is off';setTimeout(()=>{btn.textContent='\u25ce Use my location';btn.disabled=false;},2500);}return;}
+ if(!quiet){btn.textContent='\u25ce Use my location';btn.disabled=false;}
+}
+// Already allowed on this device: refresh quietly, without a prompt.
+navigator.permissions?.query({name:'geolocation'}).then(p=>{if(p.state==='granted')useMyLocation({quiet:true});}).catch(()=>{});
 let nearFeed=[],nearFor=null;
 async function loadNear(){
  const place=nearPlace();if(!place||place===nearFor)return;nearFor=place;
@@ -220,16 +241,19 @@ function byType(items){
  const out=[],queues=[...groups.values()];while(queues.some(q=>q.length))for(const q of queues)if(q.length)out.push(q.shift());return out;
 }
 function renderNear(now){
- const place=nearPlace(),section=$('#rail-near');
+ const place=nearPlace(),source=nearSource(),section=$('#rail-near');
  if(!place){section.hidden=true;return;}
  const pool=blend(events,partners,now,state.city?feed:nearFeed);
  const items=byType(sortItems(filterItems(pool,{city:place,when:'any'},now)).filter(i=>!i.soldOut)).slice(0,16);
  section.hidden=items.length<3;
  if(section.hidden)return;
- $('#near-heading').textContent='Near you in '+place+'.';
- $('#near-label').textContent=state.city?'Coming up in your chosen place':'Coming up near you · mixed picks';
+ const shown=source==='location'?geoPlace.name:place;
+ $('#near-heading').textContent=(source==='location'?'Near you in ':source==='chosen'?'What\u2019s on in ':'Popular in ')+shown+'.';
+ $('#near-label').textContent=source==='location'?'Coming up near you · from your location':source==='chosen'?'Coming up in your chosen place':'Best guess from your time zone · use your location for nearby picks';
+ $('#near-locate').hidden=source==='location'||!navigator.geolocation||!!pathCity;
  mountRail(section,items.map(i=>card(i)));
 }
+$('#near-locate').onclick=()=>useMyLocation();
 $('#near-change').onclick=()=>{form.scrollIntoView({block:'center'});city.focus();};
 
 // Section tabs under the destination bar: one tap to any rail that has listings.

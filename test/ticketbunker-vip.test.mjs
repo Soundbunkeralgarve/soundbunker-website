@@ -57,6 +57,7 @@ test('the VIP endpoint refuses checkout while sales are off, without contacting 
  const src=await readFile(new URL('../api/ticketbunker-vip.js',import.meta.url),'utf8');
  assert.match(src,/if\(!vipSalesEnabled\(\)\)return json\(res,\{error:'VIP is not open yet/);
  assert.ok(src.indexOf('vipSalesEnabled()')<src.indexOf("'/v1/checkout/sessions'"));
+ assert.match(src,/'managed_payments\[enabled\]':'false'/,'VIP checkout must not fall into Managed Payments (tax-code error)');
  const hook=await readFile(new URL('../api/ticketbunker-stripe-webhook.js',import.meta.url),'utf8');
  assert.match(hook,/type==='vip_membership'\)await fulfilVipCheckout/);
  assert.match(hook,/customer\.subscription\.deleted'\]\.includes\(event\.type\)\)await refreshVipSubscription/);

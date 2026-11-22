@@ -38,6 +38,9 @@ export default async function handler(req,res){
    const meta={'purchase_type':'vip_membership','user_id':userId};
    const form=new URLSearchParams({
     mode:'subscription',client_reference_id:userId,
+    // Like TicketBunker's other checkouts, VAT-inclusive pricing without Stripe Managed Payments
+    // (which the account enables by default and which would demand a product tax code).
+    'managed_payments[enabled]':'false',
     success_url:ticketBunkerOrigin+'/vip?joined=1',cancel_url:ticketBunkerOrigin+'/vip?cancelled=1',
     'line_items[0][quantity]':'1',
     'line_items[0][price_data][currency]':currency,
