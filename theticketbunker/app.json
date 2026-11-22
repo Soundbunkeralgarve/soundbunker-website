@@ -65,7 +65,10 @@
       ]
     ],
     "extra": {
-      "siteBase": "https://theticketbunker.com"
+      "siteBase": "https://theticketbunker.com",
+      "eas": {
+        "projectId": "0027b9f4-e08e-4887-93b6-44f7bc8552b7"
+      }
     },
     "owner": "soundbunker"
   }
