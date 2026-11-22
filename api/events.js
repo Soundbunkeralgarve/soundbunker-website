@@ -7,7 +7,7 @@ export default async function handler(req,res) {
     const db=eventsDatabase();
     const now=Date.now(),slug=typeof req.query?.slug==='string'?req.query.slug.trim():'';
     if(slug&&!/^[a-z0-9-]{1,160}$/.test(slug))return json(res,{error:'Invalid event link'},400);
-    let query=db.from('sb_events').select('id,slug,title,description,organiser,venue,image_url,event_logo_url,headline_artist,venue_city,starts_at,ends_at,country_code,currency,venue_timezone,event_kind,status,public_beta_test,beta_test_expires_at,organiser_profile_id')
+    let query=db.from('sb_events').select('id,slug,title,description,organiser,venue,image_url,event_logo_url,headline_artist,venue_city,starts_at,ends_at,country_code,currency,venue_timezone,event_kind,status,public_beta_test,beta_test_expires_at,organiser_profile_id,vip_presale_until')
       .eq('internal_free_test',false)
       .or('status.eq.published,public_beta_test.eq.true')
       .gt('starts_at',new Date(now).toISOString()).order('starts_at',{ascending:true});

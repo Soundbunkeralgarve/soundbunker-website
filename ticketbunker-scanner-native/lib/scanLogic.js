@@ -25,7 +25,7 @@ export function inviteToken(raw) {
 export function admissionResult(result) {
   if (!result || typeof result !== 'object') return {kind:'rejected',heading:'SCAN ERROR',detail:'Unknown admission response'};
   if (result.status==='valid' && result.test===true) return {kind:'warning',heading:'TEST CHECK-IN ACCEPTED',detail:'Test successful. This ticket is now checked in. Private rehearsal only — not public admission.'};
-  if (result.status==='valid')return {kind:'approved',heading:'ENTRY APPROVED',detail:[result.event,result.tier].filter(Boolean).join(' · ')};
+  if (result.status==='valid')return {kind:'approved',heading:result.vip===true?'VIP · ENTRY APPROVED':'ENTRY APPROVED',detail:[result.vip===true&&'TicketBunker VIP · priority lane',result.event,result.tier].filter(Boolean).join(' · ')};
   if (result.status==='used')return {kind:'warning',heading:'ALREADY SCANNED',detail:result.message||'This ticket has already been admitted.'};
   if (result.status==='wrong_lane')return {kind:'warning',heading:'USE ANOTHER LANE',detail:result.message};
   if (result.status==='offline_reserved')return {kind:'warning',heading:'USE OFFLINE LANE',detail:result.message};

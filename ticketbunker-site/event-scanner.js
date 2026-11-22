@@ -40,8 +40,8 @@ async function scan(code,source='camera'){
  show('Please wait for the ticket check.','pending','CHECKING…');
  try{
   const d=await request('/api/event-scan',{code,eventId:selectedEvent});
-  const heading=d.status==='valid'?(d.test?'TEST QR VALID':'ENTRY APPROVED'):d.status==='used'?'ALREADY USED':d.status==='wrong_event'?'WRONG EVENT':'NO ADMISSION';
-  const detail=[d.event,d.tier,d.status==='valid'?(d.test?'Private test only — no public admission.':'One ticket checked in. Check age / photo ID if required.'):(d.message||'Do not admit this ticket.')].filter(Boolean).join(' · ');
+  const heading=d.status==='valid'?(d.test?'TEST QR VALID':d.vip?'VIP · ENTRY APPROVED':'ENTRY APPROVED'):d.status==='used'?'ALREADY USED':d.status==='wrong_event'?'WRONG EVENT':'NO ADMISSION';
+  const detail=[d.event,d.tier,d.status==='valid'?(d.test?'Private test only — no public admission.':(d.vip?'TicketBunker VIP: priority lane. ':'')+'One ticket checked in. Check age / photo ID if required.'):(d.message||'Do not admit this ticket.')].filter(Boolean).join(' · ');
   show(detail,d.status,heading);
   if(d.status==='valid')$('#admissionCount').textContent=String(++admissions);
   $('#scanSpeed').textContent=((Date.now()-started)/1000).toFixed(1)+'s last check';

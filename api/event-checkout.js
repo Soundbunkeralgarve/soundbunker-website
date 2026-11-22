@@ -3,6 +3,7 @@ import {json,parseJson,safeText,validEmail} from './lib/http.js';
 import {eventsDatabase} from './lib/events.js';
 import {ticketBunkerStripe,ticketBunkerPaymentsEnabled,ticketBunkerPlatformReadiness,ticketBunkerOrigin} from './lib/ticketbunker-stripe.js';
 import {fetchConnectStatus} from './organiser-connect.js';
+import {optionalUser} from './lib/supabase-auth.js';
 const ID=/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i;
 export default async function handler(req,res){
  if(req.method!=='POST')return json(res,{error:'Method not allowed'},405);
@@ -12,9 +13,15 @@ export default async function handler(req,res){
   if(!ID.test(tier)||!ID.test(requestId)||!Number.isInteger(quantity)||quantity<1||quantity>8||name.length<2||!validEmail(email)||input.acceptTerms!==true)return json(res,{error:'Check your ticket selection, name, email and ticket terms.'},400);
   const db=eventsDatabase();
   const level=await db.from('sb_event_tiers').select('id,event_id,name').eq('id',tier).single();if(level.error)return json(res,{error:'Ticket type unavailable'},404);
-  const ev=await db.from('sb_events').select('id,title,slug,status,currency,organiser_profile_id,starts_at,internal_free_test,public_beta_test').eq('id',level.data.event_id).single();
+  const ev=await db.from('sb_events').select('id,title,slug,status,currency,organiser_profile_id,starts_at,internal_free_test,public_beta_test,vip_presale_until').eq('id',level.data.event_id).single();
   const e=ev.data;
   if(ev.error||e?.status!=='published'||e.internal_free_test||e.public_beta_test||!e.organiser_profile_id||Date.parse(e.starts_at)<=Date.now())return json(res,{error:'This event is not open for paid bookings.'},409);
+  // VIP early access: before general sale only a signed-in VIP member can book.
+  if(Date.parse(e.vip_presale_until)>Date.now()){
+   const user=await optionalUser(req),vip=user?await db.rpc('tb_is_vip',{p_user:user.id}):null;
+   if(vip?.error)throw vip.error;
+   if(vip?.data!==true)return json(res,{error:'VIP early access: general sale opens '+new Intl.DateTimeFormat('en-GB',{dateStyle:'medium',timeStyle:'short',timeZone:'Europe/London'}).format(new Date(e.vip_presale_until))+' (UK time). VIP members can book now.',vipOnly:true},403);
+  }
   const [org,fees,charity]=await Promise.all([
    db.from('sb_event_organisers').select('id,status,stripe_account_id,stripe_capabilities_ready,tax_review_complete').eq('id',e.organiser_profile_id).single(),
    db.from('sb_event_listing_fees').select('id').eq('event_id',e.id).eq('organiser_profile_id',e.organiser_profile_id).eq('status','paid').limit(1),

@@ -395,7 +395,7 @@ function startEditEvent(event){
  const form=$('#event-form');
  for(const [field,key]of [['title','title'],['venue','venue'],['venueCity','venue_city'],['headlineArtist','headline_artist'],['kind','event_kind'],['description','description']])form.elements.namedItem(field).value=event[key]||'';
  const local=value=>{if(!value)return '';const parts=new Intl.DateTimeFormat('en-CA',{timeZone:event.venue_timezone||'Europe/Lisbon',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date(value));const p=Object.fromEntries(parts.map(x=>[x.type,x.value]));return p.year+'-'+p.month+'-'+p.day+'T'+p.hour+':'+p.minute;};
- form.elements.startsAt.value=local(event.starts_at);form.elements.endsAt.value=local(event.ends_at);
+ form.elements.startsAt.value=local(event.starts_at);form.elements.endsAt.value=local(event.ends_at);form.elements.vipEarlyAccessUntil.value=local(event.vip_presale_until);
  if(event.image_url){$('#poster-preview').src=event.image_url;$('#poster-preview').hidden=false;}
  $('#save-event').textContent='Save linked event changes →';notice('Editing the same event and booking record. For a postponed event, set the new date, review the details and publish to repost it.',false,$('#save-event'));
 }
@@ -425,7 +425,7 @@ $('#event-form').onsubmit=async e=>{
  e.preventDefault();const button=e.submitter||$('#save-event');button.disabled=true;clearEventError();
  try{
   const f=new FormData(e.target),poster=$('#event-poster').files[0];
-  const data={action:currentDraft?.editing?'editEvent':'event',...(currentDraft?.editing?{eventId:currentDraft.id}:{}),title:f.get('title'),kind:f.get('kind'),venue:f.get('venue'),venueCity:f.get('venueCity'),headlineArtist:f.get('headlineArtist'),startsAt:f.get('startsAt'),endsAt:f.get('endsAt'),description:f.get('description')};
+  const data={action:currentDraft?.editing?'editEvent':'event',...(currentDraft?.editing?{eventId:currentDraft.id}:{}),title:f.get('title'),kind:f.get('kind'),venue:f.get('venue'),venueCity:f.get('venueCity'),headlineArtist:f.get('headlineArtist'),startsAt:f.get('startsAt'),endsAt:f.get('endsAt'),vipEarlyAccessUntil:f.get('vipEarlyAccessUntil')||'',description:f.get('description')};
   if(!data.endsAt||Date.parse(data.endsAt)<=Date.parse(data.startsAt))throw Object.assign(Error('Set a finish time after the start time.'),{details:{field:'endsAt'}});
   if(poster&&(poster.size>2000000||!['image/png','image/jpeg','image/webp'].includes(poster.type)))throw Error('Poster must be PNG, JPG or WebP under 2 MB.');
   const input=JSON.stringify(data);

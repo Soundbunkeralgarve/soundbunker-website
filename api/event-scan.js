@@ -66,6 +66,8 @@ export default async function handler(req,res){
   if(scanned.error?.code==='55000')return reply({status:'offline_reserved',message:scanned.error.message||'This ticket is assigned to an offline lane. Use its scanner.'});
   if(scanned.error)throw scanned.error;
   const rehearsal=normalRehearsalFeedback(id,eventMeta.data);
-  return reply({...scanned.data,...(rehearsal?{event:scanned.data.event+' · Private rehearsal',rehearsal:true}:{}),test:!rehearsal&&(eventMeta.data.internal_free_test===true||eventMeta.data.public_beta_test===true)});
+  let vip=false;
+  if(scanned.data?.status==='valid'){const v=await ctx.admin.rpc('tb_ticket_is_vip',{p_ticket:id});vip=!v.error&&v.data===true;}
+  return reply({...scanned.data,...(vip?{vip:true}:{}),...(rehearsal?{event:scanned.data.event+' · Private rehearsal',rehearsal:true}:{}),test:!rehearsal&&(eventMeta.data.internal_free_test===true||eventMeta.data.public_beta_test===true)});
  }catch(err){console.error('Ticket scanner error',err);return reply({error:'Scanner is temporarily unavailable'},503);}
 }
