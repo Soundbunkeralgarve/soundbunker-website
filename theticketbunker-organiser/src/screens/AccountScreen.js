@@ -10,7 +10,7 @@ import {openPage} from '../open.js';
 import {SITE} from '../../lib/config.js';
 
 // Account-level settings that need Stripe or document uploads stay on the website.
-export default function AccountScreen() {
+export default function AccountScreen({navigation}) {
   const org = useOrganiser(), insets = useSafeAreaInsets(), p = org.organiser;
   return <View style={s.screen}><ScrollView contentContainerStyle={{paddingTop: insets.top + 8, padding: 18, gap: 14, paddingBottom: 40, maxWidth: 720, width: '100%', alignSelf: 'center'}}>
     <Text style={[s.h1, {textTransform: 'uppercase'}]}>Account</Text>
@@ -22,5 +22,6 @@ export default function AccountScreen() {
     {[['Payouts & post-show reports', '/organiser'], ['Branding & logo', '/organiser'], ['Billing details', '/organiser'], ['Pricing & event bundles', '/pricing'], ['Help & support', '/support']]
       .map(([label, path]) => <Button key={label} title={label} kind="secondary" small onPress={() => openPage(SITE + path)}/>)}
     <Button title="Sign out" kind="ghost" onPress={org.signOut} style={{marginTop: 20}}/>
+    <Button title="Delete my account" kind="secondary" small onPress={() => navigation.navigate('DeleteAccount')}/>
   </ScrollView><StatusShade/></View>;
 }

@@ -16,6 +16,7 @@ import ResultsScreen from './src/screens/ResultsScreen.js';
 import CityScreen from './src/screens/CityScreen.js';
 import TicketScreen from './src/screens/TicketScreen.js';
 import VipScreen from './src/screens/VipScreen.js';
+import DeleteAccountScreen from './src/screens/DeleteAccountScreen.js';
 import EventDetail from './src/components/EventDetail.js';
 
 const Stack = createNativeStackNavigator(), Tab = createBottomTabNavigator();
@@ -48,6 +49,7 @@ export default function App() {
         <Stack.Screen name="Event" component={EventScreen} options={{title: ''}}/>
         <Stack.Screen name="Ticket" component={TicketScreen} options={{title: 'Your ticket'}}/>
         <Stack.Screen name="Vip" component={VipScreen} options={{title: 'TicketBunker VIP'}}/>
+        <Stack.Screen name="DeleteAccount" component={DeleteAccountScreen} options={{title: 'Delete my account'}}/>
       </Stack.Navigator>
     </NavigationContainer>
   </TripProvider></AuthProvider></SafeAreaProvider>;

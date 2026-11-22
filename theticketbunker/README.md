@@ -27,11 +27,12 @@ npx expo run:android   # emulator
 ```
 
 ## Release (Steve)
+- Store text, privacy answers and App Review notes are in `STORE-LISTING.md`.
 - iOS and Android always ship together, with the same `version` in `app.json` (tests check this).
 - The bundle ID and package are `pt.soundbunker.theticketbunker`. Reserve them before the first upload.
-- `app.json` has no EAS `projectId` yet. Run `eas init` (owner `soundbunker`), then create the App Store Connect record and put its `ascAppId` into `eas.json` under `submit.production.ios`.
+- `app.json` has no EAS `projectId` yet. Run `eas init` (owner `soundbunker`), then create the App Store Connect record and put its `ascAppId` into `eas.json` under `submit.production.ios` (never the Scanner's 6823316315; a test guards this).
 - Store builds need `EXPO_TOKEN`, or use the scanner's local signing route.
 - Before App Review:
-  - **Account deletion:** the app only signs in; accounts are created on the website or at checkout. Apple still expects a way to delete an account from the app (guideline 5.1.1(v)), and the site has none yet.
+  - **Account deletion:** done in the app (Delete my account opens a deletion case in Support admin). Complete each one within 30 days and email the person, as the app and the privacy policy (terms#app-privacy) promise.
   - **Privacy labels:** location is used on the device only and not collected. The email is used for sign-in.
   - **App Review login:** give App Review a buyer login that has a valid ticket.

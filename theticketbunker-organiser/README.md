@@ -29,8 +29,9 @@ npx expo run:android
 ## Release (Steve)
 - iOS and Android always ship together, with the same `version` in `app.json` (tests check this).
 - The bundle ID and package are `pt.soundbunker.theticketbunker.organiser`. The home-screen name is "TB Organiser" (`expo.name`); change it before the first upload if you prefer another.
+- Store text, privacy answers and App Review notes are in `STORE-LISTING.md`.
 - Run `eas init` (owner `soundbunker`), create the App Store Connect record and add its `ascAppId` to `eas.json`. Store builds need `EXPO_TOKEN`.
 - **App Review risks:**
   - **Listing fee:** it is paid through Stripe Checkout, opened from the app in a browser sheet. It is a business service fee for real-world events, which Apple's guideline 3.1.3 normally allows outside In-App Purchase, but say so in the review notes. If Apple objects, change the button to open theticketbunker.com/organiser instead.
-  - **Account deletion:** the app signs in to accounts created on the website. Apple expects a way to delete an account from inside the app (guideline 5.1.1(v)), and the site has none yet.
+  - **Account deletion:** done in the app (Delete my account opens a deletion case in Support admin). Complete each one within 30 days and email the person, as the app and the privacy policy (terms#app-privacy) promise.
   - **Demo login:** App Review needs an organiser account with a published event.
