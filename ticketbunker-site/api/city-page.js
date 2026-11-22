@@ -2,6 +2,7 @@
 // a server-rendered list of upcoming listings, so search engines see real content.
 import {readFile} from 'node:fs/promises';
 import {cityBySlug} from '../city-places.js';
+import {withClickRef} from '../trip-partners.js';
 const SITE = 'https://theticketbunker.com';
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
 const when = (iso, zone) => { try { return new Intl.DateTimeFormat('en-GB', {weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: zone || 'Europe/London'}).format(new Date(iso)); } catch { return ''; } };
@@ -12,7 +13,7 @@ export function cityHtml(shell, [slug, name, country, , pitch], listings = []) {
   const title = `Things to do in ${inName}: tickets for gigs, club nights, comedy & days out | The Ticket Bunker`;
   const description = `Tickets in ${inName}: ${pitch}. Browse by date, see who sells each ticket, and book in a few taps.`;
   const items = listings.filter(i => i && i.title && i.url).slice(0, 30);
-  const list = items.length ? `<ol class="city-list">${items.map(i => `<li><a href="${esc(i.url)}" rel="sponsored noopener" target="_blank">${esc(i.title)}</a> <span>${esc([when(i.startsAt, i.timezone), i.venue, price(i.priceCents, i.currency)].filter(Boolean).join(' · '))}</span></li>`).join('')}</ol>` : '';
+  const list = items.length ? `<ol class="city-list">${items.map(i => `<li><a href="${esc(withClickRef(i.url, slug, 'city-list'))}" rel="sponsored noopener" target="_blank">${esc(i.title)}</a> <span>${esc([when(i.startsAt, i.timezone), i.venue, price(i.priceCents, i.currency)].filter(Boolean).join(' · '))}</span></li>`).join('')}</ol>` : '';
   const ld = items.filter(i => i.startsAt).map(i => ({'@type': 'Event', name: i.title, startDate: i.startsAt, url: i.url,
     location: {'@type': 'Place', name: i.venue || i.city, address: {'@type': 'PostalAddress', addressLocality: i.city, addressCountry: i.countryCode}},
     ...(Number.isInteger(i.priceCents) ? {offers: {'@type': 'Offer', price: (i.priceCents / 100).toFixed(2), priceCurrency: (i.currency || 'eur').toUpperCase(), url: i.url}} : {})}));

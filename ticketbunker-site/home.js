@@ -17,7 +17,7 @@ const POPULAR=['PT','GB','IE','ES','FR','NL','DE','IT','BE'];
 const ALL=('AD AL AT BA BE BG BY CH CY CZ DE DK EE ES FI FR GB GI GR HR HU IE IS IT LI LT LU LV MC MD ME MK MT NL NO PL PT RO RS SE SI SK SM UA VA US CA AU NZ').split(' ');
 import {CITY_PAGES} from './city-places.js?v=20261122';
 import {mountPlaceFinder,mountNearButton} from './place-finder.js?v=20261122';
-import {tripOptions} from './trip-partners.js?v=20261121';
+import {tripOptions,withClickRef} from './trip-partners.js?v=20261122';
 const PLACES=[['PT','Algarve'],['PT','Lisbon'],['PT','Porto'],['GB','London'],['GB','Edinburgh'],['GB','Manchester'],['IE','Dublin'],['ES','Madrid'],['ES','Barcelona'],['FR','Paris'],['NL','Amsterdam'],['DE','Berlin']];
 const saved=(()=>{try{return JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch{return {};}})();
 // City pages (/london, /algarve …) open preset to their place.
@@ -86,9 +86,12 @@ function priceLine(item){
  return item.priceCents===0?'Free':'From '+money(item.priceCents,item.currency);
 }
 const catLabel=item=>item.kind?eventKind(item.kind):discoveryCategories[item.category]||'Event';
+// Awin click reference for this page: a city page's slug, otherwise home.
+const pagRef=pathCity?.slug||'home';
 const cardItems=new Map();
 function card(item,{featured=false}={}){
- if(item.external)cardItems.set(item.url,item);
+ const href=item.external?withClickRef(item.url,pagRef,'card'):item.url;
+ if(item.external)cardItems.set(href,item);
  const place=[item.venue,item.city].filter(Boolean).join(' · ');
  const direct=item.source==='ticketbunker';
  const badges=`${item.featured||featured?'<span class="badge badge-featured">Featured</span>':''}${direct?'<span class="badge badge-direct">Bunker direct</span>':''}`;
@@ -97,7 +100,7 @@ function card(item,{featured=false}={}){
  const action=item.soldOut?'':`<span class="get">${item.external?'Get tickets ↗':'Get tickets'}</span>`;
  const body=`<div class="card-media">${image(item)}<span class="card-cat">${esc(catLabel(item))}</span>${badges}</div><div class="card-body"><p class="card-date">${esc(dateLine(item))}</p><h3>${esc(item.title)}</h3><p class="card-place">${esc(place)}</p><div class="card-foot"><div class="price"><strong>${esc(priceLine(item))}</strong>${via}</div>${action}</div></div>`;
  const ext=item.external?` target="_blank" rel="sponsored noopener noreferrer" aria-label="${esc(item.title)}: tickets via ${esc(item.seller)} (opens in a new tab)"`:'';
- return `<a class="tcard${direct?' is-direct':''}${item.soldOut?' is-soldout':''}" href="${esc(item.url)}"${ext}>${body}</a>`;
+ return `<a class="tcard${direct?' is-direct':''}${item.soldOut?' is-soldout':''}" href="${esc(href)}"${ext}>${body}</a>`;
 }
 const directTile=()=>`<a class="tcard host-tile direct-tile" href="/for-organisers"><div><span class="label">Organisers</span><h3>Sell direct here.</h3><p>No booking fee for your crowd, wallet tickets and a door app.</p><span class="head-link">Host your event ↗</span></div></a>`;
 const hostTile=()=>`<a class="tcard host-tile" href="/featured"><div><span class="label">Your event here</span><h3>Get featured.</h3><p>Put your event in the spotlight and at the front of these rails.</p><span class="head-link">Featured placement ↗</span></div></a>`;
@@ -278,7 +281,7 @@ function renderTrip(){
 // "Plan your trip" for a chosen place: travel, stays and food partners, live once approved.
 function renderPlan(){
  const box=$('#plan-trip');if(!state.city){box.hidden=true;return;}
- const options=tripOptions(state.country||pathCity?.country||'',state.city);
+ const options=tripOptions(state.country||pathCity?.country||'',state.city,{page:pagRef,spot:'plan'});
  box.hidden=false;
  $('#plan-trip-h').textContent='Plan your trip to '+state.city+'.';
  $('#plan-grid').innerHTML=options.map(o=>`<div class="plan-col"><b>${esc(o.label)}</b><span>${esc(o.blurb)}</span>${o.partners.length?o.partners.map(p=>`<a class="plan-link" href="${esc(p.url)}" target="_blank" rel="sponsored noopener">${esc(p.name)} ↗</a>`).join('')+'<small>Booked on the partner\u2019s site; their fees may apply.</small>':'<em class="plan-soon">Coming soon</em>'}</div>`).join('');
