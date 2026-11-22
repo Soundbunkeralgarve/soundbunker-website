@@ -70,7 +70,10 @@ function TicketList({navigation}) {
     refreshControl={<RefreshControl refreshing={refreshing} tintColor={C.teal} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }}/>}
     ListHeaderComponent={header}
     ListEmptyComponent={<Empty title="No tickets yet." text="Tickets bought with your verified email will appear here." action={<Button title="Explore events" onPress={() => navigation.navigate('Discover')}/>}/>}
-    ListFooterComponent={<Button title="Sign out" kind="ghost" small onPress={() => auth.signOut()} style={{marginTop: 20}}/>}
+    ListFooterComponent={<View style={{marginTop: 20, gap: 10}}>
+      <Button title="Sign out" kind="ghost" small onPress={() => auth.signOut()}/>
+      <Button title="Delete my account" kind="secondary" small onPress={() => navigation.navigate('DeleteAccount')}/>
+    </View>}
     renderItem={({item: t}) => <Pressable accessibilityRole="button" style={({pressed}) => [k.card, wide && {flex: 1}, pressed && {opacity: 0.85}]}
       onPress={() => ticketRef(t.url) ? navigation.navigate('Ticket', {ticket: t}) : openPage(t.url)}>
       {t.poster ? <Image source={t.poster} style={k.poster} contentFit="cover"/> : <View style={[k.poster, k.noPoster]}><Text style={k.tb}>TB</Text></View>}

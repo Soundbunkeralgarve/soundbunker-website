@@ -16,6 +16,7 @@ import EventFormScreen from './src/screens/EventFormScreen.js';
 import TiersScreen from './src/screens/TiersScreen.js';
 import StaffScreen from './src/screens/StaffScreen.js';
 import GuestsScreen from './src/screens/GuestsScreen.js';
+import DeleteAccountScreen from './src/screens/DeleteAccountScreen.js';
 import EventDashboard from './src/components/EventDashboard.js';
 
 const Stack = createNativeStackNavigator(), Tab = createBottomTabNavigator();
@@ -41,6 +42,7 @@ function Root() {
     <Stack.Screen name="Tiers" component={TiersScreen}/>
     <Stack.Screen name="Staff" component={StaffScreen}/>
     <Stack.Screen name="Guests" component={GuestsScreen}/>
+    <Stack.Screen name="DeleteAccount" component={DeleteAccountScreen}/>
   </Stack.Navigator>;
 }
 export default function App() {

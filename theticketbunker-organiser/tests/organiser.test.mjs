@@ -99,3 +99,19 @@ test('store submit config never points at another app (the scanner is 6823316315
   const eas = JSON.parse(readFileSync(new URL('../eas.json', import.meta.url)));
   assert.notEqual(eas.submit?.production?.ios?.ascAppId, '6823316315');
 });
+
+test('Delete my account opens a support case with the signed-in account, and says what happens', async () => {
+  const {deletionRequest, requestAccountDeletion, DELETION_TERMS, DELETION_DAYS} = await import('../lib/accountDeletion.js');
+  const r = deletionRequest('fan@example.com', 'theticketbunker', 'cancel my tickets too');
+  assert.equal(r.action, 'create'); assert.equal(r.category, 'general'); assert.equal(r.subject, 'Account deletion request');
+  assert.match(r.clientRequestId, /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/);
+  assert.match(r.body, /fan@example\.com/); assert.match(r.body, /Reason: cancel my tickets too/);
+  assert.ok(r.body.length <= 4000 && r.subject.length >= 5);
+  assert.notEqual(deletionRequest('a@b.c', 'x').clientRequestId, deletionRequest('a@b.c', 'x').clientRequestId);
+  assert.equal(DELETION_DAYS, 30); assert.ok(DELETION_TERMS.some(t => /kept only for as long as the law requires/.test(t)));
+  const calls = [], fetcher = async (url, o) => { calls.push({url, o}); return {ok: true, status: 201, json: async () => ({case: {reference: 'TB-1234'}, message: 'Your support case is saved.'})}; };
+  const out = await requestAccountDeletion('tok', 'fan@example.com', 'theticketbunker', '', fetcher);
+  assert.equal(out.reference, 'TB-1234');
+  assert.equal(calls[0].url, 'https://theticketbunker.com/api/ticketbunker-support');
+  assert.equal(calls[0].o.method, 'POST'); assert.equal(calls[0].o.headers.authorization, 'Bearer tok');
+});
