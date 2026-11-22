@@ -2,6 +2,8 @@ import {requireUser} from './lib/supabase-auth.js';
 import {json,parseJson} from './lib/http.js';
 import {ticketBunkerStripe,ticketBunkerPlatformReadiness,ticketBunkerOrigin} from './lib/ticketbunker-stripe.js';
 import {VIP_PRICES,VIP_PERKS,vipSalesEnabled,vipView} from './lib/ticketbunker-vip.js';
+import {VIP_ALLOCATION_EMAIL,deliverGuest} from './event-guest-list.js';
+const ID=/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i;
 const CUS=/^cus_[A-Za-z0-9]+$/;
 
 // GET: prices, perks and your own membership. POST actions:
@@ -18,7 +20,10 @@ export default async function handler(req,res){
   const current=await db.from('tb_vip_members').select('*').eq('user_id',userId).maybeSingle();
   if(current.error)throw current.error;
   const view=()=>({salesOpen:vipSalesEnabled(),prices:VIP_PRICES,perks:VIP_PERKS,...vipView(current.data)});
-  if(req.method==='GET')return json(res,view());
+  if(req.method==='GET'){
+   const v=view();
+   return json(res,v.member?{...v,guestlist:await vipGuestlist(db,email)}:v);
+  }
   const body=await parseJson(req),action=body.action;
   if(action==='interest'){
    if(!current.data){const saved=await db.from('tb_vip_members').insert({user_id:userId,email,status:'interested'});if(saved.error)throw saved.error;}
@@ -48,6 +53,17 @@ export default async function handler(req,res){
    if(checkout.livemode!==true||!/^https:\/\/checkout\.stripe\.com\//.test(checkout.url||''))throw Error('VIP secure checkout unavailable');
    return json(res,{url:checkout.url});
   }
+  if(action==='guestlist'){
+   if(!vipView(current.data).member)return json(res,{error:'Guestlist spots are for VIP members.'},403);
+   const allocation=String(body.allocationId||''),request=String(body.requestId||'');
+   const name=String(body.name||ctx.user.user_metadata?.full_name||'').trim().slice(0,100);
+   if(!ID.test(allocation)||!ID.test(request))return json(res,{error:'Choose an event.'},400);
+   if(name.length<2)return json(res,{error:'Add your name so the door can find you.',needName:true},400);
+   const r=await db.rpc('tb_claim_vip_guest_pass',{p_allocation:allocation,p_user:userId,p_request:request,p_name:name});
+   if(r.error)return json(res,{error:/[A-Za-z]/.test(r.error.message||'')?r.error.message:'That spot could not be claimed.'},409);
+   let emailSent=false;try{emailSent=await deliverGuest(db,r.data);}catch{ /* The pass is issued; it also shows in My tickets. */ }
+   return json(res,{claimed:true,emailSent,guestlist:await vipGuestlist(db,email)});
+  }
   if(action==='manage'){
    if(!CUS.test(current.data?.stripe_customer_id||''))return json(res,{error:'No VIP billing to manage yet.'},404);
    const portal=await ticketBunkerStripe('/v1/billing_portal/sessions',{method:'POST',body:{customer:current.data.stripe_customer_id,return_url:ticketBunkerOrigin+'/vip'}});
@@ -57,4 +73,20 @@ export default async function handler(req,res){
   return json(res,{error:'Unknown VIP action'},400);
  }catch(error){console.error('TicketBunker VIP failed',error?.code||error?.message);
   return json(res,{error:'VIP is unavailable right now. No payment has been taken. Please try again.'},503);}
+}
+
+// Upcoming events where organisers have given VIP members guestlist places.
+export async function vipGuestlist(db,email){
+ const found=await db.from('sb_guest_allocations').select('id,quota,sb_events(id,title,slug,starts_at,ends_at,venue,venue_city,venue_timezone,status)')
+  .eq('artist_email',VIP_ALLOCATION_EMAIL).is('revoked_at',null).limit(100);
+ if(found.error)throw found.error;
+ const open=(found.data||[]).filter(a=>a.sb_events?.status==='published'&&Date.parse(a.sb_events.ends_at||a.sb_events.starts_at)>Date.now());
+ if(!open.length)return [];
+ const ids=open.map(a=>a.id);
+ const orders=await db.from('sb_event_orders').select('guest_allocation_id,customer_email,status').in('guest_allocation_id',ids).in('status',['paid','needs_attention']);
+ if(orders.error)throw orders.error;
+ return open.map(a=>{const mine=orders.data.filter(o=>o.guest_allocation_id===a.id);
+  return {allocationId:a.id,event:{title:a.sb_events.title,slug:a.sb_events.slug,startsAt:a.sb_events.starts_at,venue:a.sb_events.venue,city:a.sb_events.venue_city,timezone:a.sb_events.venue_timezone},
+   spotsLeft:Math.max(0,a.quota-mine.length),claimed:mine.some(o=>o.customer_email===email)};})
+  .sort((x,y)=>Date.parse(x.event.startsAt)-Date.parse(y.event.startsAt));
 }

@@ -3,6 +3,8 @@ import {json,parseJson,safeText,validEmail} from './lib/http.js';
 import {signedTicket} from './lib/events.js';
 import {sendTransactionalEmail} from './lib/notify.js';
 import {eventTicketArtwork} from './lib/ticketbunker-email-template.js';
+// VIP guestlist spots are an ordinary allocation under this address; no invitation is sent.
+export const VIP_ALLOCATION_EMAIL='vip@theticketbunker.com';
 const ID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 export function guestInput(body){
  const name=safeText(body.name,100).trim(),email=safeText(body.email,254).trim().toLowerCase();
@@ -53,6 +55,15 @@ export default async function handler(req,res){
   return json(res,{allocations:found.data,guests:guests.data});
  }
  const action=String(b.action||'');
+ if(action==='vipSpots'){
+  if(!ID.test(String(b.eventId||''))||!await owner(db,ctx.user,b.eventId))return json(res,{error:'Only the organiser can manage VIP spots'},403);
+  const quota=Number(b.quota);
+  if(!ID.test(String(b.tierId||''))||!Number.isInteger(quota)||quota<1||quota>2000)return json(res,{error:'Choose a ticket type and a number of VIP spots from 1 to 2,000'},400);
+  const r=await db.rpc('sb_manage_guest_allocation',{p_actor:ctx.user.id,p_event:b.eventId,p_tier:b.tierId,p_name:'TicketBunker VIP',p_email:VIP_ALLOCATION_EMAIL,p_quota:quota,p_allocation:null,p_revoke:false});
+  if(r.error)return json(res,{error:r.error.code==='23505'?'This event already has VIP spots. Change the limit on that line instead.':r.error.message},409);
+  const marked=await db.from('sb_guest_allocations').update({invitation_sent_at:new Date().toISOString()}).eq('id',r.data);if(marked.error)throw marked.error;
+  return json(res,{saved:true,vip:true});
+ }
  if(action==='create'||action==='limit'||action==='revoke'){
   if(!ID.test(String(b.eventId||''))||!await owner(db,ctx.user,b.eventId))return json(res,{error:'Only the organiser can manage allocations'},403);
   let a=null,input;
@@ -71,6 +82,7 @@ export default async function handler(req,res){
  if(!isOwner&&a.artist_email!==ctx.user.email.toLowerCase())return json(res,{error:'Guest list access denied'},403);
  if(b.action==='invite'){
   if(!isOwner)return json(res,{error:'Only the organiser can send invitations'},403);
+  if(a.artist_email===VIP_ALLOCATION_EMAIL)return json(res,{saved:true,emailSent:true});
   if(a.revoked_at)return json(res,{error:'Allocation is revoked'},409);
   if(a.invitation_sent_at)return json(res,{saved:true,emailSent:true});
   let emailSent=false;

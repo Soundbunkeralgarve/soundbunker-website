@@ -29,3 +29,10 @@ test('during VIP early access the event page says so and books with the buyer si
   assert.match(src, /api\('event-checkout',\{\.\.\.input,requestId\},vipWindow\(event\)\?await signInToken\(\):undefined\)/);
   assert.match(fs.readFileSync(new URL('../event.html', import.meta.url), 'utf8'), /\/vendor\/supabase\.js/);
 });
+
+test('members see a guestlist section and organisers get a VIP spots form', () => {
+  assert.match(page, /id="vip-guestlist" hidden/);
+  const org = fs.readFileSync(new URL('../organiser.html', import.meta.url), 'utf8');
+  assert.match(org, /id="vip-spots-form"/);
+  assert.match(fs.readFileSync(new URL('../organiser-v2.js', import.meta.url), 'utf8'), /action:'vipSpots'/);
+});
