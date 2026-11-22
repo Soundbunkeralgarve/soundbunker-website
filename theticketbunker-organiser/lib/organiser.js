@@ -51,7 +51,7 @@ export function eventInput(form, editingId = '') {
   const t = v => String(v ?? '').trim();
   const data = {action: editingId ? 'editEvent' : 'event', ...(editingId ? {eventId: editingId} : {}),
     title: t(form.title), kind: form.kind, venue: t(form.venue), venueCity: t(form.venueCity), headlineArtist: t(form.headlineArtist),
-    startsAt: form.startsAt, endsAt: form.endsAt, description: t(form.description)};
+    startsAt: form.startsAt, endsAt: form.endsAt, vipEarlyAccessUntil: form.vipEarlyAccessUntil || '', description: t(form.description)};
   const fail = (message, field) => { throw Object.assign(Error(message), {field}); };
   if (data.title.length < 3 || data.title.length > 160) fail('Give the event a name of 3–160 characters.', 'title');
   if (!KINDS.some(([k]) => k === data.kind)) fail('Choose an event category.', 'kind');
@@ -61,6 +61,10 @@ export function eventInput(form, editingId = '') {
   const start = stampDate(data.startsAt), end = stampDate(data.endsAt);
   if (!start) fail('Choose when the event starts.', 'startsAt');
   if (!end || end <= start) fail('Set a finish time after the start time.', 'endsAt');
+  if (data.vipEarlyAccessUntil) {
+    const vip = stampDate(data.vipEarlyAccessUntil);
+    if (!vip || vip <= new Date() || vip >= start) fail('VIP early access must end in the future and before the event starts.', 'vipEarlyAccessUntil');
+  }
   if (data.description.length < 20 || data.description.length > 4000) fail('Full event information needs 20–4,000 characters.', 'description');
   return data;
 }
@@ -127,6 +131,9 @@ export const activeStaff = d => ({
   staff: (d?.staff || []).filter(x => !x.revoked_at),
   invites: (d?.invites || []).filter(x => !x.revoked_at && !x.accepted_at)
 });
+// TicketBunker VIP guestlist spots are stored as an allocation under this address (no invitation is sent).
+export const VIP_ALLOCATION_EMAIL = 'vip@theticketbunker.com';
+export const isVipAllocation = a => a?.artist_email === VIP_ALLOCATION_EMAIL;
 export function guestRoster(d) {
   return (d?.allocations || []).map(a => {
     const guests = (d.guests || []).filter(g => g.allocation_id === a.id);

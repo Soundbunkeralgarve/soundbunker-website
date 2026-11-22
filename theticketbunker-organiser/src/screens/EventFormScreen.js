@@ -21,8 +21,8 @@ const nice = st => { const d = stampDate(st); return d ? d.toLocaleString('en-GB
 export default function EventFormScreen({route, navigation}) {
   const org = useOrganiser(), editing = route.params?.id ? org.event(route.params.id) : null;
   const [form, setForm] = useState(() => editing ? {title: editing.title, kind: editing.event_kind || 'club', venue: editing.venue || '', venueCity: editing.venue_city || '',
-    headlineArtist: editing.headline_artist || '', startsAt: toStamp(editing.starts_at), endsAt: toStamp(editing.ends_at), description: editing.description || ''}
-    : {title: '', kind: 'club', venue: '', venueCity: '', headlineArtist: '', startsAt: '', endsAt: '', description: ''});
+    headlineArtist: editing.headline_artist || '', startsAt: toStamp(editing.starts_at), endsAt: toStamp(editing.ends_at), vipEarlyAccessUntil: toStamp(editing.vip_presale_until), description: editing.description || ''}
+    : {title: '', kind: 'club', venue: '', venueCity: '', headlineArtist: '', startsAt: '', endsAt: '', vipEarlyAccessUntil: '', description: ''});
   const [poster, setPoster] = useState(null), [picker, setPicker] = useState(''), [busy, setBusy] = useState(false), [error, setError] = useState({});
   useEffect(() => { navigation.setOptions({title: editing ? 'Edit event' : 'New event'}); }, []);
   const set = k => v => setForm(f => ({...f, [k]: v}));
@@ -64,7 +64,9 @@ export default function EventFormScreen({route, navigation}) {
     <Text style={[s.body, {fontSize: 15, color: C.muted}]}>{label}</Text>
     <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={() => {
       if (picker === which) { setPicker(''); return; }
-      if (!form[which]) pickDate(which, which === 'endsAt' && stampDate(form.startsAt) ? new Date(stampDate(form.startsAt).getTime() + 5 * 3600000) : suggested());
+      const start = stampDate(form.startsAt);
+      if (!form[which]) pickDate(which, which === 'endsAt' && start ? new Date(start.getTime() + 5 * 3600000)
+        : which === 'vipEarlyAccessUntil' && start ? new Date(Math.max(Date.now() + 3600000, start.getTime() - 48 * 3600000)) : suggested());
       setPicker(which);
     }} style={[s.input, {justifyContent: 'center'}, error[which] && {borderColor: C.bad}]}>
       <Text style={[s.body, !form[which] && {color: C.muted}]}>{nice(form[which])}</Text>
@@ -86,6 +88,11 @@ export default function EventFormScreen({route, navigation}) {
       <Field label="Town / city" value={form.venueCity} onChangeText={set('venueCity')} maxLength={120} placeholder="e.g. Loulé"/>
       <Field label="Headline act (optional)" value={form.headlineArtist} onChangeText={set('headlineArtist')} maxLength={120} placeholder="Artist / DJ / comedian"/>
       <View style={{gap: 16}}>{dateRow('startsAt', 'Starts · venue local time')}{dateRow('endsAt', 'Ends · venue local time')}</View>
+      <View style={st.vip}>
+        {dateRow('vipEarlyAccessUntil', 'VIP early access until (optional)')}
+        <Text style={s.muted}>Before this time only TicketBunker VIP members can book. Leave empty for everyone at once.</Text>
+        {form.vipEarlyAccessUntil ? <Button title="No VIP early access" kind="ghost" small onPress={() => { setPicker(''); set('vipEarlyAccessUntil')(''); }}/> : null}
+      </View>
       <Field label="Full event information" value={form.description} onChangeText={set('description')} multiline maxLength={4000} error={error.description}
         hint={`${form.description.length} / 4,000 · line-up, door times, last entry, age limits, accessibility, travel and refunds.`}
         placeholder="Tell fans what to expect."/>
@@ -110,6 +117,7 @@ function DateTimePickerAndroidTime(day, done) {
   DateTimePickerAndroid.open({value: day, mode: 'time', is24Hour: true, onChange: (e, t) => { if (e.type === 'set' && t) { const d = new Date(day); d.setHours(t.getHours(), t.getMinutes(), 0, 0); done(d); } }});
 }
 const st = StyleSheet.create({
+  vip: {gap: 10, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#d9b35b'},
   poster: {gap: 10, backgroundColor: C.card, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: C.line},
   preview: {width: '100%', aspectRatio: 1, borderRadius: 12, backgroundColor: C.cardHi}
 });

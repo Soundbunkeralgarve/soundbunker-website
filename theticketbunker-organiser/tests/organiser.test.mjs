@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {eventInput, pricedTicketRows, publishState, groupEvents, statusLabel, localStamp, stampDate, reportStats, activeStaff, guestRoster, organiserApi, publicUrl, KINDS} from '../lib/organiser.js';
+import {isVipAllocation, eventInput, pricedTicketRows, publishState, groupEvents, statusLabel, localStamp, stampDate, reportStats, activeStaff, guestRoster, organiserApi, publicUrl, KINDS} from '../lib/organiser.js';
 
 const NOW = Date.parse('2026-11-22T10:00:00Z');
 const form = (over = {}) => ({title: 'Sunset Sessions', kind: 'club', venue: 'SoundBunker, Loulé', venueCity: 'Loulé', headlineArtist: '',
@@ -18,6 +18,11 @@ test('event details are checked like the web portal and sent as venue wall-clock
   assert.throws(() => eventInput(form({description: 'too short'})), e => e.field === 'description');
   assert.throws(() => eventInput(form({kind: 'rave'})), e => e.field === 'kind');
   assert.deepEqual(KINDS.map(k => k[0]), ['club', 'show', 'comedy', 'festival', 'sports', 'workshop', 'community', 'other']);
+  assert.equal(eventInput(form({vipEarlyAccessUntil: '2026-12-01T12:00'})).vipEarlyAccessUntil, '2026-12-01T12:00');
+  assert.equal(eventInput(form()).vipEarlyAccessUntil, '');
+  assert.throws(() => eventInput(form({vipEarlyAccessUntil: '2026-12-06T12:00'})), e => e.field === 'vipEarlyAccessUntil');
+  assert.throws(() => eventInput(form({vipEarlyAccessUntil: '2020-01-01T12:00'})), e => e.field === 'vipEarlyAccessUntil');
+  assert.equal(isVipAllocation({artist_email: 'vip@theticketbunker.com'}), true);
   const d2 = stampDate('2026-12-05T20:30');
   assert.equal(localStamp(d2), '2026-12-05T20:30');
 });

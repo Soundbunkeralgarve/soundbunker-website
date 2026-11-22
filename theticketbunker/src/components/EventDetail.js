@@ -6,13 +6,14 @@ import {Button} from './ui.js';
 import {whenText, priceText, sellerText} from '../../lib/format.js';
 import {discoveryCategories} from '../../lib/site.js';
 import {ticketLink} from '../../lib/planner.js';
+import {earlyAccessUntil} from '../../lib/vip.js';
 import {useTrip} from '../state.js';
 import {openPage} from '../open.js';
 import GetThere from './GetThere.js';
 
 export default function EventDetail({item, onOpenTrip, compact}) {
   const trip = useTrip(), saved = trip.has(item.key || item.id || item.url);
-  const price = priceText(item);
+  const price = priceText(item), vipUntil = earlyAccessUntil(item);
   const tickets = () => { openPage(ticketLink(item, 'app-event')); if (!saved) trip.save(item); };
   const share = () => Share.share({message: `${item.title} · ${whenText(item)}\n${ticketLink(item, 'app-share')}`}).catch(() => {});
   return <ScrollView style={s.screen} contentContainerStyle={{paddingBottom: 48}}>
@@ -29,6 +30,7 @@ export default function EventDetail({item, onOpenTrip, compact}) {
         {item.external ? <Text style={s.muted}>{item.seller} sells, delivers and supports this ticket. Prices on their site are final.</Text>
           : <Text style={s.muted}>Pay securely with TicketBunker. Your tickets appear in My tickets.</Text>}
       </View>
+      {vipUntil ? <Text style={[s.body, {color: '#d9b35b'}]}>VIP early access until {whenText({startsAt: vipUntil, timezone: item.timezone}, 'long')}. TicketBunker VIP members can book now; everyone else from then.</Text> : null}
       {item.soldOut ? <Button title="Sold out" disabled/> : <Button title={item.external ? `Get tickets on ${item.seller}` : 'Get tickets'} onPress={tickets}/>}
       <Button title={saved ? 'In My trip ✓' : 'Add to My trip'} kind={saved ? 'secondary' : 'ghost'}
         onPress={() => { if (saved) { onOpenTrip?.(); } else { trip.save(item); Alert.alert('Saved to My trip', 'Plan getting there, a bed and food for this night in My trip.'); } }}/>

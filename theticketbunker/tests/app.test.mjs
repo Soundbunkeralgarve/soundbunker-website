@@ -140,3 +140,21 @@ test('store config matches the release rules', () => {
   assert.ok(app.android.blockedPermissions.includes('android.permission.ACCESS_BACKGROUND_LOCATION'));
   assert.match(app.ios.infoPlist.NSLocationWhenInUseUsageDescription, /never sent to us/);
 });
+
+test('VIP: early-access note only while the window is open; guestlist claims ask for a name once', async () => {
+  const {earlyAccessUntil, claimSpot, memberLine, newRequestId} = await import('../lib/vip.js');
+  assert.equal(earlyAccessUntil({raw: {vip_presale_until: '2026-12-01T12:00:00Z'}}, NOW), '2026-12-01T12:00:00Z');
+  assert.equal(earlyAccessUntil({raw: {vip_presale_until: '2026-11-01T12:00:00Z'}}, NOW), '');
+  assert.equal(earlyAccessUntil({}, NOW), '');
+  assert.match(newRequestId(), /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/);
+  const bodies = [], fetcher = async (url, o) => { const b = JSON.parse(o.body); bodies.push(b);
+    return b.name ? {ok: true, status: 200, json: async () => ({claimed: true, emailSent: true, guestlist: []})}
+      : {ok: false, status: 400, json: async () => ({error: 'Add your name so the door can find you.', needName: true})}; };
+  const e = await claimSpot('tok', 'alloc', {}, fetcher).catch(x => x);
+  assert.equal(e.needName, true);
+  const r = await claimSpot('tok', 'alloc', {requestId: e.requestId, name: 'Steve'}, fetcher);
+  assert.equal(r.claimed, true);
+  assert.equal(bodies[0].requestId, bodies[1].requestId, 'the retry reuses the same request id');
+  assert.match(memberLine({member: true, status: 'active', renewsOn: '2026-12-22T00:00:00Z'}), /Renews 22 December 2026/);
+  assert.equal(memberLine({member: false}), '');
+});

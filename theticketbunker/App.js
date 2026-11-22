@@ -15,6 +15,7 @@ import TicketsScreen from './src/screens/TicketsScreen.js';
 import ResultsScreen from './src/screens/ResultsScreen.js';
 import CityScreen from './src/screens/CityScreen.js';
 import TicketScreen from './src/screens/TicketScreen.js';
+import VipScreen from './src/screens/VipScreen.js';
 import EventDetail from './src/components/EventDetail.js';
 
 const Stack = createNativeStackNavigator(), Tab = createBottomTabNavigator();
@@ -46,6 +47,7 @@ export default function App() {
         <Stack.Screen name="City" component={CityScreen}/>
         <Stack.Screen name="Event" component={EventScreen} options={{title: ''}}/>
         <Stack.Screen name="Ticket" component={TicketScreen} options={{title: 'Your ticket'}}/>
+        <Stack.Screen name="Vip" component={VipScreen} options={{title: 'TicketBunker VIP'}}/>
       </Stack.Navigator>
     </NavigationContainer>
   </TripProvider></AuthProvider></SafeAreaProvider>;

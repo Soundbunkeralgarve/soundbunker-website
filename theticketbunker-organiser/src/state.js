@@ -19,8 +19,18 @@ async function token() {
   if (error || !data.session) throw Error('Your session expired. Please sign in again.');
   return data.session.access_token;
 }
-// One call: path plus optional POST body, signed with the current session.
-export const call = async (path, body) => organiserApi(await token())(path, body);
+// One call: path plus optional POST body, signed with the current session. If the site
+// rejects the sign-in (401), renew it once and retry; if that fails, sign out so the app
+// asks for the password again instead of showing an empty account.
+export async function call(path, body) {
+  try { return await organiserApi(await token())(path, body); }
+  catch (e) {
+    if (e.status !== 401) throw e;
+    const {data, error} = await withDeadline(() => auth.auth.refreshSession(), 15000).catch(err => ({error: err}));
+    if (error || !data?.session) { await auth.auth.signOut().catch(() => {}); throw Error('Your sign-in has expired. Please sign in again.'); }
+    return organiserApi(data.session.access_token)(path, body);
+  }
+}
 
 const Ctx = createContext(null);
 export function OrganiserProvider({children}) {

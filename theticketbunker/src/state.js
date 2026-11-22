@@ -58,6 +58,13 @@ export function AuthProvider({children}) {
       const {data, error} = await withDeadline(() => auth.auth.getSession(), 10000);
       if (error || !data.session) throw Error('Your session expired. Please sign in again.');
       return data.session.access_token;
+    },
+    // After the site rejects a token (401): renew once; if that fails, sign out so the app
+    // shows the sign-in screen instead of an error.
+    async renew() {
+      const {data, error} = await withDeadline(() => auth.auth.refreshSession(), 15000).catch(err => ({error: err}));
+      if (error || !data?.session) { await auth.auth.signOut().catch(() => {}); throw Error('Your sign-in has expired. Please sign in again.'); }
+      return data.session.access_token;
     }
   }), [session]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
