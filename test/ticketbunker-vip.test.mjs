@@ -61,3 +61,15 @@ test('the VIP endpoint refuses checkout while sales are off, without contacting 
  assert.match(hook,/type==='vip_membership'\)await fulfilVipCheckout/);
  assert.match(hook,/customer\.subscription\.deleted'\]\.includes\(event\.type\)\)await refreshVipSubscription/);
 });
+
+test('VIP guestlist: organisers add spots without an invitation; members claim through the one-pass function', async () => {
+ const gl=await readFile(new URL('../api/event-guest-list.js',import.meta.url),'utf8');
+ assert.match(gl,/VIP_ALLOCATION_EMAIL='vip@theticketbunker\.com'/);
+ assert.match(gl,/if\(action==='vipSpots'\)\{[\s\S]*?owner\(db,ctx\.user,b\.eventId\)[\s\S]*?invitation_sent_at/,'only the event owner, and no email is sent');
+ assert.match(gl,/if\(a\.artist_email===VIP_ALLOCATION_EMAIL\)return json\(res,\{saved:true,emailSent:true\}\)/);
+ const vip=await readFile(new URL('../api/ticketbunker-vip.js',import.meta.url),'utf8');
+ assert.match(vip,/if\(!vipView\(current\.data\)\.member\)return json\(res,\{error:'Guestlist spots are for VIP members\.'\},403\)/);
+ assert.match(vip,/rpc\('tb_claim_vip_guest_pass',\{p_allocation:allocation,p_user:userId/,'claims are tied to the signed-in account');
+ const sql=await readFile(new URL('../SUPABASE_TICKETBUNKER_VIP_GUESTLIST.sql',import.meta.url),'utf8');
+ for(const rule of [/a\.artist_email<>'vip@theticketbunker\.com'/,/public\.tb_is_vip\(p_user\)/,/g\.guest_email=member_email limit 1/,/used_count>=a\.quota/,/used_count>=t\.quantity_total/,/for update/])assert.match(sql,rule);
+});

@@ -12,8 +12,13 @@ function showPrices(){
  document.querySelectorAll('[data-cur]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.cur===currency)));
  for(const plan of ['monthly','yearly'])$(`[data-price="${plan}"]`).innerHTML=esc(money(prices[plan][currency],currency).replace(/\.00$/,''))+`<small>/${plan==='yearly'?'year':'month'}</small>`;
 }
+function renderGuestlist(){
+ const box=$('#vip-guestlist'),list=state?.member?state.guestlist||[]:null;
+ box.hidden=!list;if(!list)return;
+ $('#gl-list').innerHTML=list.length?list.map(g=>`<article class="gl-item"><div><b>${esc(g.event.title)}</b><span>${esc([day(g.event.startsAt),g.event.venue,g.event.city].filter(Boolean).join(' · '))}</span></div>${g.claimed?'<em class="gl-done">✓ On the list</em>':g.spotsLeft>0?`<button type="button" class="vip-btn" data-claim="${esc(g.allocationId)}">Claim my spot · ${g.spotsLeft} left</button>`:'<em>All spots taken</em>'}</article>`).join(''):'<p class="vip-small">No VIP guestlist nights yet. New ones appear here as partner venues add them.</p>';
+}
 function render(){
- showPrices();
+ showPrices();renderGuestlist();
  const buttons=[...document.querySelectorAll('[data-plan]')];
  if(!token){
   status(`<p>Sign in or create a free account to join VIP.</p><a class="vip-btn" href="/login?role=buyer&next=%2Fvip">Sign in to join</a>`);
@@ -40,7 +45,14 @@ async function go(body){
   state=result;render();
  }catch(e){status(`<p class="vip-error">${esc(e.message)}</p>`);}
 }
-document.addEventListener('click',e=>{
+document.addEventListener('click',async e=>{
+ const claim=e.target.closest('[data-claim]');
+ if(claim){claim.disabled=true;claim.textContent='Claiming…';
+  try{let r;try{r=await api('ticketbunker-vip',{action:'guestlist',allocationId:claim.dataset.claim,requestId:crypto.randomUUID()},token);}
+   catch(err){if(!/name/i.test(err.message))throw err;const name=prompt('Your name for the door list');if(!name)throw err;r=await api('ticketbunker-vip',{action:'guestlist',allocationId:claim.dataset.claim,requestId:crypto.randomUUID(),name},token);}
+   state={...state,guestlist:r.guestlist};renderGuestlist();status(`<p>You\u2019re on the guestlist. ${r.emailSent?'Your pass is in your email and':'Your pass is'} in <a href="/my-tickets">My tickets</a>.</p>`);}
+  catch(err){claim.disabled=false;claim.textContent='Try again';status(`<p class="vip-error">${esc(err.message)}</p>`);}
+  return;}
  const cur=e.target.closest('[data-cur]');if(cur){currency=cur.dataset.cur;showPrices();return;}
  const b=e.target.closest('[data-plan]');if(!b)return;
  if(b.dataset.go==='signin')location.href='/login?role=buyer&next=%2Fvip';
