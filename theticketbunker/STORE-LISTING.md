@@ -62,4 +62,4 @@ This is the fan app for TicketBunker (theticketbunker.com), a ticketing platform
 - **Account deletion:** My tickets → Delete my account.
 
 ## Screenshots
-Use the images in `docs/screenshots/`: iPhone 6.9" (home, city, event, get-there, map, trip, tickets, VIP) and iPad 13" (home, list + detail). Store screenshots must come from the release build without simulator chrome. Re-take them after the Skiddle test listing fix is live, so it doesn't appear in any shot.
+Store-ready shots (release build, clean 9:41 status bar, no personal account) are in `docs/store/`: iPhone 6.9" 1320×2868 (`iphone-6.9/01–08`) and iPad 13" 2064×2752 (`ipad-13/01–02`). `docs/screenshots/` holds the earlier development shots.

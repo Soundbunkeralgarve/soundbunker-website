@@ -45,7 +45,7 @@ export function travelEstimates([lat1, lon1], [lat2, lon2]) {
 }
 export function estimateText({km, walkMin, carMin}) {
   const dist = km < 1 ? Math.round(km * 1000 / 50) * 50 + ' m' : (km < 10 ? km.toFixed(1) : Math.round(km)) + ' km';
-  const mins = m => m < 60 ? m + ' min' : Math.floor(m / 60) + ' h ' + (m % 60 ? m % 60 + ' min' : '').trim();
+  const mins = m => m < 60 ? m + ' min' : (Math.floor(m / 60) + ' h ' + (m % 60 ? m % 60 + ' min' : '')).trim();
   // Walking stops being a sensible suggestion past about an hour.
   return [walkMin <= 75 && 'about ' + mins(walkMin) + ' walk', 'about ' + mins(carMin) + ' by taxi', dist + ' away'].filter(Boolean).join(' · ');
 }

@@ -27,6 +27,7 @@ npx expo run:android   # emulator
 ```
 
 ## Release (Steve)
+- Store records (created 22 Nov 2026): App Store Connect app 6837950372 · Google Play app 4976172756937096556 (Play developer account 8835832747595155098).
 - Store text, privacy answers and App Review notes are in `STORE-LISTING.md`.
 - iOS and Android always ship together, with the same `version` in `app.json` (tests check this).
 - The bundle ID and package are `pt.soundbunker.theticketbunker`. Reserve them before the first upload.

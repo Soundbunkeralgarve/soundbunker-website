@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {directionLinks, destinationText} from '../get-there.js';
+import {directionLinks, destinationText, estimateText} from '../get-there.js';
 import {placeUkVenues, skiddleEvent} from '../api/partner-feed.js';
 
 const venue = {venue: 'Lightbox London', address: '6 South Lambeth Place, London, SW8 1SP', city: 'London'};
@@ -72,4 +72,9 @@ test("Skiddle's own test venue never reaches the listings", () => {
     <venue id="1"><name>The Skiddle Basement</name><address>Ashley Hall Farm</address><town>Preston</town><postcode>PR3 2EB</postcode></venue>
     <tickets><ticket id="1"><faceValue>5.00</faceValue><status statuscode="1">On sale</status></ticket></tickets>`;
   assert.equal(skiddleEvent('43156253', 'https://www.skiddle.com/whats-on/x/43156253/', body, {affiliateId: '15993', now: Date.parse('2026-11-22T00:00:00Z')}), null);
+});
+
+test('whole hours read cleanly ("about 1 h walk", no double space)', () => {
+  assert.equal(estimateText({km: 3.7, walkMin: 60, carMin: 16}), 'about 1 h walk · about 16 min by taxi · 3.7 km away');
+  assert.match(estimateText({km: 5, walkMin: 70, carMin: 15}), /^about 1 h 10 min walk/);
 });

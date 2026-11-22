@@ -27,6 +27,7 @@ npx expo run:android
 ```
 
 ## Release (Steve)
+- Store records (created 22 Nov 2026): App Store Connect app 6837950804 · Google Play app 4974060826560110726 (Play developer account 8835832747595155098).
 - iOS and Android always ship together, with the same `version` in `app.json` (tests check this).
 - The bundle ID and package are `pt.soundbunker.theticketbunker.organiser`. The home-screen name is "TB Organiser" (`expo.name`); change it before the first upload if you prefer another.
 - Store text, privacy answers and App Review notes are in `STORE-LISTING.md`.
