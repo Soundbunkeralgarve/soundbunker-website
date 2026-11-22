@@ -4,7 +4,7 @@
 // "Coming soon" rather than sending people somewhere we cannot stand behind.
 import {tripOptions, withClickRef} from './trip-partners.js?v=20261122';
 import {gygPlace, GYG_PLACES} from './gyg-box.js?v=20261121c';
-import {directionLinks, travelEstimates, estimateText} from './get-there.js?v=20261122c';
+import {directionLinks, travelEstimates, estimateText} from './get-there.js?v=20261122d';
 
 const KEY = 'tb-my-trip', MAX = 12;
 const GYG_PARTNER = 'KNICMG4';
