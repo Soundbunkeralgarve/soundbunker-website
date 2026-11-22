@@ -5,6 +5,19 @@
 const AWIN_AFFILIATE = 3163272;
 export const awinLink = (merchant, destination) =>
   `https://www.awin1.com/cread.php?awinmid=${merchant}&awinaffid=${AWIN_AFFILIATE}&ued=${encodeURIComponent(destination)}`;
+// Awin click references, so its reports show where each sale came from: clickref is the
+// page (home, a city slug), clickref2 the spot (card, plan, planner, city-list). Other
+// partners' links are left exactly as they are.
+export function withClickRef(url, page, spot) {
+  try {
+    const u = new URL(url);
+    if (!/(^|\.)awin1\.com$/.test(u.hostname)) return url;
+    const clean = v => String(v || '').toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 50);
+    if (page) u.searchParams.set('clickref', clean(page));
+    if (spot) u.searchParams.set('clickref2', clean(spot));
+    return u.toString();
+  } catch { return url; }
+}
 
 // [kind, name, countries it serves ('*' = everywhere), approved, link(cityName)]
 export const TRIP_PARTNERS = Object.freeze([
@@ -20,8 +33,8 @@ export const TRIP_PARTNERS = Object.freeze([
 ]);
 export const TRIP_KINDS = Object.freeze([['travel', 'Get there', 'Trains, coaches and ferries to the show.'], ['stay', 'Stay nearby', 'Hotels close to the venue.'], ['eat', 'Eat nearby', 'Discounts on food before or after.']]);
 
-export function tripOptions(country, city) {
+export function tripOptions(country, city, {page = '', spot = ''} = {}) {
   return TRIP_KINDS.map(([kind, label, blurb]) => ({kind, label, blurb,
     partners: TRIP_PARTNERS.filter(([k, , countries, approved]) => k === kind && approved && (countries.includes('*') || countries.includes(country)))
-      .map(([, name, , , link]) => ({name, url: link(city)}))}));
+      .map(([, name, , , link]) => ({name, url: withClickRef(link(city), page, spot)}))}));
 }

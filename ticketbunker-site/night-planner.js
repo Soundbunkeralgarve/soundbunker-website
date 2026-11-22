@@ -2,7 +2,7 @@
 // own site, so instead of one basket we walk the visitor through them in order and keep
 // the plan in "My trip" (this browser only). Steps without an approved partner say
 // "Coming soon" rather than sending people somewhere we cannot stand behind.
-import {tripOptions} from './trip-partners.js?v=20261121';
+import {tripOptions, withClickRef} from './trip-partners.js?v=20261122';
 import {gygPlace, GYG_PLACES} from './gyg-box.js?v=20261121c';
 
 const KEY = 'tb-my-trip', MAX = 12;
@@ -19,11 +19,12 @@ export function tourLink(city, country) {
 // The ordered steps for one event: tickets first, then getting there, a bed, food, extras.
 export function plannerSteps(item) {
   const city = item.city || '', country = item.countryCode || '';
-  const options = Object.fromEntries(tripOptions(country, city).map(o => [o.kind, o]));
+  const page = (typeof window !== 'undefined' && window.__TB_CITY?.slug) || 'home';
+  const options = Object.fromEntries(tripOptions(country, city, {page, spot: 'planner'}).map(o => [o.kind, o]));
   const partnerStep = (kind, label, blurb) => ({kind, label, blurb, links: options[kind]?.partners || []});
   const tours = tourLink(city, country);
   return [
-    {kind: 'tickets', label: 'Tickets', blurb: item.external ? `Booked on ${item.seller}.` : 'No booking fee with TicketBunker.', links: [{name: item.external ? item.seller : 'TicketBunker', url: item.url}]},
+    {kind: 'tickets', label: 'Tickets', blurb: item.external ? `Booked on ${item.seller}.` : 'No booking fee with TicketBunker.', links: [{name: item.external ? item.seller : 'TicketBunker', url: item.external ? withClickRef(item.url, page, 'planner') : item.url}]},
     partnerStep('travel', 'Get there', city ? `Trains, coaches and ferries to ${city}.` : 'Trains, coaches and ferries.'),
     partnerStep('stay', 'Stay nearby', item.venue ? `Hotels close to ${item.venue}.` : 'Hotels close to the venue.'),
     partnerStep('eat', 'Eat nearby', 'Food deals before or after.'),
