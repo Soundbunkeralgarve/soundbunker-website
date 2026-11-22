@@ -28,9 +28,7 @@
       "android": {
         "track": "internal"
       },
-      "ios": {
-        "ascAppId": "6823316315"
-      }
+      "ios": {}
     }
   }
 }

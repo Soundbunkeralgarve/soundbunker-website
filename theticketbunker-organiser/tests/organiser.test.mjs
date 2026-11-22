@@ -94,3 +94,8 @@ test('store config: own bundle id, same version on both stores, no location or m
   assert.ok(app.android.blockedPermissions.includes('android.permission.RECORD_AUDIO'));
   assert.ok(app.ios.infoPlist.LSApplicationQueriesSchemes.includes('ticketbunkerscanner'));
 });
+
+test('store submit config never points at another app (the scanner is 6823316315)', () => {
+  const eas = JSON.parse(readFileSync(new URL('../eas.json', import.meta.url)));
+  assert.notEqual(eas.submit?.production?.ios?.ascAppId, '6823316315');
+});
