@@ -6,7 +6,7 @@
 - Theatre Tickets Direct: approved Awin catalogue snapshot remains on sale via its tracked links.
 - Entradas.com: approved Spain browse links remain separate from dated feed inventory.
 - GetYourGuide: existing partner-tagged location widgets and links remain available.
-- Viator: production API still needs activation/key verification; do not advertise sandbox listings as real inventory.
+- Viator: Basic production access was enabled on 23 November after completing the customer-service contact. The production key was installed as the existing server-only sensitive Vercel secret and production was rebuilt. That deployment successfully loaded 450 live products across the 15 configured destinations, but concurrent cold starts also hit `/destinations` rate limits. This repair replaces that repeated lookup with verified destination IDs and bounds product-search concurrency. Public city-page inventory must still be checked after deployment; this does not claim complete UK/EU coverage or native TicketBunker checkout. Buyers follow Viator's returned tracked product links to book and pay there.
 - CORAS: sandbox client only, production locked; native ticket fulfilment has not been activated.
 
 ## Sharing

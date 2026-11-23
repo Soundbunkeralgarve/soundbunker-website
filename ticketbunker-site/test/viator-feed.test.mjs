@@ -27,20 +27,50 @@ test('off-site or broken Viator products are dropped', () => {
   assert.equal(viatorItem(product({title: ''}), {place: 'Algarve', countryCode: 'PT'}), null);
 });
 
-test('Viator stays off without a key and searches each place with the key header', async () => {
+test('Viator stays off without a key and searches verified destinations directly with bounded concurrency', async () => {
   let calls = 0;
   assert.deepEqual(await loadViator({}, {fetcher: async () => { calls++; }}), []);
   assert.equal(calls, 0);
-  const seen = [];
+  const seen = []; let active = 0, maxActive = 0;
   const fetcher = async (url, opts) => {
-    seen.push([url, opts.headers['exp-api-key']]);
-    if (url.endsWith('/destinations')) return {ok: true, json: async () => ({destinations: VIATOR_PLACES.map(([name], i) => ({destinationId: 100 + i, name, type: 'CITY'}))})};
     const body = JSON.parse(opts.body);
+    seen.push({url, opts, body});
+    active++; maxActive = Math.max(maxActive, active);
+    await new Promise(resolve => setImmediate(resolve));
+    active--;
     return {ok: true, json: async () => ({products: [product({productCode: 'P' + body.filtering.destination})]})};
   };
-  const items = await loadViator({VIATOR_API_KEY: 'k'}, {fetcher});
+  const items = await loadViator({VIATOR_API_KEY: ' fixture-token\n'}, {fetcher});
   assert.equal(items.length, VIATOR_PLACES.length);
-  assert.ok(seen.every(([, key]) => key === 'k'));
+  assert.equal(seen.length, 15, 'one production product search per configured destination, no taxonomy or sandbox probes');
+  assert.ok(seen.every(({url}) => url === 'https://api.viator.com/partner/products/search'));
+  assert.ok(seen.every(({opts, body}) => opts.method === 'POST' && opts.headers['exp-api-key'] === 'fixture-token' && body.currency === 'EUR' && body.pagination.count === 30));
+  assert.equal(maxActive, 4, 'concurrent searches stay bounded');
+  const expected = {Algarve:['PT','774'], Lisbon:['PT','538'], Porto:['PT','26879'], Madeira:['PT','5392'], Barcelona:['ES','562'], Madrid:['ES','566'], Seville:['ES','556'], Malaga:['ES','956'], Ibiza:['ES','4217'], Paris:['FR','479'], Amsterdam:['NL','525'], Rome:['IT','511'], Dublin:['IE','503'], London:['GB','737'], Edinburgh:['GB','739']};
+  for (const [city, [countryCode, id]] of Object.entries(expected)) {
+    const item = items.find(i => i.city === city);
+    assert.equal(item?.id, 'viator:P' + id, city + ' uses its verified destination ID');
+    assert.equal(item.countryCode, countryCode);
+  }
+});
+
+test('Viator keeps successful destinations when one product search is rate limited', async () => {
+  const items = await loadViator({VIATOR_API_KEY:'fixture-token'}, {fetcher:async (url, opts) => {
+    const id = JSON.parse(opts.body).filtering.destination;
+    if (id === '774') return {ok:false, status:429};
+    return {ok:true, json:async () => ({products:[product({productCode:'P' + id})]})};
+  }});
+  assert.equal(items.length, 14);
+  assert.ok(!items.some(i => i.city === 'Algarve'));
+  assert.ok(items.some(i => i.city === 'Lisbon'));
+  assert.ok(items.every(i => new URL(i.url).searchParams.get('pid') === 'P00333211'), 'provider tracking remains intact');
+});
+
+test('Viator rejects a fully failed provider instead of reporting an empty successful catalogue', async () => {
+  let calls = 0;
+  await assert.rejects(loadViator({VIATOR_API_KEY:'fixture-token'}, {fetcher:async () => {calls++; return {ok:false, status:401};}}),
+    /^Error: All Viator searches failed: Viator search 401 for Algarve$/);
+  assert.equal(calls, 15, 'failed searches do not trigger taxonomy or sandbox probes');
 });
 
 test('open-dated trips blend in, match Algarve towns and are not crowded out by dated events', () => {
