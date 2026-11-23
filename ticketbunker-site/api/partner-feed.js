@@ -290,10 +290,11 @@ async function listings() {
       if (viator.status === 'fulfilled') console.log('partner-feed viator', viator.value.length);
       if (awin.status === 'fulfilled') console.log('partner-feed awin', awin.value.length);
       const keep = (r, test) => r.value || cached?.items.filter(test) || [];
-      const items = [...keep(skiddle, i => i.provider === 'skiddle'), ...keep(viator, i => i.provider === 'viator'), ...keep(awin, i => i.provider.startsWith('awin-'))];
+      // Expired Viator search prices cannot be renewed by an unsuccessful refresh.
+      const items = [...keep(skiddle, i => i.provider === 'skiddle'), ...(viator.value || []), ...keep(awin, i => i.provider.startsWith('awin-'))];
       cached = {until: Date.now() + feedCacheDuration([skiddle, viator, awin]), items}; return items;
     })
-    .catch(() => { cached = {until: Date.now() + 5 * 6e4, items: cached?.items || []}; return cached.items; })
+    .catch(() => { cached = {until: Date.now() + 5 * 6e4, items: cached?.items.filter(i => i.provider !== 'viator') || []}; return cached.items; })
     .finally(() => { loading = null; });
   return loading;
 }

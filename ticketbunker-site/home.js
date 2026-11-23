@@ -7,8 +7,9 @@ import {homeRails} from './sample-listings.js?v=20261123-mixed-cards';
 import {selectFeaturedEvents} from './featured-selection.js';
 import {renderGygBox} from './gyg-box.js?v=20261121c';
 import {renderPartnerDirectory} from './partner-directory.js?v=20261123';
-import {openPlanner,mountMyTrip,tourLink} from './night-planner.js?v=20261123';
+import {saveNightToMyTrip,mountMyTrip,tourLink} from './night-planner.js?v=20261123-trip-flow';
 import {openShare,eventLink} from './event-share.js?v=20261123';
+import {PARTY_TYPES,partyType,tripHref,eventTripState} from './home-trip-context.js?v=20261123-trip-flow';
 const $=s=>document.querySelector(s);
 const reduceMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -16,7 +17,7 @@ const reduceMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 const KEY='tb-destination';
 const countryNames=new Intl.DisplayNames(['en'],{type:'region'}),countryName=c=>{try{return countryNames.of(c)||c;}catch{return c;}};
 const POPULAR=['PT','GB','IE','ES','FR','NL','DE','IT','BE'];
-const ALL=('AD AL AT BA BE BG BY CH CY CZ DE DK EE ES FI FR GB GI GR HR HU IE IS IT LI LT LU LV MC MD ME MK MT NL NO PL PT RO RS SE SI SK SM UA VA US CA AU NZ').split(' ');
+const ALL=[...new Set(CITY_PAGES.map(([, , country])=>country))];
 import {CITY_PAGES} from './city-places.js?v=20261122';
 import {mountPlaceFinder,mountNearButton,locate} from './place-finder.js?v=20261122';
 import {nearestCities} from './city-coords.js?v=20261122';
@@ -28,8 +29,32 @@ const pathCity=window.__TB_CITY||null;
 // A place's own page when it has one (/london), otherwise the homepage preset to it.
 const cityPage=name=>{const n=String(name||'').trim().toLowerCase();return n?CITY_PAGES.find(([slug,label,,query])=>[slug,label.replace(/^the /,'').toLowerCase(),query.toLowerCase()].includes(n))||null:null;};
 const cityHref=name=>{const c=cityPage(name);return c?'/'+c[0]:'/?city='+encodeURIComponent(name);};
+let party=partyType(new URLSearchParams(location.search).get('party'));
+const planningQuery=(value)=>{const q=new URLSearchParams(stateQuery(value).slice(1));if(party)q.set('party',party);return q.size?'?'+q:'';};
 let state=readState(location.search,pathCity?{city:pathCity.city,country:pathCity.country}:saved),events=[],partners=[],feed=[],loadError=false,limit=12;
 const form=$('#destination-search'),country=$('#ds-country'),city=$('#ds-city'),when=$('#ds-when'),from=$('#ds-from'),to=$('#ds-to'),category=$('#ds-category');
+
+function formState(){return {country:country.value,city:city.value.trim(),when:when.value,category:category.value,range:{from:from.value,to:to.value}};}
+function buildHref(item){return tripHref('/plan-your-trip',eventTripState(state,item),{party,event:item.key});}
+function renderTripPath(current=state){
+ const where=placeLabel(current);
+ $('#trip-path-place').textContent=where?'Your plans for '+where+'. Book each part with the named provider.':'Find your event, then add a stay, travel and food in one place.';
+ document.querySelectorAll('[data-build-trip],[data-trip-step],[data-trip-route]').forEach(a=>a.href=tripHref(a.dataset.tripRoute||'/plan-your-trip',current,{party,step:a.dataset.tripStep||''}));
+ document.querySelectorAll('[data-party]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.party===party)));
+ const label=PARTY_TYPES.find(([key])=>key===party)?.[1];
+ $('#trip-type-note').textContent=label?label+(where?' in '+where:'')+' · Check each event’s age, admission and group terms.':'Choose your tickets first. Add the rest when you’re ready.';
+}
+$('#ds-away').onclick=()=>{form.scrollIntoView({block:'center',behavior:reduceMotion()?'auto':'smooth'});country.focus();};
+form.addEventListener('input',()=>renderTripPath(formState()));
+document.querySelectorAll('[data-party]').forEach(b=>b.onclick=()=>{
+ party=b.dataset.party===party?'':b.dataset.party;
+ const next=formState(),type=PARTY_TYPES.find(([key])=>key===party);
+ if(type?.[2])next.category=type[2];else if(state.category==='family')next.category='';
+ if(party==='weekend'&&next.when==='any')next.when='weekend';
+ commit(next,{scroll:false});
+});
+document.querySelector('[data-trip-tickets]').onclick=e=>{e.preventDefault();commit(formState(),{scroll:true});};
+const coverage=$('#coverage-count');if(coverage)coverage.textContent=CITY_PAGES.length+' destinations · '+new Set(CITY_PAGES.map(p=>p[2])).size+' countries';
 
 const opt=(v,l)=>{const o=document.createElement('option');o.value=v;o.textContent=l;return o;};
 const sorted=codes=>[...new Set(codes)].sort((a,b)=>countryName(a).localeCompare(countryName(b)));
@@ -51,17 +76,17 @@ function commit(next,{scroll=false}={}){
  state={...state,...next};if(state.when!=='dates')state.range={from:'',to:''};limit=12;
  try{localStorage.setItem(KEY,JSON.stringify({country:state.country,city:state.city}));}catch{}
  const onCityPage=pathCity&&state.city===pathCity.city&&(!state.country||state.country===pathCity.country);
- history.replaceState(null,'',(pathCity&&!onCityPage?'/':location.pathname)+stateQuery(onCityPage?{...state,city:'',country:''}:state)+location.hash);
+ history.replaceState(null,'',(pathCity&&!onCityPage?'/':location.pathname)+planningQuery(onCityPage?{...state,city:'',country:''}:state)+location.hash);
  syncForm();render();
  if(next.city!==undefined&&next.city!==feedCity)loadFeed().then(render);
  if(next.city!==undefined)loadNear();
  if(scroll)(searching()?$('#discover'):$('#rails')).scrollIntoView({behavior:reduceMotion()?'auto':'smooth'});
 }
 form.onsubmit=e=>{e.preventDefault();
- const next={country:country.value,city:city.value.trim(),when:when.value,category:category.value,range:{from:from.value,to:to.value}};
+ const next=formState();
  // A place with its own page opens it, carrying any date or type filter along.
  const page=cityPage(next.city);
- if(page&&(!next.country||next.country===page[2])&&!(pathCity&&pathCity.slug===page[0])){location.href='/'+page[0]+stateQuery({...next,city:'',country:''});return;}
+ if(page&&(!next.country||next.country===page[2])&&!(pathCity&&pathCity.slug===page[0])){location.href='/'+page[0]+planningQuery({...next,city:'',country:''});return;}
  commit(next,{scroll:true});};
 when.onchange=()=>{$('#ds-dates').hidden=when.value!=='dates';};
 document.querySelectorAll('[data-quick-when]').forEach(b=>b.onclick=()=>commit({when:b.dataset.quickWhen},{scroll:true}));
@@ -91,11 +116,10 @@ function priceLine(item){
 const catLabel=item=>item.kind?eventKind(item.kind):discoveryCategories[item.category]||'Event';
 // Awin click reference for this page: a city page's slug, otherwise home.
 const pagRef=pathCity?.slug||'home';
-const cardItems=new Map(),shareItems=new Map();
+const shareItems=new Map();
 function card(item,{featured=false}={}){
  const href=item.external?withClickRef(item.url,pagRef,'card'):item.url;
  shareItems.set(item.key,item);
- if(item.external)cardItems.set(href,item);
  const place=[item.venue,item.city].filter(Boolean).join(' · ');
  const direct=item.source==='ticketbunker';
  const badges=`${item.featured||featured?'<span class="badge badge-featured">Featured</span>':''}${direct?'<span class="badge badge-direct">Bunker direct</span>':''}`;
@@ -104,7 +128,7 @@ function card(item,{featured=false}={}){
  const action=item.soldOut?'':`<span class="get">${item.external?'Get tickets ↗':'Get tickets'}</span>`;
  const body=`<div class="card-media">${image(item)}<span class="card-cat">${esc(catLabel(item))}</span>${badges}</div><div class="card-body"><p class="card-date">${esc(dateLine(item))}</p><h3>${esc(item.title)}</h3><p class="card-place">${esc(place)}</p><div class="card-foot"><div class="price"><strong>${esc(priceLine(item))}</strong>${via}</div>${action}</div></div>`;
  const ext=item.external?` target="_blank" rel="sponsored noopener noreferrer" aria-label="${esc(item.title)}: tickets via ${esc(item.seller)} (opens in a new tab)"`:'';
- return `<article class="listing-card"><a class="tcard${direct?' is-direct':''}${item.soldOut?' is-soldout':''}" href="${esc(href)}"${ext}>${body}</a><div class="listing-actions"><a href="${esc(eventLink(item))}">Event details</a><button type="button" data-share-listing="${esc(item.key)}" aria-label="Share ${esc(item.title)}">Share</button></div></article>`;
+ return `<article class="listing-card"><a class="tcard${direct?' is-direct':''}${item.soldOut?' is-soldout':''}" href="${esc(href)}"${ext}>${body}</a><div class="listing-actions"><a href="${esc(eventLink(item))}">Event details</a><button type="button" data-share-listing="${esc(item.key)}" aria-label="Share ${esc(item.title)}">Share</button><a href="${esc(buildHref(item))}" data-build-event="${esc(item.key)}">Build this trip →</a></div></article>`;
 }
 const directTile=()=>`<a class="tcard host-tile direct-tile" href="/for-organisers"><div><span class="label">Organisers</span><h3>Sell direct here.</h3><p>No booking fee for your crowd, wallet tickets and a door app.</p><span class="head-link">Host your event ↗</span></div></a>`;
 const hostTile=()=>`<a class="tcard host-tile" href="/featured"><div><span class="label">Your event here</span><h3>Get featured.</h3><p>Put your event in the spotlight and at the front of these rails.</p><span class="head-link">Featured placement ↗</span></div></a>`;
@@ -160,7 +184,7 @@ function renderBigFeature(){
  }
  const place=[pick.venue,pick.city].filter(Boolean).join(' · ');shareItems.set(pick.key,pick);
  shareItems.set(pick.key,pick);
- $('#big-feature-card').innerHTML=`<div class="bf-card"><div class="bf-media">${image(pick)}<span class="badge badge-featured">Featured</span></div><div class="bf-body"><span class="card-cat">${esc(catLabel(pick))}</span><p class="card-date">${esc(dateLine(pick))}</p><h3>${esc(pick.title)}</h3><p class="card-place">${esc(place)}</p><div class="bf-foot"><strong>${esc(priceLine(pick))}</strong></div><a class="btn-solid" href="${esc(pick.url)}">Get tickets ↗</a><div class="listing-actions"><button type="button" data-share-listing="${esc(pick.key)}" aria-label="Share ${esc(pick.title)}">Share this event</button></div></div></div>`;
+ $('#big-feature-card').innerHTML=`<div class="bf-card"><div class="bf-media">${image(pick)}<span class="badge badge-featured">Featured</span></div><div class="bf-body"><span class="card-cat">${esc(catLabel(pick))}</span><p class="card-date">${esc(dateLine(pick))}</p><h3>${esc(pick.title)}</h3><p class="card-place">${esc(place)}</p><div class="bf-foot"><strong>${esc(priceLine(pick))}</strong></div><a class="btn-solid" href="${esc(pick.url)}">Get tickets ↗</a><div class="listing-actions"><button type="button" data-share-listing="${esc(pick.key)}" aria-label="Share ${esc(pick.title)}">Share this event</button><a href="${esc(buildHref(pick))}" data-build-event="${esc(pick.key)}">Build this trip →</a></div></div></div>`;
 }
 
 // Hero film: six short graded clips (one plays at a time, the next preloads), crossfading
@@ -341,17 +365,18 @@ function renderHub(all,now){
 }
 
 // Town suggestions follow the country picked: its city pages first, then towns in the feeds.
-let feedTowns=[];
 function fillCityList(){
  const pages=CITY_PAGES.filter(([,,c])=>!country.value||c===country.value).map(([,n])=>n.replace(/^the /,''));
- $('#ds-cities').replaceChildren(...[...new Set([...pages,...feedTowns])].map(c=>opt(c,c)));
+ const towns=blend(events,partners,Date.now(),feed).filter(i=>!country.value||i.countryCode===country.value).map(i=>i.city).filter(Boolean);
+ $('#ds-cities').replaceChildren(...[...new Set([...pages,...towns])].map(c=>opt(c,c)));
 }
-country.addEventListener('change',fillCityList);
+country.addEventListener('change',()=>{const chosen=cityPage(city.value);if(chosen&&country.value&&chosen[2]!==country.value)city.value='';fillCityList();renderTripPath(formState());});
 
 function render(){
  const now=Date.now(),all=blend(events,partners,now,feed),place=placeOnly(),where=placeLabel();
  $('#db-summary').textContent=[state.category?discoveryCategories[state.category]:'Everything',where||'Anywhere',whenLabel()].filter(Boolean).join(' · ');
  $('#db-clear').hidden=!(state.country||state.city||state.category||state.when!=='any');
+ renderTripPath();
  renderBigFeature();
  renderNear(now);
  renderPlan();
@@ -404,8 +429,7 @@ function render(){
  renderHub(all,now);
  renderTabs();
  $('#show-more').onclick=()=>{limit+=12;render();};
- const cities=[...new Set(all.filter(i=>!state.country||i.countryCode===state.country).map(i=>i.city).filter(Boolean))].sort();
- feedTowns=cities;fillCityList();
+ fillCityList();
 }
 
 // Every city page is a real link in the HTML (for people and search engines); here the
@@ -424,15 +448,17 @@ const showCountry=(()=>{
 })();
 mountPlaceFinder({showCountry});
 // "Near me" in the search bar opens the closest city page.
-mountNearButton($('#ds-near'));
+mountNearButton($('#ds-near'),{onFound:slug=>{const next=formState();location.href='/'+slug+planningQuery({...next,city:'',country:''});}});
 document.querySelectorAll('[data-place]').forEach(a=>a.onclick=e=>{e.preventDefault();const [c,p]=a.dataset.place.split('|');commit({country:c,city:p},{scroll:true});});
 
-// Partner tickets open in a new tab; this tab then offers the rest of the night.
+// Share is separate from planning. Saving a public event never records a purchase.
 document.addEventListener('click',e=>{
  const share=e.target.closest('[data-share-listing]');
  if(share){const item=shareItems.get(share.dataset.shareListing);if(item)openShare(item);return;}
- const a=e.target.closest('a.tcard[target="_blank"]');if(!a||e.defaultPrevented||e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey)return;
- const item=cardItems.get(a.getAttribute('href'));if(item)setTimeout(()=>openPlanner(item),150);
+ const build=e.target.closest('[data-build-event]');
+ if(build){const item=shareItems.get(build.dataset.buildEvent);if(item){saveNightToMyTrip(item);build.href=buildHref(item);}return;}
+ const trip=e.target.closest('[data-build-trip],[data-trip-step],[data-trip-route]');
+ if(trip)trip.href=tripHref(trip.dataset.tripRoute||'/plan-your-trip',formState(),{party,step:trip.dataset.tripStep||''});
 });
 mountMyTrip();
 // The site works as an installable app; the worker keeps the last pages for poor signal.
