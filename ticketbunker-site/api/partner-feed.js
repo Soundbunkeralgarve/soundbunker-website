@@ -269,6 +269,12 @@ export async function loadAwin(env = process.env, {fetcher = fetch, snapshots = 
   return settled.flatMap(s => s.status === 'fulfilled' ? s.value : []).filter(i => !seen.has(i.id) && seen.add(i.id));
 }
 
+// Retry failed providers promptly, including keys awaiting production activation.
+// Successful providers keep serving their listings during the shorter cache window.
+export function feedCacheDuration(results) {
+  return results.some(result => result.status === 'rejected') ? 5 * 6e4 : CACHE_MS;
+}
+
 let cached, loading;
 async function listings() {
   if (cached && cached.until > Date.now()) return cached.items;
@@ -281,7 +287,7 @@ async function listings() {
       if (awin.status === 'fulfilled') console.log('partner-feed awin', awin.value.length);
       const keep = (r, test) => r.value || cached?.items.filter(test) || [];
       const items = [...keep(skiddle, i => i.provider === 'skiddle'), ...keep(viator, i => i.provider === 'viator'), ...keep(awin, i => i.provider.startsWith('awin-'))];
-      cached = {until: Date.now() + (skiddle.status === 'fulfilled' ? CACHE_MS : 5 * 6e4), items}; return items;
+      cached = {until: Date.now() + feedCacheDuration([skiddle, viator, awin]), items}; return items;
     })
     .catch(() => { cached = {until: Date.now() + 5 * 6e4, items: cached?.items || []}; return cached.items; })
     .finally(() => { loading = null; });

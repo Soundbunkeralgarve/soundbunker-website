@@ -1,10 +1,39 @@
 # Ticket Bunker partner listings
 
-Prepared 21 November 2026. This is the first-stage **affiliate discovery** implementation, not an approved supplier connection. No applications, supplier permissions, account creation, commissions or working affiliate IDs are established by these files.
+Updated 23 November 2026. This document describes the original controlled static
+catalogue. The shop also has the separately implemented affiliate feeds and the
+Entradas.com browse directory described below; their publication paths do not use
+this legacy JSON configuration.
+
+## Current integrations
+
+- `partner-directory.js` adds approved Entradas.com browse links for Spain, using
+  Awin programme 24761 and the existing publisher configuration. Madrid,
+  Barcelona, Málaga and Seville use verified supplier city URLs; other Spanish
+  destinations use a clearly labelled national directory. The tracked redirect
+  was checked to reach the correct supplier page with Awin attribution
+  parameters. No purchase or commission payout was tested.
+- The directory follows the selected destination and stays separate from event
+  results and ticket counts. Customers browse and pay on entradas.com; it is not
+  a catalogue API or a Ticket Bunker checkout integration.
+- `api/partner-feed.js` retains independent Skiddle, Viator and Awin feed loaders.
+  Failed providers retry after five minutes; a fully successful load is cached
+  for three hours. Viator requires a working production API key; sandbox access
+  must not be substituted for production inventory.
+- CORAS catalogue search is implemented for isolated sandbox development only.
+  See [CORAS setup](ticketbunker-coras.md) for the live-account and settlement
+  dependencies. It is not wired to public discovery or payments.
+- FareHarbor and Tiqets require their own onboarding and approved account access
+  before their offers can be published. No inferred booking-API permission is
+  granted by this code.
 
 ## Current state
 
-All four providers are pending; the configuration is disabled and contains no listings or booking links. The entire homepage section remains hidden. Fetch, JSON and validation errors leave native Ticket Bunker event discovery available. No external ticket is passed to native checkout, ticket issuance, QR, wallet or refund handlers.
+The original four-provider configuration is disabled and contains no listings or
+booking links. Its own section remains hidden. Entradas.com's separate directory
+does not depend on those legacy records. Fetch, JSON and validation errors leave
+native Ticket Bunker event discovery available. No external ticket is passed to
+native checkout, ticket issuance, QR, wallet or refund handlers.
 
 | Area | Provider | Initial market and approval |
 | --- | --- | --- |
@@ -47,4 +76,9 @@ Cards identify who sells the booking and say that the provider's prices, fees, t
 
 ## Scope and next stage
 
-No live provider API, feed ingestion, seat selection, transaction, commission reconciliation, portal credential storage or direct-checkout integration has been implemented. Those depend on approved account access and supplier-specific contracts. The static catalogue is intentionally empty until actual approved inventory and attribution links are available. Pausing a provider or disabling the catalogue removes its offers on the next page load.
+This static publication path does not implement seat selection, transactions,
+commission reconciliation, portal credential storage or direct checkout. Those
+depend on approved account access and supplier-specific contracts. The legacy
+static catalogue remains empty; the separate feed and directory paths above
+handle their own listings. Pausing a legacy provider or disabling this JSON
+catalogue affects only its own offers.
