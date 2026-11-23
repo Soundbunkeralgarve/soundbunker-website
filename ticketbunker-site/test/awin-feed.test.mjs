@@ -2,7 +2,8 @@ import fs from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {gzipSync,gunzipSync} from 'node:zlib';
-import {parseCsv, awinItem, loadAwin} from '../api/partner-feed.js';
+import {parseCsv, awinItem, loadAwin, loadAwinSnapshots, pickListings} from '../api/partner-feed.js';
+import {blend,filterItems} from '../discovery-model.js';
 
 const csv = 'aw_deep_link,product_name,merchant_id,merchant_name,merchant_image_url,search_price,currency,category_name,aw_product_id\n' +
   '"https://www.awin1.com/pclick.php?p=1&a=3163272&m=1936","Les Misérables, ""the musical""",1936,Theatre Tickets Direct,https://img.example/lesmis.jpg,29.50,GBP,Musicals,111\n' +
@@ -36,9 +37,30 @@ test('the bundled Theatre Tickets Direct snapshot gives West End shows with http
   const items = await loadAwin({});
   assert.ok(items.length > 200, String(items.length));
   for (const i of items) {
-    assert.equal(i.provider, 'awin-1936'); assert.equal(i.category, 'shows'); assert.equal(i.city, 'London');
+    assert.equal(i.provider, 'awin-1936'); assert.ok(['shows','dining'].includes(i.category)); assert.equal(i.city, 'London');
     assert.match(i.url, /^https:\/\/www\.awin1\.com\/.*a=3163272/); assert.ok(!i.image || i.image.startsWith('https://'));
   }
   const raw = gunzipSync(fs.readFileSync(new URL('../partner-data/awin-1936.csv.gz', import.meta.url))).toString('utf8');
   assert.doesNotMatch(raw, /apikey/i, 'no Awin key in the bundled file');
+});
+
+
+test('the full London snapshot keeps classic West End shows and separates restaurant products',async()=>{
+ const snapshot=await loadAwinSnapshots(), london=pickListings(snapshot,{city:'London',country:'GB'});
+ assert.equal(snapshot.length,238);assert.equal(london.length,snapshot.length,'all approved London snapshot products remain reachable');
+ for(const title of ['Wicked','Mamma Mia','The Phantom Of The Opera'])assert.equal(london.find(i=>i.title===title)?.category,'shows',title+' stays in the London theatre catalogue');
+ assert.equal(london.find(i=>i.title==='Faulty Towers The Dining Experience')?.category,'shows','the actual London Plays category takes precedence over dining words in a play title');
+ const raw=parseCsv(gunzipSync(fs.readFileSync(new URL('../partner-data/awin-1936.csv.gz',import.meta.url))).toString('utf8'));
+ const restaurants=raw.filter(r=>r.merchant_category==='London Restaurants');
+ assert.ok(restaurants.length>0);
+ for(const row of restaurants){
+  const item=london.find(i=>i.id===awinItem(row).id);assert.ok(item);assert.equal(item.category,'dining');
+  assert.equal(item.url,row.aw_deep_link,'tracked seller link is preserved');
+  assert.equal(item.priceCents,Math.round(Number(row.search_price)*100),'supplier price is preserved');
+ }
+ const shared=blend([],[],Date.now(),london);
+ assert.equal(filterItems(shared,{city:'London',category:'dining'}).length,restaurants.length,'restaurants use their own shared discovery category');
+ const others=Array.from({length:100},(_,n)=>({...london[0],id:'other:'+n,provider:'viator',city:'London',category:'shows'}));
+ assert.equal(pickListings(others,{city:'London'}).length,80,'other city providers retain the existing cap');
+ assert.equal(pickListings(snapshot).filter(i=>i.category==='shows').length,2,'national per-town limits remain unchanged');
 });
