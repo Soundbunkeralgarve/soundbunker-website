@@ -1,0 +1,89 @@
+name: TicketBunker customer and organiser store builds
+
+on:
+  workflow_dispatch:
+    inputs:
+      upload:
+        description: Upload successful builds to TestFlight and Google Play internal testing
+        type: boolean
+        default: false
+  push:
+    branches: [codex/ticketbunker-app-release-20261123]
+    paths: [.github/workflows/ticketbunker-mobile-release.yml]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ticketbunker-new-mobile-apps
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.repository == 'Soundbunkeralgarve/soundbunker-website'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [theticketbunker, theticketbunker-organiser]
+        platform: [ios, android]
+        include:
+          - app: theticketbunker
+            apple_id: '6837950372'
+            bundle_id: pt.soundbunker.theticketbunker
+            project_id: 0027b9f4-e08e-4887-93b6-44f7bc8552b7
+          - app: theticketbunker-organiser
+            apple_id: '6837950804'
+            bundle_id: pt.soundbunker.theticketbunker.organiser
+            project_id: c3c754ba-b9e9-4b76-a679-88c310f87d7e
+    defaults:
+      run:
+        working-directory: ${{ matrix.app }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check release identity and existing build access
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EXPECTED_APPLE_ID: ${{ matrix.apple_id }}
+          EXPECTED_BUNDLE_ID: ${{ matrix.bundle_id }}
+          EXPECTED_PROJECT_ID: ${{ matrix.project_id }}
+        run: |
+          node ../scripts/check-ticketbunker-release.mjs
+          test -n "$EXPO_TOKEN" || { echo '::error::The existing Expo build token is not configured in GitHub Actions. No store build was started.'; exit 1; }
+      - run: npm ci --no-audit --no-fund
+      - run: npm test
+      - run: npm run doctor
+      - name: Export iOS and Android
+        run: |
+          npx expo export --platform ios --output-dir dist-release-ios
+          npx expo export --platform android --output-dir dist-release-android
+      - name: Prepare existing Apple API access
+        if: matrix.platform == 'ios'
+        env:
+          APPLE_KEY_P8: ${{ secrets.HUB_APPLE_API_KEY_P8 }}
+          APPLE_API_KEY_ID: ${{ secrets.HUB_APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.HUB_APPLE_API_ISSUER }}
+        run: |
+          node ../scripts/prepare-ticketbunker-apple-key.mjs
+      - name: Build signed iOS and Android apps
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EXPO_ASC_KEY_ID: ${{ secrets.HUB_APPLE_API_KEY_ID }}
+          EXPO_ASC_ISSUER_ID: ${{ secrets.HUB_APPLE_API_ISSUER }}
+          EXPO_APPLE_TEAM_ID: 488DLN54MP
+          EXPO_APPLE_TEAM_TYPE: COMPANY_OR_ORGANIZATION
+          UPLOAD_BUILDS: ${{ github.event_name == 'push' || inputs.upload }}
+          RELEASE_PLATFORM: ${{ matrix.platform }}
+        run: |
+          set -euo pipefail
+          args=(build --platform "$RELEASE_PLATFORM" --profile production --non-interactive --wait --json --message "TicketBunker app release $GITHUB_SHA")
+          if [ "$UPLOAD_BUILDS" = true ]; then args+=(--auto-submit); fi
+          npx --yes eas-cli@25.2.0 "${args[@]}" > "$RUNNER_TEMP/${{ matrix.app }}-builds.json"
+          node ../scripts/summarize-ticketbunker-builds.mjs "$RUNNER_TEMP/${{ matrix.app }}-builds.json"
+      - name: Remove temporary Apple API key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/ticketbunker-existing-apple-api.p8"
