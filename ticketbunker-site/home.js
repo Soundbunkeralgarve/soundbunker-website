@@ -6,6 +6,7 @@ import {discoveryCategories,blend,filterItems,sortItems,featureFor,readState,sta
 import {homeRails} from './sample-listings.js?v=20261121-real';
 import {selectFeaturedEvents} from './featured-selection.js';
 import {renderGygBox} from './gyg-box.js?v=20261121c';
+import {renderPartnerDirectory} from './partner-directory.js?v=20261123';
 import {openPlanner,mountMyTrip,tourLink} from './night-planner.js?v=20261122f';
 const $=s=>document.querySelector(s);
 const reduceMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -408,6 +409,7 @@ function render(){
 
  $('#partner-note').hidden=!all.some(i=>i.external);
  renderGygBox($('#gyg-box'),state);
+ renderPartnerDirectory($('#partner-directory'),state,{page:pagRef});
  renderHub(all,now);
  renderTabs();
  $('#show-more').onclick=()=>{limit+=12;render();};

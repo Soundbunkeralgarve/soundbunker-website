@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {parseSkiddleFeed, pickListings, loadSkiddle} from '../api/partner-feed.js';
+import {parseSkiddleFeed, pickListings, loadSkiddle, feedCacheDuration} from '../api/partner-feed.js';
 import {feedItem, blend, filterItems} from '../discovery-model.js';
 
 const now = Date.parse('2026-11-21T12:00:00Z');
@@ -56,6 +56,18 @@ test('the feed can be switched off and reports provider failures', async () => {
   assert.deepEqual(await loadSkiddle({SKIDDLE_FEED_OFF: '1'}, {fetcher: ok, now}), []);
   assert.equal((await loadSkiddle({}, {fetcher: ok, now})).length, 1);
   await assert.rejects(loadSkiddle({}, {fetcher: async () => ({ok: false, status: 503}), now}));
+});
+
+test('any failed provider shortens the cache so activation and outage recovery are retried', () => {
+  const successful = () => ({status: 'fulfilled', value: []});
+  assert.equal(feedCacheDuration([successful(), successful(), successful()]), 3 * 60 * 60 * 1000);
+  for (const provider of [0, 1, 2]) {
+    const results = [successful(), successful(), successful()];
+    results[provider] = {status: 'rejected', reason: Error('provider unavailable')};
+    assert.equal(feedCacheDuration(results), 5 * 60 * 1000);
+  }
+  assert.equal(feedCacheDuration([successful(), successful(), successful()]), 3 * 60 * 60 * 1000,
+    'the normal cache window returns once all providers recover');
 });
 
 test('feed listings blend in as external, filterable homepage items', () => {

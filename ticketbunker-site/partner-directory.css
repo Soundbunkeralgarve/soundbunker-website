@@ -1,0 +1,10 @@
+.partner-directory{padding:30px 0;border-top:1px solid #d5d0c6;border-bottom:1px solid #d5d0c6;background:#f7f5ef}
+.partner-directory .section-head{margin-bottom:12px}
+.partner-directory .label{font-size:.875rem}
+.partner-directory h2{font-size:clamp(1.7rem,4vw,2.3rem)}
+.partner-directory p{max-width:78ch;margin:12px 0;font-size:1rem;line-height:1.6}
+.partner-directory .directory-links{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}
+.partner-directory .directory-links a{display:inline-flex;align-items:center;min-height:44px;padding:10px 18px;border:1px solid #cfc9bd;border-radius:999px;background:#fff;font-size:1rem;font-weight:600}
+.partner-directory .directory-links a:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.partner-directory .directory-links a:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
+.partner-directory .directory-terms{font-size:.875rem;color:#555;line-height:1.6}
