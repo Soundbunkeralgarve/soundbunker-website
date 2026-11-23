@@ -1,10 +1,10 @@
 name: theticketbunker Fan App Checks
 on:
   pull_request:
-    paths: ['theticketbunker/**', 'ticketbunker-site/discovery-model.js', 'ticketbunker-site/featured-selection.js', 'ticketbunker-site/get-there.js', 'ticketbunker-site/trip-partners.js', 'ticketbunker-site/city-places.js', 'ticketbunker-site/city-coords.js', 'ticketbunker-site/gyg-box.js', '.github/workflows/theticketbunker-app.yml']
+    paths: ['theticketbunker/**', 'ticketbunker-site/discovery-model.js', 'ticketbunker-site/featured-selection.js', 'ticketbunker-site/get-there.js', 'ticketbunker-site/trip-partners.js', 'ticketbunker-site/travel-directory.js', 'ticketbunker-site/city-places.js', 'ticketbunker-site/city-coords.js', 'ticketbunker-site/gyg-box.js', '.github/workflows/theticketbunker-app.yml']
   push:
     branches: [main]
-    paths: ['theticketbunker/**', 'ticketbunker-site/discovery-model.js', 'ticketbunker-site/featured-selection.js', 'ticketbunker-site/get-there.js', 'ticketbunker-site/trip-partners.js', 'ticketbunker-site/city-places.js', 'ticketbunker-site/city-coords.js', 'ticketbunker-site/gyg-box.js', '.github/workflows/theticketbunker-app.yml']
+    paths: ['theticketbunker/**', 'ticketbunker-site/discovery-model.js', 'ticketbunker-site/featured-selection.js', 'ticketbunker-site/get-there.js', 'ticketbunker-site/trip-partners.js', 'ticketbunker-site/travel-directory.js', 'ticketbunker-site/city-places.js', 'ticketbunker-site/city-coords.js', 'ticketbunker-site/gyg-box.js', '.github/workflows/theticketbunker-app.yml']
 jobs:
   validate:
     runs-on: ubuntu-latest

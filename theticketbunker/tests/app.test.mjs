@@ -81,12 +81,19 @@ test('all 153 city pages are listed, grouped by country, each with a map point',
 test('night planner: tickets, get to the venue (walk/transit/Uber/Citymapper/Tube), partners, tours', () => {
   const item = {key: 'feed:skiddle:1', external: true, ...feedEvent()};
   const steps = plannerSteps(item);
-  assert.deepEqual(steps.map(s => s.kind), ['tickets', 'route', 'travel', 'stay', 'eat', 'tours']);
+  assert.deepEqual(steps.map(s => s.kind), ['tickets', 'route', 'travel', 'car', 'stay', 'transfer', 'eat', 'tours']);
   assert.equal(steps[0].links[0].name, 'Skiddle');
   assert.deepEqual(steps[1].links.map(l => l.kind), ['walk', 'transit', 'taxi', 'citymapper', 'tube']);
   assert.match(steps[1].links[2].url, /dropoff\[latitude\]=51\.49/);
-  assert.ok(steps.filter(s => ['travel', 'stay', 'eat'].includes(s.kind)).every(s => s.links.length === 0)); // no partner approved yet → Coming soon
-  assert.match(steps[5].links[0].url, /getyourguide\.com\/london-l57\/\?partner_id=KNICMG4/);
+  const searches = steps.filter(s => ['travel', 'car', 'stay', 'transfer', 'eat'].includes(s.kind));
+  assert.ok(searches.every(s => s.links.length > 0), 'public searches remain usable while affiliate applications are pending');
+  for (const link of searches.flatMap(s => s.links)) {
+    assert.equal(new URL(link.url).protocol, 'https:');
+    assert.ok(['direct', 'affiliate'].includes(link.commercial));
+    if (link.commercial === 'direct') assert.notEqual(new URL(link.url).hostname, 'www.awin1.com', 'public searches never acquire affiliate tracking');
+  }
+  assert.match(steps.find(s => s.kind === 'stay').blurb, /check the distance/);
+  assert.match(steps.find(s => s.kind === 'tours').links[0].url, /getyourguide\.com\/london-l57\/\?partner_id=KNICMG4/);
   assert.equal(ticketLink({external: false, url: '/event/x'}), 'https://theticketbunker.com/event/x');
   assert.match(tourLink('Nowhereville', 'GB'), /\/s\/\?q=Nowhereville/);
 });
