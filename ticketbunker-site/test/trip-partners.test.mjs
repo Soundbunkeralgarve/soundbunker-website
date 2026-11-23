@@ -2,10 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {tripOptions, awinLink, TRIP_PARTNERS} from '../trip-partners.js';
 
-test('trip partners stay hidden until approved', () => {
+test('pending affiliate links stay hidden while public searches remain usable', () => {
   const options = tripOptions('GB', 'London');
-  assert.deepEqual(options.map(o => o.kind), ['travel', 'stay', 'eat']);
-  assert.ok(options.every(o => o.partners.length === 0), 'nothing is approved yet');
+  assert.deepEqual(options.map(o => o.kind), ['travel', 'car', 'stay', 'eat', 'transfer']);
+  assert.ok(options.every(o => o.partners.length > 0));
+  assert.ok(options.flatMap(o=>o.partners).every(p=>p.commercial==='direct' && !p.url.includes('awin1.com')), 'no pending tracking links');
   assert.ok(TRIP_PARTNERS.every(p => p[3] === false));
 });
 

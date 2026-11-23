@@ -5,5 +5,9 @@ Disallow: /checkout-complete
 Disallow: /door-paid
 Disallow: /event-ticket
 Disallow: /account
+Disallow: /event-preview
+Disallow: /checkout
+Disallow: /organiser
+Disallow: /scanner
 
 Sitemap: https://theticketbunker.com/sitemap.xml

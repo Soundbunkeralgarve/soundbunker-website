@@ -6,15 +6,19 @@ const gig = {id: 'skiddle:1', title: 'Gig', startsAt: '2026-12-05T20:00:00Z', ci
 
 test('the plan runs tickets, travel, stay, food, then things to do', () => {
   const steps = plannerSteps(gig);
-  assert.deepEqual(steps.map(s => s.kind), ['tickets', 'route', 'travel', 'stay', 'eat', 'tours']);
+  assert.deepEqual(steps.map(s => s.kind), ['tickets', 'route', 'travel', 'car', 'stay', 'transfer', 'eat', 'tours']);
   assert.equal(steps[0].links[0].url, gig.url);
-  assert.match(steps[3].blurb, /O2/);
+  assert.match(steps.find(s=>s.kind==='stay').blurb, /O2/);
   assert.match(steps[1].blurb, /O2/);
 });
 
-test('partners that have not approved us stay as Coming soon (no links)', () => {
+test('travel planning has usable public searches without unapproved tracking', () => {
   const steps = plannerSteps(gig);
-  for (const kind of ['travel', 'stay', 'eat']) assert.equal(steps.find(s => s.kind === kind).links.length, 0);
+  for (const kind of ['travel', 'car', 'stay', 'eat', 'transfer']) {
+    const links=steps.find(s => s.kind === kind).links;
+    assert.ok(links.length>0);
+    assert.ok(links.every(l=>l.commercial==='direct' && !l.url.includes('awin1.com')));
+  }
 });
 
 test('things to do links to GetYourGuide with our partner id, by place or by search', () => {

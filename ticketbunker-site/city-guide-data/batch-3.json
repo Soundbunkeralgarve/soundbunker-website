@@ -1,0 +1,902 @@
+[
+  {
+    "slug": "dundee",
+    "history": "Dundee became the United Kingdom’s first UNESCO City of Design in 2014, building on a long industrial and creative history.",
+    "food": "Try almond-topped Dundee cake or marmalade; Reform Street and Exchange Street offer places to pause for food.",
+    "shopping": "Browse the V&A Dundee shop for contemporary design, or explore independent retailers around the city’s compact centre.",
+    "nightlife": "Explore the West End’s pubs and evening venues, checking the individual programme before choosing a night out.",
+    "sources": [
+      {
+        "title": "VisitScotland: Dundee",
+        "url": "https://www.visitscotland.com/places-to-go/dundee"
+      },
+      {
+        "title": "Dundee visitor FAQs",
+        "url": "https://dundee.com/frequently-asked-questions-about-dundee"
+      },
+      {
+        "title": "VisitDundee shopping",
+        "url": "https://visitdundee.com/shopping"
+      },
+      {
+        "title": "Dundee food and drink guide",
+        "url": "https://www.dundee.com/sites/default/files/2024-11/Eat%20and%20Drink%20Dundee%202023.pdf"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "stirling",
+    "history": "Stirling Castle rises on a volcanic outcrop; the surrounding Old Town preserves seventeenth-century townhouses and a nineteenth-century shopping arcade.",
+    "food": "Explore the cafés along Murray Place and Port Street, or the local produce stalls at Stirling’s farmers’ market.",
+    "shopping": "Visit Stirling Arcade for independent shops, then browse King Street for Scottish gifts and work by local makers.",
+    "nightlife": "Check Tolbooth’s programme for live music, comedy and film in a historic venue beside the Mercat Cross.",
+    "sources": [
+      {
+        "title": "Stirling City Heritage Trust: Stirling's story",
+        "url": "https://www.stirlingcityheritagetrust.org/stirlings-story"
+      },
+      {
+        "title": "Your Stirling: shopping",
+        "url": "https://www.yourstirling.com/plan-your-visit/shopping/"
+      },
+      {
+        "title": "Tolbooth: official venue",
+        "url": "https://stirlingevents.org/tolbooth/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "inverness",
+    "history": "The Victorian Market first opened in 1870, part of a council project to establish a covered market in Inverness.",
+    "food": "Visit the Victorian Market food hall for local independent food businesses, choosing from the current stalls and menus.",
+    "shopping": "Browse independent shops inside the covered Victorian Market, with entrances from Academy Street, Church Street, Union Street and Queensgate.",
+    "nightlife": "Look up Hootananny on Church Street for traditional Scottish live music and its current evening event listings.",
+    "sources": [
+      {
+        "title": "Victorian Market history",
+        "url": "https://thevictorianmarket.co.uk/history/"
+      },
+      {
+        "title": "Visit Inverness Loch Ness: Victorian Market",
+        "url": "https://www.visitinvernesslochness.com/listings/victorian-market"
+      },
+      {
+        "title": "Victorian Market: official site",
+        "url": "https://thevictorianmarket.co.uk/"
+      },
+      {
+        "title": "Hootananny: official site",
+        "url": "https://hootanannyinverness.co.uk/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "swansea",
+    "history": "Swansea is the birthplace of poet Dylan Thomas; his connection with the city is explored at local literary attractions.",
+    "food": "Look for cockles and laverbread at Swansea Market, or explore the city’s long-established Italian-influenced ice cream tradition.",
+    "shopping": "Browse Swansea Market’s produce and craft stalls, then follow Oxford Street for a mix of shops and independents.",
+    "nightlife": "Start exploring the bars around Wind Street; the SA1 waterfront offers another area for an evening out.",
+    "sources": [
+      {
+        "title": "Visit Wales: Swansea, Mumbles and Gower",
+        "url": "https://www.visitwales.com/destinations/west-wales/swansea-bay/insiders-guide-swansea-mumbles-and-gower"
+      },
+      {
+        "title": "Visit Swansea Bay: shopping",
+        "url": "https://www.visitswanseabay.com/things-to-do/shopping/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "newport",
+    "history": "Newport’s medieval ship was discovered during construction of the Riverfront Theatre, connecting the modern arts district with maritime history.",
+    "food": "Explore Newport Market’s food court for independent vendors; check the current menus and service times before visiting.",
+    "shopping": "Browse the restored Newport Market’s independent traders, or visit Friars Walk shopping centre beside the city’s riverside arts area.",
+    "nightlife": "Check The Riverfront’s programme for music, comedy, theatre and dance, with a café-bar overlooking the River Usk.",
+    "sources": [
+      {
+        "title": "Visit Wales: things to do in Newport",
+        "url": "https://www.visitwales.com/destinations/south-wales/wye-valley-and-vale-usk/things-do-newport"
+      },
+      {
+        "title": "Newport Live: Riverfront visitor information",
+        "url": "https://www.newportlive.co.uk/en/theatre-arts/your-visit/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "derry",
+    "history": "Derry’s surviving city walls were built between 1613 and 1618; their walkway reveals the layout of the historic centre.",
+    "food": "Explore the Walled City Brewery for locally made beer and food, checking the restaurant’s current menus and booking arrangements.",
+    "shopping": "Browse the Craft Village near the city walls for artisan shops, locally made crafts and places to stop for coffee.",
+    "nightlife": "Waterloo Street includes live-music pubs such as the Dungloe Bar; check each venue’s programme before planning your evening.",
+    "sources": [
+      {
+        "title": "Department for Communities: Derry Walls",
+        "url": "https://www.communities-ni.gov.uk/heritage-sites/derry-walls"
+      },
+      {
+        "title": "Visit Derry: shopping",
+        "url": "https://www.visitderry.com/things-to-do/shopping"
+      },
+      {
+        "title": "Visit Derry: food and drink",
+        "url": "https://www.visitderry.com/food-and-drink"
+      },
+      {
+        "title": "Visit Derry: Dungloe Bar",
+        "url": "https://www.visitderry.com/food-and-drink/dungloe-bar-p755161"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "cork",
+    "history": "Cork’s English Market was established in 1788; its name reflects the city’s historic municipal administration rather than traders’ language.",
+    "food": "Explore the English Market’s food stalls, delis and cafés for a taste of Cork’s long-established market food culture.",
+    "shopping": "Browse the English Market for food alongside its smaller selection of art, gifts and other independent traders.",
+    "nightlife": "Check The Oliver Plunkett on Oliver Plunkett Street for live entertainment, with the venue publishing its own performance schedule.",
+    "sources": [
+      {
+        "title": "Cork City Council: English Market history",
+        "url": "https://www.corkcity.ie/en/english-market/history/"
+      },
+      {
+        "title": "Pure Cork: English Market",
+        "url": "https://www.purecork.ie/things-to-do/the-english-market"
+      },
+      {
+        "title": "The Oliver Plunkett: live entertainment",
+        "url": "https://theoliverplunkett.com/live-entertainment/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "galway",
+    "history": "The Latin Quarter’s medieval street network remains central to Galway, surrounding landmarks such as the Spanish Arch and St Nicholas’ Church.",
+    "food": "Explore Galway Farmers Market for food stalls, or browse the cafés and restaurants around the Latin Quarter.",
+    "shopping": "Walk Shop Street for independent businesses and buskers, with local pottery and other makers represented around the Latin Quarter.",
+    "nightlife": "Look for traditional music at Taaffes on Shop Street, or check theatre and bar programmes around the Latin Quarter.",
+    "sources": [
+      {
+        "title": "Discover Ireland: ultimate Galway City guide",
+        "url": "https://www.discoverireland.ie/galway-city/ultimate-galway-city-guide"
+      },
+      {
+        "title": "Galway City Council: Latin Quarter",
+        "url": "https://www.galwaycity.ie/news/2025/galway-city-council-and-latin-quarter-support-continued-vibrancy-and-liveability-of"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "limerick",
+    "history": "King John’s Castle is a thirteenth-century fortress on the Shannon, preserving evidence of Limerick’s medieval history and later sieges.",
+    "food": "Browse the Milk Market’s artisan food stalls and delis, or explore the street-food options around Wickham Way.",
+    "shopping": "Explore the Milk Market for food and changing market stalls, with vintage clothes, crafts and other finds depending on the day.",
+    "nightlife": "Check Dolans on Dock Road for live music, or explore Treaty City Brewery on Nicholas Street for locally produced beer.",
+    "sources": [
+      {
+        "title": "Discover Ireland: short break in Limerick",
+        "url": "https://www.discoverireland.ie/limerick/short-break-limerick"
+      },
+      {
+        "title": "Discover Ireland: Limerick city break",
+        "url": "https://www.discoverireland.ie/limerick-city/limerick-city-break"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "albufeira",
+    "history": "Albufeira’s narrow old-town streets reflect its Arab heritage; nearby Paderne Castle preserves an example of historic adobe construction.",
+    "food": "Try Algarve cataplana or simply grilled fish, and look for Guia-style roast chicken in the surrounding area.",
+    "shopping": "Explore the Old Town’s boutiques and craft shops, combining a browsing break with the narrow streets above the beaches.",
+    "nightlife": "Choose between the Old Town’s bars, the Oura area’s party scene and the Marina’s terraces, checking venue policies before visiting.",
+    "sources": [
+      {
+        "title": "Visit Portugal: Albufeira and the beaches",
+        "url": "https://www.visitportugal.com/en/node/73802/1000"
+      },
+      {
+        "title": "Visit Albufeira: official destination guide",
+        "url": "https://visitalbufeira.pt/en"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "coimbra",
+    "history": "Coimbra’s medieval university helped shape the city’s identity; its historic university area and Rua da Sofia form a UNESCO-listed ensemble.",
+    "food": "Look for pastéis de Santa Clara and arrufadas in the historic cafés of the Baixa, below the university quarter.",
+    "shopping": "Browse Rua Ferreira Borges in the Baixa, an established commercial street associated with Coimbra’s historic shops and city life.",
+    "nightlife": "Explore Coimbra fado around Sé Velha and the university quarter, where student singing traditions remain part of the city’s culture.",
+    "sources": [
+      {
+        "title": "Visit Portugal: visit Coimbra",
+        "url": "https://www.visitportugal.com/pt-pt/destinos/centro-de-portugal/73754"
+      },
+      {
+        "title": "Coimbra Municipality: historic shop on Rua Ferreira Borges",
+        "url": "https://www.coimbra.pt/2021/07/loja-das-meias-solicita-reconhecimento-como-loja-historica/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "braga",
+    "history": "The Arco da Porta Nova began as an opening in Braga’s walls in the sixteenth century; its present appearance developed later.",
+    "food": "Look for bacalhau à Braga and Pudim Abade de Priscos, a rich local pudding traditionally prepared with bacon.",
+    "shopping": "Follow Rua do Souto through the historic centre, then explore the shops around Avenida da Liberdade and Avenida Central.",
+    "nightlife": "Check Theatro Circo’s current cultural programme, or explore the historic centre’s cafés and evening venues in this university city.",
+    "sources": [
+      {
+        "title": "Braga City Council: Arco da Porta Nova",
+        "url": "https://www.cm-braga.pt/en/1201/conhecer/historia-e-patrimonio/patrimonio-cultural/patrimonio-edificado/item/item-1-604"
+      },
+      {
+        "title": "Visit Portugal: Braga",
+        "url": "https://www.visitportugal.com/en/node/73738"
+      },
+      {
+        "title": "Visit Portugal: accessible Braga itinerary",
+        "url": "https://www.visitportugal.com/pt-pt/content/braga-itinerario-acessivel"
+      },
+      {
+        "title": "Theatro Circo: official programme",
+        "url": "https://theatrocirco.com/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "valencia",
+    "history": "Valencia’s silk-trading past is preserved in La Lonja de la Seda and collections tracing the city’s historic silk industry.",
+    "food": "Try Valencian paella, or pause for horchata with fartons; the Mercat Central is another starting point for local flavours.",
+    "shopping": "Browse the Mercat Central for regional produce, or choose the city-centre shops and boutiques around the historic core.",
+    "nightlife": "Explore Barrio del Carmen for bars, or Ruzafa for smaller music venues and a different neighbourhood atmosphere.",
+    "sources": [
+      {
+        "title": "Spain tourism: Valencia",
+        "url": "https://www.spain.info/en/destination/valencia/"
+      },
+      {
+        "title": "Visit Valencia: rainy-day ideas and local food",
+        "url": "https://blog.visitvalencia.com/en/dont-let-the-rain-stop-you-if-you-visit-valencia"
+      },
+      {
+        "title": "Spain tourism: nightlife cities",
+        "url": "https://www.spain.info/en/discover-spain/movida-espanola/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "bilbao",
+    "history": "Bilbao’s Casco Viejo grew around the Seven Streets, the original urban nucleus now surrounded by the later city.",
+    "food": "Look for pintxos around Plaza Nueva, Calle del Perro and Somera; rabas, croquettes and cod feature among traditional choices.",
+    "shopping": "Explore the pedestrian Casco Viejo around Bidebarrieta, Víctor and Somera, then browse the riverside La Ribera Market.",
+    "nightlife": "Explore Bilbao la Vieja across the estuary for alternative bars and cultural venues, checking current programmes before visiting.",
+    "sources": [
+      {
+        "title": "Bilbao Tourism: Old Quarter",
+        "url": "https://www.bilbaoturismo.net/BilbaoTurismo/en/casco-viejo-area/the-old-quarter-of-bilbao"
+      },
+      {
+        "title": "Bilbao Tourism: Casco Viejo shopping",
+        "url": "https://bilbaoturismo.net/BilbaoTurismo/en/espacio-casco-viejo"
+      },
+      {
+        "title": "Bilbao Tourism: Bilbao la Vieja",
+        "url": "https://bilbaoturismo.net/BilbaoTurismo/en/espacio-bilbao-la-vieja"
+      },
+      {
+        "title": "Basque Government tourism: pintxos in Bilbao",
+        "url": "https://www.euskadi.eus/gobierno-vasco/-/es/bares-pintxos/de-pintxos-por-el-casco-viejo-de-bilbao/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "granada",
+    "history": "The Alhambra was a citadel and residence of the Nasrid sultans; its palaces preserve Granada’s medieval Islamic heritage.",
+    "food": "Explore Calle Navas or Calle Elvira for tapas, and try piononos or pastries around the tea shops of Calderería Nueva.",
+    "shopping": "Browse the Alcaicería’s lanes near the cathedral, recalling the area’s history as Granada’s former silk bazaar and trading quarter.",
+    "nightlife": "Look for flamenco performances in Sacromonte, or explore the terraces and tapas bars around the Albaicín and Paseo de los Tristes.",
+    "sources": [
+      {
+        "title": "Spain tourism: official Granada guide",
+        "url": "https://www.spain.info/export/sites/segtur/.content/Folletos/folletos/Granada-EN.pdf"
+      },
+      {
+        "title": "Granada provincial tourism: Alcaicería",
+        "url": "https://www.turgranada.es/es/pois/la-alcaicer%C3%ADa?weather=true"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "alicante",
+    "history": "Santa Bárbara Castle has Arab origins, although much of the fortress visible above Alicante today dates from the sixteenth century.",
+    "food": "Try arroz a banda or arroz negro, with turrón or fig-based sweets providing another taste of the Alicante region.",
+    "shopping": "Browse the Central Market for local produce, then explore the shopping streets around Maisonnave, Gerona and Alfonso X El Sabio.",
+    "nightlife": "Explore the harbour’s bars and restaurants or the streets around the historic centre, checking venues and return transport before heading out.",
+    "sources": [
+      {
+        "title": "Spain tourism: Alicante",
+        "url": "https://www.spain.info/en/destination/alicante-alacant/"
+      },
+      {
+        "title": "Alicante official tourism: leisure and shopping",
+        "url": "https://alicanteturismo.com/en/leisure/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "benidorm",
+    "history": "Benidorm’s old fishing settlement occupied the headland between Levante and Poniente; the eighteenth-century San Jaime church still overlooks its streets.",
+    "food": "Look for local rice and fish dishes rather than assuming every restaurant serves the same international resort menu.",
+    "shopping": "Browse the Old Town’s smaller shops, with the wider pedestrian shopping area extending towards Avenida de los Almendros.",
+    "nightlife": "Explore Levante’s seafront bars or the venues around Calle Esperanto; the Old Town offers another distinct evening area.",
+    "sources": [
+      {
+        "title": "Spain tourism: Benidorm",
+        "url": "https://www.spain.info/en/destination/benidorm/"
+      },
+      {
+        "title": "Spain tourism: nightlife cities",
+        "url": "https://www.spain.info/en/discover-spain/movida-espanola/"
+      },
+      {
+        "title": "Spain tourism: LGBTI+ travel guide",
+        "url": "https://brochure.spain.info/pdf/LGBTI%2B/ingles/LGBTI%2B_EN.pdf"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "marbella",
+    "history": "Plaza de los Naranjos was laid out following the Christian reconquest in 1485, within Marbella’s much older street network.",
+    "food": "Look for pescaíto frito, ajoblanco or gazpacho in local restaurants, with seafood central to the wider Costa del Sol tradition.",
+    "shopping": "Browse the Old Town’s small boutiques, or head to Puerto Banús for international fashion brands around the marina.",
+    "nightlife": "Explore Marbella’s centre and waterfront pubs; seasonal beach-club events offer a different option, subject to each venue’s dates and policies.",
+    "sources": [
+      {
+        "title": "Spain tourism: Marbella and Costa del Sol",
+        "url": "https://www.spain.info/gcc/en/destinations/costa-del-sol/"
+      },
+      {
+        "title": "Spain tourism: Marbella",
+        "url": "https://www.spain.info/es/destino/marbella/"
+      },
+      {
+        "title": "Marbella tourism: nightlife",
+        "url": "https://turismo.marbella.es/vive/ocio/nocturno/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "gran-canaria",
+    "history": "Las Palmas de Gran Canaria was founded in 1478; the island capital developed around Vegueta, now its historic cultural quarter.",
+    "food": "Try papas arrugadas with mojo sauce, or explore Canarian cheeses and sancocho, a traditional combination of salted fish and potatoes.",
+    "shopping": "Follow Calle Mayor de Triana in Las Palmas for shops, combining browsing with the historic streets around Vegueta.",
+    "nightlife": "Explore Playa del Inglés for resort nightlife, including the Yumbo area’s LGBTQ+ venues; Las Palmas offers a separate urban evening scene.",
+    "sources": [
+      {
+        "title": "Gran Canaria official tourism: leisure guide",
+        "url": "https://www.grancanaria.com/fileadmin/PDF/folletosturisticos/GranCanaria_GuiaDeOcio_EN.pdf"
+      },
+      {
+        "title": "Gran Canaria official tourism: nightlife",
+        "url": "https://www.grancanaria.com/turismo/en/gay-friendly/leisure/?MP=250-3327"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "lanzarote",
+    "history": "Teguise was Lanzarote’s capital until 1852, when Arrecife took over; its historic streets preserve the earlier island administrative centre.",
+    "food": "Try papas arrugadas with mojo, local cheeses and island wines, or look for traditional fish stews on current menus.",
+    "shopping": "Browse the market in historic Villa de Teguise for crafts and souvenirs, checking market days before making the journey.",
+    "nightlife": "Explore Pueblo Marinero in Costa Teguise for evening bars and music, or check the programmes in Lanzarote’s other resort areas.",
+    "sources": [
+      {
+        "title": "Turismo Lanzarote: Teguise",
+        "url": "https://turismolanzarote.com/en/teguise/"
+      },
+      {
+        "title": "Turismo Lanzarote: gastronomy and wines",
+        "url": "https://turismolanzarote.com/en/discover-lanzarote/gastronomy-and-wines/"
+      },
+      {
+        "title": "Turismo Lanzarote: Villa de Teguise market",
+        "url": "https://turismolanzarote.com/en/market/villa-de-teguise-market/"
+      },
+      {
+        "title": "Turismo Lanzarote: nightlife",
+        "url": "https://turismolanzarote.com/en/lanzarotes-nightlife/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "san-sebastian",
+    "history": "After San Sebastián’s city walls were removed, the Romantic Area developed beyond the old town, creating its Belle Époque streetscape.",
+    "food": "Explore the Parte Vieja or Gros for pintxos, ordering small bites and checking each bar’s menu before moving on.",
+    "shopping": "Browse local boutiques and international brands along Urbieta, Getaria and Fuenterrabía in the central Romantic Area near the Boulevard.",
+    "nightlife": "Explore the Old Town’s bars, Gros’s terraces or Egia’s music and cultural venues, choosing the area that fits your evening.",
+    "sources": [
+      {
+        "title": "San Sebastián Tourism: centre and old town",
+        "url": "https://sansebastianturismoa.eus/en/to-do/district-by-district/centre-old-town/"
+      },
+      {
+        "title": "San Sebastián Tourism: nightlife",
+        "url": "https://sansebastianturismoa.eus/en/to-do/plans-in-san-sebastian/nightlife/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "nice",
+    "history": "Nice became part of France in 1860; its later winter-resort architecture helped earn UNESCO World Heritage recognition in 2021.",
+    "food": "Try socca, a chickpea-flour speciality, or pan bagnat and other Cuisine Nissarde dishes around the Old Town.",
+    "shopping": "Browse the Cours Saleya market, then explore Carré d’Or boutiques or the larger shops along Avenue Jean-Médecin.",
+    "nightlife": "Explore Rue Bonaparte and Place du Pin for an evening out, or check the opera’s programme for a cultural night.",
+    "sources": [
+      {
+        "title": "Nice Côte d'Azur Tourist Office: Nice",
+        "url": "https://www.explorenicecotedazur.com/en/explore/towns-villages/coastal-area/nice/"
+      },
+      {
+        "title": "Nice Côte d'Azur Tourist Office: itineraries",
+        "url": "https://www.explorenicecotedazur.com/en/explore/towns-villages/coastal-area/nice/what-to-do-in-nice/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "lyon",
+    "history": "Lyon’s traboules are passageways linking streets through buildings; many remain private residences, so explore only designated routes respectfully.",
+    "food": "Try a traditional Lyonnais bouchon, particularly in the older districts; the tourist office’s quality label helps identify participating restaurants.",
+    "shopping": "Browse Rue de la République and Rue Édouard Herriot on the Presqu’île, or explore the nineteenth-century Passage de l’Argue.",
+    "nightlife": "Explore Rue Mercière and the wider Presqu’île for evening restaurants, theatres and bars, checking the current programme before visiting.",
+    "sources": [
+      {
+        "title": "Lyon Tourist Office: traboules and courtyards",
+        "url": "https://en.visiterlyon.com/discover/heritage-unesco/lyon-s-traboules-and-courtyards"
+      },
+      {
+        "title": "Lyon Tourist Office: visitor FAQs",
+        "url": "https://en.visiterlyon.com/need-help/f.a.q"
+      },
+      {
+        "title": "Lyon Tourist Office: UNESCO heritage",
+        "url": "https://en.visiterlyon.com/discover/not-to-be-missed-in-lyon/lyon-world-unesco-heritage"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "marseille",
+    "history": "Greek settlers established Marseille around 600 BC; its Mediterranean trading history remains central to the city’s identity and harbour.",
+    "food": "Try orange-blossom navettes, the boat-shaped local biscuits; bakeries around Saint-Victor and Le Panier preserve this Marseillais sweet tradition.",
+    "shopping": "Browse Le Panier for craft workshops and Provençal gifts, or explore the designer boutiques around Cours Julien.",
+    "nightlife": "Explore Cours Julien and Place de Notre-Dame-du-Mont for bars and music venues, checking individual listings for your chosen evening.",
+    "sources": [
+      {
+        "title": "Marseille Tourist Office: city history",
+        "url": "https://www.marseille-tourisme.com/decouvrez-marseille/culture-et-patrimoine/histoire-de-marseille/"
+      },
+      {
+        "title": "Marseille Tourist Office: navettes",
+        "url": "https://www.marseille-tourisme.com/en/discover-marseille/gastronomy-in-marseille/culinary-specialities-of-marseille/the-navettes-of-marseille/"
+      },
+      {
+        "title": "Marseille Tourist Office: shopping districts",
+        "url": "https://www.marseille-tourisme.com/en/discover-marseille/culture-heritage/the-districts-of-marseille/the-shopping-districts-of-marseille/"
+      },
+      {
+        "title": "Marseille Tourist Office: Cours Julien",
+        "url": "https://www.marseille-tourisme.com/en/discover-marseille/culture-heritage/the-districts-of-marseille/le-cours-julien-the-artists-and-street-art-district/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "bordeaux",
+    "history": "Bordeaux’s eighteenth-century Place de la Bourse was designed by Ange-Jacques Gabriel, reflecting the city’s grand historic riverfront development.",
+    "food": "Look for canelés, small cakes with a caramelised exterior and a soft centre traditionally flavoured with rum and vanilla.",
+    "shopping": "Browse Rue Sainte-Catherine for major stores, or explore Rue des Remparts and Rue du Pas-Saint-Georges for smaller boutiques.",
+    "nightlife": "Explore Saint-Pierre for wine bars and an evening meal, or check the Grand Théâtre’s programme for a cultural alternative.",
+    "sources": [
+      {
+        "title": "Bordeaux Tourist Office: things to do",
+        "url": "https://www.visiter-bordeaux.com/en/discovering-bordeaux/guide-things-to-do.html"
+      },
+      {
+        "title": "Bordeaux Tourist Office: gourmet walk",
+        "url": "https://www.bordeaux-tourisme.com/parcours/balade-gourmande.html"
+      },
+      {
+        "title": "Bordeaux Tourist Office: shopping streets",
+        "url": "https://www.bordeaux-tourism.co.uk/shopping-streets-bordeaux"
+      },
+      {
+        "title": "Bordeaux Tourist Office: weekend itinerary",
+        "url": "https://www.bordeaux-tourism.co.uk/parcours/weekend-bordeaux.html?language_content_entity=en"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "toulouse",
+    "history": "The Canal du Midi has linked Toulouse with the Mediterranean for more than three centuries, following Pierre-Paul Riquet’s seventeenth-century engineering project.",
+    "food": "Try Toulouse cassoulet, a slow-cooked regional dish combining white beans with meats such as duck confit and Toulouse sausage.",
+    "shopping": "Explore Rue Peyras and Rue Temponières for streetwear, or Rue des Arts and Rue Croix-Baragnon for more formal boutiques.",
+    "nightlife": "Explore Place Saint-Pierre, the La Daurade quays or the bars near Allées Jean-Jaurès, checking current programmes and transport home.",
+    "sources": [
+      {
+        "title": "Toulouse Tourism: history and monuments",
+        "url": "https://www.toulouse-tourisme.com/en/what-to-see-and-do/history-toulouse-monuments/"
+      },
+      {
+        "title": "Toulouse Tourism: culinary specialities",
+        "url": "https://www.toulouse-tourisme.com/en/eat-and-drink/toulouse-culinary-specialties/"
+      },
+      {
+        "title": "Toulouse Tourism: shopping",
+        "url": "https://www.toulouse-tourisme.com/en/what-to-see-and-do/shopping/"
+      },
+      {
+        "title": "Toulouse Tourism: districts",
+        "url": "https://www.toulouse-tourisme.com/en/what-to-see-and-do/emblematic-quarters/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "milan",
+    "history": "The Darsena once served as Milan’s harbour, linking the city with its Navigli canals before the area became an evening meeting place.",
+    "food": "Try saffron-coloured risotto alla Milanese or cotoletta; the city’s aperitivo tradition offers another way to explore Milanese food culture.",
+    "shopping": "Browse artisan and independent shops beside the Navigli, or explore Via Montenapoleone for Milan’s more luxurious fashion window-shopping.",
+    "nightlife": "Explore the Navigli and Darsena for an aperitivo and evening venues, checking individual bars and music programmes before visiting.",
+    "sources": [
+      {
+        "title": "YesMilano: Navigli district",
+        "url": "https://www.yesmilano.it/en/see-and-do/venues/navigli-district"
+      },
+      {
+        "title": "YesMilano: historic places to eat",
+        "url": "https://www.yesmilano.it/en/see-and-do/itineraries/5-historical-places-eat-milano"
+      },
+      {
+        "title": "YesMilano: traditional dishes",
+        "url": "https://www.yesmilano.it/en/articles/traditional-dishes-milano"
+      },
+      {
+        "title": "YesMilano: Darsena",
+        "url": "https://www.yesmilano.it/en/see-and-do/venues/darsena"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "florence",
+    "history": "Mercato Centrale opened in 1874, within a nineteenth-century iron-and-glass building designed by Giuseppe Mengoni, who also designed Milan’s famous shopping gallery.",
+    "food": "Try a lampredotto sandwich from a traditional street-food stall, or ribollita, the Tuscan soup made with bread and vegetables.",
+    "shopping": "Browse Mercato Centrale for food, or explore the craft shops and markets around Piazza Santo Spirito in the Oltrarno.",
+    "nightlife": "Explore Piazza Santo Spirito for an aperitivo or dinner, checking the current venues in this lively square across the Arno.",
+    "sources": [
+      {
+        "title": "Italia.it: Mercato Centrale Florence",
+        "url": "https://www.italia.it/en/tuscany/florence/mercato-centrale-florence"
+      },
+      {
+        "title": "Italia.it: Florence city guide",
+        "url": "https://www.italia.it/en/tuscany/florence/guide-history-facts"
+      },
+      {
+        "title": "Italia.it: Piazza Santo Spirito",
+        "url": "https://www.italia.it/it/toscana/firenze/piazza-santo-spirito"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "venice",
+    "history": "Venice’s traditional bacari belong to a long wine-trading culture; their name is linked to far bàcara, an expression meaning to celebrate.",
+    "food": "Try cicchetti, small snacks traditionally eaten during a giro de ombre, the Venetian custom of visiting wine bars.",
+    "shopping": "Browse the produce stalls on Rio Terà San Leonardo in Cannaregio, or explore the city’s other neighbourhood markets.",
+    "nightlife": "Check Teatro La Fenice for opera and concert performances, or explore traditional bacari for a quieter Venetian evening.",
+    "sources": [
+      {
+        "title": "Venezia Unica: wine and cicchetti",
+        "url": "https://www.veneziaunica.it/sites/default/files/redazione-turismo/itinerari/documenti/Ombre%20e%20cicheti_Un%20giro%20di%20bacari.pdf"
+      },
+      {
+        "title": "Venezia Unica: markets",
+        "url": "https://www.veneziaunica.it/en/things-to-do-in-venice/venice-areas/markets"
+      },
+      {
+        "title": "Teatro La Fenice: official programme",
+        "url": "https://www.teatrolafenice.it/en/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "naples",
+    "history": "Naples’ historic centre preserves centuries of religious and artistic heritage, including the cloisters of Santa Chiara and San Gregorio Armeno.",
+    "food": "Try Neapolitan pizza, fried street-food served in a cuoppo, or sfogliatelle pastries filled with ricotta, semolina and candied fruit.",
+    "shopping": "Explore Via Toledo for shopping, or browse the nativity-figure workshops of San Gregorio Armeno in the historic centre.",
+    "nightlife": "Explore Piazza Bellini for an aperitivo and evening venues, or check Teatro di San Carlo for an opera performance.",
+    "sources": [
+      {
+        "title": "Italia.it: Naples guide",
+        "url": "https://www.italia.it/en/campania/naples/guide-history-facts"
+      },
+      {
+        "title": "Italia.it: Naples historic centre",
+        "url": "https://www.italia.it/en/campania/naples/historic-centre"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "bologna",
+    "history": "The Quadrilatero preserves the layout and trading atmosphere of Bologna’s medieval market, with narrow lanes and historic food shops near Piazza Maggiore.",
+    "food": "Try tortellini in brodo, or explore mortadella and other Emilian cured meats in the shops around the Quadrilatero.",
+    "shopping": "Browse the Quadrilatero’s historic food shops, or visit Mercato delle Erbe for produce stalls and places to stop for food.",
+    "nightlife": "Explore Via del Pratello’s osterias and pubs, or the university district around Via Zamboni for a more student-oriented evening.",
+    "sources": [
+      {
+        "title": "Bologna Welcome: aperitivo districts",
+        "url": "https://www.bolognawelcome.com/en/blog/aperitivo-time-en"
+      },
+      {
+        "title": "Bologna Welcome: tortellini in brodo",
+        "url": "https://www.bolognawelcome.com/en/other/recipes-and-typical-products/tortellini-in-brodo-2"
+      },
+      {
+        "title": "Bologna Welcome: Salumeria Simoni",
+        "url": "https://www.bolognawelcome.com/en/places/shopping-places/salumeria-simoni-2"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "turin",
+    "history": "Caffè Al Bicerin opened in 1763 on Piazza della Consolata, becoming associated with one of Turin’s signature café traditions.",
+    "food": "Try a bicerin, Turin’s traditional café drink, or explore the chocolate specialities offered by the city’s historic cafés.",
+    "shopping": "Explore Via Roma and Via Lagrange for fashion, or the Quadrilatero Romano for smaller craft shops and historic businesses.",
+    "nightlife": "Explore Piazza Vittorio Veneto, San Salvario or the Quadrilatero Romano for bars and music, checking individual venues and programmes.",
+    "sources": [
+      {
+        "title": "Turismo Torino: Caffè Al Bicerin",
+        "url": "https://turismotorino.org/en/visit/things-to-do-and-things-to-see/food-and-wine/historical-cafes/caffe-al-bicerin"
+      },
+      {
+        "title": "Turismo Torino: shopping",
+        "url": "https://turismotorino.org/en/visit/things-to-do-and-things-to-see/shopping"
+      },
+      {
+        "title": "Turismo Torino: nightlife",
+        "url": "https://turismotorino.org/en/visit/territory/torino-metropoli/torino/nightlife"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "munich",
+    "history": "Munich’s Viktualienmarkt moved from crowded Marienplatz in 1807 on the orders of King Max I Joseph, creating today’s market area.",
+    "food": "Try Weisswurst, the traditional veal sausage, or explore Bavarian tavern dishes around the Viktualienmarkt and Munich’s Old Town.",
+    "shopping": "Browse Viktualienmarkt’s food, delicatessen and gift stalls, combining a shopping stop with the market’s fountains and traditional maypole.",
+    "nightlife": "Explore the Altstadt’s traditional beer halls and taverns, or check the city’s current music listings for a different evening.",
+    "sources": [
+      {
+        "title": "Munich Tourism: Viktualienmarkt",
+        "url": "https://www.munich.travel/en/pois/urban-districts/viktualienmarkt"
+      },
+      {
+        "title": "Munich Tourism: Bavarian food",
+        "url": "https://www.munich.travel/en/topics/eat-drink/bavarian-food"
+      },
+      {
+        "title": "Munich Tourism: Altstadt",
+        "url": "https://www.munich.travel/en/topics/urban-districts/local-love-munich/local-love-altstadt-the-city-centre"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "hamburg",
+    "history": "The Reeperbahn’s venues helped launch the Beatles’ international career in the 1960s, adding music history to an old maritime entertainment district.",
+    "food": "Try a Franzbrötchen, Hamburg’s cinnamon-and-sugar yeast pastry, found in the city’s bakeries with both traditional and newer variations.",
+    "shopping": "Browse Neuer Wall for luxury fashion and design, or explore the smaller boutiques around Karolinenviertel for a different shopping trip.",
+    "nightlife": "Explore St Pauli around the Reeperbahn and Große Freiheit for live music, bars and clubs, checking individual venue entry policies.",
+    "sources": [
+      {
+        "title": "Hamburg city portal: Reeperbahn",
+        "url": "https://www.hamburg.com/visitors/explore/music-and-nightlife/reeperbahn-17120"
+      },
+      {
+        "title": "Hamburg city portal: Franzbrötchen",
+        "url": "https://www.hamburg.com/visitors/dine-and-drink/hamburg-s-sweet-obsession-the-franzbroetchen-1019148"
+      },
+      {
+        "title": "Hamburg city portal: Neuer Wall",
+        "url": "https://www.hamburg.com/visitors/shopping/destinations/neuer-wall-19336"
+      },
+      {
+        "title": "Hamburg city portal: St Pauli",
+        "url": "https://www.hamburg.com/residents/neighbourhoods/st-pauli-19386"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "cologne",
+    "history": "Schildergasse became a pedestrian shopping street in 1966, although its commercial history includes nineteenth-century cafés and Cologne’s first cinema.",
+    "food": "Try Halver Hahn, a bread roll with cheese despite its chicken-like name, or Himmel un Ääd in a traditional brewery pub.",
+    "shopping": "Explore Schildergasse and neighbouring Hohe Straße for major stores, cafés and a browsing route through Cologne’s central shopping district.",
+    "nightlife": "Explore the Belgian Quarter’s bars and music venues; Club Subway is one option to check for current bands and DJ nights.",
+    "sources": [
+      {
+        "title": "Cologne Tourist Board: Schildergasse",
+        "url": "https://www.cologne-tourism.com/arts-culture/sights/detail/schildergasse"
+      },
+      {
+        "title": "Cologne Tourist Board: Früh am Dom",
+        "url": "https://www.cologne-tourism.com/food-drink/gastronomy/frueh-am-dom"
+      },
+      {
+        "title": "Cologne Tourist Board: Club Subway",
+        "url": "https://www.cologne-tourism.com/arts-culture/sights/detail/subway"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "frankfurt",
+    "history": "Frankfurt’s Kleinmarkthalle was destroyed in the 1944 air raids; reconstruction began ten years later, restoring a much-loved city market.",
+    "food": "Try Frankfurt green sauce, traditionally made with seven herbs, and explore apple-wine taverns for other regional dishes and drinks.",
+    "shopping": "Browse the Zeil pedestrian shopping area, or visit the Kleinmarkthalle for regional produce, food stalls and edible souvenirs.",
+    "nightlife": "Explore Old Sachsenhausen’s apple-wine taverns for a traditional Frankfurt evening, checking the individual venues’ menus and arrangements before visiting.",
+    "sources": [
+      {
+        "title": "Visit Frankfurt: regional traditions and market history",
+        "url": "https://www.visitfrankfurt.travel/en/traveltrade/regionality-and-identity"
+      },
+      {
+        "title": "Visit Frankfurt: specialities",
+        "url": "https://www.visitfrankfurt.travel/en/experience/cuisine/frankfurt-specialities"
+      },
+      {
+        "title": "Visit Frankfurt: shopping",
+        "url": "https://www.visitfrankfurt.travel/en/experience/shopping"
+      },
+      {
+        "title": "Visit Frankfurt: Old Sachsenhausen",
+        "url": "https://www.visitfrankfurt.travel/en/poi/old-sachsenhausen"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "rotterdam",
+    "history": "The Lijnbaan shopping precinct emerged during Rotterdam’s post-war reconstruction, with Van den Broek and Bakema’s design developed between 1949 and 1953.",
+    "food": "Explore the Markthal’s food stalls, or Station Bergweg’s independent kitchens for dishes reflecting Rotterdam’s varied international food culture.",
+    "shopping": "Browse the Lijnbaan and Koopgoot for major shops, or explore Pannekoekstraat and Oude Binnenweg for a different mix of businesses.",
+    "nightlife": "Explore Witte de Withstraat for cultural venues and evening programmes, or check BIRD for live music and club events.",
+    "sources": [
+      {
+        "title": "Rotterdam reconstruction archive: Lijnbaan",
+        "url": "https://wederopbouwrotterdam.nl/en/articles/lijnbaan-shopping-precinct"
+      },
+      {
+        "title": "Rotterdam tourism: shopping",
+        "url": "https://www.rotterdam.info/nl/visit/guide/winkelen-in-rotterdam"
+      },
+      {
+        "title": "Rotterdam tourism: Station Bergweg",
+        "url": "https://www.rotterdam.info/en/visit/finder-locations/station-bergweg"
+      },
+      {
+        "title": "Rotterdam tourism: Markthal and shopping",
+        "url": "https://www.rotterdam.info/nl/visit/guide/openingstijden-winkels"
+      },
+      {
+        "title": "Rotterdam tourism: Kunstinstituut Melly",
+        "url": "https://www.rotterdam.info/en/visit/finder-locations/kunstinstituut-melly"
+      },
+      {
+        "title": "Rotterdam tourism: BIRD",
+        "url": "https://www.rotterdam.info/en/visit/finder-locations/bird-rotterdam"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "utrecht",
+    "history": "A storm in 1674 destroyed the nave connecting Utrecht’s Dom Tower and Dom Church, leaving the open space now called Dom Square.",
+    "food": "Try kibbeling, deep-fried fish pieces, or warm stroopwafels at Vredenburg Market, alongside Dutch cheeses and other market foods.",
+    "shopping": "Browse boutiques along the Oudegracht and around Oudkerkhof, or explore Vredenburg Market for a changing selection of stalls.",
+    "nightlife": "Check TivoliVredenburg’s concert programme, then explore its grand café Het Gegeven Paard for an evening drink or post-show stop.",
+    "sources": [
+      {
+        "title": "Discover Utrecht: Dom Square history",
+        "url": "https://www.discover-utrecht.com/news/five-things-you-might-not-know-about-dom-square/"
+      },
+      {
+        "title": "Discover Utrecht: Vredenburg Market",
+        "url": "https://www.discover-utrecht.com/location/vredenburg-market"
+      },
+      {
+        "title": "Discover Utrecht: 48-hour itinerary",
+        "url": "https://www.discover-utrecht.com/news/utrecht-48-hours/"
+      },
+      {
+        "title": "Discover Utrecht: Het Gegeven Paard",
+        "url": "https://www.discover-utrecht.com/location/het-gegeven-paard/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "brussels",
+    "history": "The Grand-Place combines Gothic and Baroque façades, reflecting the layered history of Brussels’ civic and commercial heart around its Town Hall.",
+    "food": "Try Brussels waffles, or explore the traditional brasseries around the centre and the seafood restaurants near Sainte-Catherine.",
+    "shopping": "Browse the Royal Saint-Hubert Galleries for an atmospheric covered shopping stop, then explore the smaller streets around the historic centre.",
+    "nightlife": "Explore the bars around Halles Saint-Géry, or check nearby jazz venues such as L’Archiduc and The Music Village for performances.",
+    "sources": [
+      {
+        "title": "Visit Brussels: historic-centre itinerary",
+        "url": "https://www.visit.brussels/en/visitors/plan-your-trip/a-legendary-stay-for-history-buffs/day-1-exploring-the-historical-centre"
+      },
+      {
+        "title": "Visit Brussels: waffles",
+        "url": "https://www.visit.brussels/en/visitors/where-to-eat/waffles"
+      },
+      {
+        "title": "Visit Brussels: after-work bars",
+        "url": "https://www.visit.brussels/en/visitors/where-to-eat/afterwork-brussels"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "antwerp",
+    "history": "Het Steen is Antwerp’s oldest surviving building; its riverside setting now introduces visitors to the city’s history and port connections.",
+    "food": "Look for Antwerpse Handjes and locally produced coffee or beer; the city shop at Het Steen highlights a range of Antwerp products.",
+    "shopping": "Browse Meir for major fashion shops, or Kloosterstraat and Lange Koepoortstraat for antiques, vintage items and smaller independent businesses.",
+    "nightlife": "Explore the historic centre’s beer cafés or the Eilandje dock district; check individual pubs and music listings before choosing your evening.",
+    "sources": [
+      {
+        "title": "Visit Antwerp: historic centre",
+        "url": "https://visit.antwerpen.be/historisch-centrum"
+      },
+      {
+        "title": "Visit Antwerp: visitor centres and local products",
+        "url": "https://visit.antwerpen.be/en/info/visitor-centres-inspiration-information-and-great-products"
+      },
+      {
+        "title": "Visit Antwerp: historic-centre shopping",
+        "url": "https://visit.antwerpen.be/en/shopping-zone-historic-city-centre"
+      },
+      {
+        "title": "Visit Antwerp: beer cafés",
+        "url": "https://visit.antwerpen.be/en/cosy-pubs-and-beer-cafes-in-antwerp"
+      }
+    ],
+    "checked": "2026-11-23"
+  }
+]

@@ -29,6 +29,18 @@
     "api/city-page.js": {
       "maxDuration": 20,
       "includeFiles": "{index.html,city-places.js}"
+    },
+    "api/partner-page.js": {
+      "maxDuration": 60,
+      "memory": 1024,
+      "regions": [
+        "dub1"
+      ],
+      "includeFiles": "{index.html,partner-data/**}"
+    },
+    "api/city-guide.js": {
+      "maxDuration": 20,
+      "includeFiles": "{index.html,city-guide.css,city-guide-data/**}"
     }
   },
   "rewrites": [
@@ -71,6 +83,14 @@
     {
       "source": "/event/:slug",
       "destination": "/api/event-page?slug=:slug"
+    },
+    {
+      "source": "/listing/:id",
+      "destination": "/api/partner-page?id=:id"
+    },
+    {
+      "source": "/guides/:slug",
+      "destination": "/api/city-guide?slug=:slug"
     }
   ],
   "redirects": [

@@ -1,6 +1,6 @@
-// "Plan your trip": travel, places to stay and food partners shown on city pages.
-// A partner only becomes a live button once its programme has approved us (approved: true);
-// until then the column says "Coming soon" so nothing is promised that cannot be booked.
+// Approved affiliate links are separate from ordinary public supplier directories.
+// Pending affiliate applications never acquire tracking or approval through a fallback.
+import {directoryProviders} from './travel-directory.js';
 // Awin links use Awin's own click tracker with our publisher ID (public, not a secret).
 const AWIN_AFFILIATE = 3163272;
 export const awinLink = (merchant, destination) =>
@@ -31,10 +31,19 @@ export const TRIP_PARTNERS = Object.freeze([
   ['eat', 'tastecard', ['GB'], false, () => awinLink(16164, 'https://www.tastecard.co.uk/')],
   ['eat', 'TheFork', ['IT'], false, () => awinLink(127369, 'https://www.thefork.it/')]
 ]);
-export const TRIP_KINDS = Object.freeze([['travel', 'Get there', 'Trains, coaches and ferries to the show.'], ['stay', 'Stay nearby', 'Hotels close to the venue.'], ['eat', 'Eat nearby', 'Discounts on food before or after.']]);
+export const TRIP_KINDS = Object.freeze([
+  ['travel', 'Trains & coaches', 'Check routes to your destination.'],
+  ['car', 'Car hire', 'Check pickup, cover and the total rental price.'],
+  ['stay', 'Stay nearby', 'Choose hotels around your destination.'],
+  ['eat', 'Eat nearby', 'Restaurant bookings and selected offers.'],
+  ['transfer', 'Private transfers', 'Check airport rides and chauffeur coverage.']
+]);
 
-export function tripOptions(country, city, {page = '', spot = ''} = {}) {
+export function tripOptions(country, city, {page = '', spot = '', providers = TRIP_PARTNERS} = {}) {
   return TRIP_KINDS.map(([kind, label, blurb]) => ({kind, label, blurb,
-    partners: TRIP_PARTNERS.filter(([k, , countries, approved]) => k === kind && approved && (countries.includes('*') || countries.includes(country)))
-      .map(([, name, , , link]) => ({name, url: withClickRef(link(city), page, spot)}))}));
+    partners: [
+      ...providers.filter(([k, , countries, approved]) => k === kind && approved && (countries.includes('*') || countries.includes(country)))
+        .map(([, name, , , link]) => ({name, url: withClickRef(link(city), page, spot), commercial: 'affiliate'})),
+      ...directoryProviders(kind, country, city)
+    ]}));
 }
