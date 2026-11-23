@@ -2,8 +2,8 @@ import {getPublicEvents} from './featured-events.js?v=20261020';
 import {escapeHtml as esc,money,safeUrl} from './shared.js';
 import {eventKind} from './event-content.js';
 import {approvedPartnerListings} from './partner-listings-model.js?v=20261121-city';
-import {discoveryCategories,blend,filterItems,sortItems,mixSellers,featureFor,readState,stateQuery} from './discovery-model.js?v=20261123-mixed-cards';
-import {homeRails} from './sample-listings.js?v=20261123-mixed-cards';
+import {discoveryCategories,blend,filterItems,sortItems,mixSellers,featureFor,readState,stateQuery} from './discovery-model.js?v=20261123-dining';
+import {homeRails} from './sample-listings.js?v=20261123-dining';
 import {selectFeaturedEvents} from './featured-selection.js';
 import {renderGygBox} from './gyg-box.js?v=20261121c';
 import {renderPartnerDirectory} from './partner-directory.js?v=20261123';
@@ -42,7 +42,8 @@ function renderTripPath(current=state){
  document.querySelectorAll('[data-build-trip],[data-trip-step],[data-trip-route]').forEach(a=>a.href=tripHref(a.dataset.tripRoute||'/plan-your-trip',current,{party,step:a.dataset.tripStep||''}));
  document.querySelectorAll('[data-party]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.party===party)));
  const label=PARTY_TYPES.find(([key])=>key===party)?.[1];
- $('#trip-type-note').textContent=label?label+(where?' in '+where:'')+' · Check each event’s age, admission and group terms.':'Choose your tickets first. Add the rest when you’re ready.';
+ const note=$('#trip-type-note');note.hidden=!label;
+ note.textContent=label?label+(where?' in '+where:'')+' · Check each event’s age, admission and group terms.':'';
 }
 $('#ds-away').onclick=()=>{form.scrollIntoView({block:'center',behavior:reduceMotion()?'auto':'smooth'});country.focus();};
 form.addEventListener('input',()=>renderTripPath(formState()));
@@ -54,7 +55,7 @@ document.querySelectorAll('[data-party]').forEach(b=>b.onclick=()=>{
  commit(next,{scroll:false});
 });
 document.querySelector('[data-trip-tickets]').onclick=e=>{e.preventDefault();commit(formState(),{scroll:true});};
-const coverage=$('#coverage-count');if(coverage)coverage.textContent=CITY_PAGES.length+' destinations · '+new Set(CITY_PAGES.map(p=>p[2])).size+' countries';
+const coverage=$('#coverage-count');if(coverage)coverage.textContent=CITY_PAGES.length+' destinations · UK & Europe';
 
 const opt=(v,l)=>{const o=document.createElement('option');o.value=v;o.textContent=l;return o;};
 const sorted=codes=>[...new Set(codes)].sort((a,b)=>countryName(a).localeCompare(countryName(b)));
@@ -272,7 +273,7 @@ $('#near-locate').onclick=()=>useMyLocation();
 $('#near-change').onclick=()=>{form.scrollIntoView({block:'center'});city.focus();};
 
 // Section tabs under the destination bar: one tap to any rail that has listings.
-const TAB_LABELS={'city-hub':'Everything on','plan-trip':'Plan your trip','rail-near':'Near you','gyg-box':'Tours','big-feature':'Featured','rail-trip':'Heading away?','rail-featured':'Featured picks','rail-direct':'Bunker direct','rail-music':'Live music','rail-club':'Raves','rail-festival':'Festivals','rail-family':'Family','rail-comedy':'Comedy','rail-shows':'Theatre','rail-cinema':'Cinema','rail-boat':'Boat trips','rail-transfer':'Limos & transfers','rail-sport':'Sport & racing','rail-seasonal':'Special days','rail-daysout':'Experiences','rail-weekend':'This weekend'};
+const TAB_LABELS={'city-hub':'Everything on','plan-trip':'Plan your trip','rail-near':'Near you','gyg-box':'Tours','big-feature':'Featured','rail-trip':'Heading away?','rail-featured':'Featured picks','rail-direct':'Bunker direct','rail-music':'Live music','rail-club':'Raves','rail-festival':'Festivals','rail-family':'Family','rail-comedy':'Comedy','rail-shows':'Theatre','rail-cinema':'Cinema','rail-boat':'Boat trips','rail-transfer':'Limos & transfers','rail-sport':'Sport & racing','rail-seasonal':'Special days','rail-daysout':'Experiences','rail-dining':'Dining','rail-weekend':'This weekend'};
 let tabObserver;
 function renderTabs(){
  const nav=$('#section-tabs');

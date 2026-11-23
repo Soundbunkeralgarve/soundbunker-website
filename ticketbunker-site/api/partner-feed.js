@@ -98,7 +98,10 @@ export function pickListings(items, {city = '', country = ''} = {}) {
     if (want && !placeHas(place(item.city), want) && !(item.provider === 'viator' && place(item.city) === 'algarve' && regionTown(want))) return false;
     const bucket = item.provider + '|' + item.category;
     // A chosen city gets a much deeper list so its page can show everything that's on.
-    if ((counts[bucket] || 0) >= (want ? PER_CITY_CATEGORY : PER_CATEGORY)) return false;
+    // The approved theatre snapshot has over 80 real London products; its full
+    // city catalogue must stay reachable without raising other providers' caps.
+    const cityLimit = item.provider === 'awin-1936' ? 400 : PER_CITY_CATEGORY;
+    if ((counts[bucket] || 0) >= (want ? cityLimit : PER_CATEGORY)) return false;
     const town = bucket + '|' + place(item.city);
     if (!want && (perTown[town] || 0) >= (item.provider === 'viator' ? 6 : 2)) return false;
     perTown[town] = (perTown[town] || 0) + 1;
@@ -214,6 +217,8 @@ export async function loadViator(env = process.env, {fetcher = fetch} = {}) {
   const seen = new Set();
   const items = settled.flatMap(s => s.status === 'fulfilled' ? s.value : []).filter(i => !seen.has(i.id) && seen.add(i.id));
   if (!items.length && failed.length) throw Error('Viator searches returned no products after failures: ' + String(failed[0].reason?.message).slice(0, 120));
+  // Keep successful products, but retry incomplete city supply promptly.
+  if (failed.length) Object.defineProperty(items, 'partialFailure', {value: true});
   return items;
 }
 
@@ -251,10 +256,11 @@ export function awinItem(row) {
     } catch { /* next */ }
   }
   const price = Number(String(row.search_price || row.display_price || '').replace(/[^\d.]/g, ''));
+  const metadata = metadataCategory([row.category_name, row.merchant_category].filter(Boolean).join(' '));
   return {
     id: 'awin:' + mid + ':' + String(row.aw_product_id || row.merchant_product_id || title).replace(/[^\w-]/g, '').slice(0, 40),
     provider: 'awin-' + mid, seller: String(row.merchant_name || 'Partner').trim().slice(0, 60), title,
-    category: known.category || metadataCategory([row.category_name, row.merchant_category].filter(Boolean).join(' ')) || listingCategory(title),
+    category: metadata === 'dining' ? metadata : known.category || metadata || listingCategory(title),
     city: known.city || String(row.custom_1 || row.location || '').trim().slice(0, 80), venue: String(row.venue || row.custom_2 || '').trim().slice(0, 120),
     countryCode: known.countryCode || '', startsAt: '', endsAt: '', timezone: known.timezone || '',
     priceCents: Number.isFinite(price) && price > 0 ? Math.round(price * 100) : null,
@@ -286,7 +292,7 @@ export async function loadAwin(env = process.env, {fetcher = fetch, snapshots = 
 // Retry failed providers promptly, including keys awaiting production activation.
 // Successful providers keep serving their listings during the shorter cache window.
 export function feedCacheDuration(results) {
-  return results.some(result => result.status === 'rejected') ? 5 * 6e4 : CACHE_MS;
+  return results.some(result => result.status === 'rejected' || result.value?.partialFailure === true) ? 5 * 6e4 : CACHE_MS;
 }
 
 let cached, loading;

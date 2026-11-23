@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {viatorItem, loadViator, pickListings, VIATOR_PLACES} from '../api/partner-feed.js';
+import {viatorItem, loadViator, pickListings, VIATOR_PLACES, feedCacheDuration} from '../api/partner-feed.js';
 import {blend, filterItems, cityMatches} from '../discovery-model.js';
 
 const product = (over = {}) => ({
@@ -81,6 +81,31 @@ test('Viator keeps successful destinations when one product search is rate limit
   assert.ok(!items.some(i => i.city === 'Algarve'));
   assert.ok(items.some(i => i.city === 'Lisbon'));
   assert.ok(items.every(i => new URL(i.url).searchParams.get('pid') === 'P00333211'), 'provider tracking remains intact');
+});
+
+test('a failed general city search with successful limo results retries the partial catalogue after five minutes', async () => {
+  let failLisbon = true;
+  const fetcher = async (url, opts) => {
+    const body = JSON.parse(opts.body), textSearch = url.endsWith('/search/freetext');
+    const id = textSearch ? body.productFiltering.destination : body.filtering.destination;
+    if (!textSearch && id === '538' && failLisbon) return {ok:false, status:503};
+    const products = textSearch
+      ? id === '538' && body.searchTerm === 'limousine' ? [product({productCode:'LisbonAirport', title:'Lisbon private airport transfer'})] : []
+      : [product({productCode:'P' + id})];
+    return {ok:true, json:async () => ({products:textSearch ? {results:products} : products})};
+  };
+  const partial = await loadViator({VIATOR_API_KEY:'fixture-token'}, {fetcher});
+  assert.deepEqual(partial.filter(i => i.city === 'Lisbon').map(i => i.id), ['viator:LisbonAirport']);
+  assert.equal(partial.partialFailure, true);
+  assert.equal(Object.getOwnPropertyDescriptor(partial, 'partialFailure').enumerable, false);
+  assert.ok(!JSON.stringify(partial).includes('partialFailure'), 'internal retry metadata does not change the public products');
+  const fulfilled = value => [{status:'fulfilled', value:[]}, {status:'fulfilled', value}, {status:'fulfilled', value:[]}];
+  assert.equal(feedCacheDuration(fulfilled(partial)), 5 * 60 * 1000, 'fulfilled but incomplete supply must not be cached for thirty minutes');
+  failLisbon = false;
+  const recovered = await loadViator({VIATOR_API_KEY:'fixture-token'}, {fetcher});
+  assert.ok(recovered.some(i => i.id === 'viator:P538'));
+  assert.equal(recovered.partialFailure, undefined);
+  assert.equal(feedCacheDuration(fulfilled(recovered)), 30 * 60 * 1000, 'successful full refresh restores the normal cache');
 });
 
 test('Viator rejects a fully failed provider instead of reporting an empty successful catalogue', async () => {

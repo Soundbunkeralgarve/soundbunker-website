@@ -44,6 +44,7 @@ export function listingCategory(title) {
 export function metadataCategory(category) {
   const text = fold(category);
   if (TRANSFER.test(text)) return 'transfer';
+  if (/\b(?:restaurants?|dining)\b/.test(text)) return 'dining';
   if (/\b(?:musicals?|theatre|theater|shows?|ballet|opera|cabaret)\b/.test(text)) return 'shows';
   if (/\b(?:comedy|stand[ -]?up)\b/.test(text)) return 'comedy';
   if (/\b(?:festivals?)\b/.test(text)) return 'festival';

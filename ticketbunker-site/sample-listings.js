@@ -12,5 +12,6 @@ export const homeRails = Object.freeze([
   ['transfer', 'Limos, chauffeurs & transfers', 'Bookable private rides, airport transfers and chauffeur services where listed.'],
   ['sport', 'Sport & racing', 'Sporting events and race days when available.'],
   ['seasonal', 'Seasonal & special days', 'Celebrations, special occasions and seasonal events.'],
-  ['daysout', 'Experiences & days out', 'Kayaks, surf, water parks and more.']
+  ['daysout', 'Experiences & days out', 'Kayaks, surf, water parks and more.'],
+  ['dining', 'Restaurants & dining', 'Restaurant offers and dining experiences from the named seller.']
 ]);

@@ -144,17 +144,18 @@
 
 /* Ticket-first destination and trip flow; the existing event card stays shared. */
 .shop-home .hero.hero-sales .hero-intro{margin-bottom:16px}
-.discovery-entry{display:flex;justify-content:center;gap:10px;margin:0 0 14px;width:100%;max-width:620px}
-.discovery-entry button{flex:1;border:1px solid #ffffff50;border-radius:12px;background:#080d0bad;color:#fff;padding:12px 18px;cursor:pointer;font:700 14px/1.4 var(--body);text-align:left;min-width:0}
+.discovery-entry{display:flex;justify-content:center;gap:10px;margin:0 0 14px;width:100%;max-width:480px}
+.discovery-entry button{flex:1;border:1px solid #ffffff50;border-radius:12px;background:#080d0bad;color:#fff;padding:10px 18px;cursor:pointer;font:700 14px/1.4 var(--body);text-align:center;min-width:0}
 .discovery-entry button span{display:block;font-size:11px;font-weight:400;color:#bdcec4;margin-top:2px}
 .discovery-entry button:hover{border-color:var(--teal);background:#103026d9}
 .shop-home .hero.hero-sales .destination-search{grid-template-columns:1fr 1.4fr 1fr 1fr auto}
 .shop-home .hero.hero-sales .ds-city input{padding-right:0}
 .trip-types{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:7px;margin-top:20px;max-width:100%}
-.trip-types>span{font:500 10px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:#a3b6ab;margin-right:4px}
-.trip-types button{border:1px solid #ffffff40;border-radius:999px;background:#05060680;color:#edf5f0;font:500 12px var(--body);padding:8px 13px;min-height:38px;cursor:pointer}
+.trip-types>span{font:500 10px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:#5d625e;margin-right:4px}
+.trip-types button{border:1px solid #c7ccc3;border-radius:999px;background:#fff;color:#202820;font:500 12px var(--body);padding:8px 13px;min-height:38px;cursor:pointer}
 .trip-types button[aria-pressed=true]{background:var(--teal);border-color:var(--teal);color:#04140e}
-.trip-type-note{font-size:11px;color:#bdcec4;margin:10px 0 0;line-height:1.5;min-height:17px}
+.trip-audience{grid-column:1/-1;border-top:1px solid #d5d7ce;padding-top:16px}
+.trip-path .trip-type-note{font-size:11px;color:#59645b;margin:10px 0 0;line-height:1.5;max-width:none}
 .trip-path{padding:24px 0 10px;background:#efede6;border-bottom:1px solid var(--line)}
 .trip-path-inner{display:grid;grid-template-columns:minmax(160px,.9fr) minmax(0,2fr) auto;gap:24px;align-items:center;padding-bottom:18px}
 .trip-path .label{margin-bottom:7px;font-size:9px}
@@ -181,17 +182,16 @@
  .shop-home .hero.hero-sales .ds-field{padding:9px 11px}
  .shop-home .hero.hero-sales .ds-field input,.shop-home .hero.hero-sales .ds-field select{font-size:16px}
  .discovery-entry{gap:8px}.discovery-entry button{font-size:12px;padding:10px 12px}.discovery-entry button span{font-size:10px}
- .trip-types{justify-content:flex-start;gap:6px;margin-top:16px}.trip-types>span{flex-basis:100%;text-align:left;margin-bottom:2px}.trip-types button{font-size:11px;padding:7px 11px}
+ .trip-types{justify-content:flex-start;gap:6px;margin-top:0}.trip-types>span{flex-basis:100%;text-align:left;margin-bottom:2px}.trip-types button{font-size:11px;padding:7px 11px}
  .trip-type-note{text-align:left;font-size:10px}.trip-path{padding-top:20px}.trip-path-inner{grid-template-columns:1fr;gap:16px}.trip-path h2{font-size:26px}.trip-path p{max-width:none}.trip-path .btn-solid{grid-column:auto;justify-self:start}
  .trip-path-steps{gap:10px}.trip-path-steps b{font-size:12px}.trip-path-steps span{font-size:9px}.trip-path-steps a{min-width:0}
 }
 @media(max-width:360px){.trip-path-steps{grid-template-columns:repeat(2,minmax(0,1fr))}.discovery-entry button span{font-size:9px}}
 
-/* The cinematic hero is monochrome; Bunker colour stays on the shop below. */
-.shop-home .hero.hero-sales{filter:grayscale(1)}
+/* Monochrome photography keeps the solid Bunker teal headline in focus. */
 .shop-home .hero.hero-sales .hero-scene{filter:grayscale(1) contrast(1.08) brightness(.72)}
 .shop-home .hero.hero-sales .hero-shade{background:radial-gradient(65% 65% at 50% 40%,#050505aa,#05050570 60%,#050505bb),linear-gradient(0deg,#050505 0%,#05050599 45%,#05050577 100%)}
-.shop-home .hero.hero-sales .h1-outline{color:transparent;-webkit-text-stroke:2px #fff;text-shadow:none}
+.shop-home .hero.hero-sales .h1-outline{color:var(--teal);-webkit-text-stroke:0;text-shadow:0 4px 30px #0006}
 .shop-home .hero.hero-sales .live-dot{background:#fff;animation:none;box-shadow:none}
 .shop-home .hero.hero-sales .hero-kicker{color:#eee;border-color:#ffffff45;background:#05050590;flex-wrap:wrap;justify-content:center;row-gap:6px;font-size:10px;letter-spacing:.08em}
 .shop-home .hero.hero-sales .hero-kicker a{color:inherit;text-decoration:none}
@@ -219,4 +219,4 @@
 .shop-home .hero.hero-sales .ds-field :focus-visible{outline:2px solid #111;outline-offset:2px}
 .hero-place-note{font-size:10px;color:#c7c7c7;margin:9px 0 0;line-height:1.5}
 .hero-place-note a{color:#fff;text-underline-offset:3px;margin-left:6px}
-@media(max-width:650px){.shop-home .hero.hero-sales .hero-grid{padding-top:30px}.shop-home .hero.hero-sales h1{font-size:clamp(54px,15vw,74px);margin-bottom:16px}.shop-home .hero.hero-sales .hero-kicker{font-size:9px;margin-bottom:20px}.shop-home .hero.hero-sales .h1-outline{-webkit-text-stroke:1.5px #fff}.shop-home .hero.hero-sales .hero-intro{font-size:14px;line-height:1.5;margin-bottom:16px}.shop-home .hero.hero-sales .hero-tagline{font-size:17px;line-height:1.35;margin-bottom:10px}.hero-place-note{font-size:9px}}
+@media(max-width:650px){.shop-home .hero.hero-sales .hero-grid{padding-top:30px}.shop-home .hero.hero-sales h1{font-size:clamp(54px,15vw,74px);margin-bottom:16px}.shop-home .hero.hero-sales .hero-kicker{font-size:9px;margin-bottom:20px}.shop-home .hero.hero-sales .h1-outline{-webkit-text-stroke:0}.shop-home .hero.hero-sales .hero-intro{font-size:14px;line-height:1.5;margin-bottom:16px}.shop-home .hero.hero-sales .hero-tagline{font-size:17px;line-height:1.35;margin-bottom:10px}.hero-place-note{font-size:9px}}
