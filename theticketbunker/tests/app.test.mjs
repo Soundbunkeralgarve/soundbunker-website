@@ -81,17 +81,24 @@ test('all 153 city pages are listed, grouped by country, each with a map point',
 test('night planner: tickets, get to the venue (walk/transit/Uber/Citymapper/Tube), partners, tours', () => {
   const item = {key: 'feed:skiddle:1', external: true, ...feedEvent()};
   const steps = plannerSteps(item);
-  assert.deepEqual(steps.map(s => s.kind), ['tickets', 'route', 'travel', 'stay', 'eat', 'tours']);
+  assert.deepEqual(steps.map(s => s.kind), ['tickets', 'route', 'travel', 'car', 'stay', 'transfer', 'eat', 'tours']);
   assert.equal(steps[0].links[0].name, 'Skiddle');
   assert.deepEqual(steps[1].links.map(l => l.kind), ['walk', 'transit', 'taxi', 'citymapper', 'tube']);
   assert.match(steps[1].links[2].url, /dropoff\[latitude\]=51\.49/);
-  const publicLinks = steps.filter(s => ['travel', 'stay', 'eat'].includes(s.kind)).flatMap(s => s.links);
-  assert.deepEqual(publicLinks.map(l => l.id), ['trainline-direct', 'omio-direct', 'expedia-hotels', 'thefork-direct', 'restaurant-map']);
-  assert.ok(publicLinks.every(l => l.commercial === 'direct' && new URL(l.url).protocol === 'https:'), 'public searches do not imply affiliate approval');
-  assert.ok(publicLinks.every(l => !new URL(l.url).hostname.endsWith('awin1.com') && !new URL(l.url).searchParams.has('awinaffid')), 'pending affiliate applications do not add tracking');
-  assert.equal(new URL(steps[3].links[0].url).searchParams.get('destination'), 'London, United Kingdom');
-  assert.equal(new URL(steps[4].links[1].url).searchParams.get('query'), 'restaurants London, United Kingdom');
-  assert.match(steps[5].links[0].url, /getyourguide\.com\/london-l57\/\?partner_id=KNICMG4/);
+  const searches = steps.filter(s => ['travel', 'car', 'stay', 'transfer', 'eat'].includes(s.kind));
+  assert.ok(searches.every(s => s.links.length > 0), 'public searches remain usable while affiliate applications are pending');
+  for (const link of searches.flatMap(s => s.links)) {
+    assert.equal(new URL(link.url).protocol, 'https:');
+    assert.ok(['direct', 'affiliate'].includes(link.commercial));
+    if (link.commercial === 'direct') assert.notEqual(new URL(link.url).hostname, 'www.awin1.com', 'public searches never acquire affiliate tracking');
+  }
+  const publicLinks = searches.flatMap(s => s.links).filter(l => l.commercial === 'direct');
+  assert.deepEqual(publicLinks.map(l => l.id), ['trainline-direct', 'omio-direct', 'expedia-cars', 'expedia-hotels', 'blacklane-direct', 'welcome-direct', 'thefork-direct', 'restaurant-map']);
+  assert.ok(publicLinks.every(l => !new URL(l.url).hostname.endsWith('awin1.com') && !new URL(l.url).searchParams.has('awinaffid')), 'public searches never acquire pending affiliate tracking');
+  assert.equal(new URL(steps.find(s => s.kind === 'stay').links.find(l => l.id === 'expedia-hotels').url).searchParams.get('destination'), 'London, United Kingdom');
+  assert.equal(new URL(publicLinks.find(l => l.id === 'restaurant-map').url).searchParams.get('query'), 'restaurants London, United Kingdom');
+  assert.match(steps.find(s => s.kind === 'stay').blurb, /check the distance/);
+  assert.match(steps.find(s => s.kind === 'tours').links[0].url, /getyourguide\.com\/london-l57\/\?partner_id=KNICMG4/);
   assert.equal(ticketLink({external: false, url: '/event/x'}), 'https://theticketbunker.com/event/x');
   assert.match(tourLink('Nowhereville', 'GB'), /\/s\/\?q=Nowhereville/);
 });

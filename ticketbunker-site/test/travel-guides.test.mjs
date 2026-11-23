@@ -15,6 +15,15 @@ test('hotel destinations infer countries, preserve accents and encode input as d
   assert.equal(tripDestination('xx','London\n').city,'London');
   assert.equal(new URL(directoryProviders('stay','','London')[0].url).searchParams.get('destination'),'London, United Kingdom');
 });
+test('shared travel searches work on native engines without Intl.DisplayNames',async()=>{
+  const original=Intl.DisplayNames;
+  try{
+    Intl.DisplayNames=undefined;
+    const {tripDestination:destination,directoryProviders:providers}=await import('../travel-directory.js?without-display-names');
+    assert.equal(destination('','London').search,'London, GB');
+    assert.equal(new URL(providers('stay','PT','Lisbon')[0].url).searchParams.get('destination'),'Lisbon, PT');
+  }finally{Intl.DisplayNames=original;}
+});
 test('dining adapts to countries without inventing a nationwide discount',()=>{
   assert.equal(new URL(directoryProviders('eat','PT','Lisbon')[0].url).hostname,'www.thefork.pt');
   assert.equal(directoryProviders('eat','DE','Berlin').length,1);
