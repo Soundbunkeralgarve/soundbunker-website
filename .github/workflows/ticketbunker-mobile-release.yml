@@ -81,7 +81,13 @@ jobs:
         run: |
           set -euo pipefail
           args=(build --platform "$RELEASE_PLATFORM" --profile production --non-interactive --wait --json --message "TicketBunker app release $GITHUB_SHA")
-          if [ "$UPLOAD_BUILDS" = true ]; then args+=(--auto-submit); fi
+          if [ "$UPLOAD_BUILDS" = true ]; then
+            if [ "$RELEASE_PLATFORM" = ios ]; then
+              args+=(--auto-submit-with-profile production-ci)
+            else
+              args+=(--auto-submit)
+            fi
+          fi
           npx --yes eas-cli@25.2.0 "${args[@]}" > "$RUNNER_TEMP/${{ matrix.app }}-builds.json"
           node ../scripts/summarize-ticketbunker-builds.mjs "$RUNNER_TEMP/${{ matrix.app }}-builds.json"
       - name: Remove temporary Apple API key
