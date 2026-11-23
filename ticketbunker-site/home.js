@@ -2,8 +2,8 @@ import {getPublicEvents} from './featured-events.js?v=20261020';
 import {escapeHtml as esc,money,safeUrl} from './shared.js';
 import {eventKind} from './event-content.js';
 import {approvedPartnerListings} from './partner-listings-model.js?v=20261121-city';
-import {discoveryCategories,blend,filterItems,sortItems,featureFor,readState,stateQuery} from './discovery-model.js?v=20261123-catalogue';
-import {homeRails} from './sample-listings.js?v=20261123-catalogue';
+import {discoveryCategories,blend,filterItems,sortItems,mixSellers,featureFor,readState,stateQuery} from './discovery-model.js?v=20261123-mixed-cards';
+import {homeRails} from './sample-listings.js?v=20261123-mixed-cards';
 import {selectFeaturedEvents} from './featured-selection.js';
 import {renderGygBox} from './gyg-box.js?v=20261121c';
 import {renderPartnerDirectory} from './partner-directory.js?v=20261123';
@@ -148,15 +148,6 @@ function mountRail(section,items,extra=''){
  section.railSync?.();requestAnimationFrame(()=>section.railSync?.());
 }
 
-// Partner listings take turns by seller so no single feed fills a rail; paid features
-// and our own tickets keep their place at the front.
-function mixSellers(items){
- const lead=items.filter(i=>i.featured||i.source==='ticketbunker'),groups=new Map();
- for(const i of items)if(!lead.includes(i)){if(!groups.has(i.source))groups.set(i.source,[]);groups.get(i.source).push(i);}
- const out=[...lead],queues=[...groups.values()];
- while(queues.some(q=>q.length))for(const q of queues)if(q.length)out.push(q.shift());
- return out;
-}
 const placeOnly=()=>({country:state.country,city:state.city,category:'',when:'any'});
 
 // One large paid placement under the hero: a real featured event for this place,
@@ -240,15 +231,11 @@ async function loadNear(){
  try{const r=await fetch('/api/partner-feed?city='+encodeURIComponent(place),{signal:AbortSignal.timeout(45000)});if(r.ok&&nearFor===place){const d=await r.json();nearFeed=Array.isArray(d.events)?d.events:[];}}catch{nearFeed=[];}
  render();
 }
-function byType(items){
- const groups=new Map();for(const i of items){if(!groups.has(i.category))groups.set(i.category,[]);groups.get(i.category).push(i);}
- const out=[],queues=[...groups.values()];while(queues.some(q=>q.length))for(const q of queues)if(q.length)out.push(q.shift());return out;
-}
 function renderNear(now){
  const place=nearPlace(),source=nearSource(),section=$('#rail-near');
  if(!place){section.hidden=true;return;}
  const pool=blend(events,partners,now,state.city?feed:nearFeed);
- const items=byType(sortItems(filterItems(pool,{city:place,when:'any'},now)).filter(i=>!i.soldOut)).slice(0,16);
+ const items=mixSellers(sortItems(filterItems(pool,{city:place,when:'any'},now).filter(i=>!i.soldOut))).slice(0,16);
  section.hidden=items.length<3;
  if(section.hidden)return;
  const shown=source==='location'?geoPlace.name:place;
@@ -261,7 +248,7 @@ $('#near-locate').onclick=()=>useMyLocation();
 $('#near-change').onclick=()=>{form.scrollIntoView({block:'center'});city.focus();};
 
 // Section tabs under the destination bar: one tap to any rail that has listings.
-const TAB_LABELS={'city-hub':'Everything on','plan-trip':'Plan your trip','rail-near':'Near you','gyg-box':'Tours','big-feature':'Featured','rail-trip':'Heading away?','rail-featured':'Featured picks','rail-direct':'Bunker direct','rail-music':'Live music','rail-club':'Raves','rail-festival':'Festivals','rail-family':'Family','rail-comedy':'Comedy','rail-shows':'Theatre','rail-cinema':'Cinema','rail-boat':'Boat trips','rail-sport':'Sport & racing','rail-seasonal':'Special days','rail-daysout':'Experiences','rail-weekend':'This weekend'};
+const TAB_LABELS={'city-hub':'Everything on','plan-trip':'Plan your trip','rail-near':'Near you','gyg-box':'Tours','big-feature':'Featured','rail-trip':'Heading away?','rail-featured':'Featured picks','rail-direct':'Bunker direct','rail-music':'Live music','rail-club':'Raves','rail-festival':'Festivals','rail-family':'Family','rail-comedy':'Comedy','rail-shows':'Theatre','rail-cinema':'Cinema','rail-boat':'Boat trips','rail-transfer':'Limos & transfers','rail-sport':'Sport & racing','rail-seasonal':'Special days','rail-daysout':'Experiences','rail-weekend':'This weekend'};
 let tabObserver;
 function renderTabs(){
  const nav=$('#section-tabs');
@@ -302,7 +289,7 @@ function renderTrip(){
  const query=TRIPS.find(([l])=>l===tripPick)[1],list=tripCache.get(tripPick);
  const track=section.querySelector('[data-track]');
  if(!list){track.innerHTML='<p class="trip-loading">Loading '+esc(tripPick)+'…</p>';return;}
- const items=byType(sortItems(filterItems(blend(events,partners,Date.now(),list),{city:query,when:'any'})).filter(i=>!i.soldOut)).slice(0,16);
+ const items=mixSellers(sortItems(filterItems(blend(events,partners,Date.now(),list),{city:query,when:'any'}).filter(i=>!i.soldOut))).slice(0,16);
  mountRail(section,items.map(i=>card(i)),`<a class="tcard host-tile" href="${esc(cityHref(tripPick))}"><div><span class="label">${esc(tripPick)}</span><h3>See it all.</h3><p>Every gig, night out, family day and tour we have in ${esc(tripPick)}.</p><span class="head-link">Everything in ${esc(tripPick)} ↗</span></div></a>`);
 }
 
@@ -323,11 +310,11 @@ if(pathCity){$('#city-hub').after($('#plan-trip'),$('#gyg-box'));}
 function renderHub(all,now){
  const box=$('#city-hub');
  if(!pathCity||state.city!==pathCity.city){box.hidden=true;return;}
- const name=pathCity.city,list=sortItems(filterItems(all,placeOnly(),now)).filter(i=>!i.soldOut);
+ const name=pathCity.city,list=sortItems(filterItems(all,placeOnly(),now).filter(i=>!i.soldOut));
  box.hidden=false;$('#rail-near').hidden=true;
  const counts={};for(const i of list)counts[i.category]=(counts[i.category]||0)+1;
  if(hubCat&&!counts[hubCat])hubCat='';
- const shown=hubCat?list.filter(i=>i.category===hubCat):list;
+ const shown=mixSellers(hubCat?list.filter(i=>i.category===hubCat):list);
  $('#city-hub-h').textContent='Everything on in '+name+'.';
  const settled=feedCity===state.city&&feedDone;
  $('#city-hub-count').textContent=list.length?list.length.toLocaleString('en-GB')+' on sale':settled?'Events coming soon':'Loading what\u2019s on\u2026';
@@ -337,7 +324,7 @@ function renderHub(all,now){
   jump('city-grid','What\u2019s on',list.length?list.length.toLocaleString('en-GB')+' events':'Gigs, nights, shows'),
   !$('#gyg-box').hidden?jump('gyg-box','Tours & experiences','Day trips and activities'):`<a class="amenity" href="${esc(tourLink(name,pathCity.country))}" target="_blank" rel="sponsored noopener"><b>Tours &amp; experiences</b><small>On GetYourGuide ↗</small></a>`,
   jump('plan-trip','Trains & coaches',live('travel')),
-  jump('plan-trip','VIP transfers',live('transfer')),
+  `<a class="amenity" href="${esc('/vip-transfers?'+new URLSearchParams({city:name,country:state.country||pathCity.country||''}))}"><b>Limos &amp; VIP transport</b><small>Check local options</small></a>`,
   jump('plan-trip','Stay nearby',live('stay')),
   jump('plan-trip','Eat nearby',live('eat')),
   jump('rail-trip','Other cities','Tickets further afield')
@@ -374,7 +361,7 @@ function render(){
  const isSearch=searching();
  $('#discover').hidden=!isSearch;$('#rails').hidden=isSearch;
  if(isSearch){
-  const list=sortItems(filterItems(all,state,now)),open=list.filter(i=>!i.soldOut).length;
+  const list=mixSellers(sortItems(filterItems(all,state,now)),{when:state.when}),open=list.filter(i=>!i.soldOut).length;
   $('#results-heading').textContent=(state.category?discoveryCategories[state.category]:'What’s on')+(where?' in '+where:'')+(state.when!=='any'?' '+whenLabel():'')+'.';
   $('#event-count').textContent=list.length?`${open} on sale`:'No live listings yet';
   $('#results-grid').innerHTML=list.slice(0,limit).map(i=>card(i)).join('');
@@ -398,8 +385,8 @@ function render(){
  }
  for(const [k] of homeRails){
   const section=document.getElementById('rail-'+k);
-  // Paid features first, then our own events, then partner feeds; long rails are capped.
-  const real=mixSellers(sortItems(filterItems(all,{...place,category:k},now)).sort((a,b)=>Number(b.featured)-Number(a.featured)||Number(b.source==='ticketbunker')-Number(a.source==='ticketbunker'))).slice(0,24);
+  // Paid features lead, then sellers take turns; long rails are capped.
+  const real=mixSellers(sortItems(filterItems(all,{...place,category:k},now))).slice(0,24);
   section.hidden=!real.length;
   if(real.length)mountRail(section,real.map(i=>card(i)));
  }

@@ -60,13 +60,13 @@ test('the feed can be switched off and reports provider failures', async () => {
 
 test('any failed provider shortens the cache so activation and outage recovery are retried', () => {
   const successful = () => ({status: 'fulfilled', value: []});
-  assert.equal(feedCacheDuration([successful(), successful(), successful()]), 3 * 60 * 60 * 1000);
+  assert.equal(feedCacheDuration([successful(), successful(), successful()]), 30 * 60 * 1000);
   for (const provider of [0, 1, 2]) {
     const results = [successful(), successful(), successful()];
     results[provider] = {status: 'rejected', reason: Error('provider unavailable')};
     assert.equal(feedCacheDuration(results), 5 * 60 * 1000);
   }
-  assert.equal(feedCacheDuration([successful(), successful(), successful()]), 3 * 60 * 60 * 1000,
+  assert.equal(feedCacheDuration([successful(), successful(), successful()]), 30 * 60 * 1000,
     'the normal cache window returns once all providers recover');
 });
 

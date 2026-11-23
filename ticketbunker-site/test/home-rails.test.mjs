@@ -13,7 +13,7 @@ test('the homepage only shows real listings: no sample or made-up events remain'
 });
 
 test('rails cover the categories partner feeds and organisers sell', () => {
-  assert.deepEqual(rails.homeRails.map(([k]) => k), ['music', 'club', 'festival', 'family', 'comedy', 'shows', 'cinema', 'boat', 'sport', 'seasonal', 'daysout']);
+  assert.deepEqual(rails.homeRails.map(([k]) => k), ['music', 'club', 'festival', 'family', 'comedy', 'shows', 'cinema', 'boat', 'transfer', 'sport', 'seasonal', 'daysout']);
 });
 
 test('an unsold featured spot advertises the placement instead of inventing an event', () => {

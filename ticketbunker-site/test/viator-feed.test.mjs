@@ -38,24 +38,35 @@ test('Viator stays off without a key and searches verified destinations directly
     active++; maxActive = Math.max(maxActive, active);
     await new Promise(resolve => setImmediate(resolve));
     active--;
-    return {ok: true, json: async () => ({products: [product({productCode: 'P' + body.filtering.destination})]})};
+    const limo = url.endsWith('/search/freetext'), id = limo ? body.productFiltering.destination : body.filtering.destination;
+    return {ok: true, json: async () => ({products: limo ? {results: [product({productCode: 'L' + id, title:'Private limousine transfer'})]} : [product({productCode: 'P' + id})]})};
   };
   const items = await loadViator({VIATOR_API_KEY: ' fixture-token\n'}, {fetcher});
-  assert.equal(items.length, VIATOR_PLACES.length);
-  assert.equal(seen.length, 15, 'one production product search per configured destination, no taxonomy or sandbox probes');
-  assert.ok(seen.every(({url}) => url === 'https://api.viator.com/partner/products/search'));
-  assert.ok(seen.every(({opts, body}) => opts.method === 'POST' && opts.headers['exp-api-key'] === 'fixture-token' && body.currency === 'EUR' && body.pagination.count === 30));
+  assert.equal(items.length, 2 * VIATOR_PLACES.length);
+  assert.equal(seen.length, 30, 'one general and one limo search per configured destination, no taxonomy or sandbox probes');
+  assert.equal(seen.filter(({url}) => url === 'https://api.viator.com/partner/products/search').length, 15);
+  assert.equal(seen.filter(({url}) => url === 'https://api.viator.com/partner/search/freetext').length, 15);
+  assert.ok(seen.every(({opts, body}) => opts.method === 'POST' && opts.headers['exp-api-key'] === 'fixture-token' && body.currency === 'EUR'));
+  for (const {url, body} of seen) {
+    if (url.endsWith('/search/freetext')) {
+      assert.equal(body.searchTerm,'limousine');
+      assert.deepEqual(body.searchTypes,[{searchType:'PRODUCTS',pagination:{start:1,count:10}}]);
+    } else assert.equal(body.pagination.count,30);
+  }
   assert.equal(maxActive, 4, 'concurrent searches stay bounded');
   const expected = {Algarve:['PT','774'], Lisbon:['PT','538'], Porto:['PT','26879'], Madeira:['PT','5392'], Barcelona:['ES','562'], Madrid:['ES','566'], Seville:['ES','556'], Malaga:['ES','956'], Ibiza:['ES','4217'], Paris:['FR','479'], Amsterdam:['NL','525'], Rome:['IT','511'], Dublin:['IE','503'], London:['GB','737'], Edinburgh:['GB','739']};
   for (const [city, [countryCode, id]] of Object.entries(expected)) {
-    const item = items.find(i => i.city === city);
+    const item = items.find(i => i.city === city && i.id === 'viator:P' + id);
     assert.equal(item?.id, 'viator:P' + id, city + ' uses its verified destination ID');
     assert.equal(item.countryCode, countryCode);
+    const limo = items.find(i => i.id === 'viator:L' + id);
+    assert.equal(limo.city,city); assert.equal(limo.countryCode,countryCode); assert.equal(limo.category,'transfer');
   }
 });
 
 test('Viator keeps successful destinations when one product search is rate limited', async () => {
   const items = await loadViator({VIATOR_API_KEY:'fixture-token'}, {fetcher:async (url, opts) => {
+    if (url.endsWith('/search/freetext')) return {ok:true, json:async () => ({products:{results:[]}})};
     const id = JSON.parse(opts.body).filtering.destination;
     if (id === '774') return {ok:false, status:429};
     return {ok:true, json:async () => ({products:[product({productCode:'P' + id})]})};
@@ -70,7 +81,33 @@ test('Viator rejects a fully failed provider instead of reporting an empty succe
   let calls = 0;
   await assert.rejects(loadViator({VIATOR_API_KEY:'fixture-token'}, {fetcher:async () => {calls++; return {ok:false, status:401};}}),
     /^Error: All Viator searches failed: Viator search 401 for Algarve$/);
-  assert.equal(calls, 15, 'failed searches do not trigger taxonomy or sandbox probes');
+  assert.equal(calls, 30, 'failed searches do not trigger taxonomy or sandbox probes');
+});
+
+test('limo results keep only explicit relevant transport, deduplicate products and preserve exact provider URLs',async()=>{
+  const exactUrl='https://www.viator.com/tours/London/Private-limousine/d737-L1?pid=P00333211&mcid=42383&medium=api&campaign=transport';
+  const items=await loadViator({VIATOR_API_KEY:'fixture-token'},{fetcher:async(url,opts)=>{
+    const body=JSON.parse(opts.body), id=body.productFiltering?.destination || body.filtering?.destination;
+    if(id!=='737')return {ok:true,json:async()=>({products:url.endsWith('/search/freetext')?{results:[]}:[]})};
+    const limo=product({productCode:'L1',title:'London private limousine transfer',productUrl:exactUrl});
+    return {ok:true,json:async()=>({products:url.endsWith('/search/freetext')?{results:[limo,product({productCode:'L2',title:'Private Airport Transfer from Heathrow'}),product({productCode:'bad',title:'London food and wine walking tour'}),product({productCode:'also-bad',title:'Lisbon walking tour including private airport transfer'})]}:[limo]})};
+  }});
+  assert.deepEqual(items.map(i=>i.id),['viator:L1','viator:L2']);
+  assert.equal(items[0].url,exactUrl);
+  assert.ok(items.every(i=>i.city==='London'&&i.countryCode==='GB'&&i.category==='transfer'));
+});
+
+test('limo search failures leave the successful general catalogue available',async()=>{
+  const items=await loadViator({VIATOR_API_KEY:'fixture-token'},{fetcher:async(url,opts)=>{
+    if(url.endsWith('/search/freetext'))return {ok:false,status:503};
+    return {ok:true,json:async()=>({products:[product({productCode:'P'+JSON.parse(opts.body).filtering.destination})]})};
+  }});
+  assert.equal(items.length,15);
+});
+
+test('empty limo results cannot hide a failed general provider search',async()=>{
+  await assert.rejects(loadViator({VIATOR_API_KEY:'fixture-token'},{fetcher:async(url)=>url.endsWith('/search/freetext')
+    ?{ok:true,json:async()=>({products:{results:[]}})}:{ok:false,status:503}}),/Viator searches returned no products after failures: Viator search 503 for Algarve/);
 });
 
 test('open-dated trips blend in, match Algarve towns and are not crowded out by dated events', () => {

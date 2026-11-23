@@ -6,7 +6,15 @@ test('pending affiliate links stay hidden while public searches remain usable', 
   const options = tripOptions('GB', 'London');
   assert.deepEqual(options.map(o => o.kind), ['travel', 'car', 'stay', 'eat', 'transfer']);
   assert.ok(options.every(o => o.partners.length > 0));
-  assert.ok(options.flatMap(o=>o.partners).every(p=>p.commercial==='direct' && !p.url.includes('awin1.com')), 'no pending tracking links');
+  for (const p of options.flatMap(o=>o.partners)) {
+    const u = new URL(p.url);
+    assert.notEqual(u.hostname, 'www.awin1.com', 'pending Awin routes stay hidden');
+    if (p.commercial === 'affiliate') {
+      assert.ok(['viator-limos', 'viator-chauffeurs', 'viator-transfers'].includes(p.id));
+      assert.equal(u.hostname, 'www.viator.com');
+      assert.equal(u.searchParams.get('pid'), 'P00333211');
+    } else assert.equal(p.commercial, 'direct');
+  }
   assert.ok(TRIP_PARTNERS.every(p => p[3] === false));
 });
 
