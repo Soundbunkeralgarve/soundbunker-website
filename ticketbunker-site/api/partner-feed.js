@@ -150,6 +150,14 @@ export const VIATOR_PLACES = Object.freeze([
   ['Paris', 'FR', '479'], ['Amsterdam', 'NL', '525'], ['Rome', 'IT', '511'], ['Dublin', 'IE', '503'], ['London', 'GB', '737'], ['Edinburgh', 'GB', '739']
 ]);
 const VIATOR_PER_PLACE = 30, VIATOR_CONCURRENCY = 4;
+// Publicly verified products are discovery targets, never static stock. Only an
+// exact code returned by the live API can enter the catalogue with its own details.
+const VIATOR_FOCUSED = Object.freeze([
+  {place:'London', countryCode:'GB', destinationId:'737', query:'London Zoo Entry Ticket', productCode:'2676ZOO'},
+  {place:'Lisbon', countryCode:'PT', destinationId:'538', query:'Lisbon Oceanarium Entrance Ticket', productCode:'111503P1'},
+  {place:'Lisbon', countryCode:'PT', destinationId:'538', query:'Lisbon Banksy Museum Admission Ticket', productCode:'420484P3'},
+  {place:'Amsterdam', countryCode:'NL', destinationId:'525', query:'Private Rijksmuseum Guided Tour', productCode:'8718P33'}
+]);
 
 export function viatorItem(raw, {place, countryCode}) {
   const title = String(raw?.title || '').replace(/\s+/g, ' ').trim().slice(0, 140);
@@ -176,26 +184,28 @@ export async function loadViator(env = process.env, {fetcher = fetch} = {}) {
   const key = String(env.VIATOR_API_KEY || '').trim();
   if (!key) return [];
   const headers = {'exp-api-key': key, Accept: 'application/json;version=2.0', 'Accept-Language': 'en-GB', 'Content-Type': 'application/json'};
-  const searchPlace = async ({place, countryCode, destinationId, limo}) => {
-    const payload = limo ? {
-      searchTerm: 'limousine', productFiltering: {destination: destinationId},
-      searchTypes: [{searchType: 'PRODUCTS', pagination: {start: 1, count: 10}}], currency: 'EUR'
+  const searchPlace = async ({place, countryCode, destinationId, limo, query, productCode}) => {
+    const textSearch = limo || Boolean(productCode);
+    const payload = textSearch ? {
+      searchTerm: query || 'limousine', productFiltering: {destination: destinationId},
+      searchTypes: [{searchType: 'PRODUCTS', pagination: {start: 1, count: productCode ? 30 : 10}}], currency: 'EUR'
     } : {
       filtering: {destination: destinationId}, sorting: {sort: 'TRAVELER_RATING', order: 'DESCENDING'},
       pagination: {start: 1, count: VIATOR_PER_PLACE}, currency: 'EUR'
     };
-    const r = await fetcher(VIATOR_API + (limo ? '/search/freetext' : '/products/search'), {
-      method: 'POST', headers, signal: AbortSignal.timeout(5000), body: JSON.stringify(payload)
+    const r = await fetcher(VIATOR_API + (textSearch ? '/search/freetext' : '/products/search'), {
+      method: 'POST', headers, signal: AbortSignal.timeout(productCode ? 3000 : 5000), body: JSON.stringify(payload)
     });
-    if (!r.ok) throw Error('Viator ' + (limo ? 'limo search ' : 'search ') + r.status + ' for ' + place);
-    const data = await r.json(), products = limo ? data.products?.results || [] : data.products || [];
-    return products.filter(p => !limo || limoSearchRelevant(p.title)).map(p => viatorItem(p, {place, countryCode})).filter(Boolean);
+    if (!r.ok) throw Error('Viator ' + (productCode ? 'focused search ' : limo ? 'limo search ' : 'search ') + r.status + ' for ' + place);
+    const data = await r.json(), products = textSearch ? data.products?.results || [] : data.products || [];
+    return products.filter(p => productCode ? p.productCode === productCode : !limo || limoSearchRelevant(p.title))
+      .map(p => viatorItem(p, {place, countryCode})).filter(Boolean);
   };
   const jobs = VIATOR_PLACES.flatMap(([place, countryCode, destinationId]) =>
-    [false, true].map(limo => ({place, countryCode, destinationId, limo})));
+    [false, true].map(limo => ({place, countryCode, destinationId, limo}))).concat(VIATOR_FOCUSED);
   const settled = [];
-  // One four-request queue covers both kinds of search. Thirty five-second jobs
-  // take at most eight batches (~40 seconds), within the function's 60s budget.
+  // One four-request queue: thirty 5s jobs followed by four focused 3s jobs.
+  // Nine batches have a worst timeout budget of 43s, below the client's 45s limit.
   for (let n = 0; n < jobs.length; n += VIATOR_CONCURRENCY) {
     settled.push(...await Promise.allSettled(jobs.slice(n, n + VIATOR_CONCURRENCY).map(searchPlace)));
   }

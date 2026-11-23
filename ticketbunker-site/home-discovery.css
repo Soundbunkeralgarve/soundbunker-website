@@ -188,6 +188,7 @@
 @media(max-width:360px){.trip-path-steps{grid-template-columns:repeat(2,minmax(0,1fr))}.discovery-entry button span{font-size:9px}}
 
 /* The cinematic hero is monochrome; Bunker colour stays on the shop below. */
+.shop-home .hero.hero-sales{filter:grayscale(1)}
 .shop-home .hero.hero-sales .hero-scene{filter:grayscale(1) contrast(1.08) brightness(.72)}
 .shop-home .hero.hero-sales .hero-shade{background:radial-gradient(65% 65% at 50% 40%,#050505aa,#05050570 60%,#050505bb),linear-gradient(0deg,#050505 0%,#05050599 45%,#05050577 100%)}
 .shop-home .hero.hero-sales .h1-outline{color:transparent;-webkit-text-stroke:2px #fff;text-shadow:none}
