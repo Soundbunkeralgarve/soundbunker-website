@@ -6,8 +6,16 @@
 - Theatre Tickets Direct: approved Awin catalogue snapshot remains on sale via its tracked links.
 - Entradas.com: approved Spain browse links remain separate from dated feed inventory.
 - GetYourGuide: existing partner-tagged location widgets and links remain available.
-- Viator: Basic production access was enabled on 23 November after completing the customer-service contact. The production key was installed as the existing server-only sensitive Vercel secret and production was rebuilt. That deployment successfully loaded 450 live products across the 15 configured destinations, but concurrent cold starts also hit `/destinations` rate limits. This repair replaces that repeated lookup with verified destination IDs and bounds product-search concurrency. Public city-page inventory must still be checked after deployment; this does not claim complete UK/EU coverage or native TicketBunker checkout. Buyers follow Viator's returned tracked product links to book and pay there.
+- Viator: Basic production access was enabled on 23 November after completing the customer-service contact. The production key remains a server-only sensitive Vercel secret. The destination-ID repair loaded 450 live products across 15 configured destinations; the public Algarve feed was then verified with 30 Viator offers. This category update adds a bounded free-text limousine search for those same destinations, retaining only explicit limo, limousine, chauffeur or private-transfer products. Results keep the exact returned tracked booking URL and use the standard listing cards. Additional limo inventory and city availability must be checked after deployment; this does not claim complete UK/EU coverage, stretch limousines in every city or native TicketBunker checkout. Buyers book and pay on Viator.
 - CORAS: sandbox client only, production locked; native ticket fulfilment has not been activated.
+
+## Listing categories and transport discovery
+
+Viator and Awin listings use a shared, conservative activity-intent classifier. Trusted Awin merchant and product categories take precedence over title inference. Airport/private transfers, limousines and chauffeurs have a dedicated `transfer` category; surf, paddleboard and similar sporting activities join sport. Explicit performances, comedy, music, seasonal events and vessels join their matching categories. Generic walking, food, wine, historical and venue tours stay under days out. A mention of Santa Maria does not make a historic visit a family event, and a cave/grotto alone does not imply a boat trip. Awin musicals are classified as stage shows before music; the generic word “tour” is not a music classifier. Native organiser sports and workshops map to sport and days out respectively; community remains other.
+
+General and limousine searches share one queue of at most four concurrent requests per process. Thirty requests with five-second timeouts fit within eight batches (about 40 seconds); failed transport searches retain successful general products, while failures that return no products are surfaced as a provider failure. Shared successful feed data is cached for 30 minutes, with five-minute retry after a fully failed provider. This leaves headroom for page-level caching under Viator's one-hour maximum search-result cache guidance. This is per-process concurrency control, not a distributed cache.
+
+This is a website/source update. The native app imports the shared category model and receives it on its next build; no App Store or Play Store release is implied.
 
 ## Sharing
 

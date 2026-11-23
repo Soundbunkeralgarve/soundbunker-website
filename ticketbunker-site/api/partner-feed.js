@@ -1,5 +1,6 @@
 import {gunzipSync} from 'node:zlib';
 import {readFile} from 'node:fs/promises';
+import {listingCategory, metadataCategory, limoSearchRelevant} from './lib/listing-category.js';
 // Approved affiliate event feeds. Buyers always book on the provider's own site through
 // our tracked link; the provider sells, delivers and supports the ticket.
 //
@@ -16,7 +17,7 @@ const SKIDDLE_CATEGORIES = Object.freeze({LIVE: 'music', CLUB: 'club', FEST: 'fe
 const FAMILY = /\b(family|families|kids?|children|child|toddler|santa|grotto|panto(mime)?|junior|baby|zoo|aquarium|water ?park|theme park|farm)\b/i;
 const FAMILY_CODES = new Set(['KIDS', 'EXPER', 'SEASONAL', 'THEATRE']);
 const SPAIN = /\b(ibiza|eivissa|sant antoni|san antonio|playa d.?en bossa|santa eulalia|marbella|benidorm|tenerife|costa adeje|adeje|playa de las americas|los cristianos|magaluf|mallorca|lanzarote|gran canaria)\b/i;
-const PER_CATEGORY = 24, PER_CITY_CATEGORY = 80, HORIZON_DAYS = 365, CACHE_MS = 3 * 60 * 60 * 1000;
+const PER_CATEGORY = 24, PER_CITY_CATEGORY = 80, HORIZON_DAYS = 365, CACHE_MS = 30 * 60 * 1000;
 
 const decode = value => String(value || '').replace(/^<!\[CDATA\[|\]\]>$/g, '')
   .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#0?39;|&apos;/g, "'")
@@ -149,7 +150,6 @@ export const VIATOR_PLACES = Object.freeze([
   ['Paris', 'FR', '479'], ['Amsterdam', 'NL', '525'], ['Rome', 'IT', '511'], ['Dublin', 'IE', '503'], ['London', 'GB', '737'], ['Edinburgh', 'GB', '739']
 ]);
 const VIATOR_PER_PLACE = 30, VIATOR_CONCURRENCY = 4;
-const BOAT = /\b(boat|cruise|catamaran|sail(ing)?|yacht|dolphin|whale|benagil|grotto|cave tour|sea cave|rib\b|speedboat|river tour)/i;
 
 export function viatorItem(raw, {place, countryCode}) {
   const title = String(raw?.title || '').replace(/\s+/g, ' ').trim().slice(0, 140);
@@ -160,10 +160,11 @@ export function viatorItem(raw, {place, countryCode}) {
   const variant = (cover?.variants || []).filter(v => v.width >= 400).sort((a, b) => a.width - b.width)[0] || (cover?.variants || []).slice(-1)[0];
   let image = '';
   try { const u = new URL(variant?.url || ''); if (u.protocol === 'https:') image = u.href; } catch { /* no image */ }
-  const from = Number(raw.pricing?.summary?.fromPrice);
+  const rawFrom = raw.pricing?.summary?.fromPrice;
+  const from = typeof rawFrom === 'number' || (typeof rawFrom === 'string' && rawFrom.trim()) ? Number(rawFrom) : NaN;
   return {
     id: 'viator:' + String(raw.productCode).replace(/[^\w-]/g, '').slice(0, 40), provider: 'viator', seller: 'Viator', title,
-    category: BOAT.test(title) ? 'boat' : FAMILY.test(title) ? 'family' : 'daysout', city: place, venue: '', countryCode,
+    category: listingCategory(title), city: place, venue: '', countryCode,
     startsAt: '', endsAt: '', timezone: '', priceCents: Number.isFinite(from) && from >= 0 ? Math.round(from * 100) : null,
     currency: String(raw.pricing?.currency || 'EUR').toLowerCase(), image, thumb: false, url: url.href,
     rating: Number(raw.reviews?.combinedAverageRating) || 0, reviews: Number(raw.reviews?.totalReviews) || 0
@@ -175,23 +176,35 @@ export async function loadViator(env = process.env, {fetcher = fetch} = {}) {
   const key = String(env.VIATOR_API_KEY || '').trim();
   if (!key) return [];
   const headers = {'exp-api-key': key, Accept: 'application/json;version=2.0', 'Accept-Language': 'en-GB', 'Content-Type': 'application/json'};
-  const searchPlace = async ([place, countryCode, destinationId]) => {
-    const r = await fetcher(VIATOR_API + '/products/search', {method: 'POST', headers, signal: AbortSignal.timeout(10000), body: JSON.stringify({
+  const searchPlace = async ({place, countryCode, destinationId, limo}) => {
+    const payload = limo ? {
+      searchTerm: 'limousine', productFiltering: {destination: destinationId},
+      searchTypes: [{searchType: 'PRODUCTS', pagination: {start: 1, count: 10}}], currency: 'EUR'
+    } : {
       filtering: {destination: destinationId}, sorting: {sort: 'TRAVELER_RATING', order: 'DESCENDING'},
-      pagination: {start: 1, count: VIATOR_PER_PLACE}, currency: 'EUR'})});
-    if (!r.ok) throw Error('Viator search ' + r.status + ' for ' + place);
-    return ((await r.json()).products || []).map(p => viatorItem(p, {place, countryCode})).filter(Boolean);
+      pagination: {start: 1, count: VIATOR_PER_PLACE}, currency: 'EUR'
+    };
+    const r = await fetcher(VIATOR_API + (limo ? '/search/freetext' : '/products/search'), {
+      method: 'POST', headers, signal: AbortSignal.timeout(5000), body: JSON.stringify(payload)
+    });
+    if (!r.ok) throw Error('Viator ' + (limo ? 'limo search ' : 'search ') + r.status + ' for ' + place);
+    const data = await r.json(), products = limo ? data.products?.results || [] : data.products || [];
+    return products.filter(p => !limo || limoSearchRelevant(p.title)).map(p => viatorItem(p, {place, countryCode})).filter(Boolean);
   };
+  const jobs = VIATOR_PLACES.flatMap(([place, countryCode, destinationId]) =>
+    [false, true].map(limo => ({place, countryCode, destinationId, limo})));
   const settled = [];
-  // Bound each process to four searches; four 10-second batches also fit the
-  // function's 60-second budget when a provider is slow or unavailable.
-  for (let n = 0; n < VIATOR_PLACES.length; n += VIATOR_CONCURRENCY) {
-    settled.push(...await Promise.allSettled(VIATOR_PLACES.slice(n, n + VIATOR_CONCURRENCY).map(searchPlace)));
+  // One four-request queue covers both kinds of search. Thirty five-second jobs
+  // take at most eight batches (~40 seconds), within the function's 60s budget.
+  for (let n = 0; n < jobs.length; n += VIATOR_CONCURRENCY) {
+    settled.push(...await Promise.allSettled(jobs.slice(n, n + VIATOR_CONCURRENCY).map(searchPlace)));
   }
   const failed = settled.filter(s => s.status === 'rejected');
   if (failed.length === settled.length) throw Error('All Viator searches failed: ' + String(failed[0].reason?.message).slice(0, 120));
   const seen = new Set();
-  return settled.flatMap(s => s.status === 'fulfilled' ? s.value : []).filter(i => !seen.has(i.id) && seen.add(i.id));
+  const items = settled.flatMap(s => s.status === 'fulfilled' ? s.value : []).filter(i => !seen.has(i.id) && seen.add(i.id));
+  if (!items.length && failed.length) throw Error('Viator searches returned no products after failures: ' + String(failed[0].reason?.message).slice(0, 120));
+  return items;
 }
 
 // Awin product feeds (Create-a-Feed CSV download URLs, one per line in AWIN_FEED_URLS).
@@ -214,9 +227,6 @@ export function parseCsv(text) {
   const [head = [], ...body] = rows.filter(r => r.some(Boolean));
   return body.map(r => Object.fromEntries(head.map((h, i) => [h.trim(), (r[i] || '').trim()])));
 }
-const awinCategory = text => /comedy|stand.?up/i.test(text) ? 'comedy' : /festival/i.test(text) ? 'festival'
-  : /kids|family|children|theme park|zoo|aquarium/i.test(text) ? 'family' : /cinema|film/i.test(text) ? 'cinema'
-  : /concert|gig|music|tour\b/i.test(text) ? 'music' : /theatre|theater|musical|play|show|ballet|opera/i.test(text) ? 'shows' : 'daysout';
 export function awinItem(row) {
   const mid = Number(row.merchant_id), known = AWIN_MERCHANTS[mid] || {};
   const title = String(row.product_name || '').replace(/\s+/g, ' ').trim().slice(0, 140);
@@ -234,7 +244,7 @@ export function awinItem(row) {
   return {
     id: 'awin:' + mid + ':' + String(row.aw_product_id || row.merchant_product_id || title).replace(/[^\w-]/g, '').slice(0, 40),
     provider: 'awin-' + mid, seller: String(row.merchant_name || 'Partner').trim().slice(0, 60), title,
-    category: known.category || awinCategory([row.category_name, row.merchant_category, title].join(' ')),
+    category: known.category || metadataCategory([row.category_name, row.merchant_category].filter(Boolean).join(' ')) || listingCategory(title),
     city: known.city || String(row.custom_1 || row.location || '').trim().slice(0, 80), venue: String(row.venue || row.custom_2 || '').trim().slice(0, 120),
     countryCode: known.countryCode || '', startsAt: '', endsAt: '', timezone: known.timezone || '',
     priceCents: Number.isFinite(price) && price > 0 ? Math.round(price * 100) : null,

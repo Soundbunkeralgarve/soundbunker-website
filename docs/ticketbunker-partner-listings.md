@@ -18,7 +18,7 @@ this legacy JSON configuration.
   a catalogue API or a Ticket Bunker checkout integration.
 - `api/partner-feed.js` retains independent Skiddle, Viator and Awin feed loaders.
   Failed providers retry after five minutes; a fully successful load is cached
-  for three hours. Viator requires a working production API key; sandbox access
+  for 30 minutes. Viator requires a working production API key; sandbox access
   must not be substituted for production inventory.
 - CORAS catalogue search is implemented for isolated sandbox development only.
   See [CORAS setup](ticketbunker-coras.md) for the live-account and settlement

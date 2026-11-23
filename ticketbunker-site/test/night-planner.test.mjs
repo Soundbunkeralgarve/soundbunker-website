@@ -17,7 +17,15 @@ test('travel planning has usable public searches without unapproved tracking', (
   for (const kind of ['travel', 'car', 'stay', 'eat', 'transfer']) {
     const links=steps.find(s => s.kind === kind).links;
     assert.ok(links.length>0);
-    assert.ok(links.every(l=>l.commercial==='direct' && !l.url.includes('awin1.com')));
+    for (const link of links) {
+      const u = new URL(link.url);
+      assert.notEqual(u.hostname, 'www.awin1.com', 'pending routes stay hidden');
+      if (link.commercial === 'affiliate') {
+        assert.equal(kind, 'transfer');
+        assert.equal(u.hostname, 'www.viator.com');
+        assert.equal(u.searchParams.get('pid'), 'P00333211');
+      } else assert.equal(link.commercial, 'direct');
+    }
   }
 });
 

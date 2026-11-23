@@ -1,6 +1,6 @@
 import {CITY_PAGES} from './city-places.js';
 import {tripOptions} from './trip-partners.js?v=20261123-travel';
-import {directoryProviders, tripDestination} from './travel-directory.js';
+import {directoryProviders, tripDestination} from './travel-directory.js?v=20261123-limos';
 import {escapeHtml as esc} from './shared.js';
 
 export function guideProviders(kind, country, city) {
@@ -10,7 +10,7 @@ export function guideProviders(kind, country, city) {
   return [
     ...(kind === 'groups' ? [{kind: 'groups', label: 'Group specialists', partners: directoryProviders('groups', country, city)}] : []),
     ...chosen
-  ].flatMap(o => o.partners.map(p => ({...p, category: o.label})));
+  ].flatMap(o => o.partners.map(p => ({...p, category: p.serviceLabel || o.label})));
 }
 
 export function providerCards(items) {
@@ -34,13 +34,16 @@ if (typeof document !== 'undefined') {
       const d = tripDestination(country.value, city.value);
       document.querySelector('[data-guide-results]').innerHTML = providerCards(guideProviders(kind, d.country, d.city));
       document.querySelector('[data-guide-status]').textContent = d.search
-        ? `Planning ${d.search}. Check your destination and dates on each provider’s site.`
+        ? `Planning ${d.search}. ${kind === 'transfer' ? 'Check the exact vehicle, pickup, date and passenger capacity. Availability varies by city.' : 'Check your destination and dates on each provider’s site.'}`
         : 'Choose your destination on the provider’s site.';
       const event = document.querySelector('[data-guide-events]');
       const found = CITY_PAGES.find(([slug,label,cc,query]) => cc === d.country &&
         [slug,label.replace(/^the /,''),query].some(s=>s.toLowerCase()===d.city.toLowerCase()));
       event.href = found ? '/' + found[0] : '/?' + new URLSearchParams({city:d.city,country:d.country});
       event.textContent = d.city ? 'Events & activities in ' + d.city : 'Browse events & activities';
+      for (const transport of document.querySelectorAll('[data-transport-guide]')) {
+        transport.href = '/vip-transfers?' + new URLSearchParams({city:d.city,country:d.country});
+      }
     };
     form.onsubmit = e => {
       e.preventDefault();

@@ -6,9 +6,9 @@ import {selectFeaturedEvents} from './featured-selection.js';
 export const discoveryCategories = Object.freeze({
   music: 'Live music', club: 'Club nights', comedy: 'Comedy', festival: 'Festivals',
   shows: 'Theatre & shows', family: 'Family & kids', cinema: 'Cinema', boat: 'Boat trips', daysout: 'Experiences & days out',
-  sport: 'Sport & racing', seasonal: 'Seasonal & special days', events: 'Concerts & events', other: 'More events'
+  sport: 'Sport & racing', seasonal: 'Seasonal & special days', transfer: 'Limos, chauffeurs & transfers', events: 'Concerts & events', other: 'More events'
 });
-const nativeCategory = {show: 'music', club: 'club', comedy: 'comedy', festival: 'festival'};
+const nativeCategory = {show: 'music', club: 'club', comedy: 'comedy', festival: 'festival', sports: 'sport', workshop: 'daysout'};
 const partnerCategory = {music: 'music', comedy: 'comedy', cinema: 'cinema', attractions: 'daysout', events: 'events'};
 
 // Regions people search for that are not a single venue town.
@@ -150,6 +150,37 @@ export function categoryCounts(items) {
   const counts = {};
   for (const item of items) if (!item.soldOut) counts[item.category] = (counts[item.category] || 0) + 1;
   return counts;
+}
+
+// Discovery takes turns between sellers after filtering and date sorting. Paid
+// placements lead; our own source gets the first ordinary slot, then the others
+// take a turn. Open-dated products can therefore appear beside dated events.
+// A date-specific search keeps its chronological order and eligibility rules.
+export function mixSellers(items, {when = 'any'} = {}) {
+  const seen = new Set();
+  const unique = items.filter(item => {
+    if (!item) return false;
+    const key = item.key ?? item.id;
+    if (key === undefined || key === null || key === '') return true;
+    if (seen.has(key)) return false;
+    seen.add(key); return true;
+  });
+  if (when !== 'any') return unique;
+  const band = list => {
+    const featured = [], groups = new Map();
+    for (const item of list) {
+      if (item.featured) { featured.push(item); continue; }
+      const source = item.source || item.provider || 'other';
+      if (!groups.has(source)) groups.set(source, []);
+      groups.get(source).push(item);
+    }
+    const queues = [...groups].sort(([a], [b]) => Number(b === 'ticketbunker') - Number(a === 'ticketbunker'))
+      .map(([, entries]) => ({entries, at: 0}));
+    const out = [...featured]; let left = queues.reduce((n, q) => n + q.entries.length, 0);
+    while (left) for (const q of queues) if (q.at < q.entries.length) { out.push(q.entries[q.at++]); left--; }
+    return out;
+  };
+  return [...band(unique.filter(i => !i.soldOut)), ...band(unique.filter(i => i.soldOut))];
 }
 
 const WHEN = new Set(['any', 'tonight', 'weekend', 'week', 'dates']);

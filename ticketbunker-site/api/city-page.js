@@ -4,6 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {cityBySlug} from '../city-places.js';
 import {withClickRef} from '../trip-partners.js';
 import {GUIDE_LINKS} from '../travel-directory.js';
+import {sortItems, mixSellers} from '../discovery-model.js';
 const SITE = 'https://theticketbunker.com';
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
 const when = (iso, zone) => { try { return new Intl.DateTimeFormat('en-GB', {weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: zone || 'Europe/London'}).format(new Date(iso)); } catch { return ''; } };
@@ -13,7 +14,7 @@ export function cityHtml(shell, [slug, name, country, , pitch], listings = []) {
   const url = SITE + '/' + slug, plain = name.replace(/^the /, ''), inName = name.replace(/^the /, 'the ');
   const title = `Things to do in ${inName}: tickets for gigs, club nights, comedy & days out | The Ticket Bunker`;
   const description = `Tickets in ${inName}: ${pitch}. Browse by date, see who sells each ticket, and book in a few taps.`;
-  const items = listings.filter(i => i && i.title && i.url).slice(0, 30);
+  const items = mixSellers(sortItems(listings.filter(i => i && i.title && i.url))).slice(0, 30);
   const list = items.length ? `<ol class="city-list">${items.map(i => `<li><a href="${esc(i.id ? '/listing/'+encodeURIComponent(i.id) : withClickRef(i.url, slug, 'city-list'))}"${i.id ? '' : ' rel="sponsored noopener" target="_blank"'}>${esc(i.title)}</a> <span>${esc([when(i.startsAt, i.timezone), i.venue, price(i.priceCents, i.currency)].filter(Boolean).join(' · '))}</span></li>`).join('')}</ol>` : '';
   const ld = items.filter(i => i.startsAt).map(i => ({'@type': 'Event', name: i.title, startDate: i.startsAt, url: i.url,
     location: {'@type': 'Place', name: i.venue || i.city, address: {'@type': 'PostalAddress', addressLocality: i.city, addressCountry: i.countryCode}},
@@ -45,6 +46,8 @@ export default async function handler(req, res) {
     const r = await fetch(SITE + '/api/partner-feed?city=' + encodeURIComponent(city[3]), {signal: AbortSignal.timeout(9000)});
     if (r.ok) listings = (await r.json()).events || [];
   } catch { /* the page still works; the browser loads listings itself */ }
-  res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=86400');
+  // The underlying feed may be 30 minutes old; keep this layer's total reuse
+  // below 20 minutes so displayed provider data stays inside the one-hour limit.
+  res.setHeader('Cache-Control', 'public, s-maxage=600, stale-while-revalidate=600');
   return res.status(200).send(req.method === 'HEAD' ? '' : cityHtml(shell, city, listings));
 }
