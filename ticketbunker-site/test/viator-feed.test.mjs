@@ -41,19 +41,25 @@ test('Viator stays off without a key and searches verified destinations directly
     const limo = url.endsWith('/search/freetext'), id = limo ? body.productFiltering.destination : body.filtering.destination;
     return {ok: true, json: async () => ({products: limo ? {results: [product({productCode: 'L' + id, title:'Private limousine transfer'})]} : [product({productCode: 'P' + id})]})};
   };
-  const items = await loadViator({VIATOR_API_KEY: ' fixture-token\n'}, {fetcher});
+  const timeout=AbortSignal.timeout, budgets=new WeakMap();
+  AbortSignal.timeout=ms=>{const signal=timeout(ms);budgets.set(signal,ms);return signal;};
+  let items;try{items=await loadViator({VIATOR_API_KEY: ' fixture-token\n'}, {fetcher});}finally{AbortSignal.timeout=timeout;}
   assert.equal(items.length, 2 * VIATOR_PLACES.length);
-  assert.equal(seen.length, 30, 'one general and one limo search per configured destination, no taxonomy or sandbox probes');
+  assert.equal(seen.length, 34, 'general/limo searches plus four focused admission targets, no taxonomy or sandbox probes');
   assert.equal(seen.filter(({url}) => url === 'https://api.viator.com/partner/products/search').length, 15);
-  assert.equal(seen.filter(({url}) => url === 'https://api.viator.com/partner/search/freetext').length, 15);
+  assert.equal(seen.filter(({url}) => url === 'https://api.viator.com/partner/search/freetext').length, 19);
   assert.ok(seen.every(({opts, body}) => opts.method === 'POST' && opts.headers['exp-api-key'] === 'fixture-token' && body.currency === 'EUR'));
   for (const {url, body} of seen) {
     if (url.endsWith('/search/freetext')) {
-      assert.equal(body.searchTerm,'limousine');
-      assert.deepEqual(body.searchTypes,[{searchType:'PRODUCTS',pagination:{start:1,count:10}}]);
+      assert.ok(['limousine','London Zoo Entry Ticket','Lisbon Oceanarium Entrance Ticket','Lisbon Banksy Museum Admission Ticket','Private Rijksmuseum Guided Tour'].includes(body.searchTerm));
+      assert.deepEqual(body.searchTypes,[{searchType:'PRODUCTS',pagination:{start:1,count:body.searchTerm==='limousine'?10:30}}]);
     } else assert.equal(body.pagination.count,30);
   }
   assert.equal(maxActive, 4, 'concurrent searches stay bounded');
+  let worst=0;for(let n=0;n<seen.length;n+=4)worst+=Math.max(...seen.slice(n,n+4).map(({opts})=>budgets.get(opts.signal)));
+  assert.equal(worst,43000,'request timeout batches stay below the 45-second client timeout');
+  assert.ok(seen.every(({opts})=>opts.headers.Accept==='application/json;version=2.0'&&opts.headers['Accept-Language']==='en-GB'));
+  assert.ok(seen.slice(-4).every(({opts})=>budgets.get(opts.signal)===3000));
   const expected = {Algarve:['PT','774'], Lisbon:['PT','538'], Porto:['PT','26879'], Madeira:['PT','5392'], Barcelona:['ES','562'], Madrid:['ES','566'], Seville:['ES','556'], Malaga:['ES','956'], Ibiza:['ES','4217'], Paris:['FR','479'], Amsterdam:['NL','525'], Rome:['IT','511'], Dublin:['IE','503'], London:['GB','737'], Edinburgh:['GB','739']};
   for (const [city, [countryCode, id]] of Object.entries(expected)) {
     const item = items.find(i => i.city === city && i.id === 'viator:P' + id);
@@ -81,7 +87,7 @@ test('Viator rejects a fully failed provider instead of reporting an empty succe
   let calls = 0;
   await assert.rejects(loadViator({VIATOR_API_KEY:'fixture-token'}, {fetcher:async () => {calls++; return {ok:false, status:401};}}),
     /^Error: All Viator searches failed: Viator search 401 for Algarve$/);
-  assert.equal(calls, 30, 'failed searches do not trigger taxonomy or sandbox probes');
+  assert.equal(calls, 34, 'failed searches do not trigger taxonomy or sandbox probes');
 });
 
 test('limo results keep only explicit relevant transport, deduplicate products and preserve exact provider URLs',async()=>{
@@ -117,4 +123,33 @@ test('open-dated trips blend in, match Algarve towns and are not crowded out by 
   assert.equal(filterItems(items, {city: 'Lagos', category: 'boat'}).length, 1);
   assert.ok(cityMatches('Algarve', 'Portimão'));
   assert.equal(pickListings([trip], {city: 'lagos'}).length, 1);
+});
+
+
+test('focused attractions accept exact live product codes, preserve tour types and deduplicate general results',async()=>{
+ const targets=[
+  ['London Zoo Entry Ticket','737','2676ZOO','London Zoo Entry Ticket','London','GB','family'],
+  ['Lisbon Oceanarium Entrance Ticket','538','111503P1','Lisbon Oceanarium Entrance Ticket','Lisbon','PT','family'],
+  ['Lisbon Banksy Museum Admission Ticket','538','420484P3','Lisbon Banksy Museum Admission Ticket','Lisbon','PT','daysout'],
+  ['Private Rijksmuseum Guided Tour','525','8718P33','Private Rijksmuseum Guided Tour with Entry','Amsterdam','NL','daysout']
+ ];
+ const live=([,,code,title])=>product({productCode:code,title,productUrl:'https://www.viator.com/tours/Exact/d1-'+code+'?pid=P00333211&mcid=42383&medium=api',pricing:{summary:{fromPrice:47.25},currency:'EUR'}});
+ const requests=[];
+ const items=await loadViator({VIATOR_API_KEY:'fixture-token'},{fetcher:async(url,opts)=>{
+  const body=JSON.parse(opts.body),target=targets.find(([query])=>query===body.searchTerm);
+  if(target){requests.push(body);assert.equal(body.productFiltering.destination,target[1]);return {ok:true,json:async()=>({products:{results:[product({productCode:target[2]+'OTHER',title:target[3]}),live(target)]}})};}
+  return {ok:true,json:async()=>({products:url.endsWith('/search/freetext')?{results:[]}:body.filtering.destination==='737'?[live(targets[0])]:[]})};
+ }});
+ assert.equal(requests.length,4);assert.equal(items.length,4);
+ for(const target of targets){const item=items.find(i=>i.id==='viator:'+target[2]);assert.ok(item);assert.equal(item.title,target[3]);assert.equal(item.city,target[4]);assert.equal(item.countryCode,target[5]);assert.equal(item.category,target[6]);assert.equal(item.priceCents,4725);assert.equal(item.image,'https://media.tacdn.com/a-720.jpg');assert.equal(item.url,live(target).productUrl);}
+ assert.match(items.find(i=>i.id==='viator:8718P33').title,/Guided Tour with Entry/,'guided admission remains a guided product');
+});
+
+test('focused failures and absent exact matches retain other real inventory without substitute attractions',async()=>{
+ const items=await loadViator({VIATOR_API_KEY:'fixture-token'},{fetcher:async(url,opts)=>{
+  const body=JSON.parse(opts.body);
+  if(body.searchTerm&&body.searchTerm!=='limousine')return body.searchTerm==='London Zoo Entry Ticket'?{ok:false,status:429}:{ok:true,json:async()=>({products:{results:[product({productCode:'UNRELATED',title:body.searchTerm})]}})};
+  return {ok:true,json:async()=>({products:url.endsWith('/search/freetext')?{results:[]}:[product({productCode:'P'+body.filtering.destination})]})};
+ }});
+ assert.equal(items.length,15);assert.ok(items.every(i=>i.id.startsWith('viator:P')));assert.ok(!items.some(i=>i.id==='viator:UNRELATED'));
 });
