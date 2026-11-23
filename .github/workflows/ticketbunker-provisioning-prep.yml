@@ -1,0 +1,44 @@
+name: Prepare new TicketBunker App Store profiles
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/ticketbunker-provisioning-prep-20261123]
+    paths:
+      - .github/workflows/ticketbunker-provisioning-prep.yml
+      - .github/scripts/ticketbunker-provisioning-prep.cjs
+      - .github/scripts/ticketbunker-provisioning-prep.test.cjs
+      - .github/scripts/verify-ticketbunker-profile.py
+      - .github/scripts/test-verify-ticketbunker-profile.py
+permissions:
+  contents: read
+concurrency:
+  group: ticketbunker-new-app-provisioning
+  cancel-in-progress: false
+jobs:
+  prepare:
+    if: github.repository == 'Soundbunkeralgarve/soundbunker-website' && github.ref == 'refs/heads/codex/ticketbunker-provisioning-prep-20261123'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify exact-app guards, idempotency, permission handling and signed entitlements
+        run: |
+          node --test .github/scripts/ticketbunker-provisioning-prep.test.cjs
+          python3 .github/scripts/test-verify-ticketbunker-profile.py
+      - name: Create or reuse only the two new app profiles with the existing distribution certificate
+        env:
+          APPLE_KEY_P8: ${{ secrets.HUB_APPLE_API_KEY_P8 }}
+          APPLE_API_KEY_ID: ${{ secrets.HUB_APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.HUB_APPLE_API_ISSUER }}
+        run: node .github/scripts/ticketbunker-provisioning-prep.cjs
+      - name: Save only verified profiles and stripped metadata
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ticketbunker-new-appstore-profiles-20261123
+          path: ${{ runner.temp }}/ticketbunker-appstore-profiles/
+          if-no-files-found: ignore
+          retention-days: 3
