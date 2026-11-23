@@ -15,7 +15,7 @@ export default function TripScreen({navigation}) {
   const {trip, mark, remove} = useTrip();
   return <View style={s.screen}><ScrollView style={s.screen} contentContainerStyle={{paddingTop: insets.top + 8, paddingHorizontal: 18, paddingBottom: 40, gap: 16}}>
     <Text style={[s.h1, {textTransform: 'uppercase'}]}>My trip</Text>
-    <Text style={s.muted}>Make a night of it. Each step books on the partner’s own site; we keep the plan on this phone.</Text>
+    <Text style={s.muted}>Make a night of it. Check options and book on each named provider’s site under its prices, fees and terms. We keep the plan on this phone.</Text>
     {!trip.length ? <Empty title="No nights planned yet" text="Tap Add to My trip on any event to plan getting there, a bed and food."
       action={<Button title="Find something on" onPress={() => navigation.navigate('Discover')}/>}/> :
       <View style={[{gap: 16}, wide && {flexDirection: 'row', flexWrap: 'wrap'}]}>

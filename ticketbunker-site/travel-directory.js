@@ -3,7 +3,7 @@ import {CITY_PAGES} from './city-places.js';
 // Ordinary, untracked links to public booking/search pages. A directory link does
 // not imply an affiliate agreement, a quote, supplier availability or a reservation.
 const normal = value => String(value || '').normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase().trim();
-const regions = new Intl.DisplayNames(['en'], {type: 'region'});
+const regions = typeof Intl.DisplayNames === 'function' ? new Intl.DisplayNames(['en'], {type: 'region'}) : null;
 export function tripDestination(country = '', city = '') {
   const name = String(city || '').replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 80);
   let code = /^[A-Za-z]{2}$/.test(String(country)) ? String(country).toUpperCase() : '';
@@ -11,7 +11,7 @@ export function tripDestination(country = '', city = '') {
     (!code || cc === code) && [slug, label.replace(/^the /, ''), query].some(v => normal(v) === normal(name)));
   if (!code && known) code = known[2];
   let countryName = '';
-  try { if (code) countryName = regions.of(code) || ''; } catch { /* no country */ }
+  try { if (code) countryName = regions?.of(code) || code; } catch { countryName = code; }
   return {city: name, country: code, search: [name, countryName].filter(Boolean).join(', ')};
 }
 

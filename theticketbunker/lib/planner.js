@@ -1,6 +1,6 @@
 // "Make a night of it", as on the site's night planner (ticketbunker-site/night-planner.js):
-// tickets first, then getting there, a bed, food and extras. Each books on the partner's own
-// site; steps without an approved partner say "Coming soon". The site module also drives the
+// tickets first, then getting there, a bed, food and extras. Each books on the named provider's
+// site. Public search links are separate from approved affiliate links. The site module also drives the
 // page's dialog, so its plan logic is mirrored here; partner links and directions are shared.
 import {tripOptions, withClickRef, directionLinks, gygPlace, GYG_PLACES} from './site.js';
 import {siteUrl} from './config.js';
@@ -23,9 +23,11 @@ export function plannerSteps(item) {
   return [
     {kind: 'tickets', label: 'Tickets', blurb: item.external ? `Booked on ${item.seller}. Fees may apply.` : 'No booking fee with TicketBunker.', links: [{name: item.external ? item.seller : 'TicketBunker', url: ticketLink(item)}]},
     {kind: 'route', label: 'Get to the venue', blurb: item.venue ? `Directions to ${item.venue} from where you are.` : 'Directions from where you are.', links: directionLinks(item)},
-    partnerStep('travel', city ? `Travel to ${city}` : 'Travel there', 'Trains, coaches and ferries.'),
-    partnerStep('stay', 'Stay nearby', item.venue ? `Hotels close to ${item.venue}.` : 'Hotels close to the venue.'),
-    partnerStep('eat', 'Eat nearby', 'Food deals before or after.'),
+    partnerStep('travel', city ? `Travel to ${city}` : 'Travel there', 'Compare train and coach routes for your journey.'),
+    partnerStep('car', 'Car hire', 'Check pickup times, deposits, cover and fuel policy.'),
+    partnerStep('stay', 'Find a hotel', item.venue ? `Search hotels in ${city}; check the distance to ${item.venue}.` : 'Search hotels and check the distance to your venue.'),
+    partnerStep('transfer', 'Chauffeur & transfers', 'Check coverage, pickup details and the total quote.'),
+    partnerStep('eat', 'Eat nearby', 'Check participating restaurants, current offers and booking terms.'),
     {kind: 'tours', label: 'Things to do', blurb: 'Tours and day trips while you are there.', links: tours ? [{name: 'GetYourGuide', url: tours}] : []}
   ];
 }
