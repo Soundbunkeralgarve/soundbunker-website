@@ -92,10 +92,32 @@ test('night planner: tickets, get to the venue (walk/transit/Uber/Citymapper/Tub
     assert.ok(['direct', 'affiliate'].includes(link.commercial));
     if (link.commercial === 'direct') assert.notEqual(new URL(link.url).hostname, 'www.awin1.com', 'public searches never acquire affiliate tracking');
   }
+  const publicLinks = searches.flatMap(s => s.links).filter(l => l.commercial === 'direct');
+  assert.deepEqual(publicLinks.map(l => l.id), ['trainline-direct', 'omio-direct', 'expedia-cars', 'expedia-hotels', 'blacklane-direct', 'welcome-direct', 'thefork-direct', 'restaurant-map']);
+  assert.ok(publicLinks.every(l => !new URL(l.url).hostname.endsWith('awin1.com') && !new URL(l.url).searchParams.has('awinaffid')), 'public searches never acquire pending affiliate tracking');
+  assert.equal(new URL(steps.find(s => s.kind === 'stay').links.find(l => l.id === 'expedia-hotels').url).searchParams.get('destination'), 'London, United Kingdom');
+  assert.equal(new URL(publicLinks.find(l => l.id === 'restaurant-map').url).searchParams.get('query'), 'restaurants London, United Kingdom');
   assert.match(steps.find(s => s.kind === 'stay').blurb, /check the distance/);
   assert.match(steps.find(s => s.kind === 'tours').links[0].url, /getyourguide\.com\/london-l57\/\?partner_id=KNICMG4/);
   assert.equal(ticketLink({external: false, url: '/event/x'}), 'https://theticketbunker.com/event/x');
   assert.match(tourLink('Nowhereville', 'GB'), /\/s\/\?q=Nowhereville/);
+});
+
+test('trip partners expose only approved affiliates for the destination alongside public searches', async () => {
+  const {tripOptions} = await import('../lib/site.js');
+  const providers = [
+    ['travel', 'Pending rail', ['GB'], false, () => 'https://pending.example/'],
+    ['travel', 'Approved rail', ['GB'], true, city => `https://www.awin1.com/cread.php?awinmid=123&awinaffid=3163272&city=${encodeURIComponent(city)}`],
+    ['travel', 'Other country rail', ['FR'], true, () => 'https://france.example/']
+  ];
+  const travel = tripOptions('GB', 'London', {page: 'app', spot: 'planner', providers}).find(s => s.kind === 'travel');
+  assert.deepEqual(travel.partners.map(p => p.name), ['Approved rail', 'Search Trainline', 'Search Omio']);
+  const affiliate = new URL(travel.partners[0].url);
+  assert.equal(travel.partners[0].commercial, 'affiliate');
+  assert.equal(affiliate.searchParams.get('city'), 'London');
+  assert.equal(affiliate.searchParams.get('clickref'), 'app');
+  assert.equal(affiliate.searchParams.get('clickref2'), 'planner');
+  assert.deepEqual(travel.partners.slice(1).map(p => p.url), ['https://www.thetrainline.com/', 'https://www.omio.com/']);
 });
 
 test('My trip keeps saved nights soonest first, drops past ones and tracks steps', () => {
