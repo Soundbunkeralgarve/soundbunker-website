@@ -65,12 +65,23 @@ test('permission failures remain explicit while other metadata stays available',
   assert.equal(result.apps[0].bundleState, 'REGISTERED');
 });
 
-test('wrong bundle results cannot be followed into another app profiles', async () => {
+test('a non-matching prefix result is not followed into another app profiles', async () => {
   const client = mock({ '/v1/bundleIds': () => ({ data: [{ id: 'WRONG', attributes: { identifier: 'pt.soundbunker.ticketbunkerscanner' } }] }) });
   const result = await inspectSigning(client);
-  assert.equal(result.complete, false);
-  assert.ok(result.apps.every(app => /Unexpected or ambiguous/.test(app.errors[0])));
+  assert.equal(result.complete, true);
+  assert.ok(result.apps.every(app => app.bundleState === 'NOT_FOUND'));
   assert.ok(client.calls.every(url => !url.pathname.endsWith('/profiles')));
+});
+
+test('selects the exact customer identifier when Apple also returns its organiser prefix match', async () => {
+  const client = mock({ '/v1/bundleIds': url => ({ data: [
+    { id: 'FAN123', attributes: { identifier: NEW_APPS[0].bundleId } },
+    { id: 'ORG123', attributes: { identifier: NEW_APPS[1].bundleId } },
+  ] }) });
+  const result = await inspectSigning(client);
+  assert.equal(result.complete, true);
+  assert.equal(result.apps[0].bundleId, 'FAN123');
+  assert.equal(result.apps[1].bundleId, 'ORG123');
 });
 
 test('blocks content requests, unknown routes, includes and scanner identifier before API access', async () => {

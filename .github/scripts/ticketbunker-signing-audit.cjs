@@ -53,9 +53,12 @@ async function inspectSigning(baseClient) {
   const apps = await Promise.all(NEW_APPS.map(async app => {
     const report = { name: app.name, appId: app.id, bundleIdentifier: app.bundleId, bundleId: null, bundleState: 'UNKNOWN', profiles: [], errors: [] };
     try {
-      const bundles = await collection(client, `bundleIds?filter[identifier]=${app.bundleId}&limit=200&fields[bundleIds]=identifier`);
-      if (bundles.length > 1 || bundles.some(bundle => bundle.attributes?.identifier !== app.bundleId)) {
-        throw new Error('Unexpected or ambiguous Apple bundle identifier.');
+      // Apple's identifier filter also returns prefix matches, so select an
+      // exact identifier before following any provisioning relationships.
+      const bundles = (await collection(client, `bundleIds?filter[identifier]=${app.bundleId}&limit=200&fields[bundleIds]=identifier`))
+        .filter(bundle => bundle.attributes?.identifier === app.bundleId);
+      if (bundles.length > 1) {
+        throw new Error('Ambiguous Apple bundle identifier.');
       }
       if (!bundles.length) { report.bundleState = 'NOT_FOUND'; return report; }
       report.bundleId = bundles[0].id;
