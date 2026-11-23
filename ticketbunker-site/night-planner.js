@@ -2,6 +2,7 @@
 // own site, so instead of one basket we walk the visitor through them in order and keep
 // the plan in "My trip" (this browser only). Steps without an approved partner say
 // "Coming soon". Public search links are identified separately from approved tracking links.
+import {tripHref,eventTripState} from './home-trip-context.js?v=20261123-trip-flow';
 import {tripOptions, withClickRef} from './trip-partners.js?v=20261123-travel';
 import {gygPlace, GYG_PLACES} from './gyg-box.js?v=20261121c';
 import {directionLinks, travelEstimates, estimateText} from './get-there.js?v=20261122d';
@@ -25,7 +26,7 @@ export function plannerSteps(item) {
   const partnerStep = (kind, label, blurb) => ({kind, label, blurb, links: options[kind]?.partners || []});
   const tours = tourLink(city, country);
   return [
-    {kind: 'tickets', label: 'Tickets', blurb: item.external ? `Booked on ${item.seller}.` : 'No booking fee with TicketBunker.', links: [{name: item.external ? item.seller : 'TicketBunker', url: item.external ? withClickRef(item.url, page, 'planner') : item.url}]},
+    {kind: 'tickets', label: 'Tickets', blurb: item.external ? `Book with ${item.seller}.` : 'No booking fee with TicketBunker.', links: [{name: item.external ? item.seller : 'TicketBunker', url: item.external ? withClickRef(item.url, page, 'planner') : item.url}]},
     {kind: 'route', label: 'Get to the venue', blurb: item.venue ? `Directions to ${item.venue} from where you are.` : 'Directions from where you are.', links: directionLinks(item)},
     partnerStep('travel', city ? `Travel to ${city}` : 'Travel there', 'Compare train and coach routes for your journey.'),
     partnerStep('car', 'Car hire', 'Check pickup times, deposits, cover and fuel policy.'),
@@ -50,7 +51,7 @@ export function saveNight(list, item, now = Date.now()) {
   const night = {id, title: item.title, startsAt: item.startsAt || '', timezone: item.timezone || '', city: item.city || '',
     countryCode: item.countryCode || '', venue: item.venue || '', seller: item.seller || '', url: item.url, external: Boolean(item.external),
     address: item.address || '', ...(Number.isFinite(item.lat) && Number.isFinite(item.lng) ? {lat: item.lat, lng: item.lng} : {}),
-    done: {...(keep?.done || {}), tickets: true}};
+    done: {tickets: false, ...(keep?.done || {})}, userMarked: {...(keep?.userMarked || {})}};
   return tidyTrip([night, ...list.filter(n => n.id !== id)], now);
 }
 
@@ -76,27 +77,30 @@ if (typeof window !== 'undefined') {
 function nightHtml(n) {
   const steps = plannerSteps(n);
   return `<article class="np-night" data-night="${esc(n.id)}"><header><p class="np-when">${esc([when(n), n.venue, n.city].filter(Boolean).join(' · '))}</p><h3>${esc(n.title)}</h3></header><ol class="np-steps">${steps.map((s, i) => {
-    const done = Boolean(n.done?.[s.kind]), live = s.links.length > 0;
+    const done = Boolean(n.userMarked?.[s.kind]), live = s.links.length > 0;
     const times = s.kind === 'route' && Number.isFinite(n.lat) && Number.isFinite(n.lng) && navigator.geolocation
       ? `<button type="button" class="np-times" data-times>How far is it from here?</button><span class="np-eta" aria-live="polite"></span>` : '';
     return `<li class="np-step${done ? ' is-done' : ''}${live ? '' : ' is-soon'}" data-kind="${s.kind}"><span class="np-num" aria-hidden="true">${done ? '✓' : i + 1}</span><div class="np-body"><b>${esc(s.label)}</b><span>${esc(s.blurb)}</span>${times}</div><div class="np-act">${live
-      ? s.links.map(l => `<a class="np-link" href="${esc(l.url)}" target="_blank" rel="${l.commercial === 'affiliate' || ['tickets','tours'].includes(s.kind) ? 'sponsored noopener noreferrer' : 'noopener noreferrer'}" data-step="${s.kind}" data-mode="${esc(l.kind || '')}">${esc(s.kind === 'tickets' && done ? 'Reopen ' + l.name : l.name)}<small class="np-mins"></small> ↗</a>`).join('') + (done || s.kind === 'tickets' ? '' : `<button type="button" class="np-tick" data-tick="${s.kind}">Done</button>`)
+      ? s.links.map(l => `<a class="np-link" href="${esc(l.url)}" target="_blank" rel="${l.commercial === 'affiliate' || ['tickets','tours'].includes(s.kind) ? 'sponsored noopener noreferrer' : 'noopener noreferrer'}" data-step="${s.kind}" data-mode="${esc(l.kind || '')}">${esc(s.kind === 'tickets' && done ? 'Reopen ' + l.name : l.name)}<small class="np-mins"></small> ↗</a>`).join('') + (done ? '<small class="np-user-marked">Marked by you</small>' : `<button type="button" class="np-tick" data-tick="${s.kind}">${s.kind === 'route' ? 'Mark planned' : 'I booked this'}</button>`)
       : '<em>Coming soon</em>'}</div></li>`;
-  }).join('')}</ol><button type="button" class="np-remove" data-remove="${esc(n.id)}">Remove from My trip</button></article>`;
+  }).join('')}</ol><p><a class="plan-link" href="${esc(tripHref('/plan-your-trip',eventTripState({},n),{event:n.id,party:typeof location!=='undefined'?new URLSearchParams(location.search).get('party'):''}))}">Build this trip →</a></p><button type="button" class="np-remove" data-remove="${esc(n.id)}">Remove from My trip</button></article>`;
 }
 function render() {
   const list = tidyTrip(read());
   const shown = openId ? list.filter(n => n.id === openId) : list;
   dialog.querySelector('.np-title').textContent = openId ? 'Make a night of it.' : 'My trip.';
-  dialog.querySelector('.np-lead').textContent = openId ? 'Your tickets are open in a new tab. Sort the rest in a few taps; check options and book on each provider’s site.' : 'Every night you are planning, step by step. Saved on this device.';
+  dialog.querySelector('.np-lead').textContent = openId ? 'A saved event is a plan. Book each part with its provider, then mark your own progress.' : 'Every night you are planning, step by step. Saved on this device.';
   dialog.querySelector('.np-list').innerHTML = shown.length ? shown.map(nightHtml).join('') : '<p class="np-empty">Nothing planned yet. Pick an event and we’ll line up the rest.</p>';
   dialog.querySelector('.np-all').hidden = !openId || list.length < 2;
   dialog.querySelector('.np-all').textContent = 'See all of My trip (' + list.length + ')';
   const btn = document.getElementById('my-trip-btn');
   if (btn) { btn.hidden = !list.length; btn.querySelector('b').textContent = String(list.length); }
 }
+export function markNightDone(list, id, kind) {
+  return list.map(n => n.id === id ? {...n, done: {...n.done, [kind]: true}, userMarked: {...n.userMarked, [kind]: true}} : n);
+}
 function mark(id, kind) {
-  write(read().map(n => n.id === id ? {...n, done: {...n.done, [kind]: true}} : n));
+  write(markNightDone(read(), id, kind));
   render();
 }
 function ensure() {
@@ -110,8 +114,6 @@ function ensure() {
   dialog.addEventListener('click', e => {
     if (e.target === dialog || e.target.closest('.np-close')) return dialog.close();
     const night = e.target.closest('[data-night]')?.dataset.night;
-    const link = e.target.closest('[data-step]');
-    if (link && night) setTimeout(() => mark(night, link.dataset.step), 0);
     const tick = e.target.closest('[data-tick]');
     if (tick && night) mark(night, tick.dataset.tick);
     const remove = e.target.closest('[data-remove]');
@@ -136,10 +138,14 @@ function ensure() {
   });
 }
 
-// Called when a visitor opens partner tickets: save the night and show the next steps.
+// Public event handoff for the page builder. Saving is never a booking confirmation.
+export function saveNightToMyTrip(item) {
+  const list=saveNight(read(),item);write(list);return list.find(n=>n.id===nightId(item));
+}
+// Explicit planner action: save the event and show the visitor's next steps.
 export function openPlanner(item) {
   ensure();
-  write(saveNight(read(), item));
+  saveNightToMyTrip(item);
   openId = nightId(item);
   render();
   if (!dialog.open) dialog.showModal();
