@@ -1,6 +1,6 @@
 import {api,escapeHtml as esc,date,money,safeUrl} from './shared.js';
 import {eventKind,descriptionHtml,calendarFile} from './event-content.js';
-import {sharePanel,wireShare,eventLink} from './event-share.js';
+import {sharePanel,wireShare,eventLink} from './event-share.js?v=20261123';
 import {bookingForm,wireBooking} from './booking-form.js?v=20261122-vip';
 const root=document.getElementById('event-root');
 (async()=>{try{

@@ -9,5 +9,7 @@ export const homeRails = Object.freeze([
   ['shows', 'Theatre & shows', 'Stage, cabaret and performance.'],
   ['cinema', 'Cinema', 'Big screens, open air and late nights.'],
   ['boat', 'Boat trips', 'Caves, coastlines and dolphins.'],
+  ['sport', 'Sport & racing', 'Sporting events and race days when available.'],
+  ['seasonal', 'Seasonal & special days', 'Celebrations, special occasions and seasonal events.'],
   ['daysout', 'Experiences & days out', 'Kayaks, surf, water parks and more.']
 ]);

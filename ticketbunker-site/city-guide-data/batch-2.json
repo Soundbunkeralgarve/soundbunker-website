@@ -1,0 +1,862 @@
+[
+  {
+    "slug": "wolverhampton",
+    "history": "Wolverhampton Art Gallery holds Pop Art and Northern Ireland collections, making Lichfield Street a useful stop for cultural context.",
+    "food": "Explore the city-centre markets for fresh produce, or compare Indian, Chinese and Italian restaurants in the official dining directory.",
+    "shopping": "Start at the Mander Centre and Wulfrun Centre, then browse independent shops and the city’s traditional markets.",
+    "nightlife": "Check The Halls for touring live music, or the Grand Theatre and Arena Theatre for a stage-led evening.",
+    "sources": [
+      {
+        "title": "City council: places to visit",
+        "url": "https://www.wolverhampton.gov.uk/visiting/places-visit"
+      },
+      {
+        "title": "Visit Wolverhampton: shopping",
+        "url": "https://www.visitwolverhampton.com/shopping/"
+      },
+      {
+        "title": "Visit Wolverhampton: things to do",
+        "url": "https://www.visitwolverhampton.com/things-to-do/"
+      },
+      {
+        "title": "Visit Wolverhampton: food and drink",
+        "url": "https://www.visitwolverhampton.com/food-and-drink/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "solihull",
+    "history": "Solihull grew around St Alphege Church, founded around 1220; the settlement gained a weekly market in 1242.",
+    "food": "Touchwood combines restaurants and bars with its shopping offer; town-centre cafés provide a straightforward lunch or coffee stop.",
+    "shopping": "Combine Touchwood with Mell Square, which mixes familiar retailers and independent boutiques selling fashion and homewares.",
+    "nightlife": "Look at The Core Theatre’s current touring shows, screenings and community events for an evening beside Touchwood.",
+    "sources": [
+      {
+        "title": "Solihull council: town history",
+        "url": "https://www.solihull.gov.uk/about-solihull/solihull-town-history"
+      },
+      {
+        "title": "Visit Solihull: shopping centres",
+        "url": "https://visitsolihull.co.uk/shop/shopping-centres/"
+      },
+      {
+        "title": "Visit Solihull: The Core",
+        "url": "https://visitsolihull.co.uk/event/core-theatre-gallery/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "stoke-on-trent",
+    "history": "Victoria Hall was built in 1888 to commemorate Queen Victoria’s Golden Jubilee, using local red brick and terracotta.",
+    "food": "Look for Staffordshire oatcakes, a regional speciality, and browse the official oatcake-shop and local food listings before choosing.",
+    "shopping": "The pottery factory shops are a distinctive alternative to standard retail; World of Wedgwood combines ceramics shopping and experiences.",
+    "nightlife": "Build an evening around the Cultural Quarter, checking the Regent Theatre and Victoria Hall for touring shows and concerts.",
+    "sources": [
+      {
+        "title": "Visit Stoke: official guide",
+        "url": "https://www.visitstoke.co.uk/"
+      },
+      {
+        "title": "Visit Stoke: Victoria Hall",
+        "url": "https://www.visitstoke.co.uk/see-and-do/victoria-hall-p1529621"
+      },
+      {
+        "title": "Visit Stoke: entertainment",
+        "url": "https://www.visitstoke.co.uk/see-and-do/entertainment"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "milton-keynes",
+    "history": "Designated in January 1967, Milton Keynes took its name from a medieval village rather than starting with an empty landscape.",
+    "food": "Browse the street-food eateries at Midsummer Place or combine a shopping stop with restaurants and cafés at centre:mk.",
+    "shopping": "centre:mk and Midsummer Place form the central retail pairing, while older surrounding towns offer a different shopping atmosphere.",
+    "nightlife": "Check Milton Keynes Theatre for stage productions or The Stables for live music across a wide range of genres.",
+    "sources": [
+      {
+        "title": "Destination Milton Keynes: about the city",
+        "url": "https://www.destinationmiltonkeynes.co.uk/about-milton-keynes/"
+      },
+      {
+        "title": "Destination Milton Keynes: shopping",
+        "url": "https://www.destinationmiltonkeynes.co.uk/things-to-do/shopping/"
+      },
+      {
+        "title": "Destination Milton Keynes: history and culture",
+        "url": "https://www.destinationmiltonkeynes.co.uk/things-to-do/history-and-culture/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "northampton",
+    "history": "Northampton’s boot-and-shoe heritage is explored at the Museum and Art Gallery; 78 Derngate adds Charles Rennie Mackintosh’s design story.",
+    "food": "Gold Street’s cafés and independent businesses offer a central food stop; Kingswell Street adds the Albion Brewery’s local brewing story.",
+    "shopping": "Explore Gold Street’s independent businesses and the central shopping streets, allowing time to look above the modern shopfronts.",
+    "nightlife": "The Cultural Quarter centres on Royal & Derngate; check its programme before arranging dinner and a show.",
+    "sources": [
+      {
+        "title": "Northampton BID: discover the town",
+        "url": "https://www.discovernorthampton.co.uk/"
+      },
+      {
+        "title": "Northampton BID: Heritage Gateway",
+        "url": "https://www.discovernorthampton.co.uk/heritage-gateway/"
+      },
+      {
+        "title": "Northampton historic environment record: All Saints",
+        "url": "https://her.northamptonshire.gov.uk/Designation/DNN12349"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "peterborough",
+    "history": "Work on the present cathedral began in 1118 after a fire damaged the earlier monastery and much of the town.",
+    "food": "Cathedral Square’s food markets offer international flavours when scheduled; check the current programme before building lunch around a market visit.",
+    "shopping": "Choose Queensgate for familiar brands, then explore Westgate Arcade and the independent businesses around the compact city centre.",
+    "nightlife": "For live music, check The Met Lounge; for a quieter drink, investigate Charters or the city-centre bar listings.",
+    "sources": [
+      {
+        "title": "Peterborough Cathedral: history",
+        "url": "https://peterborough-cathedral.org.uk/about/history/"
+      },
+      {
+        "title": "Anglia Ruskin University: living in Peterborough",
+        "url": "https://www.aru.ac.uk/student-life/life-on-campus/aru-peterborough-campus/living-in-peterborough"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "cambridge",
+    "history": "Cambridge’s Corn Exchange began as a place to trade grain, linking a familiar entertainment landmark with the city’s agricultural past.",
+    "food": "Green Street combines restaurants and tearooms with independent shops, while King Street offers cafés, bars and traditional pubs.",
+    "shopping": "Browse Green Street and King’s Parade for independent shops; Grand Arcade and Lion Yard provide central covered alternatives.",
+    "nightlife": "King Street’s pubs and bars make a compact evening option; check the Corn Exchange programme for a larger event.",
+    "sources": [
+      {
+        "title": "Visit Cambridge: shopping areas",
+        "url": "https://www.visitcambridge.org/a-z-of-cambridge-shopping-areas/"
+      },
+      {
+        "title": "Cambridge Corn Exchange: what is a corn exchange",
+        "url": "https://www.cornex.co.uk/your-visit/a-stage-in-time/exhibition-themes/a-corn-exchange/what-is-a-corn-exchange"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "oxford",
+    "history": "Oxford’s Covered Market opened in 1774, and remains a trading place rather than simply a preserved historical attraction.",
+    "food": "Start with the Covered Market’s baking and cafés, or investigate the Westgate Roof Terrace’s restaurants for a longer meal.",
+    "shopping": "Combine the independent Covered Market stalls with High Street browsing; Westgate adds major brands and a central leisure complex.",
+    "nightlife": "Check current evening events in the Covered Market, or consider a rooftop drink and cinema visit at Westgate.",
+    "sources": [
+      {
+        "title": "Experience Oxfordshire: Oxford",
+        "url": "https://www.experienceoxfordshire.org/places-to-go/oxford-uk/"
+      },
+      {
+        "title": "Experience Oxfordshire: Covered Market",
+        "url": "https://www.experienceoxfordshire.org/venue/oxford-covered-market/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "reading",
+    "history": "Reading’s Abbey Quarter includes the burial place of Henry I, linking the town’s medieval story with the surviving abbey ruins.",
+    "food": "Use the official town-centre food map for international restaurants, independent cafés and local beer stops around the central streets.",
+    "shopping": "The Oracle and Reading’s pedestrianised central shopping streets provide an easy retail circuit, with independent businesses between larger stores.",
+    "nightlife": "Friar Street and Gun Street anchor Reading’s bar and club scene; The Hexagon offers a performance-focused alternative.",
+    "sources": [
+      {
+        "title": "Visit Reading: town-centre things to do",
+        "url": "https://www.visit-reading.com/things-to-do/things-to-do-in-the-town-centre/1000"
+      },
+      {
+        "title": "Visit Reading: official destination guide",
+        "url": "https://www.visit-reading.com/visit"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "norwich",
+    "history": "The Royal Arcade opened in 1899, combining George Skipper’s Art Nouveau design with a covered shopping street in the city centre.",
+    "food": "Norwich Market offers street food and produce, while Colman’s mustard is part of the city’s long-established food-making heritage.",
+    "shopping": "Explore the Royal Arcade and Norwich Lanes for independent shopping, adding Chantry Place or Castle Quarter for larger retail stops.",
+    "nightlife": "Look at Norwich Playhouse for comedy and theatre, or The Waterfront for live music around Riverside and King Street.",
+    "sources": [
+      {
+        "title": "Visit Norwich: city history",
+        "url": "https://www.visitnorwich.co.uk/history-of-norwich/"
+      },
+      {
+        "title": "Visit Norwich: neighbourhood guide",
+        "url": "https://www.visitnorwich.co.uk/article/a-guide-to-norwichs-neighbourhoods/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "colchester",
+    "history": "Roman Camulodunum became the capital of Britannia; Colchester Castle was later built over the site of its Roman temple.",
+    "food": "Colchester oysters are the local food connection; nearby Mersea Island’s seafood restaurants offer a way to explore that coastal speciality.",
+    "shopping": "Browse Culver Square and central shopping streets, using the In Colchester directory to find independent shops and current local offers.",
+    "nightlife": "Check Mercury Theatre, Colchester Arts Centre and Firstsite for evening performances, live music, comedy and film options.",
+    "sources": [
+      {
+        "title": "Visit Colchester: history",
+        "url": "https://www.visitcolchester.com/explore/colchesters-history/"
+      },
+      {
+        "title": "Visit Colchester: food and drink",
+        "url": "https://www.visitcolchester.com/food-and-drink/"
+      },
+      {
+        "title": "Visit Colchester: shopping",
+        "url": "https://www.visitcolchester.com/things-to-do/shopping/"
+      },
+      {
+        "title": "Visit Colchester: nightlife",
+        "url": "https://www.visitcolchester.com/things-to-do/nightlife/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "chelmsford",
+    "history": "Chelmsford’s market tradition spans more than eight centuries, reflecting its position on an important route through Essex.",
+    "food": "Consider a cream tea at Tiptree’s Bond Street tearoom, or explore the indoor market’s produce and specialist food stalls.",
+    "shopping": "Bond Street, High Chelmer and the Meadows provide three central shopping areas, supplemented by independent retailers and the market.",
+    "nightlife": "The official destination guide lists Boom Battle Bar for cocktails and games; check current sessions and booking conditions first.",
+    "sources": [
+      {
+        "title": "Chelmsford council: market history",
+        "url": "https://www.chelmsford.gov.uk/leisure-theatres-and-museums/chelmsford-market/800-years-of-history/"
+      },
+      {
+        "title": "Visit Essex: Chelmsford",
+        "url": "https://www.visitessex.com/explore/destinations/chelmsford"
+      },
+      {
+        "title": "Chelmsford council: market information",
+        "url": "https://www.chelmsford.gov.uk/leisure-theatres-and-museums/chelmsford-market/about-the-market/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "southend",
+    "history": "Old Leigh’s fishing heritage survives around its cobbled waterfront, cockle sheds and historic pubs, beyond Southend’s main resort frontage.",
+    "food": "Head towards Old Leigh for cockles and seafood, or explore Leigh-on-Sea’s cafés and restaurants around the coastal town centre.",
+    "shopping": "Leigh Broadway offers independent shops and galleries; central Southend and Hamlet Court Road provide other distinct retail areas.",
+    "nightlife": "Check the Cliffs Pavilion and Palace Theatre for live music, touring musicals, comedy and plays before planning the evening.",
+    "sources": [
+      {
+        "title": "Visit Southend: coastal route and districts",
+        "url": "https://www.visitsouthend.co.uk/guides/open-top-bus"
+      },
+      {
+        "title": "Visit Southend: shopping",
+        "url": "https://www.visitsouthend.co.uk/shop"
+      },
+      {
+        "title": "Visit Southend: theatre shows",
+        "url": "https://www.visitsouthend.co.uk/guides/theatre-shows"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "canterbury",
+    "history": "Canterbury Cathedral, St Augustine’s Abbey and St Martin’s Church together form a UNESCO World Heritage Site within the historic city.",
+    "food": "The Goods Shed combines a farmers’ market and restaurant, giving seasonal Kent produce a central role in a food-focused stop.",
+    "shopping": "Browse the historic central streets and independent shops, with Whitefriars providing a larger concentration of high-street retail.",
+    "nightlife": "The Marlowe Theatre brings touring drama, dance, opera and orchestral performances to Canterbury; check the current programme and seat availability.",
+    "sources": [
+      {
+        "title": "Visit Kent: Canterbury",
+        "url": "https://www.visitkent.co.uk/places/canterbury"
+      },
+      {
+        "title": "Canterbury council: city-centre strategy",
+        "url": "https://www.canterbury.gov.uk/strategies-and-policies/canterbury-city-centre-strategy-2026-2043"
+      },
+      {
+        "title": "Visit Canterbury: Marlowe Theatre",
+        "url": "https://www.canterbury.co.uk/businesses/the-marlowe-theatre"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "maidstone",
+    "history": "The Royal Star shopping arcade hides a sixteenth-century structure behind its eighteenth-century High Street frontage, revealing the town’s older layers.",
+    "food": "Earl Street’s restaurants and pubs work for a pre-show meal; local markets and farm shops introduce Kent-grown produce.",
+    "shopping": "Explore the High Street and Royal Star Arcade, then compare the central shopping centres and nearby independent stores.",
+    "nightlife": "Build an evening around the Hazlitt Theatre on Earl Street, allowing time for nearby restaurants before the performance.",
+    "sources": [
+      {
+        "title": "Visit Maidstone: High Street history",
+        "url": "https://www.visitmaidstone.com/inspire/history-of-maidstone/stories-from-the-streets-of-maidstone/high-street-maidstone"
+      },
+      {
+        "title": "Visit Maidstone: food and drink",
+        "url": "https://www.visitmaidstone.com/eating-and-drinking"
+      },
+      {
+        "title": "Visit Maidstone: Hazlitt Theatre",
+        "url": "https://www.visitmaidstone.com/things-to-do/hazlitt-theatre-p93911"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "tunbridge-wells",
+    "history": "Discovery of the Chalybeate Spring in 1606 drew visitors to Tunbridge Wells, beginning its development as a fashionable spa town.",
+    "food": "The Pantiles and old High Street combine cafés with independent food shops, making them useful places to begin browsing menus.",
+    "shopping": "Browse the Pantiles, High Street and Chapel Place for boutiques, antiques, jewellery and homeware, with Royal Victoria Place offering familiar brands.",
+    "nightlife": "For live music check The Forum or Grey Lady; Assembly Hall and Trinity Theatre offer stage and comedy programmes.",
+    "sources": [
+      {
+        "title": "Visit Tunbridge Wells: shopping",
+        "url": "https://visittunbridgewells.com/shopping/shopping-in-royal-tunbridge-wells/"
+      },
+      {
+        "title": "Visit Tunbridge Wells: theatres and nightlife",
+        "url": "https://visittunbridgewells.com/things-to-do/theatres-nightlife/"
+      },
+      {
+        "title": "Visit Tunbridge Wells: history",
+        "url": "https://visittunbridgewells.com/inspire-me/history-heritage/history-of-tunbridge-wells/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "guildford",
+    "history": "Guildford’s story reaches back to Saxon Golden Ford; the surviving Norman castle tower provides another visible layer of the town’s history.",
+    "food": "Tunsgate Quarter groups restaurants and cafés between the High Street and castle, including Vietnamese food at Pho and bakery options.",
+    "shopping": "Browse Guildford’s cobbled High Street and Tunsgate Quarter, where fashion and homeware retailers sit beside restaurants and cafés.",
+    "nightlife": "Check the Yvonne Arnaud Theatre for drama and other current performances before pairing a show with a central dinner.",
+    "sources": [
+      {
+        "title": "Visit Guildford: official guide",
+        "url": "https://www.visitsurrey.com/guildford/"
+      },
+      {
+        "title": "Experience Guildford: Tunsgate Quarter",
+        "url": "https://www.experienceguildford.com/directory/shopping-centre/tunsgate-quarter/"
+      },
+      {
+        "title": "Experience Guildford: Yvonne Arnaud Theatre",
+        "url": "https://www.experienceguildford.com/directory/theatre/yvonne-arnaud-theatre/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "worthing",
+    "history": "Worthing Pier first opened in April 1862; a 1913 storm separated its southern pavilion from the shore until rebuilding reconnected it.",
+    "food": "Explore the town-centre cafés and scheduled street markets, combining a food stop with a walk between shops and seafront.",
+    "shopping": "Montague Street is a useful starting point for central shopping; the official Sussex guide also lists Worthing’s regular markets.",
+    "nightlife": "Check the Connaught Theatre’s programme for a show, or the Dome Cinema for a film-led evening near the coast.",
+    "sources": [
+      {
+        "title": "Adur and Worthing councils: pier history",
+        "url": "https://www.adur-worthing.gov.uk/worthing-pier/"
+      },
+      {
+        "title": "Experience Sussex: Worthing",
+        "url": "https://www.experiencesussex.com/explore/cities-towns-villages/worthing/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "bournemouth",
+    "history": "Completed in 1901, the Russell-Cotes house was a birthday gift to Annie Russell-Cotes and now houses the seafront museum.",
+    "food": "Westbourne offers cafés and restaurants around its shopping streets; fish and chips at Chez Fred is one locally listed option.",
+    "shopping": "Browse Westbourne’s Victorian arcade and independent shops, then explore the town centre or Castlepoint for a larger retail selection.",
+    "nightlife": "Check O2 Academy Bournemouth’s programme for live music in Boscombe, alongside the wider town-centre bar and club scene.",
+    "sources": [
+      {
+        "title": "Russell-Cotes: about the museum",
+        "url": "https://russellcotes.com/what-is-the-russell-cotes/"
+      },
+      {
+        "title": "Bournemouth tourism: Westbourne",
+        "url": "https://www.bournemouth.co.uk/explore/villages/westbourne"
+      },
+      {
+        "title": "Visit Dorset: Bournemouth",
+        "url": "https://www.visit-dorset.com/explore/areas-to-visit/bournemouth/"
+      },
+      {
+        "title": "O2 Academy Bournemouth: visitor information",
+        "url": "https://www.academymusicgroup.com/o2academybournemouth/getting-here"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "salisbury",
+    "history": "Salisbury Cathedral holds one of the surviving original Magna Carta manuscripts, connecting the city directly with the charter of 1215.",
+    "food": "Fisherton Mill combines a gallery and café, while the city’s pub and restaurant listings provide options for a longer meal.",
+    "shopping": "Explore Fisherton Street’s independent shops and artist studios, then compare the High Street, Old George Mall and Cross Keys Arcade.",
+    "nightlife": "Salisbury Playhouse offers drama and musicals; the Arts Centre adds music, comedy and other performances in a former church.",
+    "sources": [
+      {
+        "title": "Salisbury Cathedral: Magna Carta",
+        "url": "https://www.salisburycathedral.org.uk/discover/magna-carta/"
+      },
+      {
+        "title": "Visit Salisbury: shopping",
+        "url": "https://www.visitwiltshire.co.uk/salisbury/shopping"
+      },
+      {
+        "title": "Visit Salisbury: entertainment and nightlife",
+        "url": "https://www.visitwiltshire.co.uk/salisbury/things-to-do/entertainment-and-nightlife"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "bath",
+    "history": "Bath’s Roman remains and Georgian streets reveal two major chapters of the city, from bathing culture to fashionable spa-town architecture.",
+    "food": "Try the Sally Lunn bun or a Bath bun: they are different local baking traditions, both described in the official food guide.",
+    "shopping": "Browse Milsom Street, the central passages and Walcot’s artisan shops; SouthGate offers a convenient cluster near the railway station.",
+    "nightlife": "Check Theatre Royal Bath or Komedia for performances, or investigate Green Park Brasserie’s live-music programme before planning dinner.",
+    "sources": [
+      {
+        "title": "Visit Bath: things to do",
+        "url": "https://www.visitbath.co.uk/things-to-do"
+      },
+      {
+        "title": "Visit Bath: local specialities",
+        "url": "https://www.visitbath.co.uk/food-and-drink/local-specialities-and-produce"
+      },
+      {
+        "title": "Visit Bath: shopping",
+        "url": "https://www.visitbath.co.uk/shopping/shopping-directory"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "exeter",
+    "history": "Rougemont Castle was founded for William the Conqueror in 1068, inside a city whose Roman walls still shape its history.",
+    "food": "Magdalen Road offers local food shops and cafés; the Cathedral Quarter provides tearooms, while the Quayside adds waterside restaurants.",
+    "shopping": "Compare central shops with Magdalen Road’s independents; nearby Topsham offers specialist stores and galleries for a slower browsing trip.",
+    "nightlife": "The historic Quayside combines pubs and restaurants; check the city’s live-music and event listings for your chosen evening.",
+    "sources": [
+      {
+        "title": "University of Exeter: city life",
+        "url": "https://www.exeter.ac.uk/student-life/exeter/"
+      },
+      {
+        "title": "Visit Exeter: shopping and food areas",
+        "url": "https://www.visitexeter.com/shopping"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "plymouth",
+    "history": "The Mayflower left Plymouth in 1620; the Barbican’s Mayflower Steps and museum connect the waterfront with that transatlantic story.",
+    "food": "Explore seafood and waterside restaurants around the Barbican and Sutton Harbour, or browse the food stalls at Plymouth Market.",
+    "shopping": "Choose Drake Circus for major brands, the West End and Plymouth Market for independents, and the Barbican for galleries.",
+    "nightlife": "Check Theatre Royal Plymouth’s programme or investigate the Barbican’s bars; Plymouth’s official nightlife directory lists live-music and comedy options.",
+    "sources": [
+      {
+        "title": "Visit Plymouth: city guide",
+        "url": "https://www.visitplymouth.co.uk/explore/all-about-plymouth"
+      },
+      {
+        "title": "Visit Plymouth: Barbican and Sutton Harbour",
+        "url": "https://www.visitplymouth.co.uk/explore/areas-to-visit/the-barbican-and-sutton-harbour"
+      },
+      {
+        "title": "Visit Plymouth: entertainment and nightlife",
+        "url": "https://www.visitplymouth.co.uk/things-to-do/entertainment-and-nightlife/night-clubs-and-bars"
+      },
+      {
+        "title": "Visit Plymouth: visitor information",
+        "url": "https://www.visitplymouth.co.uk/visitor-info"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "cheltenham",
+    "history": "Cheltenham’s Promenade dates to 1818, when the tree-lined boulevard developed during the Regency period at the heart of the spa town.",
+    "food": "Bath Road has independent food shops, pubs and cafés; Montpellier and the Suffolks provide additional restaurant and wine-bar clusters.",
+    "shopping": "Explore the Promenade’s boutiques, Montpellier’s independents and the High Street, allowing time for the Suffolks’ smaller shops.",
+    "nightlife": "The Brewery Quarter concentrates restaurants, bars, cinema and leisure options, making it a practical starting point for an evening.",
+    "sources": [
+      {
+        "title": "Visit Cheltenham: Promenade",
+        "url": "https://www.visitcheltenham.com/explore-the-area/districts/the-promenade/"
+      },
+      {
+        "title": "Visit Cheltenham: districts",
+        "url": "https://www.visitcheltenham.com/explore-the-area/districts/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "worcester",
+    "history": "Fort Royal Park occupies part of the Battle of Worcester site, giving the city’s green space an English Civil War connection.",
+    "food": "Look around Worcester’s riverside restaurants and tea rooms, with local producers supplying many of the city’s independent cafés and kitchens.",
+    "shopping": "Crowngate, High Street, Pump Street and the Shambles form a central shopping circuit, with additional stalls around Angel Place.",
+    "nightlife": "Huntingdon Hall hosts music, comedy and spoken-word events inside a converted eighteenth-century chapel; check the current programme before booking.",
+    "sources": [
+      {
+        "title": "Worcester Tourist Information: city guide",
+        "url": "https://www.worcestertouristinformation.co.uk/about/"
+      },
+      {
+        "title": "Worcester Theatres: Huntingdon Hall",
+        "url": "https://worcestertheatres.co.uk/visitor-information/about-huntingdon-hall"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "lincoln",
+    "history": "Roman Lindum Colonia grew as a settlement for retired legionaries; medieval Lincoln later developed around its cathedral and castle.",
+    "food": "Look for Lincolnshire sausages and Poacher cheese, regional produce highlighted in the official dining guide alongside locally raised beef.",
+    "shopping": "Bailgate and Steep Hill suit independent browsing, while the Cornhill Quarter adds shops, restaurants and bars in restored surroundings.",
+    "nightlife": "Explore the Bailgate’s historic pubs or check Lincoln Jazz Café’s programme; downhill bars offer a different evening atmosphere.",
+    "sources": [
+      {
+        "title": "Visit Lincoln: city history",
+        "url": "https://www.visitlincoln.com/explore/the-history-of-lincoln/"
+      },
+      {
+        "title": "Visit Lincoln: food and drink",
+        "url": "https://www.visitlincoln.com/food-and-drink/"
+      },
+      {
+        "title": "Visit Lincoln: city areas",
+        "url": "https://www.visitlincoln.com/explore/areas-of-lincoln/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "york",
+    "history": "Goodramgate preserves rows of fourteenth-century houses, while Coppergate’s modern shops occupy an area associated with the city’s Viking past.",
+    "food": "Shambles Food Court provides a street-food stop inside the market, alongside produce stalls and independent traders from York.",
+    "shopping": "Browse Shambles Market, Stonegate and Swinegate, then explore Fossgate and Walmgate for smaller independent businesses with their own character.",
+    "nightlife": "Check York Barbican for touring artists, or explore the city’s historic pubs and current event listings for a smaller evening.",
+    "sources": [
+      {
+        "title": "Visit York: shopping itinerary",
+        "url": "https://visityork.org/groups-travel-trade/york-itineraries/shopping-in-york-itinerary"
+      },
+      {
+        "title": "York Barbican: official programme",
+        "url": "https://www.yorkbarbican.co.uk/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "hull",
+    "history": "Hepworth’s Arcade preserves a Victorian covered-shopping tradition, while Hull’s Old Town links the city with its long maritime and trading history.",
+    "food": "Trinity Market offers a central food stop; Hull’s dining directory also covers traditional pubs, local ales and independent restaurants.",
+    "shopping": "Browse Hepworth and Paragon Arcades, Trinity Market and Humber Street for independent shops, with larger stores at Princes Quay.",
+    "nightlife": "Check The New Adelphi Club for live music, or The Welly for alternative club nights and concerts on your chosen dates.",
+    "sources": [
+      {
+        "title": "Visit Hull: shopping",
+        "url": "https://www.visithull.com/to-do/shopping/"
+      },
+      {
+        "title": "Visit Hull: dine and drink",
+        "url": "https://www.visithull.com/dine-drink/"
+      },
+      {
+        "title": "Visit Hull: nightlife",
+        "url": "https://www.visithull.com/to-do/nightlife/"
+      },
+      {
+        "title": "Historic England: Hepworth Arcade",
+        "url": "https://historicengland.org.uk/listing/the-list/list-entry/1283101"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "bradford",
+    "history": "Bradford’s wool-trading heritage shaped Little Germany’s architecture; the city later became the world’s first UNESCO City of Film.",
+    "food": "Darley Street Market and Kitchen offers fresh produce and global street food, giving the city centre a dedicated food-market stop.",
+    "shopping": "Combine The Broadway shopping centre with Darley Street Market, then explore the wider district’s independent shops and local markets.",
+    "nightlife": "Check Bradford Live for concerts or the Alhambra Theatre for touring stage productions, confirming the programme for your visit.",
+    "sources": [
+      {
+        "title": "Visit Bradford: city guide",
+        "url": "https://www.visitbradford.com/explore/bradford"
+      },
+      {
+        "title": "Visit Bradford: things to do",
+        "url": "https://www.visitbradford.com/things-to-do/shop"
+      },
+      {
+        "title": "Bradford council: visitor introduction",
+        "url": "https://www.bradford.gov.uk/arts-and-culture/whats-on-in-bradford-district/visit-bradford/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "doncaster",
+    "history": "Doncaster’s market grew beside the Roman settlement and has remained central to the town’s trading life through successive periods.",
+    "food": "Explore the Wool Market and International Food Hall for prepared food, fresh produce and a choice of traders under cover.",
+    "shopping": "The market precinct includes the Corn Exchange, Fish Market and outdoor stalls, offering a different experience from conventional retail streets.",
+    "nightlife": "Check Cast’s current theatre, music and comedy programme, then explore the city-centre bar listings if the group wants to continue.",
+    "sources": [
+      {
+        "title": "Doncaster Market: official guide",
+        "url": "https://doncastermarket.com/"
+      },
+      {
+        "title": "Visit Doncaster: music and nightlife",
+        "url": "https://www.visitdoncaster.com/things-to-do/music-and-nightlife/"
+      },
+      {
+        "title": "Visit Doncaster: Cast",
+        "url": "https://www.visitdoncaster.com/things-to-do/attractions/cast/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "middlesbrough",
+    "history": "An 1830 railway extension helped Middlesbrough’s port grow; coal and iron industries then drew workers to the rapidly expanding town.",
+    "food": "Try a parmo, the Teesside dish that moved from late-night takeaway counters onto restaurant menus; compare current local menus.",
+    "shopping": "Baker Street and Bedford Street form a specialist independent shopping area between Linthorpe Road and Albert Road near the centre.",
+    "nightlife": "Baker Street’s bars include The Twisted Lip for live music and The Nuthatch for cocktails; check current events before visiting.",
+    "sources": [
+      {
+        "title": "Middlesbrough council: local history",
+        "url": "https://www.middlesbrough.gov.uk/community-support/stronger-communities-middlesbrough/asylum-support/living-in-middlesbrough/"
+      },
+      {
+        "title": "We Are Middlesbrough: parmo guide",
+        "url": "https://wearemiddlesbrough.com/news/what-are-the-best-parmos-in-middlesbrough/"
+      },
+      {
+        "title": "Visit Tees Valley: Baker and Bedford Street",
+        "url": "https://teesvalley-ca.gov.uk/visit/things-to-see-and-do/activities/baker-street-shopping/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "sunderland",
+    "history": "Shipbuilding, coal and salt shaped Sunderland’s riverfront; surviving local history traces its growth from fishing communities into a major port.",
+    "food": "Sheepfolds Stables brings food, drinks and entertainment into a restored listed complex; Seaburn’s street-food options provide another coastal stop.",
+    "shopping": "Explore The Bridges and Jacky White’s Market for central shopping, then browse the smaller independent shops at Mackie’s Corner.",
+    "nightlife": "Check the Fire Station and Sunderland Empire programmes, or investigate STACK Seaburn for a food-and-entertainment evening by the coast.",
+    "sources": [
+      {
+        "title": "MySunderland: city history",
+        "url": "https://www.mysunderland.co.uk/see-and-do/explore-sunderland/history"
+      },
+      {
+        "title": "MySunderland: city-centre shopping",
+        "url": "https://www.mysunderland.co.uk/see-and-do/shopping/city-centre"
+      },
+      {
+        "title": "University of Sunderland: city life",
+        "url": "https://www.sunderland.ac.uk/student-life/life-in-sunderland"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "carlisle",
+    "history": "The medieval Guildhall records Carlisle’s trade guilds and civic past, while the castle and nearby Roman heritage reflect its border position.",
+    "food": "Carlisle Market Hall combines cafés and street food with traditional stalls; check the cathedral’s market calendar for local producers.",
+    "shopping": "The Lanes provides covered high-street shopping, while Market Hall and the historic quarter add independent stores and specialist gifts.",
+    "nightlife": "West Walls Brewery lists live music alongside locally brewed beer; central bars and venues offer further choices for your evening.",
+    "sources": [
+      {
+        "title": "Visit Lake District: Carlisle",
+        "url": "https://www.visitlakedistrict.com/explore/carlisle"
+      },
+      {
+        "title": "University of Cumbria: Carlisle guide",
+        "url": "https://www.cumbria.ac.uk/student-life/locations/carlisle/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "kendal",
+    "history": "Kendal’s wool-making yards produced the cloth known as Kendal Green; local limestone buildings also explain its Auld Grey Town nickname.",
+    "food": "Kendal Mint Cake is the signature sweet speciality, a peppermint-flavoured sugar confection closely associated with mountaineering and outdoor expeditions.",
+    "shopping": "Explore Highgate and Kirkland for galleries, antiques and independent shops, using the town’s older yards as detours between main streets.",
+    "nightlife": "Check Brewery Arts for films, live music and performances, building the evening around the current programme rather than assumed opening times.",
+    "sources": [
+      {
+        "title": "Visit Lake District: Kendal",
+        "url": "https://www.visitlakedistrict.com/explore/kendal"
+      },
+      {
+        "title": "Visit Kendal: shopping centres and yards",
+        "url": "https://visit-kendal.co.uk/shopping-in-kendal/kendal-shopping/"
+      },
+      {
+        "title": "Visit Kendal: see and do",
+        "url": "https://visit-kendal.co.uk/see-and-do/"
+      },
+      {
+        "title": "Brewery Arts: official programme",
+        "url": "https://www.breweryarts.co.uk/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "blackpool",
+    "history": "Blackpool Tower opened in 1894 after taking inspiration from the Eiffel Tower, becoming a defining landmark of the seaside resort.",
+    "food": "Abingdon Street Market’s food hall gathers independent street-food traders, coffee and bars, giving a covered alternative to seafront takeaway stops.",
+    "shopping": "Compare Houndshill Shopping Centre with Abingdon Street Market’s independent retail stalls, which include gifts, vinyl and locally made items.",
+    "nightlife": "Check the Tower Ballroom’s current sessions or the town’s theatre programmes; Abingdon Street Market also combines food with two bars.",
+    "sources": [
+      {
+        "title": "Blackpool Tower: visitor FAQ",
+        "url": "https://www.theblackpooltower.com/plan-your-visit/help-centre/general-enquiries/what-attractions-are-inside-the-blackpool-tower/"
+      },
+      {
+        "title": "Blackpool council: town centre",
+        "url": "https://www.blackpool.gov.uk/your-council/creating-a-better-blackpool/town-centre"
+      },
+      {
+        "title": "Abingdon Street Market: official site",
+        "url": "https://www.abingdonstreet.market/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "bolton",
+    "history": "Samuel Crompton invented the spinning mule in 1779 while living at Hall i’ th’ Wood, a landmark in Bolton’s textile story.",
+    "food": "Bolton Market Food Hall brings together cuisines including Japanese food, kebabs, pizza and burgers; the surrounding market sells fresh ingredients.",
+    "shopping": "Start with Bolton Market for produce and independent traders, then compare Market Place’s shops and the town-centre retail streets.",
+    "nightlife": "The Octagon, Albert Halls and Victoria Hall provide distinct stage and music options; check current programmes before booking the evening.",
+    "sources": [
+      {
+        "title": "Bolton museums: Hall i’ th’ Wood history",
+        "url": "https://www.boltonlams.co.uk/hall-i-th-wood-museum"
+      },
+      {
+        "title": "Visit Bolton: markets",
+        "url": "https://www.visitbolton.com/shopping/markets/"
+      },
+      {
+        "title": "Visit Bolton: theatre and shows",
+        "url": "https://www.visitbolton.com/whats-on/theatre-and-shows/"
+      },
+      {
+        "title": "Visit Manchester: Bolton",
+        "url": "https://www.visitmanchester.com/things-to-see-and-do/explore/bolton/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "wigan",
+    "history": "Wigan’s early rail connections arrived in the 1830s, supporting the cotton industry and linking the town with neighbouring manufacturing centres.",
+    "food": "Uncle Joe’s Mint Balls are made by Wigan’s William Santus company, a family confectionery business with roots in 1898.",
+    "shopping": "Browse Makinson Arcade and the town centre’s independent shops, checking current access around the ongoing central redevelopment before visiting.",
+    "nightlife": "King Street groups pubs, clubs and bars; Wigan Little Theatre offers an alternative evening of drama, comedy or musical theatre.",
+    "sources": [
+      {
+        "title": "Visit Wigan: town-centre history",
+        "url": "https://www.visitwigan.com/Blogs/2022/Unearthing-the-History-of-Wigan-Town-Centre.aspx"
+      },
+      {
+        "title": "Wigan council: Uncle Joe’s Mint Balls",
+        "url": "https://businessdirectory.wigan.gov.uk/business/william-santus--co-ltd-uncle-joes-mint-balls"
+      },
+      {
+        "title": "Visit Wigan: town centre",
+        "url": "https://www.visitwigan.com/Wigan-Town-Centre.aspx"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "warrington",
+    "history": "Parr Hall opened in 1895, forming part of the Cultural Quarter alongside historic buildings around Palmyra Square and the town museum.",
+    "food": "The Cookhouse at Warrington Market gathers food traders within Time Square, allowing the group to compare cuisines in one place.",
+    "shopping": "Explore Golden Square and the independent traders at Warrington Market, whose retained Bridge Street frontage links the new hall with older streets.",
+    "nightlife": "Palmyra Square groups restaurants and bars near Parr Hall and Pyramid; check venue programmes and any works before planning a visit.",
+    "sources": [
+      {
+        "title": "Warrington council: brief history",
+        "url": "https://www.warrington.gov.uk/brief-history-warrington"
+      },
+      {
+        "title": "Warrington council: market history",
+        "url": "https://www.warrington.gov.uk/history-warrington-market"
+      },
+      {
+        "title": "Warrington BID: town-centre guide",
+        "url": "https://warringtonbid.co.uk/about/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "stockport",
+    "history": "Stockport’s nineteenth-century hat-making industry is explored at Hat Works, linking the Old Town’s industrial past with its present cultural offer.",
+    "food": "The Produce Hall gathers food traders in an old market building; nearby independent kitchens and cafés extend the Old Town’s dining options.",
+    "shopping": "Browse Little and Great Underbanks for independent shops, magazines, clothing and homeware, then explore the stalls around Market Place.",
+    "nightlife": "The Underbanks and Market Place have independent bars; check local event listings for music, performances and scheduled Foodie Friday gatherings.",
+    "sources": [
+      {
+        "title": "Visit Manchester: Stockport",
+        "url": "https://www.visitmanchester.com/things-to-see-and-do/explore/stockport/"
+      },
+      {
+        "title": "Stockport council: town-centre evenings",
+        "url": "https://www.stockport.gov.uk/news/why-everyones-going-out-in-stockport-town-centre-now"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "aberdeen",
+    "history": "The University of Aberdeen was founded in 1495; Old Aberdeen’s crown-topped King’s College Chapel reflects this long academic heritage.",
+    "food": "Rosemount’s cafés offer a neighbourhood food stop; the Music Hall’s Coda Café Bar adds coffee, cake and light bites centrally.",
+    "shopping": "Browse Rosemount’s boutiques and artisan shops for an independent alternative to the larger shopping areas in Aberdeen’s city centre.",
+    "nightlife": "Check the Music Hall, His Majesty’s Theatre and The Lemon Tree for concerts and performances from Aberdeen Performing Arts.",
+    "sources": [
+      {
+        "title": "VisitAberdeenshire: Old Aberdeen",
+        "url": "https://visitabdn.com/places/old-aberdeen"
+      },
+      {
+        "title": "VisitAberdeenshire: Aberdeen city districts",
+        "url": "https://visitabdn.com/regions/city"
+      },
+      {
+        "title": "VisitAberdeenshire: Music Hall",
+        "url": "https://visitabdn.com/businesses/music-hall"
+      }
+    ],
+    "checked": "2026-11-23"
+  }
+]

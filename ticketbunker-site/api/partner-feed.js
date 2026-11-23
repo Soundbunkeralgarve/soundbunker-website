@@ -9,14 +9,14 @@ import {readFile} from 'node:fs/promises';
 const SKIDDLE_FEED = 'https://xml.skiddlecdn.co.uk/affiliates/all.xml';
 const SKIDDLE_HOSTS = new Set(['www.skiddle.com', 'skiddle.com']);
 const SKIDDLE_IMAGE_HOSTS = new Set(['d31fr2pwly4c4s.cloudfront.net']);
-// Skiddle event codes we list; anything else (sport, kids, conferences…) is left out.
+// Bookable Skiddle categories: expand sports, arts, exhibitions and seasonal occasions alongside music.
 const SKIDDLE_CATEGORIES = Object.freeze({LIVE: 'music', CLUB: 'club', FEST: 'festival', COMEDY: 'comedy',
-  THEATRE: 'shows', DANCE: 'shows', FILM: 'cinema', DRIVEIN: 'cinema', EXPER: 'daysout'});
+  THEATRE: 'shows', DANCE: 'shows', FILM: 'cinema', DRIVEIN: 'cinema', EXPER: 'daysout', EXHIB: 'daysout', ARTS: 'shows', SPORT: 'sport', SEASONAL: 'seasonal', BARPUB: 'daysout', LGB: 'club'});
 // Kid-friendly listings go to the Family rail whatever Skiddle files them under.
 const FAMILY = /\b(family|families|kids?|children|child|toddler|santa|grotto|panto(mime)?|junior|baby|zoo|aquarium|water ?park|theme park|farm)\b/i;
 const FAMILY_CODES = new Set(['KIDS', 'EXPER', 'SEASONAL', 'THEATRE']);
 const SPAIN = /\b(ibiza|eivissa|sant antoni|san antonio|playa d.?en bossa|santa eulalia|marbella|benidorm|tenerife|costa adeje|adeje|playa de las americas|los cristianos|magaluf|mallorca|lanzarote|gran canaria)\b/i;
-const PER_CATEGORY = 24, PER_CITY_CATEGORY = 80, HORIZON_DAYS = 180, CACHE_MS = 3 * 60 * 60 * 1000;
+const PER_CATEGORY = 24, PER_CITY_CATEGORY = 80, HORIZON_DAYS = 365, CACHE_MS = 3 * 60 * 60 * 1000;
 
 const decode = value => String(value || '').replace(/^<!\[CDATA\[|\]\]>$/g, '')
   .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#0?39;|&apos;/g, "'")
@@ -292,6 +292,21 @@ async function listings() {
     .catch(() => { cached = {until: Date.now() + 5 * 6e4, items: cached?.items || []}; return cached.items; })
     .finally(() => { loading = null; });
   return loading;
+}
+
+export function findPartnerListing(items, id, now = Date.now()) {
+  if (!/^(?:skiddle:[\w-]+|viator:[\w-]+|awin:\d+:[\w-]+)$/.test(String(id || '')) || String(id).length > 120) return null;
+  const item = items.find(i => i.id === id);
+  if (!item?.title || (item.startsAt && !(Date.parse(item.startsAt) > now))) return null;
+  try {
+    const u = new URL(item.url);
+    const hosts = item.provider === 'skiddle' ? SKIDDLE_HOSTS : item.provider === 'viator' ? new Set(['www.viator.com', 'viator.com']) : /^awin-\d+$/.test(item.provider) ? AWIN_HOSTS : new Set();
+    return u.protocol === 'https:' && hosts.has(u.hostname) && !u.username && !u.password && !u.port ? item : null;
+  } catch { return null; }
+}
+export async function getPartnerListing(id) {
+  if (!/^(?:skiddle:[\w-]+|viator:[\w-]+|awin:\d+:[\w-]+)$/.test(String(id || '')) || String(id).length > 120) return null;
+  return findPartnerListing(await listings(), id);
 }
 
 export default async function handler(req, res) {

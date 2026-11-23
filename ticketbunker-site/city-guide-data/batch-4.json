@@ -1,0 +1,704 @@
+[
+  {
+    "slug": "bruges",
+    "history": "The preserved canals and street plan recall Bruges’ medieval importance as a European trading centre.",
+    "food": "Try the city’s Bruges waffle at Otto Waffle Atelier, or browse local cheese specialists.",
+    "shopping": "Explore Langestraat and Hoogstraat for independent shops, vintage finds and smaller creative businesses away from the main chains.",
+    "nightlife": "For a music-led evening, check De Kelk on Langestraat, an established café listed for live music.",
+    "sources": [
+      {
+        "title": "Visit Bruges: historic centre",
+        "url": "https://www.visitbruges.be/en/things-to-do/about-bruges/world-heritage-city/historic-city-centre"
+      },
+      {
+        "title": "Visit Bruges: shopping",
+        "url": "https://www.visitbruges.be/en/things-to-do/shopping"
+      },
+      {
+        "title": "Visit Bruges: food, bars and cafés",
+        "url": "https://www.visitbruges.be/en/eat-and-sleep/food-bars-cafes"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "ghent",
+    "history": "Korenmarkt grew into a medieval trading centre as grain arrived along the Scheldt and Lys rivers.",
+    "food": "Taste waterzooi, the local chicken or fish soup, and cuberdons, Ghent’s raspberry-flavoured cone-shaped sweets, between your sightseeing stops.",
+    "shopping": "Donkersteeg, beside Korenmarkt, mixes fashion, jewellery, leather goods and handmade chocolate shops in a compact central street.",
+    "nightlife": "Klein Turkije beside St Nicholas Church is a useful starting point for pubs, bars and locally brewed beer.",
+    "sources": [
+      {
+        "title": "Visit Gent: Korenmarkt",
+        "url": "https://visit.gent.be/en/see-do/korenmarkt"
+      },
+      {
+        "title": "Visit Gent: local specialties",
+        "url": "https://visit.gent.be/en/good-know/practical-information/inspiration/ghent-specialties-and-sweets"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "salzburg",
+    "history": "Salzburg’s historic centre reflects the influence of its prince-archbishops; Mozart was baptised in the city’s cathedral.",
+    "food": "Look for Salzburger Nockerl, a fluffy local dessert, or Bosna, grilled sausages with mustard, onion and curry powder.",
+    "shopping": "Getreidegasse combines traditional businesses and boutiques in the old town, with distinctive signs above its narrow shopping lanes.",
+    "nightlife": "Check the Jazzit programme in Elisabeth-Vorstadt for jazz, experimental music and other live performances before choosing your evening.",
+    "sources": [
+      {
+        "title": "Austria Tourism: Salzburg city break",
+        "url": "https://www.austria.info/en-gb/recommendations/365-days/salzburg/"
+      },
+      {
+        "title": "Salzburg Tourism: culinary classics",
+        "url": "https://www.salzburg.info/en/dining-shopping/salzburg-culinary-classics"
+      },
+      {
+        "title": "Salzburg Tourism: Jazzit",
+        "url": "https://www.salzburg.info/en/travel-info/infos/jazzit-musik-club-salzburg_az_12389"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "zurich",
+    "history": "Zurich developed from a Roman customs post; the old town also preserves stories of guilds, the Reformation and Dada.",
+    "food": "Try Zürcher Geschnetzeltes: sliced veal in a creamy sauce, traditionally accompanied by rösti, a grated-potato cake.",
+    "shopping": "Bahnhofstrasse brings together fashion, Swiss watch shops, jewellery and boutiques; browse its side streets as well as the main avenue.",
+    "nightlife": "Langstrasse is a longstanding nightlife district, with bars, clubs and international takeaway food for a varied evening out.",
+    "sources": [
+      {
+        "title": "Zurich Tourism: city history",
+        "url": "https://www.zuerich.com/en/business/media/research-texts"
+      },
+      {
+        "title": "Zurich Tourism: traditional dish",
+        "url": "https://www.zuerich.com/en/zurcher-geschnetzeltes"
+      },
+      {
+        "title": "Zurich Tourism: neighbourhood guide",
+        "url": "https://www.zuerich.com/en/neighborhood"
+      },
+      {
+        "title": "Zurich Tourism: Langstrasse",
+        "url": "https://www.zuerich.com/en/visit/attractions/langstrasse"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "geneva",
+    "history": "Carouge was once independent; its Sardinian architecture gives this district a different character from Geneva’s old town.",
+    "food": "For a Swiss meal with a lakeside setting, check fondue service at the Bains des Pâquis refreshment bar.",
+    "shopping": "Browse Carouge for small boutiques and craftspeople making jewellery, watches, clothing and accessories, rather than only city-centre chain stores.",
+    "nightlife": "Les Pâquis offers a concentration of evening venues; Carouge is another option for bars, cafés and live cultural plans.",
+    "sources": [
+      {
+        "title": "Geneva Tourism: city districts",
+        "url": "https://www.geneve.com/en/see-do/history-culture/6-must-see-geneva-districts"
+      },
+      {
+        "title": "Geneva Tourism: Bains des Pâquis",
+        "url": "https://www.geneve.com/en/attractions/detail/paquis-bath-bains-des-paquis"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "copenhagen",
+    "history": "Kødbyen’s former meat-industry buildings have become galleries, restaurants and nightlife venues, retaining their distinctive industrial surroundings.",
+    "food": "Try smørrebrød at lunch: open sandwiches, usually on rye bread, with toppings such as herring, eggs or roast beef.",
+    "shopping": "Strøget is the main pedestrian shopping route, mixing international chains and designer shops with Danish design stores nearby.",
+    "nightlife": "The Meatpacking District in Vesterbro brings bars, music venues and restaurants together; check individual event and entry details first.",
+    "sources": [
+      {
+        "title": "Visit Copenhagen: Meatpacking District",
+        "url": "https://www.visitcopenhagen.com/copenhagen/areas/neighborhoods/guide-to-the-meatpacking-district"
+      },
+      {
+        "title": "Visit Copenhagen: smørrebrød",
+        "url": "https://www.visitcopenhagen.com/copenhagen/eat-drink/restaurants/best-smorrebrod-and-traditional-danish-food"
+      },
+      {
+        "title": "Visit Copenhagen: Strøget",
+        "url": "https://www.visitcopenhagen.com/copenhagen/areas/neighborhoods/stroget-the-main-shopping-street"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "stockholm",
+    "history": "Gamla Stan, Stockholm’s oldest district, took shape in the thirteenth century around streets that still surround the Royal Palace.",
+    "food": "Explore Swedish meatballs at Meatballs for the People in Södermalm, checking the current menu for your preferred ingredients.",
+    "shopping": "Södermalm is a useful district for second-hand clothing and independent boutiques, with further small shops in historic Gamla Stan.",
+    "nightlife": "Södermalm’s bars and restaurants make it an evening starting point; browse current listings before selecting a live show or club.",
+    "sources": [
+      {
+        "title": "Visit Stockholm: Gamla Stan",
+        "url": "https://www.visitstockholm.com/stockholms-districts/gamla-stan/"
+      },
+      {
+        "title": "Visit Stockholm: Södermalm",
+        "url": "https://www.visitstockholm.com/stockholms-districts/sodermalm/"
+      },
+      {
+        "title": "Visit Stockholm: Meatballs for the People",
+        "url": "https://www.visitstockholm.com/o/meatballs-for-the-people/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "oslo",
+    "history": "Grünerløkka was a working-class neighbourhood in the nineteenth century; former factories still line the Akerselva riverside walk.",
+    "food": "Use Mathallen Food Hall beside the Akerselva as a starting point for exploring Oslo’s food stalls and eateries.",
+    "shopping": "Grünerløkka mixes independent design boutiques, vintage shops and flea markets, making it a practical area for browsing on foot.",
+    "nightlife": "Check the programme at Blå by the river, or explore Grünerløkka’s bars and the music venues around nearby Torshov.",
+    "sources": [
+      {
+        "title": "Visit Oslo: Grünerløkka",
+        "url": "https://www.visitoslo.com/activities-and-attractions/boroughs/grunerlokka"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "helsinki",
+    "history": "Kallio’s working-class past helped shape its character; today its older streets sit alongside modern buildings and a busy cultural scene.",
+    "food": "Pause for coffee and a korvapuusti cinnamon bun, a Finnish café classic, while exploring Helsinki’s neighbourhood bakeries.",
+    "shopping": "Hämeentie’s vintage stores offer an alternative to central chain shopping, with more independent finds around the Kallio neighbourhood.",
+    "nightlife": "For a busier night, explore the Hämeentie club cluster; Helsinginkatu’s pubs offer a different starting point for drinks.",
+    "sources": [
+      {
+        "title": "Visit Finland: Helsinki weekend",
+        "url": "https://www.visitfinland.com/en/articles/how-to-spend-a-long-weekend-in-helsinki/"
+      },
+      {
+        "title": "MyHelsinki: Kallio itinerary",
+        "url": "https://www.myhelsinki.fi/visit/neighbourhoods/72hrs-in-trendy-helsinki-neighborhood/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "tallinn",
+    "history": "Kalamaja developed around Tallinn’s fishing harbour; its wooden houses and reused industrial buildings reveal a different side of the city.",
+    "food": "Balti Jaam Market and the Depoo street-food area provide practical places to explore local produce, snacks and varied casual meals.",
+    "shopping": "Telliskivi Creative City has design shops and independent makers; Balti Jaam Market also includes vintage clothing and antiques.",
+    "nightlife": "Telliskivi and Kalamaja combine cafés, event spaces and nightlife; consult current programmes at the Creative Hub and nearby venues.",
+    "sources": [
+      {
+        "title": "Visit Tallinn: Kalamaja and Telliskivi",
+        "url": "https://www.visittallinn.ee/eng/visitor/ideas-tips/tips-and-guides/kalamaja-telliskivi-noblessner"
+      },
+      {
+        "title": "Visit Tallinn: neighbourhood choices",
+        "url": "https://visittallinn.ee/eng/visitor/ideas-tips/tips-and-guides/where-to-stay-in-tallinn"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "riga",
+    "history": "Riga Central Market opened in 1930, reusing structures originally built as German military airship hangars for its distinctive pavilions.",
+    "food": "The Central Market is a starting point for Latvian flavours such as smoked fish and rye bread, alongside food-court meals.",
+    "shopping": "Browse the Central Market’s produce stalls and specialty foods, then explore the small artisan shops scattered through the old town.",
+    "nightlife": "Old Riga’s compact streets gather wine bars, cocktail lounges and late-night restaurants; choose your venue around the evening you want.",
+    "sources": [
+      {
+        "title": "LiveRiga: Central Market",
+        "url": "https://www.liveriga.com/en/1597-riga-central-market/"
+      },
+      {
+        "title": "LiveRiga: old town",
+        "url": "https://www.liveriga.com/en/visit/what-to-see/top-sights/the-old-town"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "vilnius",
+    "history": "The Glass Quarter preserves the legacy of Vilnius’ Jewish craftspeople; Halės Market has served local shoppers since 1906.",
+    "food": "Explore Senatorių Pasažas for contemporary Lithuanian cooking and local produce, or browse the food stalls at historic Halės Market.",
+    "shopping": "Gediminas Avenue offers central shopping, while the Glass Quarter’s courtyards hide smaller fashion, jewellery and craft businesses worth seeking out.",
+    "nightlife": "The station district hosts alternative cultural venues including Kablys and Loftas; check their current music and event programmes before visiting.",
+    "sources": [
+      {
+        "title": "Go Vilnius: Glass Quarter",
+        "url": "https://www.govilnius.lt/visit-vilnius/latest-tips/the-glass-quarter-of-vilnius-a-hidden-cultural-treasure"
+      },
+      {
+        "title": "Go Vilnius: Senatorių Pasažas",
+        "url": "https://www.govilnius.lt/visit-vilnius/latest-tips/senatoriu-pasazas-discover-organic-lithuanian-cuisine"
+      },
+      {
+        "title": "Go Vilnius: Gediminas Avenue",
+        "url": "https://www.govilnius.lt/visit-vilnius/places/gediminas-avenue"
+      },
+      {
+        "title": "Go Vilnius: station district",
+        "url": "https://www.govilnius.lt/visit-vilnius/latest-tips/vilnius-station-district"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "krakow",
+    "history": "Kazimierz’s synagogues and historic streets preserve the story of Kraków’s Jewish community; Nowa Huta reveals its later industrial history.",
+    "food": "Try a zapiekanka, the Polish open sandwich associated with Plac Nowy, while exploring the cafés and streets of Kazimierz.",
+    "shopping": "Browse the Cloth Hall for regional gifts and jewellery, or explore Józefa Street for smaller craft and design shops.",
+    "nightlife": "Kazimierz is a useful evening base for cafés and nightlife; choose a specific venue after checking its current music programme.",
+    "sources": [
+      {
+        "title": "Poland Tourism: Kraków city break",
+        "url": "https://www.poland.travel/en/krakow-city-break/"
+      },
+      {
+        "title": "Kraków municipal tourism: shopping",
+        "url": "https://convention.krakow.pl/english/ccb_en/7972,artykul,shopping.html"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "warsaw",
+    "history": "Elektrownia Powiśle began as Warsaw’s first power station in 1904; its historic buildings now accommodate shops and a food hall.",
+    "food": "Try Polish cooking at Pyzy, Flaki Gorące on Brzeska Street, or compare different meals in the Elektrownia Powiśle Food Hall.",
+    "shopping": "Explore Targowa Street’s second-hand stores in Praga, with a contrasting shopping stop inside the restored Elektrownia Powiśle complex.",
+    "nightlife": "The courtyard at 22 11 Listopada Street hosts Chmury and Hydrozagadka, venues associated with Warsaw’s alternative music and themed evenings.",
+    "sources": [
+      {
+        "title": "Go To Warsaw: local city break",
+        "url": "https://go2warsaw.pl/en/warsaw-with-no-filters-a-city-break-for-young-tourists/"
+      },
+      {
+        "title": "Go To Warsaw: reused industrial spaces",
+        "url": "https://go2warsaw.pl/en/revitalised-industrial-and-retail-spaces/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "gdansk",
+    "history": "Uphagen’s House recreates eighteenth-century domestic interiors, offering a closer look at the lives of Gdańsk’s former merchant households.",
+    "food": "Look for Goldwasser-filled pralines at Gdański Bowke, or use the tourist board’s food directory to explore local cooking.",
+    "shopping": "Mariacka Street and Długie Pobrzeże gather amber galleries and workshops, useful places to compare jewellery and ask about its materials.",
+    "nightlife": "Wajdeloty Street in Wrzeszcz combines historic townhouses, small restaurants and cafés, and is a focal point for the district’s nightlife.",
+    "sources": [
+      {
+        "title": "Visit Gdansk: historical places",
+        "url": "https://visitgdansk.com/top-historycznych-miejsc-w-gdansku.qbpage?setLanguage=en"
+      },
+      {
+        "title": "Visit Gdansk: tastes",
+        "url": "https://visitgdansk.com/en/smaki-gdanska"
+      },
+      {
+        "title": "Pomorskie Tourism: amber streets",
+        "url": "https://pomorskie.travel/en/punkty-poi/bursztynowe-ulice/"
+      },
+      {
+        "title": "Visit Gdansk: Wrzeszcz",
+        "url": "https://visitgdansk.com/wrzeszcz.qbpage?setLanguage=en"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "bratislava",
+    "history": "The Old Town Hall joins several medieval houses around courtyards; its tower still contains a cannonball associated with Napoleon’s bombardment.",
+    "food": "Try bryndzové halušky, potato dumplings with sheep’s cheese and bacon, or Bratislava rolls filled with walnuts or poppy seeds.",
+    "shopping": "The Old Market Hall on SNP Square hosts small producers and local foods; check its current market schedule before visiting.",
+    "nightlife": "For an evening with a performance, check the Slovak National Theatre programme, then explore the compact centre’s bars and wine spots.",
+    "sources": [
+      {
+        "title": "Visit Bratislava: Old Town Hall",
+        "url": "https://www.visitbratislava.com/sights-attractions/old-town-hall/"
+      },
+      {
+        "title": "Visit Bratislava: local food",
+        "url": "https://www.visitbratislava.com/tours/traditional-food-tour-2/"
+      },
+      {
+        "title": "Visit Bratislava: Old Market Hall",
+        "url": "https://www.visitbratislava.com/sights-attractions/saturday-market-at-the-old-market-hall-stara-trznica/"
+      },
+      {
+        "title": "Visit Bratislava: city itinerary",
+        "url": "https://www.visitbratislava.com/itineraries/three-days-in-bratislava-youll-still-have-reasons-to-stay-longer/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "ljubljana",
+    "history": "Metelkova’s cultural scene began in 1993, when volunteers occupied former military barracks to protect the buildings from demolition.",
+    "food": "Explore the Central Market for Slovenian foods such as potica and pršut, alongside produce, spices and other regional specialties.",
+    "shopping": "The Central Market and old-town streets combine delicatessens, wine shops and smaller businesses, making a compact browse around the city centre.",
+    "nightlife": "Metelkova hosts alternative concerts, DJ nights and arts events; consult the individual clubs’ programmes for your music and entry requirements.",
+    "sources": [
+      {
+        "title": "Visit Ljubljana: Metelkova",
+        "url": "https://www.visitljubljana.com/en/poi/metelkova-mesto-autonomous-cultural-centre"
+      },
+      {
+        "title": "Visit Ljubljana: central shopping",
+        "url": "https://www.visitljubljana.com/en/visitors/sights-and-activities/shopping/shopping-in-the-ljubljana-city-centre"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "zagreb",
+    "history": "Tkalčićeva Street follows the course of the former Medveščak stream, which once ran between Zagreb’s historic settlements.",
+    "food": "Look for štrukli, a regional pastry filled with fresh cheese and eggs, served in either savoury or sweet preparations.",
+    "shopping": "Dolac Market above the main square brings together produce, flowers and local goods; the neighbouring fish market adds another everyday shopping stop.",
+    "nightlife": "Tkalčićeva’s concentration of cafés, bars and restaurants makes it a convenient starting point for an evening in central Zagreb.",
+    "sources": [
+      {
+        "title": "Zagreb Tourist Board: city districts and market",
+        "url": "https://www.infozagreb.hr/en/about-zagreb/zagreb-today"
+      },
+      {
+        "title": "Zagreb Tourist Board: štrukli",
+        "url": "https://www.infozagreb.hr/en/news/zagorje-strukli-protected-cultural-asset-en"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "split",
+    "history": "Split’s historic centre grew around Diocletian’s Roman palace; the cathedral occupies the site of the emperor’s former mausoleum.",
+    "food": "Try Dalmatian pašticada, a slowly prepared beef stew, or explore regional seafood dishes and produce at the city’s markets.",
+    "shopping": "Browse Pazar beside the palace for local produce, then continue towards the fish market and Marmontova for a different shopping mix.",
+    "nightlife": "For music after dinner, compare the tourist board’s club directory and Porat concert listings; venue seasons and individual programmes vary.",
+    "sources": [
+      {
+        "title": "Split Tourist Board: city walk",
+        "url": "https://visitsplit.com/index.php/en/1316/split-in-1-day"
+      },
+      {
+        "title": "Croatian National Tourist Board: Split region food",
+        "url": "https://croatia.hr/en-gb/food-and-drink/dalmatia-split"
+      },
+      {
+        "title": "Split Tourist Board: nightlife",
+        "url": "https://visitsplit.com/en/218/night-clubs/1"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "dubrovnik",
+    "history": "The Rector’s Palace once housed the government of the Dubrovnik Republic; its museum connects the building with the city’s history.",
+    "food": "Sample rozata, a rose-scented caramel custard, or try Dalmatian seafood dishes such as octopus salad and black risotto.",
+    "shopping": "Explore small shops in the old town for jewellery and local crafts, or browse Gruž Market for produce and regional foods.",
+    "nightlife": "Check the Dubrovnik Symphony Orchestra and Linđo programmes for an evening performance, including concerts and folklore events in historic venues.",
+    "sources": [
+      {
+        "title": "Dubrovnik Tourist Board: sights and performances",
+        "url": "https://experiencedubrovnik.com/en/dubrovnik/nezaobilazne-atrakcije"
+      },
+      {
+        "title": "Dubrovnik Tourist Board: food",
+        "url": "https://experiencedubrovnik.com/en/dubrovnik-for/wine-and-food-lovers"
+      },
+      {
+        "title": "Dubrovnik Tourist Board: shopping",
+        "url": "https://experiencedubrovnik.com/en/dubrovnik-for/shopaholics"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "bucharest",
+    "history": "Curtea Veche preserves remnants of the residence of Wallachian rulers; check the museum’s restoration notice before planning any interior visit.",
+    "food": "Caru’ cu bere in the old town serves Romanian cooking, including a house specialty of roast pork knuckle with polenta.",
+    "shopping": "Cărturești Carusel on Lipscani is a bookshop browsing stop in the old town; check its store listing before your visit.",
+    "nightlife": "Control Club publishes a programme mixing live bands, electronic music and other events; choose by the specific night rather than the venue name.",
+    "sources": [
+      {
+        "title": "Bucharest Municipality Museum: Curtea Veche",
+        "url": "https://muzeulbucurestiului.ro/en/the-old-princely-court-museum.html"
+      },
+      {
+        "title": "Caru cu bere: Romanian food",
+        "url": "https://www.carucubere.ro/en/bucharest-restaurant/traditional-romanian-food/"
+      },
+      {
+        "title": "Cărturești: bookshops",
+        "url": "https://carturesti.ro/librarii?lang=ro-RO"
+      },
+      {
+        "title": "Control Club: programme",
+        "url": "https://www.control-club.ro/events/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "sofia",
+    "history": "The Ancient Serdica complex reveals Roman streets, buildings and water systems beneath the area around the Largo and Maria Luiza Boulevard.",
+    "food": "Look for Bulgarian dishes such as banitsa, shopska salad and kavarma; the city’s official food guide introduces local staples.",
+    "shopping": "Vitosha Boulevard has souvenir stops including Souvenirs of Bulgaria, where rose-oil products and other local gifts are listed.",
+    "nightlife": "Browse the official music-club directory for options such as Swingin Hall or Carrusel, then check the venue’s current programme.",
+    "sources": [
+      {
+        "title": "Discover Sofia: Ancient Serdica",
+        "url": "https://www.visitsofia.bg/en/cityinfrastructure/what-to-see/archaeological-monuments/ancient-serdica-remains-of-the-roman-city-centre"
+      },
+      {
+        "title": "Discover Sofia: Bulgarian cooking",
+        "url": "https://www.visitsofia.bg/en/item/3549-explore-sofia%E2%80%99s-culinary-scene"
+      },
+      {
+        "title": "Discover Sofia: souvenirs",
+        "url": "https://www.visitsofia.bg/en/cityinfrastructure/shopping/souvenir-shops/souvenirs-of-bulgaria"
+      },
+      {
+        "title": "Discover Sofia: bars and music clubs",
+        "url": "https://www.visitsofia.bg/en/cityinfrastructure/what-to-do/bars-and-music-clubs"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "athens",
+    "history": "Monastiraki takes its name from a former monastery; the tenth-century Pantanassa church remains on its busy central square.",
+    "food": "Try souvlaki around Monastiraki: Bairaktaris offers a longstanding option, while Hoocut near Agias Irinis Square presents a different interpretation.",
+    "shopping": "Explore the flea-market streets around Monastiraki and Avissinia Square for second-hand finds, records, small gifts and craft shops.",
+    "nightlife": "Psirri’s lanes and Iroon Square gather bars, cafés and restaurants; compare individual programmes before choosing a late music venue.",
+    "sources": [
+      {
+        "title": "Official Athens Guide: Monastiraki and Psirri",
+        "url": "https://www.thisisathens.org/neighbourhoods/monastiraki-psirri-guide"
+      },
+      {
+        "title": "Official Athens Guide: Bairaktaris",
+        "url": "https://accessible.thisisathens.org/restaurants/bairaktaris-central"
+      },
+      {
+        "title": "Official Athens Guide: Hoocut",
+        "url": "https://www.thisisathens.org/restaurants/hoocut"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "thessaloniki",
+    "history": "Ladadika preserves part of Thessaloniki’s old commercial landscape and was protected as a historic area in 1985.",
+    "food": "Try bougatsa pastry and koulouri sesame bread rings, then explore the city’s tavernas for a longer introduction to local cooking.",
+    "shopping": "Kapani Market sells produce, spices and everyday goods; nearby Athonos Square adds small shops for crafts, jewellery and food.",
+    "nightlife": "Ladadika’s pedestrian streets bring restaurants, pubs and music venues together, making the district a practical starting point for an evening.",
+    "sources": [
+      {
+        "title": "Visit Central Macedonia: Ladadika",
+        "url": "https://www.visit-centralmacedonia.gr/en/where-to-go/55/1-thessaloniki/179/ladadika"
+      },
+      {
+        "title": "Visit Greece: Thessaloniki food",
+        "url": "https://www.visitgreece.gr/en/experiences/leisure/shopping/thessaloniki-a-culinary-paradise"
+      },
+      {
+        "title": "Municipality of Thessaloniki: markets",
+        "url": "https://thessaloniki.gr/markets/?lang=en"
+      },
+      {
+        "title": "Thessaloniki Tourism: Ladadika",
+        "url": "https://thessaloniki.travel/exploring-the-city/gastronomy/food-areas/ladadika/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "mykonos",
+    "history": "Mykonos’ windmills once ground grain for local use and passing ships; the surviving mills remain a landmark above the sea.",
+    "food": "Look for kopanisti, the island’s strongly flavoured cheese, and louza, a local cured pork specialty, alongside wider Cycladic cooking.",
+    "shopping": "Browse Chora’s narrow streets for boutiques, galleries and smaller shops, allowing time to compare locally made goods with international brands.",
+    "nightlife": "Chora and the island’s beach-club areas offer different evening settings; check seasonal opening, the music programme and any booking conditions.",
+    "sources": [
+      {
+        "title": "Imagining Greece / GNTO collection: Mykonos windmill",
+        "url": "https://imagininggreece.com/artefacts/a-windmill-in-mykonos"
+      },
+      {
+        "title": "Visit Greece: Cycladic cuisine",
+        "url": "https://www.visitgreece.gr/en/experiences/gastronomy/beverages/cycladic-cuisine"
+      },
+      {
+        "title": "Visit Greece: Mykonos",
+        "url": "https://www.visitgreece.gr/en/islands/cyclades/mykonos"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "santorini",
+    "history": "At Akrotiri, volcanic material preserved prehistoric buildings, frescoes and streets after the settlement was abandoned during the island’s ancient eruption.",
+    "food": "Try Santorini fava purée and tomato fritters, two dishes linked to crops grown in the island’s dry volcanic soil.",
+    "shopping": "Fira concentrates much of the island’s shopping in its narrow streets; compare local food products and smaller stores as you explore.",
+    "nightlife": "Fira offers bars, restaurants and nightlife beside the caldera; check individual venues and seasonal programmes before setting your evening plans.",
+    "sources": [
+      {
+        "title": "Visit Greece: Santorini archaeology",
+        "url": "https://www.visitgreece.gr/en/experiences/culture/archaeological-sites-monuments/archaeological-sites-of-santorini"
+      },
+      {
+        "title": "Visit Greece: Santorini food",
+        "url": "https://www.visitgreece.gr/en/experiences/gastronomy/beverages/flavours-from-santorini"
+      },
+      {
+        "title": "Municipal Port Fund of Thera: Fira",
+        "url": "https://www.santoriniports.gov.gr/en/node/140"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "crete",
+    "history": "Heraklion’s market boulevard, 1866, recalls a Cretan uprising; the nearby Bembo Fountain is a surviving monument from Venetian rule.",
+    "food": "Explore Heraklion’s old market for thyme honey, Cretan cheeses and herbs, then try the small seafood eateries around the fish market.",
+    "shopping": "Heraklion’s 1866 market area has local products and everyday shops; Daidalou offers a different central shopping street nearby.",
+    "nightlife": "Around Heraklion’s Korai quarter, Lions Square and Freedom Square, cafés, bars and restaurants provide options for an evening in the city.",
+    "sources": [
+      {
+        "title": "Municipality of Heraklion: city walk",
+        "url": "https://www.heraklion.gr/en/ourplace/walking-town/sight-seeing.html"
+      },
+      {
+        "title": "Municipality of Heraklion: things to do",
+        "url": "https://www.heraklion.gr/en/visitor/todo.html"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "corfu",
+    "history": "Corfu’s old town reflects Venetian, French and British influences; its fortified historic centre joined the UNESCO list in 2007.",
+    "food": "Look for pastitsada, meat with a spiced tomato sauce and pasta, or sofrito, veal prepared with a white garlic sauce.",
+    "shopping": "Explore the lanes around Agios Spyridon for souvenirs and local products, combining your browse with the old town’s squares and cafés.",
+    "nightlife": "The Town Hall square and surrounding streets offer restaurants and evening venues; Liston provides another setting for a relaxed drink.",
+    "sources": [
+      {
+        "title": "Visit Greece: Corfu old town",
+        "url": "https://www.visitgreece.gr/en/experiences/architecture/local-architecture/old-town-of-corfu"
+      },
+      {
+        "title": "Visit Greece: Corfiot food",
+        "url": "https://www.visitgreece.gr/en/experiences/gastronomy/greek-wines/flavours-from-the-island-of-corfu"
+      },
+      {
+        "title": "Discover Greece: old-town walk",
+        "url": "https://www.discovergreece.com/experiences/exploring-atmospheric-old-town-corfu"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "rhodes",
+    "history": "The medieval town’s streets and walls reflect the Knights Hospitaller period, alongside later Ottoman buildings and earlier layers of settlement.",
+    "food": "Try melekouni, a sesame-and-honey sweet associated with Rhodian celebrations, or explore local meze and seafood dishes in the town’s tavernas.",
+    "shopping": "Rhodes town’s New Market and surrounding shops offer jewellery, leather goods and pottery, with more small stores inside the medieval centre.",
+    "nightlife": "The medieval town mixes bars and clubs with restaurants; Faliraki offers another nightlife area, particularly during the main holiday season.",
+    "sources": [
+      {
+        "title": "Municipality of Rhodes: tourist guide",
+        "url": "https://www.rhodes.gr/tourist-guide/?lang=en"
+      },
+      {
+        "title": "Visit Rhodes: first-time guide",
+        "url": "https://visit-rhodes.gr/the-ultimate-first-time-visitors-guide-to-rhodes/"
+      },
+      {
+        "title": "Municipality of Rhodes: monuments",
+        "url": "https://www.rhodes.gr/tourist-guide/monuments/?lang=en"
+      },
+      {
+        "title": "Visit Rhodes: island villages",
+        "url": "https://visit-rhodes.gr/villages-rhodes-island/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "malta",
+    "history": "Valletta was founded in 1566 and named after Jean de Valette, Grand Master of the Knights of St John.",
+    "food": "Look for pastizzi and Maltese bread as an introduction to island flavours; the official delicacies guide also covers cheese and honey.",
+    "shopping": "Valletta’s Republic Street and Merchants Street offer central shopping; Sliema’s Tower Road and Bisazza Street provide a different retail area.",
+    "nightlife": "Paceville in St Julian’s is a starting point for club-focused evenings; check the specific venue’s current event and entry terms.",
+    "sources": [
+      {
+        "title": "Visit Malta: Valletta",
+        "url": "https://www.visitmalta.com/en/a/info/valletta/"
+      },
+      {
+        "title": "Visit Malta: delicacies",
+        "url": "https://www.visitmalta.com/en/delicacies/"
+      },
+      {
+        "title": "Visit Malta: shopping",
+        "url": "https://www.visitmalta.com/en/a/shopping/"
+      },
+      {
+        "title": "Visit Malta: Paceville",
+        "url": "https://www.visitmalta.com/en/attraction/paceville-nightlife"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "ayia-napa",
+    "history": "Ayia Napa’s monastery was built around 1500, partly underground and cut into rock, before the fishing village became a resort.",
+    "food": "Look for the red-soil potatoes of nearby Kokkinohoria and kolokasi taro, regional foods highlighted in the official local guide.",
+    "shopping": "Archbishop Makarios III Avenue and Nissi Avenue offer shops for local crafts, jewellery and everyday holiday purchases around the town centre.",
+    "nightlife": "The area around the main square changes from a quiet daytime landmark into a concentration of bars and clubs after dark.",
+    "sources": [
+      {
+        "title": "Visit Cyprus: Agia Napa monastery",
+        "url": "https://www.visitcyprus.com/discover-cyprus/religion/religious-sites/agia-napa-monastery/"
+      },
+      {
+        "title": "Visit Cyprus: Agia Napa town guide",
+        "url": "https://www.visitcyprus.com/wp-content/uploads/files/MAPS/CITY_TOUR_MAPS/Agia_Napa_Map.pdf"
+      },
+      {
+        "title": "Visit Cyprus: Agia Napa village",
+        "url": "https://www.visitcyprus.com/places-to-go/villages/agia-napa-village-2/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "paphos",
+    "history": "Kato Pafos preserves the ancient city of Nea Pafos, whose Roman houses contain the mosaics associated with the archaeological park.",
+    "food": "Explore the old town for Cypriot flavours, local delicacies and wines; check individual restaurants for current dishes and dietary options.",
+    "shopping": "Pano Pafos and its old-town workshops offer ceramics, copperwork, woven goods and jewellery among restored historic buildings and small shops.",
+    "nightlife": "The old town combines restaurants, cafés and lively bars; use the local tourism directory to compare the evening settings before choosing.",
+    "sources": [
+      {
+        "title": "Visit Cyprus: Pafos region and city",
+        "url": "https://www.visitcyprus.com/discover-cyprus/maritime/cruises/discover-the-regions-of-cyprus/"
+      },
+      {
+        "title": "Visit Pafos: old town",
+        "url": "https://www.visitpafos.org.cy/?page_id=7826"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "limassol",
+    "history": "Limassol’s historic centre spreads around the medieval castle and old port; nearby Agia Napa Cathedral was completed in 1903.",
+    "food": "Try kupepia stuffed vine leaves or stifado beef stew around the old town, checking each restaurant’s current menu and inclusions.",
+    "shopping": "Browse Agiou Andreou and Anexartisias streets for shops and local goods, with Makariou Avenue offering another nearby retail route.",
+    "nightlife": "Saripolou Square and the old-town streets gather bars, restaurants and music venues; compare programmes and book your return journey separately.",
+    "sources": [
+      {
+        "title": "Visit Cyprus: Limassol city guide",
+        "url": "https://www.visitcyprus.com/wp-content/uploads/files/MAPS/CITY_TOUR_MAPS/Limassol_Map.pdf"
+      }
+    ],
+    "checked": "2026-11-23"
+  }
+]

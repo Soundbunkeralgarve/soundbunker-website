@@ -2,12 +2,13 @@ import {getPublicEvents} from './featured-events.js?v=20261020';
 import {escapeHtml as esc,money,safeUrl} from './shared.js';
 import {eventKind} from './event-content.js';
 import {approvedPartnerListings} from './partner-listings-model.js?v=20261121-city';
-import {discoveryCategories,blend,filterItems,sortItems,featureFor,readState,stateQuery} from './discovery-model.js?v=20261122-route';
-import {homeRails} from './sample-listings.js?v=20261121-real';
+import {discoveryCategories,blend,filterItems,sortItems,featureFor,readState,stateQuery} from './discovery-model.js?v=20261123-catalogue';
+import {homeRails} from './sample-listings.js?v=20261123-catalogue';
 import {selectFeaturedEvents} from './featured-selection.js';
 import {renderGygBox} from './gyg-box.js?v=20261121c';
 import {renderPartnerDirectory} from './partner-directory.js?v=20261123';
-import {openPlanner,mountMyTrip,tourLink} from './night-planner.js?v=20261122f';
+import {openPlanner,mountMyTrip,tourLink} from './night-planner.js?v=20261123';
+import {openShare,eventLink} from './event-share.js?v=20261123';
 const $=s=>document.querySelector(s);
 const reduceMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -19,7 +20,7 @@ const ALL=('AD AL AT BA BE BG BY CH CY CZ DE DK EE ES FI FR GB GI GR HR HU IE IS
 import {CITY_PAGES} from './city-places.js?v=20261122';
 import {mountPlaceFinder,mountNearButton,locate} from './place-finder.js?v=20261122';
 import {nearestCities} from './city-coords.js?v=20261122';
-import {tripOptions,withClickRef} from './trip-partners.js?v=20261122';
+import {tripOptions,withClickRef} from './trip-partners.js?v=20261123-travel';
 const PLACES=[['PT','Algarve'],['PT','Lisbon'],['PT','Porto'],['GB','London'],['GB','Edinburgh'],['GB','Manchester'],['IE','Dublin'],['ES','Madrid'],['ES','Barcelona'],['FR','Paris'],['NL','Amsterdam'],['DE','Berlin']];
 const saved=(()=>{try{return JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch{return {};}})();
 // City pages (/london, /algarve …) open preset to their place.
@@ -90,9 +91,10 @@ function priceLine(item){
 const catLabel=item=>item.kind?eventKind(item.kind):discoveryCategories[item.category]||'Event';
 // Awin click reference for this page: a city page's slug, otherwise home.
 const pagRef=pathCity?.slug||'home';
-const cardItems=new Map();
+const cardItems=new Map(),shareItems=new Map();
 function card(item,{featured=false}={}){
  const href=item.external?withClickRef(item.url,pagRef,'card'):item.url;
+ shareItems.set(item.key,item);
  if(item.external)cardItems.set(href,item);
  const place=[item.venue,item.city].filter(Boolean).join(' · ');
  const direct=item.source==='ticketbunker';
@@ -102,7 +104,7 @@ function card(item,{featured=false}={}){
  const action=item.soldOut?'':`<span class="get">${item.external?'Get tickets ↗':'Get tickets'}</span>`;
  const body=`<div class="card-media">${image(item)}<span class="card-cat">${esc(catLabel(item))}</span>${badges}</div><div class="card-body"><p class="card-date">${esc(dateLine(item))}</p><h3>${esc(item.title)}</h3><p class="card-place">${esc(place)}</p><div class="card-foot"><div class="price"><strong>${esc(priceLine(item))}</strong>${via}</div>${action}</div></div>`;
  const ext=item.external?` target="_blank" rel="sponsored noopener noreferrer" aria-label="${esc(item.title)}: tickets via ${esc(item.seller)} (opens in a new tab)"`:'';
- return `<a class="tcard${direct?' is-direct':''}${item.soldOut?' is-soldout':''}" href="${esc(href)}"${ext}>${body}</a>`;
+ return `<article class="listing-card"><a class="tcard${direct?' is-direct':''}${item.soldOut?' is-soldout':''}" href="${esc(href)}"${ext}>${body}</a><div class="listing-actions"><a href="${esc(eventLink(item))}">Event details</a><button type="button" data-share-listing="${esc(item.key)}" aria-label="Share ${esc(item.title)}">Share</button></div></article>`;
 }
 const directTile=()=>`<a class="tcard host-tile direct-tile" href="/for-organisers"><div><span class="label">Organisers</span><h3>Sell direct here.</h3><p>No booking fee for your crowd, wallet tickets and a door app.</p><span class="head-link">Host your event ↗</span></div></a>`;
 const hostTile=()=>`<a class="tcard host-tile" href="/featured"><div><span class="label">Your event here</span><h3>Get featured.</h3><p>Put your event in the spotlight and at the front of these rails.</p><span class="head-link">Featured placement ↗</span></div></a>`;
@@ -165,8 +167,9 @@ function renderBigFeature(){
   $('#big-feature-card').innerHTML=`<a class="bf-card bf-ad" href="/featured"><div class="bf-media"><img src="/assets/festival.webp" alt="" loading="lazy" width="800" height="600"></div><div class="bf-body"><span class="card-cat">Featured placement</span><h3>Your event here.</h3><p class="card-place">Put your event in this spot, in the Featured rail and at the front of its category, in front of everyone browsing The Ticket Bunker.</p><span class="btn-solid">Feature your event ↗</span></div></a>`;
   return;
  }
- const place=[pick.venue,pick.city].filter(Boolean).join(' · ');
- $('#big-feature-card').innerHTML=`<div class="bf-card"><div class="bf-media">${image(pick)}<span class="badge badge-featured">Featured</span></div><div class="bf-body"><span class="card-cat">${esc(catLabel(pick))}</span><p class="card-date">${esc(dateLine(pick))}</p><h3>${esc(pick.title)}</h3><p class="card-place">${esc(place)}</p><div class="bf-foot"><strong>${esc(priceLine(pick))}</strong></div><a class="btn-solid" href="${esc(pick.url)}">Get tickets ↗</a></div></div>`;
+ const place=[pick.venue,pick.city].filter(Boolean).join(' · ');shareItems.set(pick.key,pick);
+ shareItems.set(pick.key,pick);
+ $('#big-feature-card').innerHTML=`<div class="bf-card"><div class="bf-media">${image(pick)}<span class="badge badge-featured">Featured</span></div><div class="bf-body"><span class="card-cat">${esc(catLabel(pick))}</span><p class="card-date">${esc(dateLine(pick))}</p><h3>${esc(pick.title)}</h3><p class="card-place">${esc(place)}</p><div class="bf-foot"><strong>${esc(priceLine(pick))}</strong></div><a class="btn-solid" href="${esc(pick.url)}">Get tickets ↗</a><div class="listing-actions"><button type="button" data-share-listing="${esc(pick.key)}" aria-label="Share ${esc(pick.title)}">Share this event</button></div></div></div>`;
 }
 
 // Hero film: six short graded clips (one plays at a time, the next preloads), crossfading
@@ -258,7 +261,7 @@ $('#near-locate').onclick=()=>useMyLocation();
 $('#near-change').onclick=()=>{form.scrollIntoView({block:'center'});city.focus();};
 
 // Section tabs under the destination bar: one tap to any rail that has listings.
-const TAB_LABELS={'city-hub':'Everything on','plan-trip':'Plan your trip','rail-near':'Near you','gyg-box':'Tours','big-feature':'Featured','rail-trip':'Heading away?','rail-featured':'Featured picks','rail-direct':'Bunker direct','rail-music':'Live music','rail-club':'Raves','rail-festival':'Festivals','rail-family':'Family','rail-comedy':'Comedy','rail-shows':'Theatre','rail-cinema':'Cinema','rail-boat':'Boat trips','rail-daysout':'Experiences','rail-weekend':'This weekend'};
+const TAB_LABELS={'city-hub':'Everything on','plan-trip':'Plan your trip','rail-near':'Near you','gyg-box':'Tours','big-feature':'Featured','rail-trip':'Heading away?','rail-featured':'Featured picks','rail-direct':'Bunker direct','rail-music':'Live music','rail-club':'Raves','rail-festival':'Festivals','rail-family':'Family','rail-comedy':'Comedy','rail-shows':'Theatre','rail-cinema':'Cinema','rail-boat':'Boat trips','rail-sport':'Sport & racing','rail-seasonal':'Special days','rail-daysout':'Experiences','rail-weekend':'This weekend'};
 let tabObserver;
 function renderTabs(){
  const nav=$('#section-tabs');
@@ -303,13 +306,13 @@ function renderTrip(){
  mountRail(section,items.map(i=>card(i)),`<a class="tcard host-tile" href="${esc(cityHref(tripPick))}"><div><span class="label">${esc(tripPick)}</span><h3>See it all.</h3><p>Every gig, night out, family day and tour we have in ${esc(tripPick)}.</p><span class="head-link">Everything in ${esc(tripPick)} ↗</span></div></a>`);
 }
 
-// "Plan your trip" for a chosen place: travel, stays and food partners, live once approved.
+// Public travel searches plus individually approved affiliate links for the chosen city.
 function renderPlan(){
  const box=$('#plan-trip');if(!state.city){box.hidden=true;return;}
  const options=tripOptions(state.country||pathCity?.country||'',state.city,{page:pagRef,spot:'plan'});
  box.hidden=false;
  $('#plan-trip-h').textContent='Plan your trip to '+state.city+'.';
- $('#plan-grid').innerHTML=options.map(o=>`<div class="plan-col"><b>${esc(o.label)}</b><span>${esc(o.blurb)}</span>${o.partners.length?o.partners.map(p=>`<a class="plan-link" href="${esc(p.url)}" target="_blank" rel="sponsored noopener">${esc(p.name)} ↗</a>`).join('')+'<small>Booked on the partner\u2019s site; their fees may apply.</small>':'<em class="plan-soon">Coming soon</em>'}</div>`).join('');
+ $('#plan-grid').innerHTML=options.map(o=>`<div class="plan-col"><b>${esc(o.label)}</b><span>${esc(o.blurb)}</span>${o.partners.length?o.partners.map(p=>`<a class="plan-link" href="${esc(p.url)}" target="_blank" rel="${p.commercial==='affiliate'?'sponsored ':''}noopener noreferrer">${esc(p.name)} ↗</a>`).join('')+'<small>Choose dates and book on the provider’s site; their fees and terms apply.</small>':'<em class="plan-soon">Coming soon</em>'}</div>`).join('');
 }
 
 // City pages: every listing in the place on one page, filterable by type, with the
@@ -329,11 +332,12 @@ function renderHub(all,now){
  const settled=feedCity===state.city&&feedDone;
  $('#city-hub-count').textContent=list.length?list.length.toLocaleString('en-GB')+' on sale':settled?'Events coming soon':'Loading what\u2019s on\u2026';
  const jump=(id,label,note)=>`<button type="button" class="amenity" data-go="${id}"><b>${esc(label)}</b><small>${esc(note)}</small></button>`;
- const plan=tripOptions(state.country||pathCity.country||'',name),live=k=>plan.find(o=>o.kind===k)?.partners.length?'Book with partners':'Coming soon';
+ const plan=tripOptions(state.country||pathCity.country||'',name),live=k=>plan.find(o=>o.kind===k)?.partners.length?'Search options':'Coming soon';
  $('#city-amenities').innerHTML=[
   jump('city-grid','What\u2019s on',list.length?list.length.toLocaleString('en-GB')+' events':'Gigs, nights, shows'),
   !$('#gyg-box').hidden?jump('gyg-box','Tours & experiences','Day trips and activities'):`<a class="amenity" href="${esc(tourLink(name,pathCity.country))}" target="_blank" rel="sponsored noopener"><b>Tours &amp; experiences</b><small>On GetYourGuide ↗</small></a>`,
-  jump('plan-trip','Get there',live('travel')),
+  jump('plan-trip','Trains & coaches',live('travel')),
+  jump('plan-trip','VIP transfers',live('transfer')),
   jump('plan-trip','Stay nearby',live('stay')),
   jump('plan-trip','Eat nearby',live('eat')),
   jump('rail-trip','Other cities','Tickets further afield')
@@ -438,6 +442,8 @@ document.querySelectorAll('[data-place]').forEach(a=>a.onclick=e=>{e.preventDefa
 
 // Partner tickets open in a new tab; this tab then offers the rest of the night.
 document.addEventListener('click',e=>{
+ const share=e.target.closest('[data-share-listing]');
+ if(share){const item=shareItems.get(share.dataset.shareListing);if(item)openShare(item);return;}
  const a=e.target.closest('a.tcard[target="_blank"]');if(!a||e.defaultPrevented||e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey)return;
  const item=cardItems.get(a.getAttribute('href'));if(item)setTimeout(()=>openPlanner(item),150);
 });

@@ -37,7 +37,7 @@ test('cancelled, past, far-off, sold-out, off-category or off-site events are dr
   drop(event({date: '2026-11-01'}));
   drop(event({date: '2100-01-01'}));
   drop(event({tickets: [ticket(100, '10.00'), ticket(300, '8.00')]}));
-  drop(event({code: 'SPORT'}));
+  drop(event({code: 'UNKNOWN'}));
   drop(event({link: 'https://evil.example/x/?sktag=XXX'}));
   assert.equal(parseSkiddleFeed(feed(event()), {affiliateId: '', now}).length, 0);
 });
@@ -85,7 +85,7 @@ test('kids and family listings go to the Family rail', () => {
   assert.equal(kids[0].category, 'family');
   const grotto = parseSkiddleFeed(feed(event({code: 'SEASONAL'}).replace('Warehouse &amp; Friends', 'Santa Grotto Family Day')), {affiliateId: '1', now});
   assert.equal(grotto[0].category, 'family');
-  assert.equal(parseSkiddleFeed(feed(event({code: 'SEASONAL'})), {affiliateId: '1', now}).length, 0, 'other seasonal events stay out');
+  assert.equal(parseSkiddleFeed(feed(event({code: 'SEASONAL'})), {affiliateId: '1', now})[0].category, 'seasonal');
 });
 
 test('a chosen city gets a deeper list than the national picks', async () => {
@@ -93,4 +93,9 @@ test('a chosen city gets a deeper list than the national picks', async () => {
   const items = Array.from({length: 100}, (_, n) => ({provider: 'skiddle', category: 'music', city: 'London', countryCode: 'GB', id: 'x' + n}));
   assert.equal(pickListings(items, {city: 'London'}).length, 80);
   assert.equal(pickListings(items).length, 2);
+});
+
+test('sports, exhibitions and next-summer festivals remain real tracked catalogue listings',()=>{
+ for(const [code,category] of [['SPORT','sport'],['EXHIB','daysout'],['ARTS','shows'],['SEASONAL','seasonal']])assert.equal(parseSkiddleFeed(feed(event({code})),{affiliateId:'1',now})[0].category,category);
+ const [summer]=parseSkiddleFeed(feed(event({code:'FEST',date:'2027-08-20'})),{affiliateId:'15993',now});assert.equal(summer.category,'festival');assert.match(summer.url,/sktag=15993/);
 });

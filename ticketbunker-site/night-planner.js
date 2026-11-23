@@ -1,8 +1,8 @@
 // "Make a night of it": partner tickets, travel, stays and food each book on the partner's
 // own site, so instead of one basket we walk the visitor through them in order and keep
 // the plan in "My trip" (this browser only). Steps without an approved partner say
-// "Coming soon" rather than sending people somewhere we cannot stand behind.
-import {tripOptions, withClickRef} from './trip-partners.js?v=20261122';
+// "Coming soon". Public search links are identified separately from approved tracking links.
+import {tripOptions, withClickRef} from './trip-partners.js?v=20261123-travel';
 import {gygPlace, GYG_PLACES} from './gyg-box.js?v=20261121c';
 import {directionLinks, travelEstimates, estimateText} from './get-there.js?v=20261122d';
 
@@ -27,9 +27,11 @@ export function plannerSteps(item) {
   return [
     {kind: 'tickets', label: 'Tickets', blurb: item.external ? `Booked on ${item.seller}.` : 'No booking fee with TicketBunker.', links: [{name: item.external ? item.seller : 'TicketBunker', url: item.external ? withClickRef(item.url, page, 'planner') : item.url}]},
     {kind: 'route', label: 'Get to the venue', blurb: item.venue ? `Directions to ${item.venue} from where you are.` : 'Directions from where you are.', links: directionLinks(item)},
-    partnerStep('travel', city ? `Travel to ${city}` : 'Travel there', 'Trains, coaches and ferries.'),
-    partnerStep('stay', 'Stay nearby', item.venue ? `Hotels close to ${item.venue}.` : 'Hotels close to the venue.'),
-    partnerStep('eat', 'Eat nearby', 'Food deals before or after.'),
+    partnerStep('travel', city ? `Travel to ${city}` : 'Travel there', 'Compare train and coach routes for your journey.'),
+    partnerStep('car', 'Car hire', 'Check pickup times, deposits, cover and fuel policy.'),
+    partnerStep('stay', 'Find a hotel', item.venue ? `Search hotels in ${city}; check the distance to ${item.venue}.` : 'Search hotels and check the distance to your venue.'),
+    partnerStep('transfer', 'Chauffeur & transfers', 'Check coverage, pickup details and the total quote.'),
+    partnerStep('eat', 'Eat nearby', 'Check participating restaurants, current offers and booking terms.'),
     {kind: 'tours', label: 'Things to do', blurb: 'Tours and day trips while you are there.', links: tours ? [{name: 'GetYourGuide', url: tours}] : []}
   ];
 }
@@ -78,7 +80,7 @@ function nightHtml(n) {
     const times = s.kind === 'route' && Number.isFinite(n.lat) && Number.isFinite(n.lng) && navigator.geolocation
       ? `<button type="button" class="np-times" data-times>How far is it from here?</button><span class="np-eta" aria-live="polite"></span>` : '';
     return `<li class="np-step${done ? ' is-done' : ''}${live ? '' : ' is-soon'}" data-kind="${s.kind}"><span class="np-num" aria-hidden="true">${done ? '✓' : i + 1}</span><div class="np-body"><b>${esc(s.label)}</b><span>${esc(s.blurb)}</span>${times}</div><div class="np-act">${live
-      ? s.links.map(l => `<a class="np-link" href="${esc(l.url)}" target="_blank" rel="${s.kind === 'route' ? 'noopener' : 'sponsored noopener'}" data-step="${s.kind}" data-mode="${esc(l.kind || '')}">${esc(s.kind === 'tickets' && done ? 'Reopen ' + l.name : l.name)}<small class="np-mins"></small> ↗</a>`).join('') + (done || s.kind === 'tickets' ? '' : `<button type="button" class="np-tick" data-tick="${s.kind}">Done</button>`)
+      ? s.links.map(l => `<a class="np-link" href="${esc(l.url)}" target="_blank" rel="${l.commercial === 'affiliate' || ['tickets','tours'].includes(s.kind) ? 'sponsored noopener noreferrer' : 'noopener noreferrer'}" data-step="${s.kind}" data-mode="${esc(l.kind || '')}">${esc(s.kind === 'tickets' && done ? 'Reopen ' + l.name : l.name)}<small class="np-mins"></small> ↗</a>`).join('') + (done || s.kind === 'tickets' ? '' : `<button type="button" class="np-tick" data-tick="${s.kind}">Done</button>`)
       : '<em>Coming soon</em>'}</div></li>`;
   }).join('')}</ol><button type="button" class="np-remove" data-remove="${esc(n.id)}">Remove from My trip</button></article>`;
 }
@@ -86,7 +88,7 @@ function render() {
   const list = tidyTrip(read());
   const shown = openId ? list.filter(n => n.id === openId) : list;
   dialog.querySelector('.np-title').textContent = openId ? 'Make a night of it.' : 'My trip.';
-  dialog.querySelector('.np-lead').textContent = openId ? 'Your tickets are open in a new tab. Sort the rest in a few taps; each step books on the partner’s own site.' : 'Every night you are planning, step by step. Saved on this device.';
+  dialog.querySelector('.np-lead').textContent = openId ? 'Your tickets are open in a new tab. Sort the rest in a few taps; check options and book on each provider’s site.' : 'Every night you are planning, step by step. Saved on this device.';
   dialog.querySelector('.np-list').innerHTML = shown.length ? shown.map(nightHtml).join('') : '<p class="np-empty">Nothing planned yet. Pick an event and we’ll line up the rest.</p>';
   dialog.querySelector('.np-all').hidden = !openId || list.length < 2;
   dialog.querySelector('.np-all').textContent = 'See all of My trip (' + list.length + ')';
@@ -101,7 +103,7 @@ function ensure() {
   if (dialog) return;
   dialog = document.createElement('dialog');
   dialog.className = 'night-planner'; dialog.id = 'night-planner'; dialog.setAttribute('aria-labelledby', 'np-title');
-  dialog.innerHTML = '<div class="np-head"><div><span class="label">Plan your night</span><h2 class="np-title" id="np-title">Make a night of it.</h2><p class="np-lead"></p></div><button type="button" class="np-close" aria-label="Close">×</button></div><div class="np-list"></div><button type="button" class="np-all btn-quiet" hidden></button><div class="np-install" hidden><span>Keep My trip on your home screen, with directions one tap away.</span><button type="button" class="np-install-btn">Add the app</button><small class="np-ios" hidden>On iPhone: tap Share, then \u201cAdd to Home Screen\u201d.</small></div><p class="np-note">Partner bookings are made on each partner’s site and may include their fees. TicketBunker events never add a booking fee.</p>';
+  dialog.innerHTML = '<div class="np-head"><div><span class="label">Plan your night</span><h2 class="np-title" id="np-title">Make a night of it.</h2><p class="np-lead"></p></div><button type="button" class="np-close" aria-label="Close">×</button></div><div class="np-list"></div><button type="button" class="np-all btn-quiet" hidden></button><div class="np-install" hidden><span>Keep My trip on your home screen, with directions one tap away.</span><button type="button" class="np-install-btn">Add the app</button><small class="np-ios" hidden>On iPhone: tap Share, then \u201cAdd to Home Screen\u201d.</small></div><p class="np-note">External bookings are made on the named provider’s site under its prices, fees and terms. TicketBunker events never add a booking fee.</p>';
   document.body.append(dialog);
   dialog.querySelector('.np-install-btn').onclick = async () => { if (!installPrompt) return; installPrompt.prompt(); await installPrompt.userChoice.catch(() => {}); installPrompt = null; showInstall(); };
   showInstall();

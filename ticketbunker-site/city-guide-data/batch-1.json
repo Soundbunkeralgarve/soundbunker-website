@@ -1,0 +1,722 @@
+[
+  {
+    "slug": "london",
+    "history": "Borough Market has traded near London Bridge for roughly a millennium, linking today’s food stalls with the city’s medieval life.",
+    "food": "Explore Borough Market for ingredients and prepared food, or head into Chinatown for dim sum, noodles and Chinese bakeries.",
+    "shopping": "Browse Carnaby Street and nearby Liberty for fashion, then explore Soho’s smaller independent shops and Berwick Street Market.",
+    "nightlife": "Soho offers bars, music and LGBTQ+ nightlife; check the current programme at Ronnie Scott’s or the 100 Club.",
+    "sources": [
+      {
+        "title": "Visit London: Soho and Chinatown",
+        "url": "https://www.visitlondon.com/things-to-do/london-areas/soho"
+      },
+      {
+        "title": "London Museum: Borough Market history",
+        "url": "https://www.londonmuseum.org.uk/collections/london-stories/borough-market-londons-oldest-food-trading-hub/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "manchester",
+    "history": "Manchester’s first LGBTQ+ bookshops opened in the Northern Quarter, adding another strand to the neighbourhood’s long creative history.",
+    "food": "The Northern Quarter has cafés and international restaurants; look around Oldham Street for a meal before exploring the music venues.",
+    "shopping": "Browse Northern Quarter vintage clothing, independent design shops and record stores; Afflecks is a useful starting point for alternative shopping.",
+    "nightlife": "Explore Northern Quarter bars and live entertainment, with Gullivers among the venues listed by the city’s official tourism service.",
+    "sources": [
+      {
+        "title": "Visit Manchester: Northern Quarter",
+        "url": "https://www.visitmanchester.com/things-to-see-and-do/explore/neighbourhoods/northern-quarter/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "liverpool",
+    "history": "Liverpool’s Baltic Triangle reuses former warehouses as creative workspaces, studios and nightlife venues, preserving visible traces of its industrial past.",
+    "food": "Duke Street Food and Drink Market and Baltic Market offer different eating options before an evening exploring the city’s neighbourhoods.",
+    "shopping": "Metquarter brings shops and food together in the city centre; Liverpool ONE is another area to include in a shopping wander.",
+    "nightlife": "Try the Baltic Triangle for converted warehouse bars and events, or explore the Cavern Quarter for Liverpool’s musical associations.",
+    "sources": [
+      {
+        "title": "Visit Liverpool: Baltic Triangle",
+        "url": "https://www.visitliverpool.com/explore/liverpool-city-centre/baltic-triangle/"
+      },
+      {
+        "title": "Visit Liverpool: City centre quarters",
+        "url": "https://www.visitliverpool.com/explore/liverpool-city-centre/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "glasgow",
+    "history": "The Merchant City’s Tolbooth Steeple dates from the seventeenth century, a surviving landmark among the streets around Glasgow Cross.",
+    "food": "Merchant Square’s covered courtyard has bars and restaurants; nearby Merchant City dining includes Scottish menus as well as international kitchens.",
+    "shopping": "Explore the Merchant City’s shopping streets and independent makers around Trongate, leaving time for the craft and design stalls in Merchant Square.",
+    "nightlife": "Merchant City combines live music, cocktail bars and LGBTQ+ venues; check each venue’s programme and entry conditions before making plans.",
+    "sources": [
+      {
+        "title": "Visit Glasgow: Merchant City",
+        "url": "https://www.visitglasgow.com/neighbourhoods/merchant-city"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "edinburgh",
+    "history": "Greyfriars Kirk was founded in 1620, making a walk around the Grassmarket an introduction to Edinburgh’s post-Reformation religious history.",
+    "food": "The Grassmarket brings Scottish and international restaurants together with cafés; compare menus around the square before choosing a pre-show meal.",
+    "shopping": "Walk the Grassmarket’s cobbled streets for independent shops, vintage clothing and unusual gifts, including the specialist displays at Mr Wood’s Fossils.",
+    "nightlife": "Grassmarket pubs and bars offer an atmospheric evening beneath the castle; check venues individually for live entertainment and current opening hours.",
+    "sources": [
+      {
+        "title": "Forever Edinburgh: Grassmarket",
+        "url": "https://edinburgh.org/neighbourhoods/grassmarket/"
+      },
+      {
+        "title": "Forever Edinburgh: Grassmarket attractions",
+        "url": "https://edinburgh.org/neighbourhoods/grassmarket/things-to-do-in-the-grassmarket/"
+      },
+      {
+        "title": "Forever Edinburgh: Grassmarket shopping",
+        "url": "https://edinburgh.org/neighbourhoods/grassmarket/shopping-in-the-grassmarket/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "birmingham",
+    "history": "Digbeth’s factories and workshops once helped power Birmingham’s industrial trades; former industrial buildings now house creative businesses and entertainment.",
+    "food": "Explore Digbeth’s cafés and restaurants around the Custard Factory, or check The Old Crown’s menu for a pub meal.",
+    "shopping": "The Custard Factory has independent shops and creative spaces; combine a browse there with the nearby Bullring and Grand Central.",
+    "nightlife": "Digbeth offers music and activity bars, including Dead Wax; check its current listings rather than assuming a particular music night is running.",
+    "sources": [
+      {
+        "title": "Visit Birmingham: Digbeth",
+        "url": "https://visitbirmingham.com/inspire-me/areas/digbeth/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "brighton",
+    "history": "Parts of The Lanes date to the late sixteenth century, when Brighton was still the fishing town known as Brighthelmstone.",
+    "food": "Explore Hannington’s Lane for cafés and restaurants, or compare menus in the surrounding Lanes before heading back towards the seafront.",
+    "shopping": "The Lanes’ narrow passages mix jewellers and independent shops; nearby North Laine offers another distinct area for browsing and vintage finds.",
+    "nightlife": "The Lanes has pubs and cocktail bars, while the seafront offers places for an evening drink with a view of the water.",
+    "sources": [
+      {
+        "title": "Visit Brighton: The Lanes",
+        "url": "https://www.visitbrighton.com/food-and-drink/areas-to-explore/the-lanes/1000?p=3"
+      },
+      {
+        "title": "Visit Brighton: Eating, drinking and shopping",
+        "url": "https://www.visitbrighton.com/food-and-drink"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "bristol",
+    "history": "St Nicholas Market was established in 1743; its covered stalls still form part of the commercial heart of Bristol’s Old City.",
+    "food": "Browse the Glass Arcade’s food stalls, or explore Corn Street’s restaurants before a theatre performance or an evening around the harbour.",
+    "shopping": "St Nicholas Market offers independent stalls for clothing, gifts, art and jewellery; Christmas Steps adds small galleries and creative shops.",
+    "nightlife": "King Street combines pubs and music around Bristol Old Vic; the Old City also has cocktail bars in historic buildings.",
+    "sources": [
+      {
+        "title": "Visit Bristol: City centre and Old City",
+        "url": "https://visitbristol.co.uk/discover/areas/city-centre-and-old-city/"
+      },
+      {
+        "title": "Visit Bristol: St Nicholas Market",
+        "url": "https://visitbristol.co.uk/listing/st-nicholas-market-street-food/44446301/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "leeds",
+    "history": "The Victoria Quarter arcades were designed by theatre architect Frank Matcham, bringing theatrical detail to Leeds’ historic shopping streets.",
+    "food": "Kirkgate Market has street food from several culinary traditions; browse the stalls before choosing lunch or ingredients to take away.",
+    "shopping": "Explore the Victoria Quarter’s arcades and the independent retailers inside Leeds Corn Exchange, then continue through the streets around Briggate.",
+    "nightlife": "Call Lane, Merrion Street and Greek Street offer different bar scenes; compare live music listings at Brudenell Social Club or Belgrave.",
+    "sources": [
+      {
+        "title": "Visit Leeds: Victorian Connections",
+        "url": "https://www.visitleeds.co.uk/victorian-connections/"
+      },
+      {
+        "title": "Visit Leeds: Best of Leeds",
+        "url": "https://www.visitleeds.co.uk/travel-trade/best-of-leeds/"
+      },
+      {
+        "title": "Visit Leeds: Nightlife",
+        "url": "https://www.visitleeds.co.uk/things-to-do/night-life/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "newcastle",
+    "history": "Grainger Market opened in 1835 to designs by John Dobson, with separate meat and vegetable trading areas inside its listed building.",
+    "food": "Grainger Market combines street food with butchers, bakers and cafés; Ouseburn is another area for a relaxed meal or coffee.",
+    "shopping": "Browse Grainger Market’s independent traders for crafts, clothing and plants, or explore art and design around Ouseburn’s Biscuit Factory.",
+    "nightlife": "Ouseburn offers pubs and live music, including The Cluny; check the programme before linking a gig with drinks in the valley.",
+    "sources": [
+      {
+        "title": "Newcastle City Council: Grainger Market",
+        "url": "https://www.newcastle.gov.uk/services/business-and-commerce/business-commerce/newcastles-markets/grainger-market"
+      },
+      {
+        "title": "NewcastleGateshead: Ouseburn",
+        "url": "https://newcastlegateshead.com/explore/ouseburn"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "sheffield",
+    "history": "Kelham Island’s former steel and cutlery works preserve Sheffield’s industrial story, with machinery and archive collections displayed at Kelham Island Museum.",
+    "food": "Cutlery Works brings several kitchens together in a former industrial setting; check Peddler’s event calendar for its street-food night market.",
+    "shopping": "Explore Kelham Island and nearby Neepsend for independent shops, galleries and repurposed industrial spaces, with street art along the way.",
+    "nightlife": "Kelham Island is associated with real-ale pubs and microbreweries; plan an evening around the neighbourhood rather than relying on one venue.",
+    "sources": [
+      {
+        "title": "Welcome to Sheffield: Kelham Island",
+        "url": "https://www.welcometosheffield.co.uk/visit/areas-to-explore/kelham-island/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "nottingham",
+    "history": "The Lace Market’s red-brick warehouses recall the textile trade that put Nottingham’s lace into fashion markets around the world.",
+    "food": "Hockley and the Lace Market mix cafés and restaurants; browse menus around their compact streets before a show or gallery visit.",
+    "shopping": "Hockley offers vintage clothing, second-hand books and independent boutiques; Debbie Bryan connects contemporary crafts with the city’s lace-making heritage.",
+    "nightlife": "Explore Hockley and Lace Market bars for an evening out, checking venue programmes for music rather than assuming every night has entertainment.",
+    "sources": [
+      {
+        "title": "Visit Nottinghamshire: Lace Market and Hockley",
+        "url": "https://www.visit-nottinghamshire.co.uk/explore/nottingham/the-lace-market"
+      },
+      {
+        "title": "Visit Nottinghamshire: Hockley shopping",
+        "url": "https://www.visit-nottinghamshire.co.uk/things-to-do/shopping/independent-shopping/hockley-and-lace-market"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "cardiff",
+    "history": "Cardiff Castle combines Roman foundations, Norman defences and Victorian interiors, making its buildings a compact timeline of the city’s past.",
+    "food": "Cardiff Market offers fresh produce and food traders; the city’s arcades also contain cafés, delis and restaurants for a browsing break.",
+    "shopping": "Explore Castle Arcade, Morgan Arcade and Royal Arcade for independent shops, with Spillers record shop among the city’s longstanding retail names.",
+    "nightlife": "Mill Lane is a central restaurant and nightlife area; combine an evening there with dinner around nearby Wyndham Arcade.",
+    "sources": [
+      {
+        "title": "Visit Cardiff: History and heritage",
+        "url": "https://www.visitcardiff.com/discover/history-heritage/"
+      },
+      {
+        "title": "Visit Cardiff: City of Arcades",
+        "url": "https://www.visitcardiff.com/discover/arcades/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "belfast",
+    "history": "The Cathedral Quarter was a trading district; its surviving cobbled streets and warehouses now support Belfast’s arts and entertainment scene.",
+    "food": "St George’s Market offers hot food and local produce, while St Anne’s Square has restaurants for a sit-down evening meal.",
+    "shopping": "Browse crafts, books and independent stalls at St George’s Market, checking its current market-day arrangements before planning a visit.",
+    "nightlife": "The Cathedral Quarter combines traditional pubs, bars and music venues; explore around Hill Street and check the Oh Yeah Music Centre programme.",
+    "sources": [
+      {
+        "title": "Visit Belfast: Cathedral Quarter",
+        "url": "https://visitbelfast.com/explore/city-areas/cathedral-quarter/"
+      },
+      {
+        "title": "Belfast City Council: St George’s Market",
+        "url": "https://www.belfastcity.gov.uk/things-to-do/markets/st-george-s-market/information-about-st-george-s-market"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "dublin",
+    "history": "George’s Street Arcade has been part of Dublin’s shopping life since 1881, inside a distinctive Victorian Gothic covered market building.",
+    "food": "Temple Bar Food Market is a place to look for Irish farmhouse cheeses, bakery stalls and oysters when its market is running.",
+    "shopping": "Browse Grafton Street for major shops and boutiques, then explore George’s Street Arcade for vintage clothing, books, crafts and food.",
+    "nightlife": "Temple Bar mixes pubs and live music with theatres and the Irish Film Institute; check programmes for alternatives to a pub crawl.",
+    "sources": [
+      {
+        "title": "Visit Dublin: Shopping streets",
+        "url": "https://www.visitdublin.com/guides/dublin-shopping-streets"
+      },
+      {
+        "title": "Visit Dublin: Temple Bar",
+        "url": "https://www.visitdublin.com/guides/things-to-do-temple-bar"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "algarve",
+    "history": "Paderne Castle’s thick adobe walls recall the Algarve’s Islamic past, offering a historical stop inland from the region’s coastal resorts.",
+    "food": "Try fish or seafood cataplana, grilled fish and almond or fig sweets; the regional food traditions extend beyond the beach restaurants.",
+    "shopping": "Loulé is associated with traditional crafts, almonds and figs; explore its town-centre shops for a different experience from the coastal resorts.",
+    "nightlife": "Albufeira’s old town and the area between Oura and Montechoro are established nightlife areas; seasonal programmes and venue opening days vary.",
+    "sources": [
+      {
+        "title": "Visit Portugal: Albufeira and the beaches",
+        "url": "https://www.visitportugal.com/en/destinos/algarve/73802"
+      },
+      {
+        "title": "Visit Portugal: Loulé",
+        "url": "https://www.visitportugal.com/pt-pt/content/loul%C3%A9"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "lisbon",
+    "history": "Lisbon’s Baixa Pombalina was rebuilt after the 1755 earthquake, creating the ordered downtown streets that contrast with the city’s hillier neighbourhoods.",
+    "food": "Try pastéis de nata during a café stop in Chiado, or explore Baixa’s traditional pastry shops and restaurants between sightseeing stops.",
+    "shopping": "Chiado mixes original shops and design with pavement cafés; Baixa offers souvenirs and traditional commerce, while Avenida da Liberdade has luxury boutiques.",
+    "nightlife": "Bairro Alto and Chiado are established evening areas; check current live-music listings and choose a route that suits the city’s steep streets.",
+    "sources": [
+      {
+        "title": "Visit Lisboa: Central Lisbon",
+        "url": "https://www.visitlisboa.com/pt-pt/regions/lisboa-centro"
+      },
+      {
+        "title": "Visit Lisboa: Chiado",
+        "url": "https://www.visitlisboa.com/en/places/chiado-41699ec3-eda7-414e-a9c1-e985f2f0efb7"
+      },
+      {
+        "title": "Visit Portugal: Discover Lisbon",
+        "url": "https://www.visitportugal.com/pt-pt/destinos/lisboa-regiao/73775"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "porto",
+    "history": "Porto’s historic centre and the Douro riverfront facing Gaia are recognised as World Heritage, connecting the city’s streets with its trading past.",
+    "food": "Look for francesinha, a substantial sandwich covered with cheese and a tomato-and-beer sauce; fish, seafood and cod fishcakes offer other options.",
+    "shopping": "Pedestrian Rua de Santa Catarina is a central shopping route; Rua Miguel Bombarda is an alternative for contemporary art and design.",
+    "nightlife": "Explore Galeria de Paris and adjacent streets near Clérigos for evening bars, or check Casa da Música’s programme for a concert.",
+    "sources": [
+      {
+        "title": "Visit Portugal: Porto in a few days",
+        "url": "https://www.visitportugal.com/en/destinos/porto/73735"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "madeira",
+    "history": "Funchal became a city in 1508 under King Manuel I; its historic centre remains the island’s main commercial and cultural hub.",
+    "food": "Explore Funchal’s Mercado dos Lavradores for tropical fruit and fish, and look for poncha, the island’s traditional sugarcane-spirit drink.",
+    "shopping": "Browse the Farmers’ Market and Funchal’s central streets for produce and local goods, checking prices and origin before buying souvenirs.",
+    "nightlife": "Funchal’s Zona Velha combines bars and restaurants along narrow streets; it is a useful starting point for an evening in the capital.",
+    "sources": [
+      {
+        "title": "Visit Madeira: Funchal",
+        "url": "https://visitmadeira.com/en/where-to-go/madeira/south-coast/funchal"
+      },
+      {
+        "title": "Visit Madeira: Funchal itinerary",
+        "url": "https://visitmadeira.com/en/blog/ellie-green/best-things-to-do-in-funchal-one-day-itinerary-off-the-beaten-path/"
+      },
+      {
+        "title": "Visit Madeira: Funchal nightlife",
+        "url": "https://visitmadeira.com/en/what-to-do/experiencing-the-city-of-funchal/entertainment/nightlife/funchal-downtown/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "barcelona",
+    "history": "The Gothic Quarter preserves the centre of Roman Barcino; remains of the Temple of Augustus survive near today’s medieval streets.",
+    "food": "Try pa amb tomàquet, bread rubbed with tomato and olive oil, or escalivada, a Catalan dish of roasted vegetables.",
+    "shopping": "El Born’s former artisans’ streets now contain boutiques and creative shops; combine browsing with a walk around Santa Maria del Mar.",
+    "nightlife": "Passeig del Born and its surrounding streets offer bars and pavement cafés; check specific venues for music, reservations and entry arrangements.",
+    "sources": [
+      {
+        "title": "Barcelona Tourism: Gothic Quarter",
+        "url": "https://bid.barcelonaturisme.com/wv3/en/page/1052/gothic-quarter.html"
+      },
+      {
+        "title": "Spain Tourism: El Born",
+        "url": "https://www.spain.info/en/places-of-interest/el-born-quarter/"
+      },
+      {
+        "title": "Barcelona City Council: Catalan cuisine",
+        "url": "https://www.meet.barcelona/en/visit-and-love-it/food-and-drink/catalan-cooking"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "madrid",
+    "history": "Cava Alta and Cava Baja once housed inns and guest houses; today those same streets are associated with La Latina’s tapas culture.",
+    "food": "Explore La Latina for croquettes, patatas bravas and other tapas; compare menus around Cava Baja and the squares near Cebada Market.",
+    "shopping": "El Rastro is Madrid’s outdoor flea market for clothing, antiques and curious finds; check its market days before planning a browse.",
+    "nightlife": "La Latina mixes traditional taverns and later bars with live-music venues; check the current listings around its compact central streets.",
+    "sources": [
+      {
+        "title": "Madrid Tourism: La Latina",
+        "url": "https://www.esmadrid.com/en/madrid-neighbourhoods/latina"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "seville",
+    "history": "Triana developed outside Seville’s walls and preserves a pottery tradition; the Triana Ceramics Centre explains this part of the neighbourhood’s identity.",
+    "food": "Explore Mercado de Triana and the surrounding neighbourhood for a meal, comparing the bars and terraces around Calle Betis.",
+    "shopping": "Look for ceramic workshops around Triana, including the area near the Ceramics Centre, rather than treating every souvenir shop as a local maker.",
+    "nightlife": "Triana has flamenco peñas and tablaos as well as riverside bars; check performance times and booking arrangements before choosing a venue.",
+    "sources": [
+      {
+        "title": "Visit Seville: Triana and Los Remedios",
+        "url": "https://visitasevilla.es/en/barrio-de-triana-y-los-remedios/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "malaga",
+    "history": "Málaga’s Roman theatre dates from the first century AD; the nearby Alcazaba preserves a different chapter of the city’s Islamic heritage.",
+    "food": "Try espetos, sardines skewered on canes and grilled over a wood fire, a distinctive part of Málaga’s coastal food culture.",
+    "shopping": "Pedestrian Calle Larios is a central shopping route; combine it with the old town’s streets and the urban art around Soho.",
+    "nightlife": "The streets between Plaza de la Merced and Plaza de la Constitución form a central nightlife area; check individual venues’ current programmes.",
+    "sources": [
+      {
+        "title": "Spain Tourism: Culture, shopping and food in Málaga",
+        "url": "https://www.spain.info/en/discover-spain/plans-malaga-art-gastronomy/"
+      },
+      {
+        "title": "Spain Tourism: Málaga visitor guide",
+        "url": "https://www.spain.info/export/sites/gcc/gcc/.content/comun/documentos/Malaga_EN.pdf"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "ibiza",
+    "history": "Dalt Vila’s fortified skyline and the ancient Puig des Molins necropolis reveal Ibiza’s history beyond its beaches and club culture.",
+    "food": "Look for flaó cheesecake, sobrasada and tumbet when comparing menus; La Marina and the waterfront combine traditional dishes with contemporary restaurants.",
+    "shopping": "La Marina’s narrow streets have Adlib fashion shops, while Mercat Vell provides a place to browse produce near the old town.",
+    "nightlife": "Ibiza’s club calendar is strongly seasonal; check dates and tickets for venues such as Pacha rather than assuming summer parties run year-round.",
+    "sources": [
+      {
+        "title": "Spain Tourism: Ibiza city",
+        "url": "https://www.spain.info/en/destination/eivissa/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "tenerife",
+    "history": "La Laguna’s unfortified historic centre preserves an early colonial street plan that helped influence later cities across the Atlantic.",
+    "food": "Try papas arrugadas with mojo sauce, the island’s wrinkly potatoes; Santa Cruz and La Laguna also offer markets, cafés and taverns.",
+    "shopping": "La Laguna’s historic centre mixes traditional and modern shops; Santa Cruz’s Calle del Castillo provides another central open-air shopping route.",
+    "nightlife": "For an evening beyond the beach resorts, check the Tenerife Auditorium and Guimerá theatre programmes in Santa Cruz before planning dinner nearby.",
+    "sources": [
+      {
+        "title": "Tenerife Tourism: La Laguna old town",
+        "url": "https://www.webtenerife.co.uk/what-see/historic-sites/historic-quarters/la-laguna/"
+      },
+      {
+        "title": "Tenerife Tourism: Metropolitan area",
+        "url": "https://www.webtenerife.co.uk/tenerife/the-island/tourist-areas/santa-cruz-la-laguna/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "mallorca",
+    "history": "Palma’s Gothic cathedral, Almudaina palace and old city walls provide a compact introduction to the island capital’s layered Mediterranean history.",
+    "food": "Try an ensaïmada from a local bakery, then explore Palma’s Santa Catalina or L’Olivar markets for ingredients and prepared food.",
+    "shopping": "Palma’s Golden Mile links Passeig del Born, Sant Feliu and Jaume III, combining major shops with cafés and restaurants.",
+    "nightlife": "Palma’s old quarter offers bars and restaurants for an evening out; check local programmes and seasonal opening details for the wider island.",
+    "sources": [
+      {
+        "title": "Balearic Islands Tourism: Palma",
+        "url": "https://www.illesbalears.travel/en/mallorca/municipalities/palma-de-mallorca"
+      },
+      {
+        "title": "Visit Palma: Twelve things to do",
+        "url": "https://visitpalma.com/en/dir/twelve-things-to-do-in-palma-this-year/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "paris",
+    "history": "The Marais’ Place des Vosges was built in the early seventeenth century; its arcades and brick façades preserve an aristocratic Parisian streetscape.",
+    "food": "Browse rue de Bretagne’s bakeries and cheesemongers, or explore the Jewish food traditions and Yiddish bakeries around rue des Rosiers.",
+    "shopping": "The Marais mixes fashion boutiques, vintage shops and French crafts around rue Vieille-du-Temple, rue Charlot and the surrounding streets.",
+    "nightlife": "The Marais has an established LGBTQ+ bar scene, particularly around rues des Archives and Sainte-Croix-de-la-Bretonnerie; check individual venues before going.",
+    "sources": [
+      {
+        "title": "Paris Tourism: Exploring the Marais",
+        "url": "https://parisjetaime.com/eng/article/exploring-the-marais-a1070"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "amsterdam",
+    "history": "Amsterdam’s Oude Kerk opened in 1306, predating the city’s Nieuwe Kerk; the old building sits among the streets of De Wallen.",
+    "food": "Look for Amsterdam ossenworst or herring during a food wander, and explore the Jordaan’s cafés and bakeries for a quieter stop.",
+    "shopping": "Noordermarkt offers flea-market and produce-market browsing on different days; the Jordaan also has small galleries, antiques and independent shops.",
+    "nightlife": "The Jordaan’s traditional brown cafés offer an alternative to a club night; check waterside pubs and current live-music listings before choosing.",
+    "sources": [
+      {
+        "title": "I amsterdam: Old Amsterdam walking route",
+        "url": "https://www.iamsterdam.com/en/see-and-do/nature-and-active/old-amsterdam-walking-route"
+      },
+      {
+        "title": "I amsterdam: Jordaan",
+        "url": "https://www.iamsterdam.com/en/explore/neighbourhoods/centrum/things-to-do-in-the-jordaan"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "berlin",
+    "history": "Kreuzberg’s Markthalle Neun opened in 1891 and reopened in 2011, preserving one of Berlin’s historic neighbourhood market halls.",
+    "food": "Explore Markthalle Neun for cheese, bakery stalls, seafood and international street food; check the calendar for its dedicated food events.",
+    "shopping": "Browse small producers and market stalls around Markthalle Neun and Lausitzer Platz, checking market days before making a special journey.",
+    "nightlife": "Kreuzberg’s SO36 carries punk and alternative-club history into the present; choose a specific event from its programme before booking a night out.",
+    "sources": [
+      {
+        "title": "Visit Berlin: Markthalle Neun",
+        "url": "https://www.visitberlin.de/en/markthalle-neun"
+      },
+      {
+        "title": "Visit Berlin: Longstanding local places",
+        "url": "https://www.visitberlin.de/en/blog/11-tips-places-berlin-have-stood-test-time"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "rome",
+    "history": "Testaccio’s Monte dei Cocci formed from discarded Roman amphorae, linking the district’s modern restaurants with the ancient city’s food supply.",
+    "food": "Explore the traditional trattorias of Testaccio or Trastevere for Roman cooking, comparing menus before choosing a long lunch or evening meal.",
+    "shopping": "Trastevere’s lanes contain artisan workshops and small family-run shops, offering an alternative to the city’s major fashion shopping streets.",
+    "nightlife": "Piazza Trilussa and Piazza Santa Maria in Trastevere anchor an evening area of bars and restaurants; nearby Testaccio offers another nightlife district.",
+    "sources": [
+      {
+        "title": "Rome Tourism: Trastevere, Tiber Island and Testaccio",
+        "url": "https://www.turismoroma.it/en/quartieri/trastevere-testaccio"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "prague",
+    "history": "Vinohrady’s Pavilon market building dates from 1903 and reused an earlier machinery factory; its original iron structure survives inside.",
+    "food": "Explore cafés around Vinohrady and the farmers’ market on Jiřího z Poděbrad square when it is running for local produce and snacks.",
+    "shopping": "Pavilon now houses interior design shops and a café, making it a distinctive stop while exploring Vinohrady’s residential streets.",
+    "nightlife": "Krymská Street combines cafés with alternative culture, while Palác Akropolis in Žižkov hosts music and performance; check the current programme.",
+    "sources": [
+      {
+        "title": "Prague City Tourism: Vinohrady to Žižkov",
+        "url": "https://prague.eu/en/from-vinohrady-to-zizkov-searching-for-bohemian-prague/"
+      },
+      {
+        "title": "Prague City Tourism: Vinohrady and Vršovice",
+        "url": "https://prague.eu/en/vinohrady-and-vrsovice-la-dolce-vita/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "vienna",
+    "history": "Vienna’s Naschmarkt developed alongside the River Wien and expanded after the river was covered, connecting urban engineering with everyday food trading.",
+    "food": "Naschmarkt combines Viennese cooking with international kitchens; explore its produce, cheese and spice stalls before choosing a restaurant or deli.",
+    "shopping": "Browse Naschmarkt’s food stalls and its separate flea market on the scheduled market day, checking arrangements before searching for vintage finds.",
+    "nightlife": "For a relaxed evening, explore Naschmarkt’s restaurants and wine bars, including deli-style Urbanek; confirm individual opening times and reservations directly.",
+    "sources": [
+      {
+        "title": "City of Vienna: Naschmarkt history",
+        "url": "https://www.wien.gv.at/en/leisure/naschmarkt-history"
+      },
+      {
+        "title": "Vienna Tourism: Naschmarkt",
+        "url": "https://www.wien.info/en/dine-drink/markets/naschmarkt-353536"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "budapest",
+    "history": "Budapest’s Great Market Hall opened in 1897 to designs by Samu Pecz, combining a working food market with nineteenth-century civic architecture.",
+    "food": "Try lángos, fried dough commonly topped with garlic, sour cream and cheese, or browse the city’s market halls for Hungarian ingredients.",
+    "shopping": "The Great Market Hall is a place to browse paprika, honey, preserves and souvenirs; compare stall prices before choosing gifts.",
+    "nightlife": "The Jewish Quarter has Budapest’s characteristic ruin pubs; check current events at Szimpla Kert or Instant-Fogas and respect the surrounding residential streets.",
+    "sources": [
+      {
+        "title": "Visit Hungary: Great Market Hall",
+        "url": "https://visithungary.com/en/things-to-do-en/cultural-programs-and-dining/the-flavors-of-budapest-in-one-place-discover-the-great-market-hall-on-fovam-square.html"
+      },
+      {
+        "title": "Visit Hungary: Budapest street food",
+        "url": "https://visithungary.com/articles/budapest-a-street-food-paradise"
+      },
+      {
+        "title": "Budapest Tourism: Nightlife",
+        "url": "https://www.budapestinfo.hu/en/how-to-party-in-budapest-the-worlds-second-most-nightlife-friendly-city"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "preston",
+    "history": "Preston’s Guild tradition traces to the trading privileges granted in 1179; the civic celebration is now held once every twenty years.",
+    "food": "Look for Lancashire butter pie, with potato, onion and butter in pastry, or explore Preston Markets for food from local traders.",
+    "shopping": "Fishergate combines major retailers with independent shops; Preston Markets offers a different browsing experience alongside the city’s central shopping streets.",
+    "nightlife": "Check Preston’s current live-music and theatre listings before planning an evening; the city centre also offers restaurants for a pre-show meal.",
+    "sources": [
+      {
+        "title": "Preston City Council: Guild tradition",
+        "url": "https://www.preston.gov.uk/article/13591/Preston-invited-to-help-shape-lasting-Guild-2032-Legacy"
+      },
+      {
+        "title": "Redmans of Preston: Lancashire butter pie",
+        "url": "https://redmansofpreston.co.uk/product/butter-pie/"
+      },
+      {
+        "title": "Visit Lancashire: Preston",
+        "url": "https://www.visitlancashire.com/places/preston"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "chester",
+    "history": "Chester’s Rows developed over eight centuries above the streets of the old Roman fortress, creating the city’s distinctive two-level shopping galleries.",
+    "food": "Explore the cafés and restaurants on the Rows, with Watergate Street offering another concentration of coffee stops and international menus.",
+    "shopping": "Browse independent shops on Bridge Street and Watergate Street, including jewellery, crafts and specialist shops tucked into the upper galleries.",
+    "nightlife": "Watergate Street combines bars and restaurants within the historic centre; compare current music and entertainment listings before making an evening plan.",
+    "sources": [
+      {
+        "title": "Cheshire West and Chester Council: Chester Rows",
+        "url": "https://www.cheshirewestandchester.gov.uk/residents/regeneration-of-west-cheshire/chester-regeneration/chester-rows"
+      },
+      {
+        "title": "Visit Chester and Cheshire: The Rows",
+        "url": "https://visitcheshire.com/the-rows"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "southampton",
+    "history": "The Bargate was Southampton’s Norman gateway; nearby medieval walls and the former wool store now used by Dancing Man Brewery reveal its trading past.",
+    "food": "Oxford Street is a useful area for independent dining; Bedford Place adds international restaurants and cafés north of the Cultural Quarter.",
+    "shopping": "Choose Westquay for major shops, or explore East Street, Oxford Street and Bedford Place for smaller retailers and browsing breaks.",
+    "nightlife": "Check Mayflower Theatre or O2 Guildhall for a performance, then explore Oxford Street or Bedford Place for bars and a meal.",
+    "sources": [
+      {
+        "title": "Visit Southampton: Cultural break",
+        "url": "https://www.visitsouthampton.co.uk/explore/itineraries/take-a-cultural-break/"
+      },
+      {
+        "title": "Visit Southampton: Shopping",
+        "url": "https://www.visitsouthampton.co.uk/things-to-do/shopping/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "portsmouth",
+    "history": "Old Portsmouth grew from the medieval settlement founded by Jean de Gisors; its streets and waterfront preserve the city’s early harbour character.",
+    "food": "Explore Old Portsmouth’s waterfront pubs for a meal, or compare the independent restaurants around Southsea’s Palmerston Road before an evening out.",
+    "shopping": "Gunwharf Quays offers outlet shops by the harbour, while Southsea has smaller independent retailers and markets for a different shopping wander.",
+    "nightlife": "Albert Road has independent pubs and tap houses; Guildhall Walk is another option for food and drinks before a theatre or concert.",
+    "sources": [
+      {
+        "title": "Portsmouth Cathedral: Discover Old Portsmouth",
+        "url": "https://discoveroldportsmouth.com/about/"
+      },
+      {
+        "title": "Visit Portsmouth: Pubs and bars",
+        "url": "https://www.visitportsmouth.co.uk/food-and-drink/pubs-bars/"
+      },
+      {
+        "title": "Visit Portsmouth: Shopping",
+        "url": "https://www.visitportsmouth.co.uk/things-to-do/shopping/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "leicester",
+    "history": "The Globe has served as a pub since 1720 and retains the well once used to supply water for its brewing.",
+    "food": "Leicester Market’s food hall has local pork pies, artisan cheeses and other produce; the Old Town has restaurants in historic buildings.",
+    "shopping": "Explore The Lanes, St Martins Square and the arcades for independent shops, or use Highcross for a concentration of major retailers.",
+    "nightlife": "The Old Town combines historic pubs with contemporary bars; explore around The Globe or compare evening venues along Braunstone Gate.",
+    "sources": [
+      {
+        "title": "Visit Leicester: Old Town restaurants trail",
+        "url": "https://visitleicester.info/see-and-do/trails/old-town-restaurants-trail/"
+      },
+      {
+        "title": "Visit Leicester: Shopping",
+        "url": "https://visitleicester.info/shops-market/shopping-in-leicester/"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "derby",
+    "history": "Derby’s Silk Mill began in 1721 and was rebuilt after a 1910 fire; its site now houses the Museum of Making.",
+    "food": "The Cathedral Quarter has cafés, delis and restaurants among its historic streets; compare the current business directory for your preferred meal.",
+    "shopping": "Explore Cathedral Quarter independents around Corn Market and Queen Street, or head to Derbion for major high-street shops under one roof.",
+    "nightlife": "The Cathedral Quarter combines pubs, bars and clubs with cultural venues; check current programmes before building an evening around live entertainment.",
+    "sources": [
+      {
+        "title": "Derwent Valley Mills: Derby Silk Mill",
+        "url": "https://www.derwentvalleymills.org/discover/derwent-valley-mills-history/derwent-valley-mills-key-sites/key-sites-the-silk-mill/"
+      },
+      {
+        "title": "Derby Cathedral Quarter: Visitor information",
+        "url": "https://www.derbycathedralquarter.co.uk/about-cathedral-quarter/"
+      },
+      {
+        "title": "Visit Peak District and Derbyshire: Derby",
+        "url": "https://visitpeakdistrict.com/locations/derby"
+      }
+    ],
+    "checked": "2026-11-23"
+  },
+  {
+    "slug": "coventry",
+    "history": "Coventry Market opened in 1958, part of the modern city’s reconstruction; its stalls continue the local tradition of everyday market shopping.",
+    "food": "Browse Coventry Market for produce, artisan bakery stalls and street food, or compare the independent kitchens at Elle’s near the railway station.",
+    "shopping": "Coventry Market offers specialist stalls alongside fresh produce; FarGo Village adds an independent creative quarter for records, crafts and other finds.",
+    "nightlife": "Check hmv Empire for live music and club events, or explore FarGo Village for craft beer and smaller-scale evening entertainment.",
+    "sources": [
+      {
+        "title": "Visit Coventry: Shopping and market history",
+        "url": "https://visitcoventry.co.uk/shopping/"
+      },
+      {
+        "title": "Visit Coventry: Nights out",
+        "url": "https://visitcoventry.co.uk/blog/post/where-to-go-for-a-great-night-out-in-coventry/"
+      },
+      {
+        "title": "Coventry University: City guide",
+        "url": "https://www.coventry.ac.uk/study-at-coventry/student-support/enhance-your-employability/global-opportunities/study-exchange/why-coventry/"
+      }
+    ],
+    "checked": "2026-11-23"
+  }
+]
