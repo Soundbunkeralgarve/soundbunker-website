@@ -140,13 +140,15 @@ export async function placeUkVenues(items, {fetcher = fetch} = {}) {
 // the VIATOR_API_KEY environment variable, so nothing runs until it is set.
 const VIATOR_API = 'https://api.viator.com/partner';
 const VIATOR_HOSTS = new Set(['www.viator.com', 'viator.com']);
-// Places searched, with the country they belong to (name as Viator lists it → our label).
+// [place label, country, Viator destination ID]. Verified against Viator's public
+// https://www.viator.com/<Place>/d<ID>-ttd pages on 23 Nov 2026. Keep this small
+// allowlist local: calling /destinations on every cold start exhausts its rate limit.
 export const VIATOR_PLACES = Object.freeze([
-  ['Algarve', 'PT'], ['Lisbon', 'PT'], ['Porto', 'PT'], ['Madeira', 'PT'],
-  ['Barcelona', 'ES'], ['Madrid', 'ES'], ['Seville', 'ES'], ['Malaga', 'ES'], ['Ibiza', 'ES'],
-  ['Paris', 'FR'], ['Amsterdam', 'NL'], ['Rome', 'IT'], ['Dublin', 'IE'], ['London', 'GB'], ['Edinburgh', 'GB']
+  ['Algarve', 'PT', '774'], ['Lisbon', 'PT', '538'], ['Porto', 'PT', '26879'], ['Madeira', 'PT', '5392'],
+  ['Barcelona', 'ES', '562'], ['Madrid', 'ES', '566'], ['Seville', 'ES', '556'], ['Malaga', 'ES', '956'], ['Ibiza', 'ES', '4217'],
+  ['Paris', 'FR', '479'], ['Amsterdam', 'NL', '525'], ['Rome', 'IT', '511'], ['Dublin', 'IE', '503'], ['London', 'GB', '737'], ['Edinburgh', 'GB', '739']
 ]);
-const VIATOR_PER_PLACE = 30;
+const VIATOR_PER_PLACE = 30, VIATOR_CONCURRENCY = 4;
 const BOAT = /\b(boat|cruise|catamaran|sail(ing)?|yacht|dolphin|whale|benagil|grotto|cave tour|sea cave|rib\b|speedboat|river tour)/i;
 
 export function viatorItem(raw, {place, countryCode}) {
@@ -173,27 +175,19 @@ export async function loadViator(env = process.env, {fetcher = fetch} = {}) {
   const key = String(env.VIATOR_API_KEY || '').trim();
   if (!key) return [];
   const headers = {'exp-api-key': key, Accept: 'application/json;version=2.0', 'Accept-Language': 'en-GB', 'Content-Type': 'application/json'};
-  const res = await fetcher(VIATOR_API + '/destinations', {headers, signal: AbortSignal.timeout(20000)});
-  if (!res.ok) {
-    // Diagnose a refused key without exposing it: does Viator's sandbox accept it instead?
-    let search = 'untested';
-    try { search = String((await fetcher(VIATOR_API + '/products/search', {method: 'POST', headers, signal: AbortSignal.timeout(10000), body: JSON.stringify({filtering: {destination: '479'}, pagination: {start: 1, count: 1}, currency: 'EUR'})})).status); } catch { search = 'unreachable'; }
-    let sandbox = 'untested';
-    try { sandbox = String((await fetcher('https://api.sandbox.viator.com/partner/destinations', {headers, signal: AbortSignal.timeout(10000)})).status); } catch { sandbox = 'unreachable'; }
-    const shape = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(key) ? 'key-shaped' : /^[\u2022*.]+$/.test(key) ? 'masked dots' : 'not key-shaped';
-    throw Error('Viator destinations ' + res.status + ' (key length ' + key.length + ', ' + shape + ', search answers ' + search + ', sandbox answers ' + sandbox + ')');
-  }
-  const all = (await res.json()).destinations || [];
-  if (!all.length) throw Error('Viator returned no destinations');
-  const settled = await Promise.allSettled(VIATOR_PLACES.map(async ([place, countryCode]) => {
-    const dest = all.find(d => d.name === place && /CITY|REGION|ISLAND/.test(d.type || '')) || all.find(d => d.name === place);
-    if (!dest) return [];
-    const r = await fetcher(VIATOR_API + '/products/search', {method: 'POST', headers, signal: AbortSignal.timeout(20000), body: JSON.stringify({
-      filtering: {destination: String(dest.destinationId)}, sorting: {sort: 'TRAVELER_RATING', order: 'DESCENDING'},
+  const searchPlace = async ([place, countryCode, destinationId]) => {
+    const r = await fetcher(VIATOR_API + '/products/search', {method: 'POST', headers, signal: AbortSignal.timeout(10000), body: JSON.stringify({
+      filtering: {destination: destinationId}, sorting: {sort: 'TRAVELER_RATING', order: 'DESCENDING'},
       pagination: {start: 1, count: VIATOR_PER_PLACE}, currency: 'EUR'})});
     if (!r.ok) throw Error('Viator search ' + r.status + ' for ' + place);
     return ((await r.json()).products || []).map(p => viatorItem(p, {place, countryCode})).filter(Boolean);
-  }));
+  };
+  const settled = [];
+  // Bound each process to four searches; four 10-second batches also fit the
+  // function's 60-second budget when a provider is slow or unavailable.
+  for (let n = 0; n < VIATOR_PLACES.length; n += VIATOR_CONCURRENCY) {
+    settled.push(...await Promise.allSettled(VIATOR_PLACES.slice(n, n + VIATOR_CONCURRENCY).map(searchPlace)));
+  }
   const failed = settled.filter(s => s.status === 'rejected');
   if (failed.length === settled.length) throw Error('All Viator searches failed: ' + String(failed[0].reason?.message).slice(0, 120));
   const seen = new Set();
