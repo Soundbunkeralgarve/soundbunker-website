@@ -84,7 +84,8 @@ test('the public feed reports full, matched and returned totals without making p
       await handler({method:'GET',query},res);
       return body;
     };
-    const result = await read({q:'Wicked'});
+    const result = await read({q:'Wicked',country:'GB'});
+    assert.ok((await read({q:'Wicked'})).events.some(i => i.title === 'Wicked, el musical' && i.city === 'Madrid'), 'the Madrid production is found too');
     assert.deepEqual(result.events.map(i => i.title), ['Wicked']);
     assert.equal(result.total, snapshot.length);
     assert.equal(result.matched, 1);
