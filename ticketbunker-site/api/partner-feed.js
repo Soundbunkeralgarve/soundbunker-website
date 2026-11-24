@@ -199,12 +199,12 @@ export function viatorItem(raw, {place, countryCode}) {
   };
 }
 
-export async function loadViator(env = process.env, {fetcher = fetch} = {}) {
+export async function loadViator(env = process.env, {fetcher = fetch, now = Date.now} = {}) {
   // Pasted keys often carry stray spaces or line breaks; Viator then answers 401.
   const key = String(env.VIATOR_API_KEY || '').trim();
   if (!key) return [];
   const headers = {'exp-api-key': key, Accept: 'application/json;version=2.0', 'Accept-Language': 'en-GB', 'Content-Type': 'application/json'};
-  const searchPlace = async ({place, countryCode, destinationId, limo, query, productCode}) => {
+  const searchPlace = async ({place, countryCode, destinationId, limo, query, productCode}, timeout = productCode ? 3000 : 5000) => {
     const textSearch = limo || Boolean(productCode);
     const payload = textSearch ? {
       searchTerm: query || 'limousine', productFiltering: {destination: destinationId},
@@ -214,7 +214,7 @@ export async function loadViator(env = process.env, {fetcher = fetch} = {}) {
       pagination: {start: 1, count: VIATOR_PER_PLACE}, currency: 'EUR'
     };
     const r = await fetcher(VIATOR_API + (textSearch ? '/search/freetext' : '/products/search'), {
-      method: 'POST', headers, signal: AbortSignal.timeout(productCode ? 3000 : 5000), body: JSON.stringify(payload)
+      method: 'POST', headers, signal: AbortSignal.timeout(timeout), body: JSON.stringify(payload)
     });
     if (!r.ok) throw Error('Viator ' + (productCode ? 'focused search ' : limo ? 'limo search ' : 'search ') + r.status + ' for ' + place);
     const data = await r.json(), products = textSearch ? data.products?.results || [] : data.products || [];
@@ -227,8 +227,18 @@ export async function loadViator(env = process.env, {fetcher = fetch} = {}) {
   // One four-request queue: thirty 5s jobs followed by eleven focused 3s jobs.
   // Eleven batches have a worst timeout budget of 49s, below the 55s client limit
   // and the function's 60s budget. Venice is searched only for these exact targets.
+  const started = now();
   for (let n = 0; n < jobs.length; n += VIATOR_CONCURRENCY) {
-    settled.push(...await Promise.allSettled(jobs.slice(n, n + VIATOR_CONCURRENCY).map(searchPlace)));
+    settled.push(...await Promise.allSettled(jobs.slice(n, n + VIATOR_CONCURRENCY).map(job => searchPlace(job))));
+  }
+  // The first batch runs on a cold connection and the busiest destinations (Algarve,
+  // Lisbon) regularly miss 5s there, leaving those cities without tours. Retry failed
+  // place searches once, together, while the 55s client budget still has room.
+  const retry = settled.map((s, i) => s.status === 'rejected' && !jobs[i].productCode ? i : -1).filter(i => i >= 0);
+  // Not when everything failed: that is a key or account problem, not a slow city.
+  if (retry.length && settled.some(s => s.status === 'fulfilled') && now() - started < 38000) {
+    const again = await Promise.allSettled(retry.slice(0, VIATOR_CONCURRENCY * 2).map(i => searchPlace(jobs[i], 8000)));
+    again.forEach((s, k) => { if (s.status === 'fulfilled') settled[retry[k]] = s; });
   }
   const failed = settled.filter(s => s.status === 'rejected');
   if (failed.length === settled.length) throw Error('All Viator searches failed: ' + String(failed[0].reason?.message).slice(0, 120));
