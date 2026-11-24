@@ -10,6 +10,12 @@ const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '
 const when = (iso, zone) => { try { return new Intl.DateTimeFormat('en-GB', {weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: zone || 'Europe/London'}).format(new Date(iso)); } catch { return ''; } };
 const price = (cents, currency) => Number.isInteger(cents) ? (cents === 0 ? 'Free' : 'From ' + new Intl.NumberFormat('en-GB', {style: 'currency', currency: (currency || 'eur').toUpperCase()}).format(cents / 100)) : '';
 
+// Server-rendered shell so the section, its heading and the planner links are there without
+// JavaScript; get-around-ui.js fills in the live board.
+export function getAroundSection(slug, inName) {
+  return `<section class="get-around-section" id="get-around" aria-label="Get around ${esc(inName)}"><div class="wrap"><div data-get-around data-city="${esc(slug)}"><span class="label">Get around ${esc(inName)}</span><h2>Getting around ${esc(inName)}</h2><p><a href="/get-around?city=${esc(slug)}">Open stops, routes and taxis for ${esc(inName)}</a>.</p></div></div></section>`;
+}
+
 export function cityHtml(shell, [slug, name, country, , pitch], listings = []) {
   const url = SITE + '/' + slug, plain = name.replace(/^the /, ''), inName = name.replace(/^the /, 'the ');
   const title = `Things to do in ${inName}: tickets for gigs, club nights, comedy & days out | The Ticket Bunker`;
@@ -38,7 +44,10 @@ export function cityHtml(shell, [slug, name, country, , pitch], listings = []) {
     .replace('<span class="h1-outline">Head out.</span>', `<span class="h1-outline">Head out in <span class="h1-city">${esc(inName)}</span>.</span>`)
     .replace('<span>Algarve to Berlin</span>', `<span>${esc(plain)}</span>`)
     .replace('</head>', `<script>window.__TB_CITY=${JSON.stringify({city: slug === 'algarve' ? 'Algarve' : name, country, slug}).replace(/</g, '\\u003c')}</script>${ld.length ? `<script type="application/ld+json">${JSON.stringify({'@context': 'https://schema.org', '@type': 'ItemList', name: 'Upcoming events in ' + inName, itemListElement: ld.map((e, n) => ({'@type': 'ListItem', position: n + 1, item: e}))}).replace(/</g, '\\u003c')}</script>` : ''}</head>`)
-    .replace('<section class="faq-section"', guide + '<section class="faq-section"');
+    .replace('<section class="faq-section"', guide + '<section class="faq-section"')
+    // Every city page carries the full Get around widget in place of the homepage teaser.
+    .replace(/<section class="get-around-section ga-home"[\s\S]*?<\/section>/, getAroundSection(slug, inName))
+    .replace('</head>', '<script type="module" src="/get-around-ui.js?v=20261125ga"></script></head>');
 }
 
 export default async function handler(req, res) {
