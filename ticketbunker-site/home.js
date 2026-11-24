@@ -124,7 +124,7 @@ function image(item,eager=false){
  const src=safeUrl(item.image);
  // Partner feeds only supply small square artwork: show it whole over a soft blurred fill.
  if(src&&item.thumb)return `<div class="thumb-fill" style="background-image:url('${esc(src)}')"></div><img class="thumb-art" src="${esc(src)}" alt="" loading="lazy" width="200" height="200">`;
- return src?`<img src="${esc(src)}" alt="" ${eager?'fetchpriority="high"':'loading="lazy"'} width="800" height="600">`:`<div class="no-poster">${esc(discoveryCategories[item.category]||'Event')}</div>`;
+ return src?`<img src="${esc(src)}" alt="" ${eager?'fetchpriority="high"':'loading="lazy"'} width="800" height="600">`:`<div class="no-poster" data-cat="${esc(item.category||'')}"><span>${esc(discoveryCategories[item.category]||'Event')}</span><b>${esc(item.city||'')}</b></div>`;
 }
 function dateLine(item){
  if(!item.startsAt)return item.external?'Choose your date':'';
@@ -294,7 +294,7 @@ $('#near-locate').onclick=()=>useMyLocation();
 $('#near-change').onclick=()=>{form.scrollIntoView({block:'center'});city.focus();};
 
 // Section tabs under the destination bar: one tap to any rail that has listings.
-const TAB_LABELS={'city-hub':'Everything on','plan-trip':'Plan your trip','rail-near':'Near you','gyg-box':'Tours','big-feature':'Featured','rail-trip':'Heading away?','rail-featured':'Featured picks','rail-direct':'Bunker direct','rail-music':'Live music','rail-club':'Raves','rail-festival':'Festivals','rail-family':'Family','rail-comedy':'Comedy','rail-shows':'Theatre','rail-cinema':'Cinema','rail-boat':'Boat trips','rail-transfer':'Limos & transfers','rail-transit':'City transport','rail-sport':'Sport & racing','rail-seasonal':'Special days','rail-daysout':'Experiences','rail-dining':'Dining','rail-weekend':'This weekend'};
+const TAB_LABELS={'spotlight':'Spotlight','moods':'Moods','top10':'Top 10','rail-under':'Under 20','city-hub':'Everything on','plan-trip':'Plan your trip','rail-near':'Near you','gyg-box':'Tours','big-feature':'Featured','rail-trip':'Heading away?','rail-featured':'Featured picks','rail-direct':'Bunker direct','rail-music':'Live music','rail-club':'Raves','rail-festival':'Festivals','rail-family':'Family','rail-comedy':'Comedy','rail-shows':'Theatre','rail-cinema':'Cinema','rail-boat':'Boat trips','rail-transfer':'Limos & transfers','rail-transit':'City transport','rail-sport':'Sport & racing','rail-seasonal':'Special days','rail-daysout':'Experiences','rail-dining':'Dining','rail-weekend':'This weekend'};
 let tabObserver;
 function renderTabs(){
  const nav=$('#section-tabs');
@@ -394,6 +394,65 @@ function fillCityList(){
 }
 country.addEventListener('change',()=>{const chosen=cityPage(city.value);if(chosen&&country.value&&chosen[2]!==country.value)city.value='';fillCityList();renderTripPath(formState());});
 
+// Homepage showcase: varied, picture-led ways in (spotlight, moods, top 10, under 20 and
+// adverts) so the page is not one long run of identical rails. Every item is a real,
+// current listing; nothing is described as a best-seller or "selling fast".
+const hasArt=i=>!!safeUrl(i.image);
+const bigArt=i=>hasArt(i)&&!i.thumb;
+const linkAttrs=item=>{const href=item.external?withClickRef(item.url,pagRef,'showcase'):item.url;
+ return `href="${esc(href)}"${item.external?` target="_blank" rel="sponsored noopener noreferrer" aria-label="${esc(item.title)}: tickets via ${esc(item.seller)} (opens in a new tab)"`:''}`;};
+const pictureFirst=list=>[...list.filter(bigArt),...list.filter(i=>!bigArt(i)&&hasArt(i)),...list.filter(i=>!hasArt(i))];
+// One per category, in this order, so the first screen mixes nights out and days out.
+const SHOWCASE_ORDER=['festival','music','shows','club','boat','daysout','family','comedy','sport','seasonal','cinema','dining'];
+function varied(list,n){
+ const by=new Map();for(const i of list){if(!by.has(i.category))by.set(i.category,[]);by.get(i.category).push(i);}
+ const keys=[...SHOWCASE_ORDER.filter(k=>by.has(k)),...[...by.keys()].filter(k=>!SHOWCASE_ORDER.includes(k)&&!['transit','transfer'].includes(k))];
+ const out=[],seen=new Set();
+ while(out.length<n&&keys.some(k=>by.get(k).length))for(const k of keys){const q=by.get(k);while(q.length){const i=q.shift();const t=i.title.toLowerCase();if(!seen.has(t)){seen.add(t);out.push(i);break;}}if(out.length>=n)break;}
+ return out;
+}
+function spotTile(item,big=false){
+ const art=hasArt(item)?`<img src="${esc(safeUrl(item.image))}" alt="" loading="${big?'eager':'lazy'}">`:'';
+ return `<a class="spot-tile${big?' is-big':''}${item.thumb?' is-thumb':''}" ${linkAttrs(item)}>${item.thumb&&art?`<span class="spot-fill" style="background-image:url('${esc(safeUrl(item.image))}')"></span>`:''}${art}<span class="spot-shade"></span><span class="spot-copy"><span class="spot-cat">${esc(catLabel(item))}</span><b>${esc(item.title)}</b><span class="spot-meta">${esc([dateLine(item),[item.venue,item.city].filter(Boolean)[0]].filter(Boolean).join(' · '))}</span><span class="spot-foot"><strong>${esc(priceLine(item))}</strong><small>${item.external?'via '+esc(item.seller):'No booking fee'}</small></span></span></a>`;
+}
+const MOODS=[['music','Gigs','Live sets and big nights'],['club','Raves','Warehouses and terraces'],['festival','Festivals','Weekenders and day fests'],['shows','Theatre','West End and stage'],['comedy','Comedy','Stand-up and showcases'],['family','Family','Days out with the kids'],['boat','Boat trips','Coast, caves and dolphins'],['daysout','Experiences','Tours, kayaks and more'],['sport','Sport','Race days and match days'],['seasonal','Seasonal','Christmas and special days'],['cinema','Cinema','Open air and late screens'],['dining','Dining','Restaurant deals near the show']];
+let moreRails=false;
+const RAILS_SHOWN=6;
+function renderShowcase(all,now,place){
+ const pool=filterItems(all,place,now).filter(i=>!i.soldOut&&!['transit','transfer'].includes(i.category));
+ // Spotlight: one big tile and four smaller ones, all with real pictures where we have them.
+ const spot=varied(pictureFirst(sortItems(pool).filter(hasArt)),5);
+ $('#spotlight').hidden=spot.length<3;
+ if(spot.length>=3)$('#spot-grid').innerHTML=spot.map((i,n)=>spotTile(i,n===0)).join('');
+ // Mood tiles: each shows how many are on and the best picture in that category.
+ const counts=new Map();for(const i of pool){counts.set(i.category,(counts.get(i.category)||0)+1);}
+ const tiles=MOODS.filter(([k])=>counts.get(k)).map(([k,label,sub])=>{const pic=pictureFirst(pool.filter(i=>i.category===k&&hasArt(i)))[0];
+  return `<button type="button" class="mood-tile" data-mood="${k}">${pic?`<img src="${esc(safeUrl(pic.image))}" alt="" loading="lazy">`:''}<span class="mood-shade"></span><span class="mood-copy"><b>${esc(label)}</b><small>${esc(sub)}</small><em>${counts.get(k).toLocaleString('en-GB')} on</em></span></button>`;});
+ $('#moods').hidden=tiles.length<4;
+ $('#mood-grid').innerHTML=tiles.join('');
+ $('#mood-grid').querySelectorAll('[data-mood]').forEach(b=>b.onclick=()=>{const k=b.dataset.mood,rail=document.getElementById('rail-'+k);
+  if(rail&&rail.classList.contains('rail-folded')){moreRails=true;render();}
+  const target=document.getElementById('rail-'+k);if(target&&!target.hidden)target.scrollIntoView({behavior:reduceMotion()?'auto':'smooth',block:'start'});else commitForm({category:k},{scroll:true});});
+ // Top 10: soonest dated events over the next five weeks, mixed by type, numbered.
+ const soon=pictureFirst(sortItems(pool.filter(i=>i.startsAt&&Date.parse(i.startsAt)<now+35*864e5)));
+ const top=varied(soon,10);
+ $('#top10').hidden=top.length<5;
+ if(top.length>=5)mountRail($('#top10'),top.map((i,n)=>`<div class="top-item"><span class="top-num" aria-hidden="true">${n+1}</span>${card(i)}</div>`));
+}
+// Adverts between the category rails: what else the Bunker does, with real counts.
+function adverts(all){
+ const shows=all.filter(i=>i.provider==='awin-1936').length, tours=all.filter(i=>['boat','daysout'].includes(i.category)).length;
+ const pic=k=>pictureFirst(all.filter(i=>i.category===k&&hasArt(i)))[0];
+ const ad=(cls,label,title,text,href,cta,item,extra='')=>`<aside class="promo ${cls}">${item&&hasArt(item)?`<img src="${esc(safeUrl(item.image))}" alt="" loading="lazy">`:''}<span class="promo-shade"></span><div class="promo-copy"><span class="label">${esc(label)}</span><h2>${esc(title)}</h2><p>${esc(text)}</p><a class="promo-cta" href="${esc(href)}"${extra}>${esc(cta)} →</a></div></aside>`;
+ return [
+  ad('promo-vip','TicketBunker VIP','Go VIP. Get more out.','Early access, a faster way in at the door and guestlist spots at partner nights. From £4.99 a month.','/vip','See VIP perks',pic('club')),
+  shows?ad('promo-westend','West End','The West End, sorted.',shows+' London shows and musicals, booked with Theatre Tickets Direct.','/london','Browse London shows',pic('shows')):'',
+  ad('promo-trip','Plan your trip','Tickets, hotel, travel, food. One plan.','Build the whole night or weekend around your tickets, then book each part with the named seller.','/plan-your-trip','Build my trip',pic('festival'),' data-build-trip'),
+  tours?ad('promo-tours','Tours & days out',tours.toLocaleString('en-GB')+' tours and days out.','Boat trips, caves, food tours and city passes across the UK and Europe.','#rail-daysout','Find a day out',pic('boat')):'',
+  ad('promo-host','For organisers','Selling tickets? Keep your crowd happy.','No booking fees for your buyers, wallet tickets, a door scanner app and payouts after the show.','/for-organisers','Sell with TicketBunker',pic('music'))
+ ];
+}
+
 function render(){
  const now=Date.now(),all=blend(events,partners,now,feed),place=placeOnly(),where=placeLabel();
  $('#db-summary').textContent=[state.q?'“'+state.q+'”':state.category?discoveryCategories[state.category]:'Everything',where||'Anywhere',whenLabel()].filter(Boolean).join(' · ');
@@ -429,19 +488,42 @@ function render(){
  $('#rail-featured').hidden=!featuredHere.length;
  if(featuredHere.length)mountRail($('#rail-featured'),featuredHere.map(i=>card(i,{featured:true})),hostTile());
  $('#featured-heading').textContent='Featured'+(where?' in '+where:' this week')+'.';
+ renderShowcase(all,now,place);
 
  const host=$('#category-rails');
  if(!host.children.length){
-  host.innerHTML=homeRails.map(([k,l,sub])=>`<section class="rail" id="rail-${k}" aria-labelledby="rail-${k}-h"><div class="wrap"><div class="section-head"><div><span class="label">${esc(sub)}</span><h2 id="rail-${k}-h">${esc(l)}.</h2></div><div class="rail-controls"><button type="button" class="head-link" data-see="${k}">See all ↗</button></div></div><div class="rail-track" data-track></div></div></section>`).join('');
+  // A slot for an advert after every second rail, and a price row after the third.
+  host.innerHTML=homeRails.map(([k,l,sub],n)=>`<section class="rail" id="rail-${k}" aria-labelledby="rail-${k}-h"><div class="wrap"><div class="section-head"><div><span class="label">${esc(sub)}</span><h2 id="rail-${k}-h">${esc(l)}.</h2></div><div class="rail-controls"><button type="button" class="head-link" data-see="${k}">See all ↗</button></div></div><div class="rail-track" data-track></div></div></section>`
+   +(n===2?'<section class="rail rail-under" id="rail-under" hidden aria-labelledby="rail-under-h"><div class="wrap"><div class="section-head"><div><span class="label">Big nights, small prices</span><h2 id="rail-under-h">Under 20.</h2></div><div class="rail-controls"></div></div><div class="rail-track" data-track></div></div></section>':'')
+   +(n%2===1?'<div class="promo-slot wrap" data-promo></div>':'')).join('')
+   +'<div class="wrap rails-more"><button type="button" class="btn-quiet" id="rails-more" hidden></button></div>';
   host.querySelectorAll('[data-see]').forEach(b=>b.onclick=()=>commitForm({category:b.dataset.see},{scroll:true}));
+  $('#rails-more').onclick=()=>{moreRails=!moreRails;render();if(!moreRails)$('#rail-'+homeRails[RAILS_SHOWN-1][0])?.scrollIntoView({block:'start'});};
  }
+
+ let shownRails=0;
  for(const [k] of homeRails){
   const section=document.getElementById('rail-'+k);
   // Paid features lead, then sellers take turns; long rails are capped.
-  const real=mixSellers(sortItems(filterItems(all,{...place,category:k},now))).slice(0,24);
-  section.hidden=!real.length;
-  if(real.length)mountRail(section,real.map(i=>card(i)));
+  // Listings with proper pictures lead; the rest follow in the same seller mix.
+  const real=pictureFirst(mixSellers(sortItems(filterItems(all,{...place,category:k},now)))).slice(0,24);
+  shownRails+=real.length?1:0;
+  const folded=!moreRails&&real.length&&shownRails>RAILS_SHOWN;
+  section.hidden=!real.length||folded;section.classList.toggle('rail-folded',!!folded);
+  if(real.length&&!folded)mountRail(section,real.map(i=>card(i)));
  }
+ // Adverts go only into slots that follow a rail on show, so two never sit together.
+ const ads=adverts(filterItems(all,place,now)).filter(Boolean);let adAt=0;
+ host.querySelectorAll('[data-promo]').forEach(slot=>{const before=slot.previousElementSibling;slot.innerHTML=before&&!before.hidden?ads[adAt++]||'':'';});
+ const foldedRails=homeRails.filter(([k])=>document.getElementById('rail-'+k).classList.contains('rail-folded'));
+ $('#rails-more').hidden=!foldedRails.length&&!moreRails;
+ $('#rails-more').textContent=moreRails?'Show fewer categories':'More categories: '+foldedRails.map(([,l])=>l).join(', ');
+ // Under 20: cheap nights in the visitor's currency, soonest first.
+ const cur=(state.country&&state.country!=='GB')?'eur':'gbp';
+ const under=pictureFirst(sortItems(filterItems(all,place,now).filter(i=>!i.soldOut&&i.currency===cur&&Number.isInteger(i.priceCents)&&i.priceCents>0&&i.priceCents<=2000))).slice(0,20);
+ $('#rail-under').hidden=under.length<4;
+ $('#rail-under-h').textContent='Under '+(cur==='gbp'?'£':'€')+'20.';
+ if(under.length>=4)mountRail($('#rail-under'),under.map(i=>card(i)));
  // Our own tickets get their own rail first: no booking fee, wallet passes and our support.
  const direct=sortItems(filterItems(all,place,now)).filter(i=>i.source==='ticketbunker'&&!i.soldOut).slice(0,24);
  $('#rail-direct').hidden=!direct.length;

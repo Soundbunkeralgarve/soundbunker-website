@@ -52,3 +52,13 @@ test('location is allowed on our own pages (Near me) and the app worker is never
   assert.equal(vercel.headers.find(h => h.source === '/sw.js').headers.find(h => h.key === 'Cache-Control').value, 'no-cache');
   assert.match(shell, /<link rel="manifest" href="\/site.webmanifest"\/>/);
 });
+
+test('city page events carry the fields Google asks for', () => {
+  const html = cityHtml(shell, cityBySlug('london'), [{title: 'Gig', url: 'https://www.skiddle.com/x/?sktag=1', startsAt: '2026-12-28T20:00:00Z', timezone: 'Europe/London', venue: 'O2', city: 'London', countryCode: 'GB', priceCents: 1500, currency: 'gbp', seller: 'Skiddle', address: '1 Peninsula Square, London, SE10 0DX', image: 'https://img.example/g.jpg'}]);
+  const ld = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map(m => JSON.parse(m[1])).find(j => j['@type'] === 'ItemList');
+  const e = ld.itemListElement[0].item;
+  for (const k of ['image', 'description', 'eventStatus', 'eventAttendanceMode', 'organizer']) assert.ok(e[k], k);
+  assert.equal(e.location.address.streetAddress, '1 Peninsula Square');
+  assert.equal(e.offers.availability, 'https://schema.org/InStock');
+  assert.equal(e.organizer.name, 'Skiddle');
+});

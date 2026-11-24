@@ -1,0 +1,98 @@
+/* Homepage showcase: spotlight, moods, top 10, adverts and designed artwork for listings
+   without pictures. Loaded before home-sales.css so shared tokens stay in one place. */
+
+/* Spotlight: one big tile and four smaller ones on a dark band. */
+.spotlight{background:#050606;color:#fff;padding:56px 0 52px}
+.spotlight .label{color:#00e0a6}
+.spotlight h2{color:#fff;font:800 clamp(38px,4.4vw,64px)/.95 var(--display,'Archivo',sans-serif);text-transform:uppercase;margin:6px 0 22px}
+.spot-grid{display:grid;grid-template-columns:2fr 1fr 1fr;grid-template-rows:repeat(2,minmax(220px,1fr));gap:14px}
+.spot-tile{position:relative;display:block;overflow:hidden;border-radius:18px;background:#111a16;color:#fff;text-decoration:none;min-height:220px;isolation:isolate}
+.spot-tile.is-big{grid-row:1/3;min-height:460px}
+.spot-tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+.spot-tile.is-thumb img{object-fit:contain;padding:8% 18% 34%}
+.spot-fill{position:absolute;inset:-20px;background-size:cover;background-position:center;filter:blur(22px) saturate(1.2) brightness(.55)}
+.spot-tile:hover img,.spot-tile:focus-visible img{transform:scale(1.05)}
+.spot-shade{position:absolute;inset:0;background:linear-gradient(180deg,#05060600 30%,#050606d9 78%,#050606 100%)}
+.spot-copy{position:absolute;left:0;right:0;bottom:0;padding:18px 20px;display:grid;gap:6px}
+.spot-cat{justify-self:start;font:600 10.5px var(--mono,monospace);letter-spacing:.14em;text-transform:uppercase;color:#04110c;background:#00e0a6;border-radius:999px;padding:4px 9px}
+.spot-copy b{font:800 clamp(20px,1.7vw,26px)/1.05 var(--display,'Archivo',sans-serif);text-transform:uppercase;letter-spacing:-.01em}
+.spot-tile.is-big .spot-copy b{font-size:clamp(30px,3.2vw,48px)}
+.spot-meta{font-size:13px;color:#d5ddd9}
+.spot-foot{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.spot-foot strong{font-size:16px}
+.spot-foot small{font:500 10.5px var(--mono,monospace);letter-spacing:.1em;text-transform:uppercase;color:#b9c6c0}
+
+/* Moods: picture tiles with live counts. */
+.moods{padding:56px 0 24px}
+.moods h2{font:800 clamp(36px,4vw,58px)/.95 var(--display,'Archivo',sans-serif);text-transform:uppercase;margin:6px 0 20px}
+.mood-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+.mood-tile{position:relative;overflow:hidden;border:0;border-radius:16px;aspect-ratio:4/5;padding:0;cursor:pointer;background:linear-gradient(145deg,#0b2b22,#050606);color:#fff;text-align:left;isolation:isolate}
+.mood-tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .5s ease}
+.mood-tile:hover img,.mood-tile:focus-visible img{transform:scale(1.06)}
+.mood-shade{position:absolute;inset:0;background:linear-gradient(180deg,#05060610 35%,#050606e6 100%)}
+.mood-copy{position:absolute;left:14px;right:14px;bottom:14px;display:grid;gap:3px}
+.mood-copy b{font:800 22px/1 var(--display,'Archivo',sans-serif);text-transform:uppercase}
+.mood-copy small{font-size:12px;color:#d5ddd9;line-height:1.3}
+.mood-copy em{font:600 10.5px var(--mono,monospace);font-style:normal;letter-spacing:.12em;text-transform:uppercase;color:#00e0a6;margin-top:4px}
+.mood-tile:focus-visible{outline:3px solid #00e0a6;outline-offset:3px}
+
+/* Top 10: big outlined numbers beside the usual cards. */
+.top10{background:#0b0c0c;color:#fff;padding:56px 0 40px}
+.top10 .label{color:#00e0a6}
+.top10 h2{color:#fff}
+.top-item{position:relative;padding-left:46px}
+.top-num{position:absolute;left:-4px;top:-18px;z-index:2;font:900 120px/1 var(--display,'Archivo',sans-serif);color:#0b0c0c;-webkit-text-stroke:2px #00e0a6;pointer-events:none}
+.top10 .rail-arrows button{background:transparent;color:#fff;border-color:#ffffff40}
+.top10 .rail-progress{background:#ffffff26}
+
+/* Adverts between rails. */
+.promo-slot:empty{display:none}
+.promo-slot{padding-top:20px;padding-bottom:20px}
+.promo{position:relative;overflow:hidden;border-radius:22px;min-height:280px;background:#050606;color:#fff;display:flex;align-items:center;isolation:isolate}
+.promo img{position:absolute;inset:0 0 0 38%;width:62%;height:100%;object-fit:cover}
+.promo-shade{position:absolute;inset:0;background:linear-gradient(90deg,#050606 36%,#050606cc 52%,#05060600 85%)}
+.promo-copy{position:relative;padding:36px 40px;max-width:560px;display:grid;gap:10px}
+.promo-copy .label{color:#00e0a6}
+.promo-copy h2{margin:0;color:#fff;font:800 clamp(30px,3.4vw,50px)/.95 var(--display,'Archivo',sans-serif);text-transform:uppercase}
+.promo-copy p{margin:0;color:#d5ddd9;font-size:16px;line-height:1.5}
+.promo-cta{justify-self:start;margin-top:8px;display:inline-flex;align-items:center;min-height:46px;padding:0 20px;border-radius:999px;background:#00e0a6;color:#04110c;font:700 15px var(--body,sans-serif);text-decoration:none}
+.promo-cta:hover{background:#fff}
+.promo-vip{background:radial-gradient(80% 120% at 90% 10%,#00e0a633,transparent 60%),#050606}
+.promo-host{background:radial-gradient(80% 120% at 90% 10%,#ffffff1a,transparent 60%),#0b0c0c}
+
+/* Fold: the first six categories show; the rest open on request. */
+.rails-more{display:flex;justify-content:center;padding:10px 0 30px}
+.rails-more .btn-quiet{max-width:760px;text-align:center;line-height:1.4;padding:12px 20px;border-radius:999px}
+
+/* Designed artwork instead of an empty box when a listing has no picture. */
+.no-poster[data-cat]{position:relative;display:flex!important;flex-direction:column;justify-content:flex-end;align-items:flex-start;gap:4px;padding:18px;width:100%;height:100%;min-height:100%;
+  background:radial-gradient(90% 80% at 85% 10%,#00e0a640,transparent 60%),linear-gradient(150deg,#0e2a22,#050606 70%);color:#fff;font:inherit;text-align:left}
+.no-poster[data-cat] span{font:800 clamp(20px,2vw,28px)/1 var(--display,'Archivo',sans-serif);text-transform:uppercase;color:#00e0a6}
+.no-poster[data-cat] b{font:600 11px var(--mono,monospace);letter-spacing:.12em;text-transform:uppercase;color:#cfe0d9}
+.no-poster[data-cat="music"],.no-poster[data-cat="club"]{background:radial-gradient(90% 80% at 85% 10%,#7c4dff55,transparent 60%),linear-gradient(150deg,#1a1033,#050606 70%)}
+.no-poster[data-cat="shows"],.no-poster[data-cat="comedy"],.no-poster[data-cat="cinema"]{background:radial-gradient(90% 80% at 85% 10%,#ff4d6d4d,transparent 60%),linear-gradient(150deg,#2a0d16,#050606 70%)}
+.no-poster[data-cat="family"],.no-poster[data-cat="seasonal"]{background:radial-gradient(90% 80% at 85% 10%,#ffc94d55,transparent 60%),linear-gradient(150deg,#2b2108,#050606 70%)}
+.no-poster[data-cat="boat"],.no-poster[data-cat="transit"],.no-poster[data-cat="transfer"]{background:radial-gradient(90% 80% at 85% 10%,#3db8ff55,transparent 60%),linear-gradient(150deg,#082033,#050606 70%)}
+
+/* Quieter card actions so the card itself leads. */
+.listing-actions{opacity:.75;transition:opacity .2s}
+.listing-card:hover .listing-actions,.listing-actions:focus-within{opacity:1}
+
+@media(max-width:1100px){.mood-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:860px){
+  .spot-grid{grid-template-columns:1fr 1fr;grid-template-rows:auto}
+  .spot-tile.is-big{grid-column:1/3;grid-row:auto;min-height:340px}
+  .spot-tile{min-height:200px}
+  .promo img{inset:0;width:100%;opacity:.45}
+  .promo-shade{background:linear-gradient(180deg,#05060699,#050606f2)}
+  .promo-copy{padding:28px 24px}
+}
+@media(max-width:560px){
+  .spotlight,.top10{padding:40px 0 34px}
+  .mood-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .spot-tile{min-height:180px}
+  .spot-copy{padding:14px}
+  .top-item{padding-left:34px}.top-num{font-size:88px;top:-12px}
+  .promo{min-height:240px}
+}
+@media(prefers-reduced-motion:reduce){.spot-tile img,.mood-tile img{transition:none}}
