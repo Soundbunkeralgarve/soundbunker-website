@@ -1,6 +1,6 @@
 // The site's one-line pitch as a banner after the first section of every public page.
 // Same exemptions as the coming-soon notice: no banner on ticket, organiser or door pages.
-import {needsNotice} from './coming-soon.js?v=20261125h';
+import {needsNotice} from './coming-soon.js?v=20261125-welcome';
 
 export const PROMO = Object.freeze({
   headline: 'Premium event tickets. No booking fees.',
@@ -30,7 +30,7 @@ const css = `.tb-promo{background:linear-gradient(100deg,#04140d 0%,#0b2a1f 45%,
 if (typeof document !== 'undefined' && needsNotice(location.pathname, null)) {
   const place = () => {
     const main = document.querySelector('main');
-    if (!main || main.querySelector('.tb-promo')) return;
+    if (!main || main.querySelector('.tb-promo, .hero-two')) return;
     const first = [...main.children].find(el => /^(SECTION|DIV)$/.test(el.tagName) && !el.hidden);
     const style = document.createElement('style'); style.textContent = css; document.head.append(style);
     // After the hero, and after the homepage's slim strip if it follows the hero.

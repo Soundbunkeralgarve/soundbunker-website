@@ -19,12 +19,14 @@ if (typeof document !== 'undefined' && needsNotice(location.pathname, remembered
   style.textContent = `
 .tb-soon{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;padding:24px;background:#07070b;color:#fff;font-family:'DM Sans',Arial,sans-serif;text-align:center;overflow:auto}
 .tb-soon::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 20% 15%,#00e0a633,transparent 45%),radial-gradient(circle at 85% 85%,#ff4f9a2e,transparent 45%);pointer-events:none}
-.tb-soon-box{position:relative;max-width:640px}
-.tb-soon img{width:220px;height:auto;margin:0 auto 34px;display:block}
+.tb-soon-box{position:relative;max-width:640px;width:100%;margin-block:auto}
+.tb-soon img{width:200px;height:auto;margin:0 auto 24px;display:block}
 .tb-soon h1{font:900 clamp(2.8rem,9vw,5.6rem)/.95 'Barlow Condensed',Arial,sans-serif;text-transform:uppercase;margin:0 0 18px;letter-spacing:-.01em}
 .tb-soon h1 em,.tb-soon h1 span{font-family:'Barlow Condensed',Arial,sans-serif!important;font-weight:900!important;font-style:normal!important;text-transform:uppercase!important;letter-spacing:inherit;color:inherit}
 .tb-soon h1 em{color:#00e0a6}
-.tb-soon h1 span{cursor:text}
+.tb-soon h1 span{cursor:pointer;border-radius:4px}
+.tb-soon :focus-visible{outline:3px solid #00e0a6;outline-offset:5px}
+.tb-soon h1:focus{outline:none}
 .tb-soon p{font-size:1.1rem;line-height:1.6;color:#c9cfd6;margin:0 auto 26px;max-width:46ch}
 .tb-soon a{display:inline-flex;min-height:48px;align-items:center;padding:12px 22px;border-radius:999px;background:#00e0a6;color:#04140d;font-weight:800;text-decoration:none}
 .tb-soon a:hover{background:#ff4f9a;color:#20030f}
@@ -47,37 +49,72 @@ html.tb-soon-on,html.tb-soon-on body{overflow:hidden!important}
 .tb-soon-kind b{display:block;font:inherit;animation:tbSoonIn .6s ease both}
 @keyframes tbSoonIn{from{opacity:0;transform:translateY(60%)}to{opacity:1;transform:none}}
 .tb-soon-perks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 26px;text-align:left}
-.tb-soon-perks li{list-style:none;padding:14px;border:1px solid #2a2a38;border-radius:14px;background:#12121bcc;opacity:0;animation:tbSoonUp .6s ease forwards;transition:border-color .4s,box-shadow .4s}
+.tb-soon-perks li{list-style:none;padding:14px;border:1px solid #2a2a38;border-radius:14px;background:#12121bcc;transition:border-color .4s,box-shadow .4s}
 .tb-soon-perks li:nth-child(2){animation-delay:.15s}.tb-soon-perks li:nth-child(3){animation-delay:.3s}.tb-soon-perks li:nth-child(4){animation-delay:.45s}
 .tb-soon-perks li.lit{border-color:#00e0a6;box-shadow:0 0 0 1px #00e0a6,0 10px 30px #00e0a633}
 .tb-soon-perks b{display:block;font:800 1.05rem/1.1 'Barlow Condensed',Arial,sans-serif;text-transform:uppercase;color:#fff;margin:6px 0 4px}
-.tb-soon-perks span{font-size:.8rem;line-height:1.4;color:#aeb4bf}
+.tb-soon-perks span{font-size:.875rem;line-height:1.5;color:#c9cfd6}
 .tb-soon-perks em{font-style:normal;font-size:1.3rem}
 @keyframes tbSoonUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 .tb-soon-box{max-width:820px}
-@media(max-width:700px){.tb-soon-perks{grid-template-columns:1fr 1fr}.tb-soon{place-items:start center}}
+@media(max-width:700px){.tb-soon-perks{grid-template-columns:1fr 1fr;padding:0;gap:10px}.tb-soon{place-items:start center;padding:24px 20px}.tb-soon-box{margin-block:0}.tb-soon img{width:180px;margin-bottom:20px}.tb-soon h1{font-size:clamp(2.8rem,10vw,4rem)}.tb-soon p{font-size:1rem}.tb-soon .tb-soon-kind{font-size:1.6rem}.tb-soon-perks li{padding:12px}}
 @media(prefers-reduced-motion:reduce){.tb-soon-bg img,.tb-soon-kind b,.tb-soon-perks li{transition:none;animation:none;opacity:1;transform:none}.tb-soon-bg img{opacity:0}.tb-soon-bg img.on{opacity:.32}}`;
   const box = document.createElement('div');
   box.className = 'tb-soon';
   box.setAttribute('role', 'dialog');
   box.setAttribute('aria-modal', 'true');
-  box.setAttribute('aria-labelledby', 'tb-soon-h');
+  box.setAttribute('aria-label', 'Welcome to TicketBunker. Coming soon.');
+  box.setAttribute('aria-describedby', 'tb-soon-intro');
   box.innerHTML = `<div class="tb-soon-bg" aria-hidden="true">${KINDS.map(([, img], i) => `<img src="${img}" alt=""${i ? ' loading="lazy"' : ''}>`).join('')}</div><div class="tb-soon-box"><img src="/brand-compact.png" alt="The TicketBunker" width="220">
 <h1 id="tb-soon-h">We’re not <span data-soon-enter>open</span> yet.<br><em>Coming soon.</em></h1>
 <p class="tb-soon-kind" aria-hidden="true"><b data-soon-kind>Gigs</b></p>
-<p class="tb-soon-what"><b>Premium event tickets. No booking fees.</b><br>Plus the best travel deals from the biggest names in hotels, flights, trains &amp; tours.</p><p class="tb-soon-partners">Viator · GetYourGuide · Aviasales · Skiddle · Entradas.com</p>
+<p class="tb-soon-what" id="tb-soon-intro"><b>Premium event tickets. No booking fees.</b><br>Plus the best travel deals from the biggest names in hotels, flights, trains &amp; tours.</p><p class="tb-soon-partners">Viator · GetYourGuide · Aviasales · Skiddle · Entradas.com</p>
 <div class="tb-soon-count" data-soon-count hidden aria-live="polite"><b>0</b><span><i></i>events, tours &amp; days out lined up, live now</span></div>
 <ul class="tb-soon-perks" aria-label="What you get when we open"><li><em>🎟️</em><b>No booking fees</b><span>Our events cost the ticket price, nothing added.</span></li><li><em>📱</em><b>Wallet tickets</b><span>Apple &amp; Google Wallet, ready at the door.</span></li><li><em>⭐</em><b>VIP perks</b><span>Early access, faster entry and guestlist spots.</span></li><li><em>✈️</em><b>The whole trip</b><span>Hotels, flights, trains and food in one place.</span></li></ul>
 <p>Across the UK and Europe. We’re putting the finishing touches to it now.</p>
 <a href="/organiser">Hosting an event? Organiser portal →</a>
 <small>Already have tickets? <a href="/my-tickets" style="all:unset;cursor:pointer;text-decoration:underline">My tickets</a></small></div>`;
-  const show = () => { document.documentElement.classList.add('tb-soon-on'); document.head.append(style); document.body.append(box); };
-  if (document.body) show(); else document.addEventListener('DOMContentLoaded', show, {once: true});
+  let previousFocus, background = [], backgroundObserver;
+  const focusables = () => [...box.querySelectorAll('a[href], button, [tabindex="0"]')];
+  const containKeys = e => {
+    // The pre-launch page has no public close action. Keep Escape from moving
+    // focus to the navigation underneath it.
+    if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); return; }
+    if (e.key !== 'Tab') return;
+    const items = focusables(), first = items[0], last = items.at(-1);
+    if (!first) { e.preventDefault(); return; }
+    if (e.shiftKey && (document.activeElement === first || !items.includes(document.activeElement))) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && (document.activeElement === last || !items.includes(document.activeElement))) { e.preventDefault(); first.focus(); }
+  };
+  const show = () => {
+    if (box.isConnected) return;
+    previousFocus = document.activeElement;
+    document.documentElement.classList.add('tb-soon-on'); document.head.append(style); document.body.append(box);
+    background = [...document.body.children].filter(el => el !== box && !['SCRIPT', 'STYLE'].includes(el.tagName)).map(el => [el, el.inert]);
+    background.forEach(([el]) => { el.inert = true; });
+    backgroundObserver = new MutationObserver(records => {
+      for (const record of records) for (const el of record.addedNodes) {
+        if (el.nodeType === 1 && el !== box && !['SCRIPT', 'STYLE'].includes(el.tagName) && !background.some(([existing]) => existing === el)) {
+          background.push([el, el.inert]); el.inert = true;
+        }
+      }
+    });
+    backgroundObserver.observe(document.body, {childList: true});
+    const heading = box.querySelector('#tb-soon-h'); heading.tabIndex = -1; heading.focus({preventScroll: true});
+    document.addEventListener('keydown', containKeys, true);
+    document.dispatchEvent(new Event('tb:welcome-ready'));
+  };
+  if (document.body) show(); else {
+    // A head bootstrap may finish before <body> exists. Mount as soon as the
+    // parser creates it, without waiting for other deferred modules to finish.
+    const observer = new MutationObserver(() => { if (document.body) { observer.disconnect(); show(); } });
+    observer.observe(document.documentElement, {childList: true});
+  }
   // Rotate ticket types (with their photo) and light up one benefit at a time.
   const pics = [...box.querySelectorAll('.tb-soon-bg img')], perks = [...box.querySelectorAll('.tb-soon-perks li')];
   let kind = box.querySelector('[data-soon-kind]');
   let at = 0; pics[0].classList.add('on');
-  const timer = setInterval(() => {
+  const timer = matchMedia('(prefers-reduced-motion: reduce)').matches ? null : setInterval(() => {
     if (!box.isConnected) return clearInterval(timer);
     pics[at].classList.remove('on'); at = (at + 1) % KINDS.length; pics[at].classList.add('on');
     // A fresh element restarts the slide-in animation.
@@ -95,8 +132,17 @@ html.tb-soon-on,html.tb-soon-on body{overflow:hidden!important}
       num.textContent = Math.round(total * e).toLocaleString('en-GB'); if (k < 1) requestAnimationFrame(step); };
     requestAnimationFrame(step);
   }).catch(() => {});
-  box.querySelector('[data-soon-enter]').addEventListener('click', () => {
+  const enter = box.querySelector('[data-soon-enter]');
+  enter.setAttribute('role', 'button'); enter.tabIndex = 0; enter.setAttribute('aria-label', 'Open the TicketBunker preview');
+  const openPreview = () => {
     try { localStorage.setItem(KEY, '1'); } catch { /* still let them in for this visit */ }
+    clearInterval(timer); backgroundObserver?.disconnect(); document.removeEventListener('keydown', containKeys, true);
+    background.forEach(([el, inert]) => { el.inert = inert; });
     box.remove(); style.remove(); document.documentElement.classList.remove('tb-soon-on');
-  });
+    const restore = previousFocus && previousFocus !== document.body && previousFocus.isConnected;
+    const target = restore ? previousFocus : document.querySelector('#hero-heading, main h1, main');
+    if (target) { if (!restore && !target.hasAttribute('tabindex')) target.tabIndex = -1; target.focus({preventScroll: true}); }
+  };
+  enter.addEventListener('click', openPreview);
+  enter.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPreview(); } });
 }

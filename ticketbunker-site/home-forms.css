@@ -1,0 +1,142 @@
+/* The ticket search has one dark field system, including its focus state. */
+.shop-home .hero.hero-sales #destination-search {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+  width:100%;
+  padding:18px;
+  border:1px solid #343440;
+  border-radius:20px;
+  background:#101018;
+  color:#f4f6f8;
+  overflow:visible;
+  text-align:left;
+  box-shadow:0 18px 48px #0006;
+}
+.shop-home .hero.hero-sales #destination-search .ds-field {
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  min-width:0;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+  order:0;
+  grid-column:auto;
+}
+.shop-home .hero.hero-sales #destination-search .ds-field:focus-within {
+  background:transparent;
+  box-shadow:none;
+}
+.shop-home .hero.hero-sales #destination-search .ds-keyword,
+.shop-home .hero.hero-sales #destination-search .ds-dates {
+  grid-column:1/-1;
+}
+.shop-home .hero.hero-sales #destination-search .ds-field label {
+  color:#c9cfd8;
+  font:600 .875rem/1.4 var(--body,'DM Sans',Arial,sans-serif);
+  letter-spacing:0;
+  text-transform:none;
+  margin:0;
+}
+.shop-home .hero.hero-sales #destination-search .ds-field input,
+.shop-home .hero.hero-sales #destination-search .ds-field select {
+  box-sizing:border-box;
+  display:block;
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  min-height:50px;
+  margin:0;
+  padding:11px 13px;
+  border:1px solid #41414e;
+  border-radius:10px;
+  background:#181822;
+  color:#f4f6f8;
+  -webkit-text-fill-color:#f4f6f8;
+  font:500 1rem/1.5 var(--body,'DM Sans',Arial,sans-serif);
+  color-scheme:dark;
+  outline:none;
+  box-shadow:none;
+}
+.shop-home .hero.hero-sales #destination-search .ds-keyword input {
+  font-size:1.0625rem;
+}
+.shop-home .hero.hero-sales #destination-search .ds-field input::placeholder {
+  color:#acb3bf;
+  -webkit-text-fill-color:#acb3bf;
+  opacity:1;
+  font-weight:400;
+}
+.shop-home .hero.hero-sales #destination-search .ds-field select {
+  appearance:none;
+  -webkit-appearance:none;
+  padding-right:38px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23d5dce6' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 7 5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 11px center;
+  background-size:18px;
+}
+.shop-home .hero.hero-sales #destination-search .ds-field select option,
+.shop-home .hero.hero-sales #destination-search .ds-field select optgroup {
+  color:#f4f6f8;
+  background:#181822;
+}
+.shop-home .hero.hero-sales #destination-search .ds-field input:focus,
+.shop-home .hero.hero-sales #destination-search .ds-field select:focus {
+  border-color:#00e0a6;
+  outline:2px solid #00e0a6;
+  outline-offset:2px;
+  background-color:#1c2427;
+}
+.shop-home .hero.hero-sales #destination-search .ds-dates {
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;
+  gap:8px;
+}
+.shop-home .hero.hero-sales #destination-search .ds-dates[hidden] {display:none}
+.shop-home .hero.hero-sales #destination-search .ds-submit {
+  grid-column:1/-1;
+  min-height:52px;
+  margin:2px 0 0;
+  padding:12px 20px;
+  border:0;
+  border-radius:10px;
+  background:#00e0a6;
+  color:#04140d;
+  font:800 1rem/1.5 var(--body,'DM Sans',Arial,sans-serif);
+}
+.shop-home .hero.hero-sales #destination-search .ds-submit:hover {background:#49efc2}
+.shop-home .hero.hero-sales #destination-search .ds-submit:focus-visible {outline:3px solid #fff;outline-offset:3px}
+.shop-home .hero.hero-sales .discovery-entry {max-width:none;gap:10px}
+.shop-home .hero.hero-sales .discovery-entry button {min-height:48px;font-size:.9375rem;border-radius:10px}
+.shop-home .hero.hero-sales .hero-place-note {font-size:.875rem;line-height:1.6;margin-top:14px}
+.shop-home .hero.hero-sales .hero-place-note a {display:inline-block;padding-block:4px}
+@media(max-width:520px) {
+  .shop-home .hero.hero-sales #destination-search {padding:14px;gap:12px;border-radius:16px}
+  .shop-home .hero.hero-sales #destination-search .ds-country,
+  .shop-home .hero.hero-sales #destination-search .ds-city {grid-column:1/-1}
+  .shop-home .hero.hero-sales #destination-search .ds-dates {grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .shop-home .hero.hero-sales #destination-search .ds-dates label:first-child {grid-column:1;grid-row:1}
+  .shop-home .hero.hero-sales #destination-search .ds-dates label[for=ds-to] {grid-column:2;grid-row:1}
+  .shop-home .hero.hero-sales #destination-search .ds-dates input {grid-row:2}
+}
+
+/* Keep the ticket finder within reach before decorative hero content. */
+.shop-home .hero.hero-sales .hero-grid{padding-top:28px;padding-bottom:32px}
+.shop-home .hero.hero-sales .hero-copy h1{font-size:clamp(64px,6.5vw,100px);line-height:.94;margin:20px 0 14px}
+.shop-home .hero.hero-sales .hero-copy .hero-tagline{margin-block:0 14px;font-size:18px}
+.shop-home .hero.hero-sales .hero-two{margin:0 0 16px;gap:10px}
+.shop-home .hero.hero-sales .hero-two span{padding:0 12px 0 0;background:none;border:0;border-radius:0;backdrop-filter:none}
+.shop-home .hero.hero-sales .hero-two small{font-size:14px}
+@media(min-width:1100px){.shop-home .hero.hero-sales #destination-search{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:650px){
+ .shop-home .hero.hero-sales .hero-grid{padding-top:22px}
+ .shop-home .hero.hero-sales .hero-copy h1{font-size:clamp(52px,14vw,76px);margin-top:16px}
+ .shop-home .hero.hero-sales .hero-two{display:none}
+ .shop-home .hero.hero-sales .hero-copy .hero-tagline{font-size:16px}
+ .shop-home .hero.hero-sales #destination-search{gap:10px}
+}

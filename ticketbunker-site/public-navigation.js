@@ -1,6 +1,7 @@
-import "./coming-soon.js?v=20261125h";
+import "./coming-soon.js?v=20261125-welcome";
 import "./promo-banner.js?v=20261125";
 import "./app-promo.js?v=20261125ga";
+import {enhancePublicWorkflow} from './public-workflow.js?v=20261124-clean';
 const nav=document.getElementById('navigation'),toggle=document.getElementById('menu-toggle');
 if(nav&&toggle){
  if(!nav.querySelector('[data-route="guides"]')){const a=document.createElement('a');a.href='/city-guides';a.dataset.route='guides';a.textContent='City guides';nav.insertBefore(a,nav.querySelector('[data-route="vip"]'));}
@@ -17,8 +18,10 @@ if(nav&&toggle){
  toggle.addEventListener('click',()=>{const open=nav.classList.toggle('open');toggle.setAttribute('aria-expanded',String(open));});
  const close=()=>{nav.classList.remove('open');toggle.setAttribute('aria-expanded','false');};
  nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',close));
- document.addEventListener('keydown',e=>{if(e.key==='Escape'){close();toggle.focus();}});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&nav.classList.contains('open')&&!nav.querySelector('details[open]')){close();toggle.focus();}});
  const path=location.pathname.replace(/\.html$/,'');
- const route=path.startsWith('/guides/')?'guides':{'/':'tickets','/index':'tickets','/event':'tickets','/featured':'tickets','/for-organisers':'organisers','/pricing':'organisers','/about':'about','/vip':'vip','/city-guides':'guides','/plan-your-trip':'trip','/hotels':'trip','/flights':'trip','/car-hire':'trip','/flight-hotel-packages':'trip','/travel':'trip','/vip-transfers':'trip','/restaurants':'trip','/stag-hen-weekends':'groups','/get-around':'getaround'}[path]||((path.startsWith('/event/')||path.startsWith('/listing/'))?'tickets':'');
+ const route=path.startsWith('/guides/')?'guides':{'/':'tickets','/index':'tickets','/event':'tickets','/featured':'tickets','/for-organisers':'organisers','/pricing':'organisers','/about':'about','/vip':'vip','/deals':'deals','/city-guides':'guides','/plan-your-trip':'trip','/hotels':'trip','/flights':'trip','/car-hire':'trip','/flight-hotel-packages':'trip','/travel':'trip','/vip-transfers':'trip','/restaurants':'trip','/stag-hen-weekends':'groups','/get-around':'getaround'}[path]||((path.startsWith('/event/')||path.startsWith('/listing/'))?'tickets':'');
  if(route)nav.querySelector(`[data-route="${route}"]`)?.setAttribute('aria-current','page');
 }
+
+enhancePublicWorkflow();
