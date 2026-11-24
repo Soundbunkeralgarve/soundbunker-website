@@ -101,15 +101,14 @@ async function handleTeamMessage(db, echo) {
     await holdForHuman(db, thread.id);
     const body = messageText(echo);
     if (body) {
-      let translated;
-      try { translated = await translateTeamReply(await threadHistory(db, thread.id), body); }
-      catch {
-        await notifyHandoff(db, thread, { summary: 'Automatic translation of the team reply failed. The original reply was delivered; please arrange a translation for the customer.', client_name: '', contact: '', language: '', urgent: false }, { message: body, whatsappNumber: echo.to });
-        return;
-      }
-      if (translated) {
-        const sentId = await sendWhatsApp(echo.to, translated);
-        await saveMessage(db, thread.id, 'assistant', translated, sentId);
+      try {
+        const translated = await translateTeamReply(await threadHistory(db, thread.id), body);
+        if (translated) {
+          const sentId = await sendWhatsApp(echo.to, translated);
+          await saveMessage(db, thread.id, 'assistant', translated, sentId);
+        }
+      } catch {
+        await notifyHandoff(db, thread, { summary: 'Automatic translation or delivery of the team reply failed. The original reply was delivered; please check the chat and arrange a translation for the customer.', client_name: '', contact: '', language: '', urgent: false }, { message: body, whatsappNumber: echo.to });
       }
     }
   }

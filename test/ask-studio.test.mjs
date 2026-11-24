@@ -286,3 +286,29 @@ test('translation uses customer language context, skips same-language replies an
   assert.equal(await translateTeamReply(history, 'Olá!'), null);
   await assert.rejects(translateTeamReply(history, 'Hello!'), /unavailable/);
 });
+
+
+test('failed WhatsApp translation delivery notifies the team once without storing a delivered translation', async () => {
+  const h = await webhook({ teamTranslation: 'Tradução da resposta da equipa: Olá Ana.' });
+  const realFetch = globalThis.fetch, posts = [];
+  globalThis.fetch = async (url, options) => {
+    posts.push(JSON.parse(options.body));
+    return { ok: false, status: 503, json: async () => ({ error: { message: 'WhatsApp unavailable' } }) };
+  };
+  try {
+    const raw = JSON.stringify({ entry: [{ changes: [{ field: 'smb_message_echoes', value: { message_echoes: [{ to: '351910000000', id: 'wamid.failed-translation', type: 'text', text: { body: 'Hi Ana.' } }] } }] }] });
+    for (let i = 0; i < 2; i++) {
+      const r = response();
+      await h.namespace.default({ method: 'POST', url: '/api/whatsapp-webhook', headers: { host: 'x', 'x-hub-signature-256': sign(raw) }, raw }, r);
+      assert.equal(r.statusCode, 200);
+      await Promise.all(h.background);
+    }
+    assert.equal(posts.length, 1);
+    assert.equal(h.handoffs.length, 1);
+    assert.match(h.handoffs[0][2].summary, /translation or delivery.*failed/);
+    assert.equal(h.handoffs[0][3].whatsappNumber, '351910000000');
+    assert.equal(h.handoffs[0][3].message, 'Hi Ana.');
+    assert.deepEqual(h.saved, [{ role: 'team', body: 'Hi Ana.' }]);
+    assert.equal(h.holds.length, 1);
+  } finally { globalThis.fetch = realFetch; }
+});
