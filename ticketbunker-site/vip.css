@@ -43,3 +43,22 @@ body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body)}
 .gl-item{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;border:1px solid #ffffff24;border-radius:16px;padding:16px 18px;background:#ffffff0a}
 .gl-item b{display:block;font:800 22px var(--display);text-transform:uppercase}.gl-item span{font-size:14px;color:#c6d3cd}
 .gl-item em{font-style:normal;font-weight:700;opacity:.8}.gl-done{color:var(--teal);opacity:1!important}
+
+/* Photo treatment (24 Nov): concert hero, picture perk cards, neon plan panel. */
+.vip-hero{position:relative;isolation:isolate;overflow:hidden;padding:96px 0 80px;background:#05030d}
+.vip-hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;filter:saturate(1.25)}
+.vip-hero::after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#05030df2 0%,#05030db8 45%,#05030d33 100%),radial-gradient(60% 80% at 85% 10%,#ff4f9a40,transparent 60%)}
+.vip-hero h1{text-shadow:0 4px 30px #0009}
+.vip-hero h1 em{background:linear-gradient(90deg,#00e0a6,#5ee7ff 55%,#ff4f9a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.vip-perks{background:#0a0812;color:#fff}.vip-perks h2{color:#fff}.vip-perks .vip-small{color:#b9b4c8}
+.perk-grid li{padding:0;overflow:hidden;background:#15111f;border:1px solid #ffffff1f;gap:0;transition:transform .25s ease,border-color .25s ease}
+.perk-grid li:hover{transform:translateY(-4px);border-color:#ff4f9a}
+.perk-grid img{width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;display:block}
+.perk-grid b{padding:16px 18px 4px;color:#fff}
+.perk-grid li:nth-child(odd) b{color:#00e0a6}.perk-grid li:nth-child(even) b{color:#ff7ab4}
+.perk-grid span{padding:0 18px 20px;color:#d4d0de}
+.vip-plans{background:radial-gradient(50% 70% at 0% 0%,#00e0a626,transparent 70%),radial-gradient(50% 70% at 100% 100%,#ff4f9a26,transparent 70%),#fff}
+.plan-best{border:2px solid transparent;background:linear-gradient(var(--paper),var(--paper)) padding-box,linear-gradient(120deg,#00e0a6,#ff4f9a) border-box;box-shadow:0 18px 50px -20px #ff4f9a80}
+@media(max-width:560px){.vip-hero{padding:56px 0 44px}}
+@media(prefers-reduced-motion:reduce){.perk-grid li{transition:none}.perk-grid li:hover{transform:none}}
+.vip-btn{box-sizing:border-box;max-width:100%}
