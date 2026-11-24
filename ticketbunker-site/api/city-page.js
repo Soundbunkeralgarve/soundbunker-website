@@ -54,6 +54,8 @@ export default async function handler(req, res) {
   } catch { /* the page still works; the browser loads listings itself */ }
   // The underlying feed may be 30 minutes old; keep this layer's total reuse
   // below 20 minutes so displayed provider data stays inside the one-hour limit.
-  res.setHeader('Cache-Control', 'public, s-maxage=600, stale-while-revalidate=600');
+  // A render without listings (feed slow or down) is cached only briefly, so search
+  // engines and visitors are not served an empty city page for long.
+  res.setHeader('Cache-Control', listings.length ? 'public, s-maxage=600, stale-while-revalidate=600' : 'public, s-maxage=60');
   return res.status(200).send(req.method === 'HEAD' ? '' : cityHtml(shell, city, listings));
 }

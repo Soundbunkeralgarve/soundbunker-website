@@ -390,6 +390,9 @@ async function listings() {
   return loading;
 }
 
+// Every cached listing, for the listings sitemap.
+export const allPartnerListings = () => listings();
+
 export function findPartnerListing(items, id, now = Date.now()) {
   if (!/^(?:skiddle:[\w-]+|viator:[\w-]+|awin:\d+:[\w-]+)$/.test(String(id || '')) || String(id).length > 120) return null;
   const item = items.find(i => i.id === id);

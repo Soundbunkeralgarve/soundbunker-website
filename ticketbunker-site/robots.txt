@@ -11,3 +11,4 @@ Disallow: /organiser
 Disallow: /scanner
 
 Sitemap: https://theticketbunker.com/sitemap.xml
+Sitemap: https://theticketbunker.com/sitemap-listings.xml
