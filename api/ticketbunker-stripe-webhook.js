@@ -11,6 +11,7 @@ import {fulfilPostponementCheckout} from './lib/ticketbunker-postponements.js';
 import {fulfilCancellationCheckout,queueCancelledPaidOrder} from './lib/ticketbunker-cancellations.js';
 import {activateVerifiedOrganiser} from './lib/organiser-activation.js';
 import {fulfilVipCheckout,refreshVipSubscription} from './lib/ticketbunker-vip.js';
+import {fulfilAdCheckout} from './lib/ticketbunker-ads.js';
 
 export const config={api:{bodyParser:false}};
 export default async function handler(req,res){
@@ -50,6 +51,7 @@ export default async function handler(req,res){
    else if(type==='event_cancellation')await fulfilCancellationCheckout(db,object);
    else if(type==='event_postponement')await fulfilPostponementCheckout(db,object);
    else if(type==='vip_membership')await fulfilVipCheckout(db,object);
+   else if(type==='ad_booking')await fulfilAdCheckout(db,object);
   }else if(event.type==='checkout.session.expired'||event.type==='checkout.session.async_payment_failed'){
    if(object.metadata?.purchase_type==='event_ticket'){
     const saved=await db.from('sb_event_orders').update({status:'cancelled'}).eq('id',object.metadata.event_order_id).eq('stripe_session_id',object.id).eq('status','reserved');if(saved.error)throw saved.error;

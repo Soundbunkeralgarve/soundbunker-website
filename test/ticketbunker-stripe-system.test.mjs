@@ -85,6 +85,7 @@ async function webhookFixture({recipient=false,payoutStatus='paid',payoutFails=f
  './organiser-connect.js':{fetchConnectStatus:async()=>{calls.push('fresh-status');return {ready:recipient}}},
  './lib/organiser-activation.js':{activateVerifiedOrganiser:async(d,id,ready)=>{calls.push({activate:id,ready});return ready}},
  './lib/ticketbunker-vip.js':{fulfilVipCheckout:async()=>{calls.push({vip:'checkout'})},refreshVipSubscription:async()=>false},
+ './lib/ticketbunker-ads.js':{fulfilAdCheckout:async()=>{calls.push({ad:'checkout'})}},
  './lib/ticketbunker-postponements.js':{fulfilPostponementCheckout:async()=>calls.push('postpone')},
  './lib/ticketbunker-cancellations.js':{fulfilCancellationCheckout:async()=>calls.push('cancel'),queueCancelledPaidOrder:async()=>false},
  './lib/ticketbunker-stripe.js':{ticketBunkerStripe:async(path,options)=>{calls.push({path,account:options.account});if(payoutFails)throw Error('Stripe unavailable');return {id:'po_synthetic',status:payoutStatus,livemode:true,arrival_date:2000000000}}},
