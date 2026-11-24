@@ -1,4 +1,4 @@
-# theticketbunker — fan app (iPhone, iPad, Android)
+# The TicketBunker (`theticketbunker/`): fan app (iPhone, iPad, Android)
 
 The theticketbunker.com experience as a native Expo / React Native app: find events, plan the night, get to the venue and show your tickets at the door. It is set up the same way as the door scanner in `../ticketbunker-scanner-native` (Expo SDK 57, React Native 0.86.3, EAS profiles, Keychain/Keystore session storage).
 

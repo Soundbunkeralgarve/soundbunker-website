@@ -93,7 +93,7 @@ test('night planner: tickets, get to the venue (walk/transit/Uber/Citymapper/Tub
     if (link.commercial === 'direct') assert.notEqual(new URL(link.url).hostname, 'www.awin1.com', 'public searches never acquire affiliate tracking');
   }
   const publicLinks = searches.flatMap(s => s.links).filter(l => l.commercial === 'direct');
-  assert.deepEqual(publicLinks.map(l => l.id), ['trainline-direct', 'omio-direct', 'expedia-cars', 'expedia-hotels', 'blacklane-direct', 'welcome-direct', 'thefork-direct', 'restaurant-map']);
+  assert.deepEqual(publicLinks.map(l => l.id), ['trainline-direct', 'omio-direct', 'expedia-cars', 'expedia-hotels', 'booking-hotels', 'blacklane-direct', 'welcome-direct', 'thefork-direct', 'restaurant-map']);
   assert.ok(publicLinks.every(l => !new URL(l.url).hostname.endsWith('awin1.com') && !new URL(l.url).searchParams.has('awinaffid')), 'public searches never acquire pending affiliate tracking');
   assert.equal(new URL(steps.find(s => s.kind === 'stay').links.find(l => l.id === 'expedia-hotels').url).searchParams.get('destination'), 'London, United Kingdom');
   assert.equal(new URL(publicLinks.find(l => l.id === 'restaurant-map').url).searchParams.get('query'), 'restaurants London, United Kingdom');
@@ -162,7 +162,7 @@ test('QR encodes the admission link', () => {
 test('store config matches the release rules', () => {
   const app = JSON.parse(readFileSync(new URL('../app.json', import.meta.url))).expo;
   const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url)));
-  assert.equal(app.name, 'theticketbunker');
+  assert.equal(app.name, 'The TicketBunker');
   assert.equal(app.ios.bundleIdentifier, app.android.package);
   assert.equal(app.version, pkg.version, 'iOS and Android ship the same version');
   assert.equal(app.ios.supportsTablet, true);
