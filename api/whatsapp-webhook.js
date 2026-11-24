@@ -7,7 +7,7 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { waitUntil } from '@vercel/functions';
 import { askStudio, fallbackReply } from './lib/studio-agent.js';
-import { chatDatabase, holdForHuman, isHeldForHuman, latestClientMessageId, notifyHandoff, openThread, releaseToAssistant, saveMessage, threadHistory, validResumeSignature } from './lib/studio-chat-store.js';
+import { chatDatabase, holdForHuman, isHeldForHuman, latestClientMessageId, notifyHandoff, openThread, releaseToAssistant, saveMessage, threadHistory, translateTeamReply, validResumeSignature } from './lib/studio-chat-store.js';
 import { readRawBody } from './lib/http.js';
 
 export const config = { api: { bodyParser: false } };
@@ -64,11 +64,14 @@ async function handleClientMessage(db, message, contact) {
   const thread = await openThread(db, 'whatsapp', message.from, contact?.profile?.name);
   const body = messageText(message) || `[The client sent a ${message.type} message]`;
   if (!await saveMessage(db, thread.id, 'client', body, message.id)) return; // Meta retried a message we already handled
-  if (isHeldForHuman(thread)) return; // a team member is answering this chat
+  if (isHeldForHuman(thread)) {
+    await notifyHandoff(db, thread, { summary: 'New customer message while the team is answering.', client_name: contact?.profile?.name || '', contact: '', language: '', urgent: false }, { message: body, whatsappNumber: message.from });
+    return;
+  }
 
   let result;
   if (!messageText(message)) {
-    result = { reply: "I'm SoundBunker's digital assistant and can only read text messages. I'll pass your message to Steve. I'm happy to help with any text questions in the meantime.", handoff: { summary: `The client sent a ${message.type} message that the assistant cannot read.`, client_name: contact?.profile?.name || '', contact: '', language: '', urgent: false } };
+    result = { reply: "Thanks for contacting SoundBunker! 👋 I'm Lofty's digital assistant, happy to help with your questions or pass your enquiry to the team. I'll pass this attachment to the team to review. Feel free to tell me a little about what you need in the meantime.", handoff: { summary: `The client sent a ${message.type} message that the assistant cannot read.`, client_name: contact?.profile?.name || '', contact: '', language: '', urgent: false } };
   } else {
     try { result = await askStudio(await threadHistory(db, thread.id), { channel: 'whatsapp' }); }
     catch { result = { reply: fallbackReply(), handoff: { summary: 'The assistant failed to answer; please reply to the client.', client_name: contact?.profile?.name || '', contact: '', language: '', urgent: false } }; }
@@ -94,7 +97,21 @@ async function handleClientMessage(db, message, contact) {
 async function handleTeamMessage(db, echo) {
   const thread = await openThread(db, 'whatsapp', echo.to);
   const stored = await saveMessage(db, thread.id, 'team', messageText(echo) || `[${echo.type} message]`, echo.id);
-  if (stored) await holdForHuman(db, thread.id);
+  if (stored) {
+    await holdForHuman(db, thread.id);
+    const body = messageText(echo);
+    if (body) {
+      try {
+        const translated = await translateTeamReply(await threadHistory(db, thread.id), body);
+        if (translated) {
+          const sentId = await sendWhatsApp(echo.to, translated);
+          await saveMessage(db, thread.id, 'assistant', translated, sentId);
+        }
+      } catch {
+        await notifyHandoff(db, thread, { summary: 'Automatic translation or delivery of the team reply failed. The original reply was delivered; please check the chat and arrange a translation for the customer.', client_name: '', contact: '', language: '', urgent: false }, { message: body, whatsappNumber: echo.to });
+      }
+    }
+  }
 }
 
 async function processDelivery(payload) {
