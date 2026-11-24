@@ -280,13 +280,15 @@ async function loadNear(){
  try{const r=await fetch('/api/partner-feed?city='+encodeURIComponent(place),{signal:AbortSignal.timeout(55000)});if(r.ok&&nearFor===place){const d=await r.json();nearFeed=Array.isArray(d.events)?d.events:[];}}catch{if(nearFor===place)nearFeed=[];}
  render();
 }
+// Transfers and city transport have their own rails and the Get around section; event lists stay events only.
+const TRANSPORT=['transit','transfer'];
 function renderNear(now){
  const place=nearPlace(),source=nearSource(),section=$('#rail-near');
  // The chooser at the top fills this city into its travel links.
  if(document.documentElement.dataset.nearPlace!==(place||'')){document.documentElement.dataset.nearPlace=place||'';document.dispatchEvent(new Event('tb:near'));}
  if(!place){section.hidden=true;return;}
  const pool=blend(events,partners,now,state.city?feed:nearFeed);
- const items=mixSellers(sortItems(filterItems(pool,{city:place,when:'any'},now).filter(i=>!i.soldOut))).slice(0,16);
+ const items=mixSellers(sortItems(filterItems(pool,{city:place,when:'any'},now).filter(i=>!i.soldOut&&!TRANSPORT.includes(i.category)))).slice(0,16);
  section.hidden=items.length<3;
  if(section.hidden)return;
  const shown=source==='location'?geoPlace.name:place;
@@ -315,7 +317,8 @@ function renderTabs(){
  tabObserver?.disconnect();
  tabObserver=new IntersectionObserver(entries=>{for(const e of entries)if(e.isIntersecting){
   track.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===e.target.id));
-  track.querySelector('.active')?.scrollIntoView({block:'nearest',inline:'center',behavior:'auto'});
+  // Slide only the tab bar sideways; scrollIntoView here could also scroll the page itself back up to the bar.
+  const a=track.querySelector('.active');if(a)track.scrollTo({left:a.offsetLeft-(track.clientWidth-a.offsetWidth)/2,behavior:'auto'});
  }},{rootMargin:'-45% 0px -50% 0px'});
  ids.forEach(id=>tabObserver.observe(document.getElementById(id)));
 }
@@ -362,7 +365,8 @@ if(pathCity){$('#city-hub').after($('#plan-trip'),$('#gyg-box'));}
 function renderHub(all,now){
  const box=$('#city-hub');
  if(!pathCity||state.city!==pathCity.city){box.hidden=true;return;}
- const name=pathCity.city,list=sortItems(filterItems(all,placeOnly(),now).filter(i=>!i.soldOut));
+ const name=pathCity.city,everything=sortItems(filterItems(all,placeOnly(),now).filter(i=>!i.soldOut));
+ const list=everything.filter(i=>!TRANSPORT.includes(i.category)),transport=everything.length-list.length;
  box.hidden=false;$('#rail-near').hidden=true;
  const counts={};for(const i of list)counts[i.category]=(counts[i.category]||0)+1;
  if(hubCat&&!counts[hubCat])hubCat='';
@@ -375,13 +379,14 @@ function renderHub(all,now){
  $('#city-amenities').innerHTML=[
   jump('city-grid','What\u2019s on',list.length?list.length.toLocaleString('en-GB')+' events':'Gigs, nights, shows'),
   !$('#gyg-box').hidden?jump('gyg-box','Tours & experiences','Day trips and activities'):`<a class="amenity" href="${esc(tourLink(name,pathCity.country))}" target="_blank" rel="sponsored noopener"><b>Tours &amp; experiences</b><small>On GetYourGuide ↗</small></a>`,
+  jump('get-around','Transfers & transport',transport?transport+' to book · live times':'Live times, routes & taxis'),
   jump('plan-trip','Trains & coaches',live('travel')),
   `<a class="amenity" href="${esc('/vip-transfers?'+new URLSearchParams({city:name,country:state.country||pathCity.country||''}))}"><b>Limos &amp; VIP transport</b><small>Check local options</small></a>`,
   jump('plan-trip','Stay nearby',live('stay')),
   jump('plan-trip','Eat nearby',live('eat')),
   jump('rail-trip','Other cities','Tickets further afield')
  ].filter(Boolean).join('');
- $('#city-amenities').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>document.getElementById(b.dataset.go).scrollIntoView({behavior:reduceMotion()?'auto':'smooth',block:'start'}));
+ $('#city-amenities').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{const to=document.getElementById(b.dataset.go);if(!to)return;if(b.dataset.go==='get-around')to.querySelector('[data-tab="trip"]')?.click();to.scrollIntoView({behavior:reduceMotion()?'auto':'smooth',block:'start'});});
  const cats=Object.keys(discoveryCategories).filter(k=>counts[k]);
  $('#city-filters').innerHTML=[['','All',list.length],...cats.map(k=>[k,discoveryCategories[k],counts[k]])].map(([k,l,n])=>`<button type="button" class="${k===hubCat?'active':''}" aria-pressed="${k===hubCat}" data-hub="${k}">${esc(l)} <small>${n}</small></button>`).join('');
  $('#city-filters').querySelectorAll('[data-hub]').forEach(b=>b.onclick=()=>{hubCat=b.dataset.hub;hubLimit=HUB_STEP;render();});
