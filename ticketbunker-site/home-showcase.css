@@ -108,6 +108,9 @@
 .shop-home .hero.hero-sales h1{text-shadow:0 2px 24px #000a,0 0 2px #0008}
 .shop-home .hero.hero-sales .h1-solid{color:#fff}
 .shop-home .hero.hero-sales .h1-outline{color:#fff;-webkit-text-stroke:0;text-shadow:0 2px 24px #000a}
+/* The city name on city pages stands out in solid teal. */
+.shop-home .hero.hero-sales .h1-city,.h1-city{color:var(--teal,#00e0a6);-webkit-text-stroke:0}
+.city-guide .h1-city{color:#00b386}
 .shop-home .hero.hero-sales .h1-outline::after{content:"";display:block;width:min(220px,40%);height:4px;margin:14px auto 0;background:var(--teal);border-radius:2px}
 .shop-home .hero.hero-sales .hero-tagline{color:#fff;text-shadow:0 1px 12px #000c}
 .shop-home .hero.hero-sales .hero-kicker{background:#ffffff1f;border-color:#ffffff59;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
