@@ -107,8 +107,8 @@
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 .shop-home .hero.hero-sales h1{text-shadow:0 2px 24px #000a,0 0 2px #0008}
 .shop-home .hero.hero-sales .h1-solid{color:#fff}
-.shop-home .hero.hero-sales .h1-outline{color:#fff;-webkit-text-stroke:0;text-shadow:0 2px 24px #000a}
-/* The city name on city pages stands out in solid teal. */
+.shop-home .hero.hero-sales .h1-outline{color:var(--teal,#00e0a6);-webkit-text-stroke:0;text-shadow:0 2px 24px #000a}
+/* "Head out" and the city name on city pages in solid teal. */
 .shop-home .hero.hero-sales .h1-city,.h1-city{color:var(--teal,#00e0a6);-webkit-text-stroke:0}
 .city-guide .h1-city{color:#00b386}
 .shop-home .hero.hero-sales .h1-outline::after{content:"";display:block;width:min(220px,40%);height:4px;margin:14px auto 0;background:var(--teal);border-radius:2px}
