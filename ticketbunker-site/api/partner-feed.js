@@ -242,8 +242,33 @@ export async function loadViator(env = process.env, {fetcher = fetch} = {}) {
 
 // Awin product feeds (Create-a-Feed CSV download URLs, one per line in AWIN_FEED_URLS).
 // The URLs carry Awin's feed key, so they live only in the environment. Every product
-// link is Awin's own tracked deep link. Theatre Tickets Direct (1936) is London theatre.
-const AWIN_MERCHANTS = Object.freeze({1936: {city: 'London', countryCode: 'GB', category: 'shows', currency: 'gbp', timezone: 'Europe/London'}});
+// link is Awin's own tracked deep link. Theatre Tickets Direct (1936) is London theatre;
+// Entradas.com (24761) is dated Spanish events with venue, address and map position.
+const AWIN_MERCHANTS = Object.freeze({
+  1936: {city: 'London', countryCode: 'GB', category: 'shows', currency: 'gbp', timezone: 'Europe/London'},
+  24761: {seller: 'Entradas.com', currency: 'eur', timezone: 'Europe/Madrid'}
+});
+// Spanish ticket genres (Awin "Tickets:genre") → our categories. Unknown genres fall back
+// to the title, like other feeds.
+const ES_GENRES = Object.freeze({
+  'pop & rock': 'music', 'otros conciertos': 'music', 'jazz & blues': 'music', 'musica clasica': 'music', 'musica flamenca': 'music',
+  'hip-hop & funk': 'music', 'electronica': 'music', 'alternativa': 'music', 'latino': 'music', 'opera': 'shows', 'zarzuela': 'shows',
+  'monologo': 'comedy', 'comedia': 'comedy', 'musicales': 'shows', 'drama': 'shows', 'otras obras': 'shows', 'magia': 'shows',
+  'cabaret': 'shows', 'otros shows': 'shows', 'danza': 'shows', 'ballet': 'shows', 'baile flamenco': 'shows', 'circo': 'family',
+  'conferencias': 'shows', 'teatro infantil': 'family', 'musical infantil': 'family', 'exposiciones y parques inflantiles': 'family',
+  'zoologicos y acuarios': 'family', 'parques tematicos': 'family', 'parques acuaticos': 'family', 'visitas guiadas': 'daysout',
+  'museos': 'daysout', 'exposiciones': 'daysout', 'tour estadios': 'sport', 'futbol': 'sport', 'baloncesto': 'sport',
+  'tenis & padel': 'sport', 'otros deportes': 'sport', 'fiestas': 'club', 'festivales de musica': 'festival', 'proyecciones': 'cinema'
+});
+// Feed towns are upper case and sometimes carry the province ("LOGROÑO, LA RIOJA",
+// "MÉRIDA (BADAJOZ)"); city pages use the English name where there is one.
+const CITY_NAMES = Object.freeze({sevilla: 'Seville', 'a coruna': 'A Coruña', zaragoza: 'Zaragoza'});
+function feedCity(value) {
+  const town = String(value || '').split(/[,(]/)[0].replace(/\s+/g, ' ').trim();
+  if (!town) return '';
+  const key = placeText(town);
+  return CITY_NAMES[key] || town.toLowerCase().replace(/(^|[\s'-])(\p{L})/gu, (m, a, b) => a + b.toUpperCase()).replace(/(?<=\p{L}) (De|Del|La|Las|Los|El|Y)(?= )/gu, m => m.toLowerCase());
+}
 const AWIN_HOSTS = new Set(['www.awin1.com', 'awin1.com']);
 const AWIN_HTTPS_IMAGE_HOSTS = new Set(['www.theatreticketsdirect.co.uk']);
 export function parseCsv(text) {
@@ -260,7 +285,7 @@ export function parseCsv(text) {
   const [head = [], ...body] = rows.filter(r => r.some(Boolean));
   return body.map(r => Object.fromEntries(head.map((h, i) => [h.trim(), (r[i] || '').trim()])));
 }
-export function awinItem(row) {
+export function awinItem(row, {now = Date.now()} = {}) {
   const mid = Number(row.merchant_id), known = AWIN_MERCHANTS[mid] || {};
   const title = String(row.product_name || '').replace(/\s+/g, ' ').trim().slice(0, 140);
   let url; try { url = new URL(row.aw_deep_link); } catch { return null; }
@@ -275,6 +300,17 @@ export function awinItem(row) {
   }
   const price = Number(String(row.search_price || row.display_price || '').replace(/[^\d.]/g, ''));
   const metadata = metadataCategory([row.category_name, row.merchant_category].filter(Boolean).join(' '));
+  const event = ticketEvent(row, known, now);
+  if (event === null) return null;
+  if (event) return {
+    id: 'awin:' + mid + ':' + String(row.aw_product_id || row.merchant_product_id || title).replace(/[^\w-]/g, '').slice(0, 40),
+    provider: 'awin-' + mid, seller: known.seller || String(row.merchant_name || 'Partner').trim().slice(0, 60), title,
+    category: ES_GENRES[placeText(row['Tickets:genre'])] || metadata || listingCategory(title), ...event,
+    priceCents: Number.isFinite(price) && price > 0 ? Math.round(price * 100) : null,
+    currency: String(row.currency || known.currency || 'eur').toLowerCase(), image,
+    // Entradas pictures are 222px squares, shown over a blurred fill like Skiddle's.
+    thumb: /_\d{2,3}x\d{2,3}[^/]*\.\w+$/.test(image), url: url.href
+  };
   return {
     id: 'awin:' + mid + ':' + String(row.aw_product_id || row.merchant_product_id || title).replace(/[^\w-]/g, '').slice(0, 40),
     provider: 'awin-' + mid, seller: String(row.merchant_name || 'Partner').trim().slice(0, 60), title,
@@ -285,9 +321,30 @@ export function awinItem(row) {
     currency: String(row.currency || known.currency || 'gbp').toLowerCase(), image, thumb: false, url: url.href
   };
 }
+// Ticket feeds (Awin "Tickets:" columns) carry a date, venue, address and map position.
+// Returns undefined for other feeds, null for a show that has finished or is too far out,
+// otherwise the place and time fields. A long run whose listed date has passed stays as
+// an open-dated listing until its last performance.
+function ticketEvent(row, known, now) {
+  const day = row['Tickets:event_date'] || '', city = feedCity(row['Tickets:event_location_city']);
+  if (!/^\d{4}-\d{2}-\d{2}/.test(day) || !city) return undefined;
+  const zone = known.timezone || 'Europe/Madrid', start = zonedInstant(day.slice(0, 10), row.custom_1 || '', zone);
+  const lastDay = /^\d{4}-\d{2}-\d{2}$/.test(row.custom_3 || '') ? row.custom_3 : day.slice(0, 10);
+  const runsOn = Date.parse(lastDay + 'T23:59:59Z') > now;
+  if (!(start > now) && !runsOn) return null;
+  if (start > now + HORIZON_DAYS * 864e5) return null;
+  const lat = Number(row['Tickets:latitude']), lng = Number(row['Tickets:longitude']);
+  const venue = String(row['Tickets:venue_address'] || '').trim().slice(0, 120);
+  return {
+    city: city.slice(0, 80), venue, countryCode: String(row['Tickets:event_location_country'] || '').toUpperCase().slice(0, 2),
+    address: [row['Tickets:event_location_address'], [row['Tickets:event_location_zipcode'], city].filter(Boolean).join(' ')].map(v => String(v || '').trim()).filter(Boolean).join(', ').slice(0, 200),
+    ...(Math.abs(lat) <= 90 && Math.abs(lng) <= 180 && (lat || lng) ? {lat: +lat.toFixed(5), lng: +lng.toFixed(5)} : {}),
+    startsAt: start > now ? new Date(start).toISOString() : '', endsAt: '', timezone: zone
+  };
+}
 // Feeds downloaded from Awin by hand (no key inside), used until AWIN_FEED_URLS is set so
 // approved merchants still show. Same columns as a live feed, parsed the same way.
-const AWIN_SNAPSHOTS = ['awin-1936.csv.gz'];
+const AWIN_SNAPSHOTS = ['awin-1936.csv.gz', 'awin-24761.csv.gz'];
 export async function loadAwinSnapshots(read = name => readFile(new URL('../partner-data/' + name, import.meta.url))) {
   const settled = await Promise.allSettled(AWIN_SNAPSHOTS.map(async name => parseCsv(gunzipSync(await read(name)).toString('utf8')).map(awinItem).filter(Boolean)));
   return settled.flatMap(s => s.status === 'fulfilled' ? s.value : []);
