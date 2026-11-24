@@ -12,6 +12,6 @@ test('TicketBunker clearly identifies the event-ticket product above the fold',(
  assert.match(site,/Sell Event Tickets/);
  assert.doesNotMatch(site,/GOOD NIGHTS\.|GREAT STORIES\./);
 });
-test('current buyer and organiser pages identify their separate tasks',()=>{const buyer=get('ticketbunker-site/index.html'),seller=get('ticketbunker-site/organiser.html');assert.match(buyer,/Find your next great night/);assert.match(buyer,/id="destination-search"/);assert.match(buyer,/data-route="tickets">Tickets/);assert.match(seller,/Organiser Portal/);assert.match(seller,/Your event starts here/);});
+test('current buyer and organiser pages identify their separate tasks',()=>{const buyer=get('ticketbunker-site/index.html'),seller=get('ticketbunker-site/organiser.html');assert.match(buyer,/Premium event tickets, no booking fees/);assert.match(buyer,/id="destination-search"/);assert.match(buyer,/data-route="tickets">Tickets/);assert.match(seller,/Organiser Portal/);assert.match(seller,/Your event starts here/);});
 
 test('current storefront separates demos from gated live sales',()=>{assert.doesNotMatch(get('ticketbunker-site/index.html'),/They cannot be booked/);assert.match(get('ticketbunker-site/booking-form.js'),/event.preview\|\|!event.paymentsEnabled/);assert.match(get('api/organiser-listing.js'),/!ticketBunkerPaymentsEnabled\(\)/);});
