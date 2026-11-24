@@ -114,7 +114,7 @@ test('handover emails lead with English and keep the original chat on both chann
 });
 
 // WhatsApp webhook with an in-memory store.
-async function webhook({ held = false, extraEnv = {}, onPause, agentResult } = {}) {
+async function webhook({ held = false, extraEnv = {}, onPause, agentResult, teamTranslation = null } = {}) {
   const sent = [], saved = [], holds = [], handoffs = [], background = [];
   const thread = { id: '00000000-0000-4000-8000-000000000001', channel: 'whatsapp', human_until: held ? '2999-01-01T00:00:00Z' : null };
   const seen = new Set();
@@ -128,7 +128,7 @@ async function webhook({ held = false, extraEnv = {}, onPause, agentResult } = {
       saveMessage: async (db, id, role, body, ext) => { if (ext && seen.has(ext)) return false; if (ext) seen.add(ext); if (role === 'client') latestClient = ext; saved.push({ role, body }); return true; },
       latestClientMessageId: async () => { await onPause?.(thread); return latestClient; },
       threadHistory: async () => [{ role: 'user', content: 'Olá' }], holdForHuman: async (db, id) => { holds.push(id); thread.human_until = '2999-01-01T00:00:00Z'; }, releaseToAssistant: async () => {},
-      notifyHandoff: async (...args) => handoffs.push(args), validResumeSignature: () => false,
+      translateTeamReply: async () => teamTranslation, notifyHandoff: async (...args) => handoffs.push(args), validResumeSignature: () => false,
     },
     './lib/http.js': { readRawBody: async request => request.raw },
   }, env);
@@ -247,4 +247,42 @@ test('waits before replying, shows typing, and stays quiet if the team or the cl
     if (meanwhile === 'nothing') { assert.equal(posts[1].text.body, 'Olá! Gravação de 2 horas: €250.'); }
   }
   globalThis.fetch = realFetch;
+});
+
+
+test('team translations preserve the original reply and target only the customer', async () => {
+  const h = await webhook({ teamTranslation: 'Tradução da resposta da equipa: Olá Ana.' });
+  const realFetch = globalThis.fetch, posts = [];
+  globalThis.fetch = async (url, options) => { posts.push(JSON.parse(options.body)); return { ok: true, json: async () => ({ messages: [{ id: 'wamid.translation' }] }) }; };
+  try {
+    const raw = JSON.stringify({ entry: [{ changes: [{ field: 'smb_message_echoes', value: { message_echoes: [{ to: '351910000000', id: 'wamid.english', type: 'text', text: { body: 'Hi Ana.' } }] } }] }] });
+    for (let i = 0; i < 2; i++) {
+      await h.namespace.default({ method: 'POST', url: '/api/whatsapp-webhook', headers: { host: 'x', 'x-hub-signature-256': sign(raw) }, raw }, response());
+      await Promise.all(h.background);
+    }
+    assert.equal(posts.length, 1);
+    assert.equal(posts[0].to, '351910000000');
+    assert.match(posts[0].text.body, /Olá Ana/);
+    assert.equal(h.saved[0].body, 'Hi Ana.');
+    assert.equal(h.holds.length, 1);
+  } finally { globalThis.fetch = realFetch; }
+});
+
+test('translation uses customer language context, skips same-language replies and rejects incomplete output', async () => {
+  const fake = fakeAnthropic([
+    { stop_reason: 'end_turn', content: [{ type: 'text', text: JSON.stringify({ needed: true, text: 'Tradução: Olá!' }) }] },
+    { stop_reason: 'end_turn', content: [{ type: 'text', text: JSON.stringify({ needed: false, text: '' }) }] },
+    { stop_reason: 'max_tokens', content: [] },
+  ]);
+  const { translateTeamReply } = await load('api/lib/studio-chat-store.js', {
+    '@anthropic-ai/sdk': { default: fake.Anthropic },
+    '@supabase/supabase-js': { createClient: () => null },
+    './notify.js': { sendStudioEmail: async () => {} },
+    './studio-agent.js': { STUDIO_MODEL: 'studio-model' },
+  });
+  const history = [{ role: 'user', content: 'Olá, preciso de ajuda.' }, { role: 'assistant', content: 'Hello' }];
+  assert.equal(await translateTeamReply(history, 'Hello!'), 'Tradução: Olá!');
+  assert.deepEqual(JSON.parse(fake.requests[0].messages[0].content), { customerMessages: ['Olá, preciso de ajuda.'], reply: 'Hello!' });
+  assert.equal(await translateTeamReply(history, 'Olá!'), null);
+  await assert.rejects(translateTeamReply(history, 'Hello!'), /unavailable/);
 });
