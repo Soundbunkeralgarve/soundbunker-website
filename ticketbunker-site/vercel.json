@@ -53,6 +53,10 @@
       "destination": "/api/sitemap"
     },
     {
+      "source": "/sitemap-listings.xml",
+      "destination": "/api/sitemap-listings"
+    },
+    {
       "source": "/admin",
       "destination": "/control-room"
     },
