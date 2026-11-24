@@ -57,3 +57,16 @@
 .guide-more .guide-card h3{font-size:18px!important;line-height:1.15}
 .guide-more .guide-card p{font-size:13px;margin:4px 0 10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .guide-more .guide-card .btn,.guide-more .guide-card a:last-child{padding:9px 12px;font-size:14px}
+/* Flight fares on our page */
+.fares{display:grid;gap:10px;margin-top:18px}
+.fares h3{font:900 26px/1 'Barlow Condensed',Impact,sans-serif;text-transform:uppercase;margin:6px 0}
+.fare{display:grid;grid-template-columns:120px 1fr auto;gap:16px;align-items:center;background:#101018;border:1px solid #24242f;border-radius:16px;padding:14px 16px;color:#f4f6f8}
+.fare.best{border-color:#00e0a6;box-shadow:0 0 0 1px #00e0a6 inset}
+.fare-logo{background:#fff;border-radius:8px;padding:4px;max-width:120px;height:auto}
+.fare-info{display:grid;gap:2px}.fare-info b{font-size:17px}.fare-info span{color:#d8dce2}.fare-info small{color:#a7adb6}
+.fare-price{display:grid;justify-items:end;gap:3px}.fare-price i{font-style:normal;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#00e0a6}
+.fare-price b{font:900 30px/1 'Barlow Condensed',Impact,sans-serif}.fare-price small{color:#a7adb6;font-size:12px}
+.fare-price a{background:#00e0a6;color:#04140d;border-radius:10px;padding:9px 12px;font-weight:800;font-size:14px;text-decoration:none;margin-top:4px}
+.fares-note{color:#a7adb6;font-size:13px;margin:0}
+.fares-all{justify-self:start;color:#00e0a6;font-weight:800}
+@media(max-width:620px){.fare{grid-template-columns:1fr auto}.fare-logo{grid-column:1/-1;max-width:90px}.fare-price b{font-size:26px}}

@@ -9,7 +9,7 @@ if(nav&&toggle){
  if(!nav.querySelector('[data-route="getaround"]')){const a=document.createElement('a');a.href='/get-around';a.dataset.route='getaround';a.textContent='Get around';nav.insertBefore(a,nav.querySelector('[data-route="groups"]')||nav.querySelector('[data-route="vip"]'));}
  if(!nav.querySelector('[data-route="groups"]')){const a=document.createElement('a');a.href='/stag-hen-weekends';a.dataset.route='groups';a.textContent='Stag & hen';nav.insertBefore(a,nav.querySelector('[data-route="vip"]'));}
  nav.closest('header')?.classList.add('expanded-navigation');
- if(!document.querySelector('link[href*="trip-guides.css"]')){const link=document.createElement('link');link.rel='stylesheet';link.href='/trip-guides.css?v=20261125gg';document.head.append(link);}
+ if(!document.querySelector('link[href*="trip-guides.css"]')){const link=document.createElement('link');link.rel='stylesheet';link.href='/trip-guides.css?v=20261125gj';document.head.append(link);}
  toggle.addEventListener('click',()=>{const open=nav.classList.toggle('open');toggle.setAttribute('aria-expanded',String(open));});
  const close=()=>{nav.classList.remove('open');toggle.setAttribute('aria-expanded','false');};
  nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',close));
