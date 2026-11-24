@@ -440,6 +440,19 @@ function renderShowcase(all,now,place){
  if(top.length>=5)mountRail($('#top10'),top.map((i,n)=>`<div class="top-item"><span class="top-num" aria-hidden="true">${n+1}</span>${card(i)}</div>`));
 }
 // Adverts between the category rails: what else the Bunker does, with real counts.
+// Paid banners (booked on /advertise and approved in the control room) take the first
+// advert slots. They open the advertiser's own site and are labelled Sponsored.
+const sponsored=new Map();
+function sponsoredAds(onReady){
+ const place=pathCity?.slug||'home';
+ if(sponsored.has(place))return sponsored.get(place)||[];
+ sponsored.set(place,null);
+ fetch('/api/ticketbunker-ads?place='+encodeURIComponent(place),{signal:AbortSignal.timeout(8000)}).then(r=>r.ok?r.json():{ads:[]})
+  .then(d=>{sponsored.set(place,(d.ads||[]).filter(a=>/^https:\/\//.test(a.url||'')&&/^https:\/\//.test(a.image||'')));onReady();}).catch(()=>sponsored.set(place,[]));
+ return [];
+}
+const sponsoredHtml=a=>`<aside class="promo promo-sponsored"><img src="${esc(safeUrl(a.image))}" alt="" loading="lazy"><span class="promo-shade"></span><div class="promo-copy"><span class="label">Sponsored · ${esc(a.advertiser)}</span><h2>${esc(a.headline)}</h2><p>${esc(a.body)}</p><a class="promo-cta" href="${esc(safeUrl(a.url))}" target="_blank" rel="sponsored noopener">${esc(a.cta)} →</a></div></aside>`;
+
 function adverts(all){
  const shows=all.filter(i=>i.provider==='awin-1936').length, tours=all.filter(i=>['boat','daysout'].includes(i.category)).length;
  const pic=k=>pictureFirst(all.filter(i=>i.category===k&&hasArt(i)))[0];
@@ -449,7 +462,8 @@ function adverts(all){
   shows?ad('promo-westend','West End','The West End, sorted.',shows+' London shows and musicals, booked with Theatre Tickets Direct.','/london','Browse London shows',pic('shows')):'',
   ad('promo-trip','Plan your trip','Tickets, hotel, travel, food. One plan.','Build the whole night or weekend around your tickets, then book each part with the named seller.','/plan-your-trip','Build my trip',pic('festival'),' data-build-trip'),
   tours?ad('promo-tours','Tours & days out',tours.toLocaleString('en-GB')+' tours and days out.','Boat trips, caves, food tours and city passes across the UK and Europe.','#rail-daysout','Find a day out',pic('boat')):'',
-  ad('promo-host','For organisers','Selling tickets? Keep your crowd happy.','No booking fees for your buyers, wallet tickets, a door scanner app and payouts after the show.','/for-organisers','Sell with TicketBunker',pic('music'))
+  ad('promo-host','For organisers','Selling tickets? Keep your crowd happy.','No booking fees for your buyers, wallet tickets, a door scanner app and payouts after the show.','/for-organisers','Sell with TicketBunker',pic('music')),
+  ad('promo-advertise','Advertise with us','Your venue, in front of everyone heading out.','Banners on the homepage and city pages from €29 a week. Reviewed and live within a day.','/advertise','Book a banner',pic('dining')||pic('daysout'))
  ];
 }
 
@@ -513,8 +527,9 @@ function render(){
   if(real.length&&!folded)mountRail(section,real.map(i=>card(i)));
  }
  // Adverts go only into slots that follow a rail on show, so two never sit together.
- const ads=adverts(filterItems(all,place,now)).filter(Boolean);let adAt=0;
- host.querySelectorAll('[data-promo]').forEach(slot=>{const before=slot.previousElementSibling;slot.innerHTML=before&&!before.hidden?ads[adAt++]||'':'';});
+ const fillPromos=()=>{const ads=[...sponsoredAds(fillPromos).map(sponsoredHtml),...adverts(filterItems(all,place,now)).filter(Boolean)];let adAt=0;
+  host.querySelectorAll('[data-promo]').forEach(slot=>{const before=slot.previousElementSibling;slot.innerHTML=before&&!before.hidden?ads[adAt++]||'':'';});};
+ fillPromos();
  const foldedRails=homeRails.filter(([k])=>document.getElementById('rail-'+k).classList.contains('rail-folded'));
  $('#rails-more').hidden=!foldedRails.length&&!moreRails;
  $('#rails-more').textContent=moreRails?'Show fewer categories':'More categories: '+foldedRails.map(([,l])=>l).join(', ');

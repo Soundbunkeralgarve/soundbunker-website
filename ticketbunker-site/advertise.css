@@ -1,0 +1,29 @@
+/* Advertise page: builds on the VIP page layout and the homepage advert banner. */
+.ad-status:empty{display:none}
+.ad-status{border:1px solid #ffffff2e;border-radius:14px;padding:14px 18px;max-width:620px;background:#ffffff0d;margin:0 0 20px}
+.ad-packages{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:0 0 26px}
+.ad-package{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;display:grid;gap:8px;align-content:start}
+.ad-package b{font:800 24px/1 var(--display);text-transform:uppercase}
+.ad-package .ad-price{font:800 34px/1 var(--display);color:var(--ink)}.ad-package .ad-price small{font:500 14px var(--body);color:#5d625e}
+.ad-package span{color:#5d625e;font-size:14px;line-height:1.45}
+.ad-how{margin-top:8px}
+.ad-layout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:28px;align-items:start}
+.ad-form{display:grid;gap:18px}
+.ad-form fieldset{border:1px solid var(--line);border-radius:18px;padding:16px 18px 18px;margin:0;background:#fff;display:grid;gap:12px}
+.ad-form legend{font:800 18px var(--display);text-transform:uppercase;padding:0 6px}
+.ad-form label{display:grid;gap:6px;font:600 13px var(--body)}
+.ad-form label small{font-weight:500;color:#5d625e}
+.ad-form input,.ad-form select,.ad-form textarea{font:500 15px var(--body);padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);width:100%;box-sizing:border-box;min-height:46px}
+.ad-form textarea{resize:vertical}
+.ad-form input:focus-visible,.ad-form select:focus-visible,.ad-form textarea:focus-visible{outline:3px solid var(--teal);outline-offset:1px}
+.ad-form .ad-invalid{border-color:#d9412b;background:#fff6f4}
+.ad-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.ad-total{font:800 26px var(--display);margin:0}
+.ad-agree{display:flex!important;grid-template-columns:none;align-items:flex-start;gap:10px;font-weight:500!important;line-height:1.45}
+.ad-agree input{width:20px;min-height:20px;margin-top:2px;flex:0 0 auto}
+.ad-error{color:#b3261e;font-weight:600;margin:0}.ad-error:empty{display:none}
+.ad-preview-wrap{position:sticky;top:90px;display:grid;gap:10px}
+.ad-preview-wrap .vip-kicker{color:#0a6b50}
+.ad-preview{min-height:300px}
+.ad-preview h2{overflow-wrap:anywhere}
+@media(max-width:900px){.ad-packages{grid-template-columns:1fr}.ad-layout{grid-template-columns:1fr}.ad-preview-wrap{position:static;order:-1}}

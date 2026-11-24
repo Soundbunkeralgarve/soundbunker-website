@@ -3,6 +3,7 @@ import {campaignAction,campaignList} from './lib/ticketbunker-campaigns.js';
 import {requireUser} from './lib/supabase-auth.js';
 import {ticketBunkerAdmin} from './lib/ticketbunker-commercial.js';
 import {json,parseJson,safeText} from './lib/http.js';
+import {adminAds,reviewAd} from './lib/ticketbunker-ads.js';
 export default async function handler(req,res){
  if(!['GET','POST'].includes(req.method))return json(res,{error:'Method not allowed'},405);
  const ctx=await requireUser(req,{loadProfile:false});if(ctx.error)return json(res,{error:ctx.error},ctx.status);
@@ -10,7 +11,7 @@ export default async function handler(req,res){
   if(!await ticketBunkerAdmin(ctx))return json(res,{error:'TicketBunker admin access required'},403);
   if(req.method==='GET'){
    const [codes,reservations]=await Promise.all([ctx.admin.from('tb_event_discount_codes').select('*').order('created_at',{ascending:false}).limit(200),ctx.admin.from('tb_event_prebookings').select('*').order('created_at',{ascending:false}).limit(200)]);
-   if(codes.error||reservations.error)throw Error();return json(res,{email:ctx.user.email,codes:codes.data,reservations:reservations.data,clients:await ownerClients(ctx.admin),campaigns:await campaignList(ctx.admin),emailConfigured:!!process.env.RESEND_API_KEY});
+   if(codes.error||reservations.error)throw Error();return json(res,{email:ctx.user.email,codes:codes.data,reservations:reservations.data,clients:await ownerClients(ctx.admin),campaigns:await campaignList(ctx.admin),ads:await adminAds(ctx.admin),emailConfigured:!!process.env.RESEND_API_KEY});
   }
   const b=await parseJson(req);
   if(b.action==='updateClient'){
@@ -18,6 +19,10 @@ export default async function handler(req,res){
    if(r.error)return json(res,{error:'Check organiser details, expiry and reason.'},400);return json(res,r.data);
   }
   if(['saveCampaign','previewCampaign','scheduleCampaign','cancelCampaign','reconcileCampaign'].includes(b.action))return await campaignAction(ctx,b,res);
+  if(b.action==='reviewAd'){
+   const r=await reviewAd(ctx.admin,{id:String(b.id||''),decision:b.decision,note:b.note,reviewer:ctx.user.id});
+   return r.error?json(res,{error:r.error},r.status):json(res,r);
+  }
   if(b.action==='createCode'){
    const code=safeText(b.code,32).toUpperCase(),kind=b.kind,value=Number(b.value),max=Number(b.maxUses),until=new Date(b.expiresAt);
    if(!/^[A-Z0-9_-]{3,32}$/.test(code)||!['percent','fixed'].includes(kind)||!Number.isSafeInteger(value)||value<1||value>(kind==='percent'?100:1000000)||!Number.isSafeInteger(max)||max<1||max>10000||!Number.isFinite(until.getTime())||until<=new Date()||kind==='fixed'&&!['eur','gbp'].includes(b.currency))return json(res,{error:'Enter a valid code, discount, expiry and usage limit'},400);
