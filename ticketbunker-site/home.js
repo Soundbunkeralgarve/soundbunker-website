@@ -354,7 +354,12 @@ function renderPlan(){
  const options=tripOptions(state.country||pathCity?.country||'',state.city,{page:pagRef,spot:'plan'});
  box.hidden=false;
  $('#plan-trip-h').textContent='Plan your trip to '+state.city+'.';
- $('#plan-grid').innerHTML=options.map(o=>`<div class="plan-col"><b>${esc(o.label)}</b><span>${esc(o.blurb)}</span>${o.partners.length?o.partners.map(p=>`<a class="plan-link" href="${esc(p.url)}" target="_blank" rel="${p.commercial==='affiliate'?'sponsored ':''}noopener noreferrer">${esc(p.name)} ↗</a>`).join('')+'<small>Choose dates and book on the provider’s site; their fees and terms apply.</small>':'<em class="plan-soon">Coming soon</em>'}</div>`).join('');
+ // Tidy tiles: icon, title, one main button, up to two quieter links, the rest folded away.
+ const PLAN_ICON={travel:'🚆',car:'🚗',stay:'🛏',eat:'🍽',transfer:'🥂'};
+ const link=(p,cls)=>`<a class="${cls}" href="${esc(p.url)}" target="_blank" rel="${p.commercial==='affiliate'?'sponsored ':''}noopener noreferrer">${esc(p.name)} ↗</a>`;
+ $('#plan-grid').innerHTML=options.map(o=>{const [main,...rest]=o.partners,shown=rest.slice(0,2),more=rest.slice(2);
+  return `<div class="plan-col plan-tile plan-${esc(o.kind)}"><span class="plan-ic" aria-hidden="true">${PLAN_ICON[o.kind]||'•'}</span><b>${esc(o.label)}</b><span class="plan-blurb">${esc(o.blurb)}</span>${main?link(main,'plan-main')+(shown.length?`<div class="plan-alt">${shown.map(p=>link(p,'plan-link')).join('')}</div>`:'')+(more.length?`<details class="plan-more"><summary>More options (${more.length})</summary>${more.map(p=>link(p,'plan-link')).join('')}</details>`:''):'<em class="plan-soon">Coming soon</em>'}</div>`;}).join('')
+  +'<p class="plan-note">You choose dates and book on each provider\u2019s site; their prices, fees and terms apply.</p>';
 }
 
 // City pages: every listing in the place on one page, filterable by type, with the

@@ -69,3 +69,44 @@
 .cg-ji{font-size:16px;line-height:1}
 @media(max-width:650px){.cg-actions-v2{display:grid}.cg-actions-v2 .cg-pdf{justify-content:center}.cg-tools{justify-content:space-between}.cg-tools>button,.cg-tools>a{padding:10px 8px;font-size:13px}}
 .cgd-search input{min-width:300px}@media(max-width:650px){.cgd-search,.cgd-search input{width:100%;min-width:0}}
+
+/* Guide pages, dark (screen only; print and the PDF keep their own styles).
+   One theme with the rest of the site, but each section keeps its own treatment. */
+@media screen{
+.city-guide-page{background:#07070b;color:#d8dce2}
+.city-guide-page main .cg-section{background:#07070b;color:#d8dce2;border-top:1px solid #16161f}
+.city-guide-page main .cg-section h2{color:#f4f6f8}
+.city-guide-page main .cg-section h3{color:#f4f6f8}
+.city-guide-page main .cg-kicker,.city-guide-page main .cg-section .label{color:#00e0a6}
+.city-guide-page main .cg-lead,.city-guide-page main .cg-note,.city-guide-page main .cg-section p{color:#a7adb6}
+.city-guide-page main .cg-section a{color:#00e0a6}
+/* Areas: cards with a teal edge */
+.city-guide-page main .cg-card{background:#101018;border:1px solid #24242f;border-left:3px solid #00e0a6;color:#d8dce2;box-shadow:none}
+.city-guide-page main .cg-card p{color:#a7adb6}
+/* Hotspots: numbered list on a lifted band */
+.city-guide-page main #hotspots{background:linear-gradient(180deg,#0d0d14,#07070b)}
+.city-guide-page main .cg-list li{border-color:#24242f!important;color:#d8dce2}
+.city-guide-page main .cg-list li::before,.city-guide-page main .cg-list li>span:first-child{background:#00e0a6;color:#04140d}
+/* Food: warm glow */
+.city-guide-page main #food{background:radial-gradient(60% 80% at 100% 0%,#ff4f9a12,transparent 60%),#07070b}
+.city-guide-page main .cg-pink li::before{background:#ff4f9a;color:#fff}
+/* Nightlife: violet glow */
+.city-guide-page main #nightlife,.city-guide-page main .cg-dark{background:radial-gradient(55% 80% at 0% 30%,#7a1fff1c,transparent 65%),#08070d}
+/* Travel tips: tidy table */
+.city-guide-page main #travel-tips{background:#0b0b11}
+.city-guide-page main .cg-tips>div{border-color:#24242f!important}
+.city-guide-page main .cg-tips dt{color:#00e0a6}
+.city-guide-page main .cg-tips dd{color:#d8dce2}
+/* Dining deals: ticket-coupon look */
+.city-guide-page main .cg-perks{background:#07070b}
+.city-guide-page main .cg-coupon{background:#101018;border:1px dashed #2e2e3c;color:#d8dce2}
+.city-guide-page main .cg-stub{background:#00e0a6;color:#04140d}
+.city-guide-page main .cg-coupon-body h3{color:#f4f6f8}
+.city-guide-page main .cg-dining-links a{background:#171722;border:1px solid #2a2a36;color:#f4f6f8;border-radius:999px;padding:8px 14px;text-decoration:none;display:inline-block;margin:4px 6px 4px 0}
+/* Plan links: tiles */
+.city-guide-page main .cg-trip a{background:#101018;border:1px solid #24242f;color:#f4f6f8;border-radius:14px}
+.city-guide-page main .cg-trip a:hover{border-color:#00e0a6}
+/* Sources: quiet footer list */
+.city-guide-page main #guide-sources{background:#0b0b11}
+.city-guide-page main .cg-sources a{color:#a7adb6}
+}

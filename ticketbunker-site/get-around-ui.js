@@ -7,6 +7,7 @@ import {CITY_COORDS, distanceKm, nearestCities} from './city-coords.js';
 import {cityBySlug} from './city-places.js';
 import {storeButtons} from './app-promo.js?v=20261125ga';
 import {pickOffers, offerCards, loadOffers, tripSearchLinks} from './travel-offers.js?v=20261125gg';
+import {quoteCards, flightPlace} from './flight-search.js?v=20261125gj';
 
 const LEAFLET = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/';
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
@@ -244,7 +245,21 @@ export function mount(root, {slug, autoLocate = false, to = null, toName = '', k
       e.preventDefault(); const f = e.target.elements;
       box.querySelector('[data-ts-results]').innerHTML = tripSearchLinks({from: f.from.value.trim(), to: f.to.value.trim(), depart: f.depart.value})
         .map(l => `<a href="${esc(l.url)}" target="_blank" rel="noopener"><b>${{flights: '✈', trains: '🚆', buses: '🚌'}[l.kind]} ${esc(l.name)}</b><small>${esc(l.note)} ↗</small></a>`).join('');
+      showFares(f.from.value.trim(), f.to.value.trim(), f.depart.value);
     });
+    // Flight fares on the page (same source and cards as the travel page), booked on Aviasales.
+    async function showFares(from, to, depart) {
+      let box = box2(); const a = flightPlace(from), b = flightPlace(to);
+      if (!a || !b || a.code === b.code || !depart) { box.innerHTML = ''; return; }
+      box.innerHTML = '<p class="ga-muted">Finding flight fares…</p>';
+      try {
+        const r = await fetch('/api/flight-quotes?' + new URLSearchParams({from: a.code, to: b.code, depart, currency: 'gbp'}));
+        const j = await r.json();
+        box.innerHTML = j.enabled && j.quotes?.length ? `<h3 class="ga-sub">${j.exact ? 'Flights on your date' : 'Cheapest flight days this month'} · ${esc(a.name)} → ${esc(b.name)}</h3><div class="fares">${quoteCards(j.quotes.slice(0, 4))}</div><p class="ga-muted">Recently found one-way fares per adult from Aviasales searches; the final price is confirmed on Aviasales.</p>`
+          : `<p class="ga-muted">No recently found flight fares for ${esc(a.name)} → ${esc(b.name)}. The Flights link above shows live prices.</p>`;
+      } catch { box.innerHTML = ''; }
+    }
+    function box2() { let x = box.querySelector('[data-ts-fares]'); if (!x) { x = document.createElement('div'); x.dataset.tsFares = ''; box.querySelector('[data-ts-results]').after(x); } return x; }
     const items = pickOffers(await loadOffers(st.name), 'getaround', 6);
     box.querySelector('[data-offers]').innerHTML = items.length ? offerCards(items) : `<p class="offer-empty">No live transfers or passes listed for ${esc(st.name)} right now.</p>`;
   }

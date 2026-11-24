@@ -5,7 +5,7 @@
 import {AVIASALES_MARKER} from '../../flight-search.js';
 
 const API = 'https://api.travelpayouts.com/aviasales/v3/prices_for_dates';
-export const AIRLINES = Object.freeze({FR: 'Ryanair', U2: 'easyJet', EC: 'easyJet', BA: 'British Airways', TP: 'TAP Air Portugal', IB: 'Iberia', VY: 'Vueling',
+export const AIRLINES = Object.freeze({FR: 'Ryanair', RK: 'Ryanair UK', AL: 'Malta Air', U2: 'easyJet', DS: 'easyJet Switzerland', EJU: 'easyJet Europe', EC: 'easyJet', BA: 'British Airways', TP: 'TAP Air Portugal', IB: 'Iberia', VY: 'Vueling',
   W6: 'Wizz Air', W9: 'Wizz Air UK', LS: 'Jet2', KL: 'KLM', AF: 'Air France', LH: 'Lufthansa', EI: 'Aer Lingus', AZ: 'ITA Airways', LX: 'Swiss', SN: 'Brussels Airlines',
   OS: 'Austrian', SK: 'SAS', TO: 'Transavia France', HV: 'Transavia', DY: 'Norwegian', D8: 'Norwegian', BY: 'TUI', X3: 'TUIfly', EW: 'Eurowings', A3: 'Aegean',
   OU: 'Croatia Airlines', LO: 'LOT', AY: 'Finnair', PC: 'Pegasus', TK: 'Turkish Airlines', UX: 'Air Europa', V7: 'Volotea', LM: 'Loganair', BE: 'Flybe', NT: 'Binter',
