@@ -164,3 +164,15 @@
 @media(min-width:1100px){.shop-home #plan-grid{grid-template-columns:repeat(5,minmax(0,1fr))!important}}
 .shop-home #plan-grid .plan-blurb{margin-bottom:0!important;min-height:2.8em}
 .shop-home #plan-grid .plan-main{width:100%;box-sizing:border-box}
+
+/* Polish: no white-on-white buttons, clear hover states, nothing cut off */
+.shop-home :is(.city-plan-links,.all-places,.directory-links) a{background:#101018!important;color:#f4f6f8!important;border:1px solid #24242f!important;border-radius:999px;transition:border-color .15s,color .15s,background .15s}
+.shop-home :is(.city-plan-links,.all-places,.directory-links) a:hover,.shop-home :is(.city-plan-links,.all-places,.directory-links) a:focus-visible{background:#00e0a612!important;border-color:#00e0a6!important;color:#00e0a6!important}
+.shop-home :is(.btn-quiet,.db-clear){background:transparent!important;color:#00e0a6!important;border:1px solid #00e0a6!important;border-radius:999px}
+.shop-home :is(.btn-quiet,.db-clear):hover,.shop-home :is(.btn-quiet,.db-clear):focus-visible{background:#00e0a6!important;color:#04140d!important}
+/* Category bar: tabs keep their full width and the bar scrolls, with a fade showing there is more */
+.shop-home #tabs-track>*{flex:none!important;white-space:nowrap}
+.shop-home #tabs-track{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);padding-right:28px}
+/* City filter chips wrap onto a second line on wide screens instead of running off the edge */
+@media(min-width:821px){.shop-home .city-filters{flex-wrap:wrap!important;overflow:visible!important}}
+@media(max-width:820px){.shop-home .city-filters{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent)}}
