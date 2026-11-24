@@ -20,3 +20,10 @@
 @media(max-width:1100px){.trip-search{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:850px){.trip-search{grid-template-columns:1fr 1fr}.trip-search label:first-child{grid-column:1/-1}}
 @media(max-width:650px){.trip-search{grid-template-columns:1fr 1fr}.trip-search button{grid-column:1/-1}}
+/* Flight search on /travel: from, to, dates, passengers, one-way. */
+.flight-section{background:#0b1713;color:#fff}.flight-section h2{color:#fff}.flight-section>.wrap>p{color:#ccdad4}.flight-section .label{color:#00e0a6}
+.flight-section .guide-terms{color:#9fb3a9}.flight-section .guide-status{color:#fff}
+.flight-search label:first-child{grid-column:auto}
+.flight-search .flight-oneway{display:flex;align-items:center;gap:8px;align-self:center;padding-top:20px}
+.flight-search .flight-oneway input{width:auto;min-height:0}
+.flight-search input:disabled{opacity:.45}
