@@ -12,7 +12,7 @@ test('a city page has its own title, description, canonical, heading and preset 
   const html = cityHtml(shell, cityBySlug('london'), [{title: 'Gig <Night>', url: 'https://www.skiddle.com/x/?sktag=1', startsAt: '2026-11-28T20:00:00Z', timezone: 'Europe/London', venue: 'O2', city: 'London', countryCode: 'GB', priceCents: 1500, currency: 'gbp'}]);
   assert.match(html, /<title>Things to do in London: /);
   assert.match(html, /<link rel="canonical" href="https:\/\/theticketbunker.com\/london"\/>/);
-  assert.match(html, /<span class="h1-outline">Head out in London.<\/span>/);
+  assert.match(html, /<span class="h1-outline">Head out in <span class="h1-city">London<\/span>.<\/span>/);
   assert.match(html, /window.__TB_CITY=\{"city":"London","country":"GB","slug":"london"\}/);
   assert.match(html, /Gig &lt;Night&gt;/, 'listing titles are escaped');
   assert.match(html, /"@type":"Event"/);
@@ -22,7 +22,7 @@ test('a city page has its own title, description, canonical, heading and preset 
 test('the Algarve page reads naturally and presets the region', () => {
   const html = cityHtml(shell, cityBySlug('algarve'), []);
   assert.match(html, /Things to do in the Algarve:/);
-  assert.match(html, /Head out in the Algarve.<\/span>/);
+  assert.match(html, /Head out in <span class="h1-city">the Algarve<\/span>.<\/span>/);
   assert.match(html, /"city":"Algarve","country":"PT"/);
   assert.doesNotMatch(html, /city-list/, 'no empty list');
 });
