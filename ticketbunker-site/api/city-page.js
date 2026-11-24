@@ -16,9 +16,15 @@ export function cityHtml(shell, [slug, name, country, , pitch], listings = []) {
   const description = `Tickets in ${inName}: ${pitch}. Browse by date, see who sells each ticket, and book in a few taps.`;
   const items = mixSellers(sortItems(listings.filter(i => i && i.title && i.url))).slice(0, 30);
   const list = items.length ? `<ol class="city-list">${items.map(i => `<li><a href="${esc(i.id ? '/listing/'+encodeURIComponent(i.id) : withClickRef(i.url, slug, 'city-list'))}"${i.id ? '' : ' rel="sponsored noopener" target="_blank"'}>${esc(i.title)}</a> <span>${esc([when(i.startsAt, i.timezone), i.venue, price(i.priceCents, i.currency)].filter(Boolean).join(' · '))}</span></li>`).join('')}</ol>` : '';
-  const ld = items.filter(i => i.startsAt).map(i => ({'@type': 'Event', name: i.title, startDate: i.startsAt, url: i.url,
-    location: {'@type': 'Place', name: i.venue || i.city, address: {'@type': 'PostalAddress', addressLocality: i.city, addressCountry: i.countryCode}},
-    ...(Number.isInteger(i.priceCents) ? {offers: {'@type': 'Offer', price: (i.priceCents / 100).toFixed(2), priceCurrency: (i.currency || 'eur').toUpperCase(), url: i.url}} : {})}));
+  // Google's Event rich results want image, description, status, attendance mode, organiser,
+  // a full address where we have one and offer availability (Search Console flagged these).
+  const ld = items.filter(i => i.startsAt).map(i => ({'@type': 'Event', name: i.title, startDate: i.startsAt, ...(i.endsAt ? {endDate: i.endsAt} : {}), url: i.url,
+    eventStatus: 'https://schema.org/EventScheduled', eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    image: [/^https:\/\//.test(i.image || '') ? i.image : SITE + '/assets/crowd.jpg'],
+    description: [i.title, [i.venue, i.city].filter(Boolean).join(', '), i.seller ? 'Tickets via ' + i.seller : ''].filter(Boolean).join(' · '),
+    location: {'@type': 'Place', name: i.venue || i.city, address: {'@type': 'PostalAddress', ...(i.address ? {streetAddress: String(i.address).split(',')[0]} : {}), addressLocality: i.city, addressCountry: i.countryCode}},
+    organizer: {'@type': 'Organization', name: i.seller || 'TicketBunker', url: i.external === false ? SITE : new URL(i.url).origin},
+    ...(Number.isInteger(i.priceCents) ? {offers: {'@type': 'Offer', price: (i.priceCents / 100).toFixed(2), priceCurrency: (i.currency || 'eur').toUpperCase(), url: i.url, availability: 'https://schema.org/InStock'}} : {})}));
   const guide = `<section class="city-guide" aria-labelledby="city-guide-h"><div class="wrap"><span class="label">${esc(plain)} guide</span><h2 id="city-guide-h">What\u2019s on in ${esc(inName)}.</h2><p>${esc(description)} Cards marked \u201cvia\u201d a partner are sold on that partner\u2019s site and may include their fees; TicketBunker tickets have no added booking fee.</p>${list}<h3>Your digital ${esc(plain)} guide</h3><p>Discover local food, shopping, history and nights out, with maps and dining-offer links. Read online or download a copy to keep.</p><p><a class="btn btn-black" href="/guides/${slug}">Read the ${esc(plain)} city guide</a></p><h3>Plan your ${esc(plain)} trip</h3><nav class="city-plan-links" aria-label="Plan your city trip">${GUIDE_LINKS.map(([href,label])=>`<a href="${esc(href+'?'+new URLSearchParams({city:plain,country}))}">${esc(label)}</a>`).join('')}</nav></div></section>`;
   return shell
     .replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(title)}</title>`)
