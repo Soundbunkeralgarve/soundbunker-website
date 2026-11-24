@@ -123,6 +123,10 @@ export function tflJourneyUrl(from, to, {stepFree = false, fewerChanges = false,
   const q = p.toString();
   return `${TFL}/Journey/JourneyResults/${enc(from)}/to/${enc(to)}${q ? '?' + q : ''}`;
 }
+// TfL gives each leg's route on the map as a JSON string of [lat, lon] points.
+function pathOf(leg) {
+  try { const pts = JSON.parse(leg.path?.lineString || '[]'); return Array.isArray(pts) ? pts.filter(p => Array.isArray(p) && p.length === 2 && p.every(Number.isFinite)) : []; } catch { return []; }
+}
 export function normaliseJourneys(json, {airCon = false} = {}) {
   const journeys = (json?.journeys || []).map(j => {
     const legs = (j.legs || []).map(l => {
@@ -131,7 +135,7 @@ export function normaliseJourneys(json, {airCon = false} = {}) {
       return {mode: l.mode?.id === 'walking' ? 'walk' : modeOf(l.mode?.id),
         summary: l.instruction?.summary || '', line: l.routeOptions?.find(o => o.lineIdentifier)?.lineIdentifier?.name || '', lineId,
         colour: style.colour || '', text: style.text || '', ac: Boolean(style.ac), mins: l.duration,
-        depart: l.departureTime, arrive: l.arrivalTime, disrupted: Boolean(l.isDisrupted)};
+        depart: l.departureTime, arrive: l.arrivalTime, disrupted: Boolean(l.isDisrupted), path: pathOf(l)};
     });
     const rail = legs.filter(l => l.mode === 'metro' || l.mode === 'rail');
     return {mins: j.duration, depart: j.startDateTime, arrive: j.arrivalDateTime, legs,

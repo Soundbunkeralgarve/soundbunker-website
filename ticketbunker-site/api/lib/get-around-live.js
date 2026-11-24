@@ -31,7 +31,8 @@ export function groupByStop(rows, here) {
   const stops = new Map();
   for (const d of rows) {
     if (!d.stopId || d.mins === null || d.mins > 90) continue;
-    const s = stops.get(d.stopId) || {id: d.stopId, name: d.stopName, indicator: d.platform || '', modes: [], lines: [], distance: d.distance ?? (d.at && d.stopAt ? metres(here, d.stopAt) : 0), departures: []};
+    const s = stops.get(d.stopId) || {id: d.stopId, name: d.stopName, indicator: d.platform || '', modes: [], lines: [], distance: d.distance ?? (d.stopAt ? metres(here, d.stopAt) : 0),
+      lat: d.stopAt?.[0], lon: d.stopAt?.[1], departures: []};
     if (!s.modes.includes(d.mode)) s.modes.push(d.mode);
     if (!s.lines.some(l => l.name === d.line)) s.lines.push({id: d.line, name: d.line, colour: d.colour, text: d.text});
     s.departures.push(d); stops.set(d.stopId, s);
@@ -135,7 +136,7 @@ export function normaliseDigitransit(json, now = Date.now()) {
     const s = node?.stop || {};
     return (s.stoptimesWithoutPatterns || []).map(t => {
       const r = t.trip?.route || {}, at = (t.serviceDay + t.realtimeDeparture) * 1000, colour = hex(r.color);
-      return {stopId: s.gtfsId, stopName: s.name, platform: s.platformCode || s.code || '', distance: node.distance || 0, line: r.shortName || '', colour,
+      return {stopId: s.gtfsId, stopName: s.name, stopAt: Number.isFinite(s.lat) ? [s.lat, s.lon] : null, platform: s.platformCode || s.code || '', distance: node.distance || 0, line: r.shortName || '', colour,
         text: hex(r.textColor) || ink(colour), mode: DT_MODE[r.mode || s.vehicleMode] || 'other', towards: t.headsign || '',
         mins: Number.isFinite(at) ? minsUntil(at, now) : null, at: Number.isFinite(at) ? new Date(at).toISOString() : '', live: Boolean(t.realtime),
         wheelchair: t.trip?.wheelchairAccessible === 'POSSIBLE' ? true : t.trip?.wheelchairAccessible === 'NOT_POSSIBLE' ? false : undefined};
@@ -143,7 +144,7 @@ export function normaliseDigitransit(json, now = Date.now()) {
   });
 }
 async function helsinki(here, f) {
-  const query = `{ stopsByRadius(lat: ${here[0]}, lon: ${here[1]}, radius: 500, first: 15) { edges { node { distance stop { gtfsId name code platformCode vehicleMode
+  const query = `{ stopsByRadius(lat: ${here[0]}, lon: ${here[1]}, radius: 500, first: 15) { edges { node { distance stop { gtfsId name lat lon code platformCode vehicleMode
     stoptimesWithoutPatterns(numberOfDepartures: 5) { realtimeDeparture serviceDay realtime headsign trip { wheelchairAccessible route { shortName color textColor mode } } } } } } } }`;
   const json = await getJson('https://api.digitransit.fi/routing/v2/hsl/gtfs/v1', {method: 'POST',
     headers: {'content-type': 'application/json', 'digitransit-subscription-key': env('DIGITRANSIT_API_KEY')}, body: JSON.stringify({query})}, f);
