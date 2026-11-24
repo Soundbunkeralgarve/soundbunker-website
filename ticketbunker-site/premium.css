@@ -219,3 +219,5 @@
 .shop-home .header .brand img{width:220px}
 .shop-home .header .nav-actions .login{display:none}
 }
+.shop-home .listing-actions{background:transparent;border-color:var(--edge)}
+.shop-home .listing-actions>a,.shop-home .listing-actions>button{text-decoration:none}
