@@ -1,0 +1,1682 @@
+[
+{
+"slug": "canterbury",
+"intro": "A pilgrim city of cathedral bells, medieval streets and a lively student scene in the heart of Kent.",
+"areas": [
+[
+"Cathedral Quarter",
+"Mercery Lane, the Buttermarket and Christ Church Gate."
+],
+[
+"Westgate",
+"The medieval gate, Westgate Gardens and river punts."
+],
+[
+"King’s Mile",
+"Independent shops on Palace Street and Northgate."
+]
+],
+"sights": [
+[
+"Canterbury Cathedral",
+"Mother church of the Anglican Communion, part of a World Heritage Site."
+],
+[
+"St Augustine’s Abbey",
+"Abbey ruins, also part of the World Heritage Site."
+],
+[
+"Westgate Towers",
+"England’s largest surviving medieval gatehouse."
+],
+[
+"River Stour punting",
+"Short punt trips through the old city."
+]
+],
+"eat": [
+[
+"The Goods Shed",
+"Food market and restaurant by Canterbury West station."
+],
+[
+"Kentish produce",
+"Apples, cherries and Kentish ale."
+],
+[
+"Palace Street",
+"Cafés and small restaurants."
+]
+],
+"night": [
+[
+"The Marlowe Theatre",
+"Touring productions and comedy."
+],
+[
+"St Dunstan’s & city-centre pubs",
+"Historic inns."
+],
+[
+"Student nights",
+"Clubs and bars in term time."
+]
+],
+"arrive": "Canterbury West has high-speed trains to London St Pancras (under an hour); Canterbury East serves London Victoria. Gatwick and Heathrow are the nearest major airports.",
+"around": "The walled centre is compact and walkable; Stagecoach buses serve the coast and villages.",
+"pass": "Stagecoach day tickets are available; check current fares.",
+"when": "Spring to autumn; December for the Christmas market.",
+"tip": "Buy a cathedral ticket in advance on busy summer days.",
+"sources": [
+{
+"title": "Canterbury (official guide)",
+"url": "https://www.canterbury.co.uk/"
+},
+{
+"title": "Canterbury Cathedral",
+"url": "https://www.canterbury-cathedral.org/"
+},
+{
+"title": "English Heritage: St Augustine’s Abbey",
+"url": "https://www.english-heritage.org.uk/visit/places/st-augustines-abbey/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "maidstone",
+"intro": "Kent’s county town on the River Medway, close to Leeds Castle and the orchards of the Garden of England.",
+"areas": [
+[
+"Town centre",
+"Week Street, Fremlin Walk and the High Street."
+],
+[
+"Riverside",
+"Medway walks past the Archbishop’s Palace."
+],
+[
+"Earl Street",
+"Bars and restaurants."
+]
+],
+"sights": [
+[
+"Leeds Castle",
+"Moated castle and gardens a short drive east."
+],
+[
+"Maidstone Museum",
+"Includes an Ancient Egyptian collection."
+],
+[
+"Mote Park",
+"Large park with a lake."
+],
+[
+"Archbishop’s Palace",
+"Medieval palace beside the Medway."
+]
+],
+"eat": [
+[
+"Earl Street",
+"Restaurants and bars."
+],
+[
+"Kentish produce",
+"Cherries, apples and local ale."
+],
+[
+"Riverside pubs",
+"Along the Medway."
+]
+],
+"night": [
+[
+"Hazlitt Theatre",
+"Plays and comedy."
+],
+[
+"Earl Street & Week Street",
+"Bars and late venues."
+],
+[
+"Summer events",
+"Concerts and festivals in Mote Park."
+]
+],
+"arrive": "Maidstone East and Maidstone West stations have trains to London. Gatwick is about 50 minutes by road.",
+"around": "Arriva buses serve the town; the centre is walkable.",
+"pass": "Arriva day tickets are available; check current fares.",
+"when": "Spring to autumn for castles and gardens.",
+"tip": "Visit Leeds Castle early in the day before tour groups arrive.",
+"sources": [
+{
+"title": "Visit Maidstone",
+"url": "https://www.visitmaidstone.com/"
+},
+{
+"title": "Leeds Castle",
+"url": "https://leeds-castle.com/"
+},
+{
+"title": "Maidstone Museum",
+"url": "https://museum.maidstone.gov.uk/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "tunbridge-wells",
+"intro": "An elegant spa town with the colonnaded Pantiles, independent shops and the High Weald countryside around it.",
+"areas": [
+[
+"The Pantiles",
+"Georgian colonnade with the chalybeate spring."
+],
+[
+"High Street & Chapel Place",
+"Independent shops and cafés."
+],
+[
+"Royal Victoria Place",
+"Main shopping centre."
+]
+],
+"sights": [
+[
+"The Pantiles",
+"Historic promenade and the spring that founded the town."
+],
+[
+"Tunbridge Wells Common",
+"Open common with sandstone outcrops."
+],
+[
+"The Amelia Scott",
+"Museum, gallery and library."
+],
+[
+"Groombridge & Penshurst Place",
+"Country houses and gardens nearby."
+]
+],
+"eat": [
+[
+"The Pantiles",
+"Terraced restaurants and wine bars."
+],
+[
+"Chapel Place",
+"Cafés and delis."
+],
+[
+"Kentish wine",
+"Vineyards in the Weald."
+]
+],
+"night": [
+[
+"Trinity Theatre",
+"Plays and live music."
+],
+[
+"Assembly Hall Theatre",
+"Touring shows."
+],
+[
+"Pantiles bars",
+"Summer evenings outside."
+]
+],
+"arrive": "Tunbridge Wells station has trains to London Charing Cross and Cannon Street. Gatwick is about 45 minutes by road.",
+"around": "Walkable centre; Arriva and other buses cover the area.",
+"pass": "Bus day tickets are available; check current fares.",
+"when": "Spring to autumn for gardens and outdoor dining.",
+"tip": "Taste the spring water at the Pantiles chalybeate spring when a dipper is on duty.",
+"sources": [
+{
+"title": "Royal Tunbridge Wells: The Pantiles",
+"url": "https://www.thepantiles.com/"
+},
+{
+"title": "Visit Kent",
+"url": "https://www.visitkent.co.uk/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "guildford",
+"intro": "Surrey’s historic county town on the River Wey, with a cobbled High Street, a castle and the North Downs on its doorstep.",
+"areas": [
+[
+"High Street",
+"Cobbled shopping street with the Guildhall clock."
+],
+[
+"Castle area",
+"Castle grounds and gardens."
+],
+[
+"Riverside",
+"Walks along the River Wey Navigation."
+]
+],
+"sights": [
+[
+"Guildford Castle",
+"Norman keep with views over the town."
+],
+[
+"Guildford Cathedral",
+"20th-century cathedral on Stag Hill."
+],
+[
+"River Wey Navigation",
+"Riverside walks and boat hire (National Trust)."
+],
+[
+"Surrey Hills",
+"Walks on the North Downs and St Martha’s Hill."
+]
+],
+"eat": [
+[
+"High Street & Tunsgate",
+"Cafés and restaurants."
+],
+[
+"Riverside pubs",
+"Along the Wey."
+],
+[
+"Farmers’ market",
+"Monthly on the High Street."
+]
+],
+"night": [
+[
+"Yvonne Arnaud Theatre",
+"Plays by the river."
+],
+[
+"G Live",
+"Concerts and comedy."
+],
+[
+"Town-centre bars",
+"North Street and the High Street."
+]
+],
+"arrive": "Guildford station has trains to London Waterloo (about 35–40 minutes). Heathrow and Gatwick are each about 40 minutes by road.",
+"around": "Walkable centre; Stagecoach and Arriva buses.",
+"pass": "Bus day tickets are available; check current fares.",
+"when": "Spring to autumn for the Surrey Hills.",
+"tip": "Climb the castle keep for a view across the town.",
+"sources": [
+{
+"title": "Guildford Castle",
+"url": "https://www.guildford.gov.uk/castle"
+},
+{
+"title": "National Trust: River Wey",
+"url": "https://www.nationaltrust.org.uk/visit/surrey/river-wey-and-godalming-navigations-and-dapdune-wharf"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "worthing",
+"intro": "A relaxed Sussex seaside town with an Art Deco pier, a long promenade and the South Downs behind it.",
+"areas": [
+[
+"Seafront",
+"Promenade, beach huts and Worthing Pier."
+],
+[
+"Town centre",
+"Montague Street and Warwick Street."
+],
+[
+"Goring & Ferring",
+"Quieter beaches to the west."
+]
+],
+"sights": [
+[
+"Worthing Pier",
+"Award-winning pier with an Art Deco pavilion."
+],
+[
+"Highdown Gardens",
+"Chalk gardens on the Downs."
+],
+[
+"Cissbury Ring",
+"Iron Age hillfort in the South Downs."
+],
+[
+"Worthing Museum",
+"Local history and costume."
+]
+],
+"eat": [
+[
+"Seafront cafés",
+"Kiosks and restaurants on the prom."
+],
+[
+"Warwick Street",
+"Independent restaurants."
+],
+[
+"Sussex wine",
+"Vineyards on the Downs."
+]
+],
+"night": [
+[
+"Pavilion Theatre",
+"Shows at the head of the pier."
+],
+[
+"Connaught Theatre & Assembly Hall",
+"Theatre, film and music."
+],
+[
+"Seafront bars",
+"Summer evenings."
+]
+],
+"arrive": "Worthing station has trains to London Victoria and Brighton. Gatwick is about 40 minutes away.",
+"around": "Stagecoach and Brighton & Hove buses run along the coast.",
+"pass": "Bus day tickets are available; check current fares.",
+"when": "May–September for the beach.",
+"tip": "Hike up to Cissbury Ring for views across the coast.",
+"sources": [
+{
+"title": "Visit Worthing",
+"url": "https://www.visitworthing.co.uk/"
+},
+{
+"title": "Worthing Theatres and Museum",
+"url": "https://wtm.uk/"
+},
+{
+"title": "South Downs National Park",
+"url": "https://www.southdowns.gov.uk/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "bournemouth",
+"intro": "Golden sands, clifftop gardens and a lively night scene on the Dorset coast.",
+"areas": [
+[
+"Town centre & Pier",
+"Lower Gardens, the pier and Bournemouth Beach."
+],
+[
+"Boscombe",
+"Pier, surf culture and the Chine."
+],
+[
+"Westbourne",
+"Village-style shops and cafés."
+]
+],
+"sights": [
+[
+"Bournemouth Beach",
+"Miles of sand with lifeguards in summer."
+],
+[
+"Russell-Cotes Art Gallery & Museum",
+"Clifftop villa with art collection."
+],
+[
+"Lower Gardens",
+"Victorian gardens through the town."
+],
+[
+"Jurassic Coast",
+"Old Harry Rocks and Durdle Door are a short trip away."
+]
+],
+"eat": [
+[
+"Beach cafés",
+"Seaside kiosks and restaurants."
+],
+[
+"Westbourne",
+"Restaurants and cafés."
+],
+[
+"Poole Quay",
+"Seafood by the harbour."
+]
+],
+"night": [
+[
+"Town-centre clubs",
+"A big student and party scene."
+],
+[
+"O2 Academy Bournemouth",
+"Gigs in Boscombe."
+],
+[
+"Bournemouth Pavilion",
+"Shows and concerts."
+]
+],
+"arrive": "Bournemouth Airport has a bus to the town. Bournemouth station has trains to London Waterloo.",
+"around": "Morebus and other buses run along the coast; the seafront is great for walking and cycling.",
+"pass": "Morebus day tickets are available; check current fares.",
+"when": "June–September; Bournemouth Air Festival in late summer.",
+"tip": "Take the land train or walk the promenade between Bournemouth and Boscombe piers.",
+"sources": [
+{
+"title": "Visit Bournemouth",
+"url": "https://www.bournemouth.co.uk/"
+},
+{
+"title": "Russell-Cotes",
+"url": "https://russellcotes.com/"
+},
+{
+"title": "Bournemouth Airport",
+"url": "https://www.bournemouthairport.com/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "salisbury",
+"intro": "A medieval cathedral city with Britain’s tallest spire, the Magna Carta and Stonehenge nearby.",
+"areas": [
+[
+"Cathedral Close",
+"Britain’s largest cathedral close."
+],
+[
+"Market Square",
+"Twice-weekly market and medieval streets."
+],
+[
+"Old Sarum",
+"Iron Age hillfort and site of the first cathedral."
+]
+],
+"sights": [
+[
+"Salisbury Cathedral",
+"Britain’s tallest spire and the best-preserved 1215 Magna Carta."
+],
+[
+"Stonehenge",
+"World Heritage stone circle, about 10 miles north."
+],
+[
+"Old Sarum",
+"Hillfort and castle ruins."
+],
+[
+"The Salisbury Museum",
+"Archaeology and the Amesbury Archer."
+]
+],
+"eat": [
+[
+"Market Square",
+"Market days on Tuesdays and Saturdays."
+],
+[
+"Fisherton Street",
+"Cafés and international restaurants."
+],
+[
+"Historic pubs",
+"The Haunch of Venison and others."
+]
+],
+"night": [
+[
+"Salisbury Playhouse",
+"Theatre productions."
+],
+[
+"The Arts Centre",
+"Gigs and comedy in a former church."
+],
+[
+"Historic pubs",
+"Low-ceilinged inns."
+]
+],
+"arrive": "Salisbury station has trains to London Waterloo, Bristol and Southampton. Southampton Airport is about 40 minutes away.",
+"around": "Walkable centre; Salisbury Reds buses and Stonehenge tour buses.",
+"pass": "Bus day tickets are available; check current fares.",
+"when": "Spring to autumn; summer and winter solstices at Stonehenge.",
+"tip": "Book Stonehenge tickets in advance for a timed entry.",
+"sources": [
+{
+"title": "Visit Wiltshire: Salisbury",
+"url": "https://www.visitwiltshire.co.uk/salisbury"
+},
+{
+"title": "Salisbury Cathedral",
+"url": "https://www.salisburycathedral.org.uk/"
+},
+{
+"title": "English Heritage: Stonehenge",
+"url": "https://www.english-heritage.org.uk/visit/places/stonehenge/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "bath",
+"intro": "A World Heritage city of honey-coloured Georgian crescents, Roman baths and natural thermal springs.",
+"areas": [
+[
+"City centre",
+"Abbey, Roman Baths and Pulteney Bridge."
+],
+[
+"Royal Crescent & the Circus",
+"Georgian architecture at its grandest."
+],
+[
+"Walcot",
+"Independent shops and cafés, the ‘artisan quarter’."
+]
+],
+"sights": [
+[
+"Roman Baths",
+"Remarkably preserved Roman bathing complex."
+],
+[
+"Thermae Bath Spa",
+"Bathe in natural thermal water on a rooftop pool."
+],
+[
+"Royal Crescent",
+"Sweeping Georgian terrace; No. 1 is a museum."
+],
+[
+"Bath Abbey",
+"Gothic abbey in the city centre."
+],
+[
+"Pulteney Bridge",
+"Shop-lined bridge over the Avon."
+]
+],
+"eat": [
+[
+"Sally Lunn’s",
+"Historic home of the Bath bun."
+],
+[
+"Bath Guildhall Market",
+"Market hall with food stalls."
+],
+[
+"Walcot Street",
+"Cafés and independent restaurants."
+]
+],
+"night": [
+[
+"Theatre Royal Bath",
+"Georgian theatre."
+],
+[
+"Historic pubs",
+"Cosy inns in the Georgian lanes."
+],
+[
+"Komedia",
+"Comedy and live music."
+]
+],
+"arrive": "Bath Spa station has trains to London Paddington and Bristol. Bristol Airport is about an hour away by bus.",
+"around": "Walk; the centre is compact but hilly. Buses and Park & Ride for the outskirts.",
+"pass": "First and Park & Ride day tickets are available; check current fares.",
+"when": "Spring to autumn; the Christmas market in late November and December.",
+"tip": "Book Thermae Bath Spa at quieter times and visit the Roman Baths early.",
+"sources": [
+{
+"title": "Visit Bath (official guide)",
+"url": "https://visitbath.co.uk/"
+},
+{
+"title": "The Roman Baths",
+"url": "https://www.romanbaths.co.uk/"
+},
+{
+"title": "Thermae Bath Spa",
+"url": "https://www.thermaebathspa.com/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "exeter",
+"intro": "Devon’s historic capital, with a Gothic cathedral, Roman walls, a lively quayside and two coasts nearby.",
+"areas": [
+[
+"Cathedral Green",
+"The cathedral and surrounding cafés."
+],
+[
+"Exeter Quayside",
+"Historic quay with cafés, kayak hire and cycle routes."
+],
+[
+"Gandy Street & Fore Street",
+"Independent shops and bars."
+]
+],
+"sights": [
+[
+"Exeter Cathedral",
+"Gothic cathedral with the world’s longest unbroken medieval vaulted ceiling."
+],
+[
+"Royal Albert Memorial Museum (RAMM)",
+"Free museum and gallery."
+],
+[
+"Underground Passages",
+"Medieval passages beneath the city."
+],
+[
+"Exeter Quay",
+"Historic quayside and the Exe estuary trail."
+]
+],
+"eat": [
+[
+"Cream teas",
+"Devon style: cream first, then jam."
+],
+[
+"Exeter Quay",
+"Riverside cafés and restaurants."
+],
+[
+"Fore Street",
+"Independent eateries."
+]
+],
+"night": [
+[
+"Exeter Phoenix",
+"Arts centre with gigs and film."
+],
+[
+"Northernhay & Gandy Street",
+"Bars and late venues."
+],
+[
+"Exeter Northcott Theatre",
+"Plays and productions."
+]
+],
+"arrive": "Exeter Airport has a bus to the city. Exeter St Davids has trains to London Paddington and Waterloo.",
+"around": "Walkable centre; Stagecoach buses cover the city and Devon.",
+"pass": "Stagecoach day tickets are available; check current fares.",
+"when": "Spring to autumn for Dartmoor and the coast.",
+"tip": "Book the Underground Passages tour in advance at busy times.",
+"sources": [
+{
+"title": "Visit Exeter (official guide)",
+"url": "https://visitexeter.com/"
+},
+{
+"title": "Exeter Cathedral",
+"url": "https://www.exeter-cathedral.org.uk/"
+},
+{
+"title": "Exeter Airport",
+"url": "https://www.exeter-airport.co.uk/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "plymouth",
+"intro": "Britain’s Ocean City, where the Mayflower set sail, with a historic Barbican and wide views from the Hoe.",
+"areas": [
+[
+"The Barbican",
+"Historic harbour with cobbled streets, galleries and bars."
+],
+[
+"Plymouth Hoe",
+"Seafront promenade, Smeaton’s Tower and Tinside Lido."
+],
+[
+"Royal William Yard",
+"Restored naval yard with restaurants."
+]
+],
+"sights": [
+[
+"Smeaton’s Tower",
+"Red-and-white lighthouse on the Hoe."
+],
+[
+"National Marine Aquarium",
+"The UK’s largest aquarium."
+],
+[
+"The Box",
+"Museum, gallery and archive."
+],
+[
+"Mayflower Steps",
+"Commemorating the Pilgrims’ 1620 departure."
+],
+[
+"Tinside Lido",
+"Art Deco seawater lido (summer season)."
+]
+],
+"eat": [
+[
+"Barbican seafood",
+"Fresh catch from Plymouth’s fish market."
+],
+[
+"Royal William Yard",
+"Waterfront restaurants."
+],
+[
+"Plymouth Gin Distillery",
+"The oldest working gin distillery in England."
+]
+],
+"night": [
+[
+"The Barbican",
+"Pubs and bars."
+],
+[
+"Theatre Royal Plymouth",
+"Touring shows."
+],
+[
+"Union Street",
+"Clubs and late venues."
+]
+],
+"arrive": "Plymouth station has trains to London Paddington, Bristol and Cornwall. Exeter Airport is about an hour away. Ferries sail to France and Spain.",
+"around": "Citybus and Stagecoach buses; the Hoe and Barbican are walkable.",
+"pass": "Citybus day tickets are available; check current fares.",
+"when": "May–September for the lido and waterfront events.",
+"tip": "Take the water taxi from the Barbican to Royal William Yard.",
+"sources": [
+{
+"title": "Visit Plymouth (official guide)",
+"url": "https://www.visitplymouth.co.uk/"
+},
+{
+"title": "The Box Plymouth",
+"url": "https://www.theboxplymouth.com/"
+},
+{
+"title": "National Marine Aquarium",
+"url": "https://www.national-aquarium.co.uk/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "cheltenham",
+"intro": "A Regency spa town of elegant terraces, festivals and horse racing on the edge of the Cotswolds.",
+"areas": [
+[
+"Promenade",
+"Tree-lined shopping street."
+],
+[
+"Montpellier",
+"Boutiques, bars and restaurants."
+],
+[
+"Pittville",
+"Pittville Park and the Pump Room."
+]
+],
+"sights": [
+[
+"Cheltenham Racecourse",
+"Home of the Cheltenham Festival every March."
+],
+[
+"Pittville Pump Room",
+"Regency spa building in Pittville Park."
+],
+[
+"The Wilson",
+"Art gallery and museum."
+],
+[
+"The Cotswolds",
+"Villages and hills on the doorstep."
+]
+],
+"eat": [
+[
+"Montpellier",
+"Restaurants and wine bars."
+],
+[
+"Suffolk Road",
+"Independent eateries."
+],
+[
+"Cotswold produce",
+"Local cheeses and ales."
+]
+],
+"night": [
+[
+"Montpellier bars",
+"Cocktails and wine bars."
+],
+[
+"Everyman Theatre",
+"Victorian theatre."
+],
+[
+"Festivals",
+"Jazz, Science, Music and Literature festivals."
+]
+],
+"arrive": "Cheltenham Spa station has trains to Birmingham, Bristol and London. Bristol and Birmingham airports are about an hour away.",
+"around": "Walkable centre; Stagecoach buses.",
+"pass": "Stagecoach day tickets are available; check current fares.",
+"when": "March for racing (book far ahead); May–October for festivals.",
+"tip": "During Festival week in March, hotels across the county sell out months ahead.",
+"sources": [
+{
+"title": "Visit Cheltenham",
+"url": "https://www.visitcheltenham.com/"
+},
+{
+"title": "Cheltenham Racecourse",
+"url": "https://www.thejockeyclub.co.uk/cheltenham/"
+},
+{
+"title": "Cheltenham Festivals",
+"url": "https://www.cheltenhamfestivals.com/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "worcester",
+"intro": "A riverside cathedral city known for porcelain, Worcestershire sauce and cricket on the Severn.",
+"areas": [
+[
+"Cathedral & Friar Street",
+"Medieval and Tudor streets."
+],
+[
+"Riverside",
+"The Severn, the racecourse and New Road cricket ground."
+],
+[
+"High Street",
+"Shops and the Guildhall."
+]
+],
+"sights": [
+[
+"Worcester Cathedral",
+"Cathedral above the Severn, where King John is buried."
+],
+[
+"The Commandery",
+"Civil War museum in a historic building."
+],
+[
+"Museum of Royal Worcester",
+"Porcelain history."
+],
+[
+"Greyfriars’ House",
+"Tudor merchant’s house (National Trust)."
+]
+],
+"eat": [
+[
+"Worcestershire sauce",
+"Created in Worcester by Lea & Perrins."
+],
+[
+"Friar Street",
+"Restaurants in timber-framed buildings."
+],
+[
+"Riverside pubs",
+"Along the Severn."
+]
+],
+"night": [
+[
+"Huntingdon Hall",
+"Music and comedy in a historic chapel."
+],
+[
+"Swan Theatre",
+"Plays and productions."
+],
+[
+"Friar Street bars",
+"Evenings in old Worcester."
+]
+],
+"arrive": "Worcester Foregate Street and Shrub Hill stations have trains to Birmingham and London Paddington. Birmingham Airport is about 45 minutes away.",
+"around": "Walkable centre; First buses.",
+"pass": "First day tickets are available; check current fares.",
+"when": "Spring to autumn for the river and cricket.",
+"tip": "Walk the riverside path to see the cathedral from the opposite bank.",
+"sources": [
+{
+"title": "Visit Worcester",
+"url": "https://www.visitworcester.co.uk/"
+},
+{
+"title": "Worcester Cathedral",
+"url": "https://www.worcestercathedral.org.uk/"
+},
+{
+"title": "Museum of Royal Worcester",
+"url": "https://www.museumofroyalworcester.org/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "lincoln",
+"intro": "A hilltop city crowned by a vast Gothic cathedral and a castle holding a Magna Carta.",
+"areas": [
+[
+"Uphill (Bailgate)",
+"Cathedral, castle and cobbled streets."
+],
+[
+"Steep Hill",
+"Independent shops on one of England’s steepest streets."
+],
+[
+"Brayford Waterfront",
+"Marina, restaurants and the university."
+]
+],
+"sights": [
+[
+"Lincoln Cathedral",
+"Once the world’s tallest building, still a Gothic masterpiece."
+],
+[
+"Lincoln Castle",
+"Walk the walls; home to a 1215 Magna Carta."
+],
+[
+"Steep Hill",
+"Historic street linking downhill and uphill."
+],
+[
+"The Collection",
+"Archaeology and art museum."
+]
+],
+"eat": [
+[
+"Bailgate",
+"Cafés and tearooms near the cathedral."
+],
+[
+"Lincolnshire sausages & plum bread",
+"Local specialities."
+],
+[
+"Brayford",
+"Waterside restaurants."
+]
+],
+"night": [
+[
+"Brayford Waterfront",
+"Bars by the marina."
+],
+[
+"The Engine Shed",
+"Live music at the university."
+],
+[
+"Historic pubs",
+"Uphill inns."
+]
+],
+"arrive": "Lincoln station has trains to London King’s Cross (some direct) and Nottingham. East Midlands and Humberside airports are about an hour away.",
+"around": "Walk, but be ready for Steep Hill; Stagecoach buses cover the city.",
+"pass": "Stagecoach day tickets are available; check current fares.",
+"when": "Spring to autumn; the Christmas market (early December).",
+"tip": "Wear good shoes: Steep Hill lives up to its name.",
+"sources": [
+{
+"title": "Visit Lincoln (official guide)",
+"url": "https://www.visitlincoln.com/"
+},
+{
+"title": "Lincoln Cathedral",
+"url": "https://lincolncathedral.com/"
+},
+{
+"title": "Lincoln Castle",
+"url": "https://www.lincolncastle.com/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "york",
+"intro": "A walled medieval city of Viking history, a mighty minster and the timber-framed Shambles.",
+"areas": [
+[
+"Within the walls",
+"The Minster, the Shambles and Stonegate."
+],
+[
+"Micklegate",
+"Historic street of bars and restaurants."
+],
+[
+"Riverside & Museum Gardens",
+"The Ouse, the Abbey ruins and the Yorkshire Museum."
+]
+],
+"sights": [
+[
+"York Minster",
+"One of Europe’s largest Gothic cathedrals."
+],
+[
+"The Shambles",
+"Medieval street with overhanging buildings."
+],
+[
+"City walls",
+"The longest medieval town walls in England."
+],
+[
+"JORVIK Viking Centre",
+"Viking York recreated on its excavation site."
+],
+[
+"National Railway Museum",
+"Free museum of trains."
+]
+],
+"eat": [
+[
+"Shambles Market",
+"Street food beside the Shambles."
+],
+[
+"Yorkshire pudding & afternoon tea",
+"Bettys tearooms is a famous stop."
+],
+[
+"Spark:York",
+"Container food hall."
+]
+],
+"night": [
+[
+"Micklegate",
+"Bars and late venues."
+],
+[
+"Historic pubs",
+"Many inns claim to be the city’s most haunted."
+],
+[
+"York Theatre Royal & Barbican",
+"Shows and gigs."
+]
+],
+"arrive": "York station has fast trains to London King’s Cross (about two hours), Edinburgh and Manchester. Leeds Bradford Airport is about an hour away.",
+"around": "Walk; the centre is compact. First and Park & Ride buses for the outskirts.",
+"pass": "Park & Ride and bus day tickets are available; check current fares.",
+"when": "Spring to autumn; the Christmas markets; the Viking Festival in February.",
+"tip": "Walk the walls early in the morning before the crowds.",
+"sources": [
+{
+"title": "Visit York (official guide)",
+"url": "https://www.visityork.org/"
+},
+{
+"title": "York Minster",
+"url": "https://yorkminster.org/"
+},
+{
+"title": "JORVIK Viking Centre",
+"url": "https://www.jorvikvikingcentre.co.uk/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "hull",
+"intro": "A maritime city on the Humber with a revived old town, a spectacular aquarium and free museums.",
+"areas": [
+[
+"Old Town",
+"Cobbled streets, museums and historic pubs."
+],
+[
+"Fruit Market & Marina",
+"Creative quarter with bars and galleries."
+],
+[
+"Princes Avenue",
+"Restaurants and cafés."
+]
+],
+"sights": [
+[
+"The Deep",
+"Aquarium on the Humber."
+],
+[
+"Museums Quarter",
+"Free museums including Wilberforce House."
+],
+[
+"Humber Bridge",
+"One of the world’s longest single-span suspension bridges."
+],
+[
+"Ferens Art Gallery",
+"Free gallery in the centre."
+]
+],
+"eat": [
+[
+"Hull patties",
+"A local favourite from chip shops."
+],
+[
+"Chip spice",
+"A Hull speciality."
+],
+[
+"Princes Avenue",
+"Restaurants and bars."
+]
+],
+"night": [
+[
+"Humber Street & Fruit Market",
+"Bars and live music."
+],
+[
+"Hull New Theatre & Hull Truck",
+"Shows and plays."
+],
+[
+"Connexin Live",
+"Arena concerts."
+]
+],
+"arrive": "Hull Paragon station has trains to London King’s Cross and Leeds. Ferries sail to Rotterdam. Humberside Airport is about 40 minutes away.",
+"around": "Walkable centre; Stagecoach and East Yorkshire buses.",
+"pass": "Bus day tickets are available; check current fares.",
+"when": "Spring to autumn.",
+"tip": "Walk the Fish Trail, a set of pavement sculptures across the Old Town.",
+"sources": [
+{
+"title": "Visit Hull and East Yorkshire",
+"url": "https://www.visithullandeastyorkshire.com/"
+},
+{
+"title": "The Deep",
+"url": "https://www.thedeep.co.uk/"
+},
+{
+"title": "Hull Museums",
+"url": "https://www.hcandl.co.uk/museums-and-galleries"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "bradford",
+"intro": "UK City of Culture 2025, with a famous curry scene, a photography museum and the moors close by.",
+"areas": [
+[
+"City Park",
+"City Hall and the mirror pool."
+],
+[
+"Little Germany",
+"Victorian merchants’ warehouses."
+],
+[
+"Saltaire",
+"World Heritage model village on the city’s edge."
+]
+],
+"sights": [
+[
+"National Science and Media Museum",
+"Photography, film and media."
+],
+[
+"Saltaire & Salts Mill",
+"Model village and gallery with David Hockney works."
+],
+[
+"Bradford Cathedral",
+"Medieval parish church turned cathedral."
+],
+[
+"Haworth & Brontë Parsonage",
+"Brontë country on the moors."
+]
+],
+"eat": [
+[
+"Curry",
+"Bradford’s South Asian restaurants are famous."
+],
+[
+"Kirkgate Market",
+"Indoor market."
+],
+[
+"Saltaire cafés",
+"Cafés in the model village."
+]
+],
+"night": [
+[
+"Bradford Live",
+"Concerts and shows in the restored Odeon."
+],
+[
+"St George’s Hall",
+"Victorian concert hall."
+],
+[
+"Alhambra Theatre",
+"Touring productions."
+]
+],
+"arrive": "Leeds Bradford Airport is about 20–30 minutes away. Bradford Interchange and Forster Square stations link to Leeds and Manchester.",
+"around": "First buses and local trains; Saltaire is a short train ride.",
+"pass": "West Yorkshire MCard day tickets; check current fares.",
+"when": "Spring to autumn for the moors.",
+"tip": "Take the train to Saltaire, then walk the canal towpath.",
+"sources": [
+{
+"title": "Visit Bradford",
+"url": "https://www.visitbradford.com/"
+},
+{
+"title": "National Science and Media Museum",
+"url": "https://www.scienceandmediamuseum.org.uk/"
+},
+{
+"title": "Salts Mill",
+"url": "https://www.saltsmill.org.uk/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "doncaster",
+"intro": "A historic market town and racing capital, with the oldest classic horse race and a busy rail hub.",
+"areas": [
+[
+"Town centre",
+"Market Place and the Minster."
+],
+[
+"Racecourse",
+"Town Moor, home of the St Leger."
+],
+[
+"Lakeside",
+"Outlet shopping and the lake."
+]
+],
+"sights": [
+[
+"Doncaster Racecourse",
+"Home of the St Leger, the oldest of the five British classics."
+],
+[
+"Doncaster Minster",
+"Victorian church by George Gilbert Scott."
+],
+[
+"Cusworth Hall",
+"Georgian house and park."
+],
+[
+"Conisbrough Castle",
+"Medieval keep nearby."
+]
+],
+"eat": [
+[
+"Doncaster Market",
+"Historic market with a fish market and food hall."
+],
+[
+"Yorkshire produce",
+"Local pies and puddings."
+],
+[
+"Town-centre pubs",
+"Traditional pubs."
+]
+],
+"night": [
+[
+"Cast",
+"Theatre and performance."
+],
+[
+"Silver Street",
+"Bars and clubs."
+],
+[
+"Race nights",
+"Summer music nights at the racecourse."
+]
+],
+"arrive": "Doncaster station is on the East Coast Main Line, about 1h40 from London King’s Cross.",
+"around": "First buses; the centre is walkable.",
+"pass": "Travel South Yorkshire day tickets; check current fares.",
+"when": "September for the St Leger Festival.",
+"tip": "Book hotels early for the St Leger Festival in September.",
+"sources": [
+{
+"title": "Visit Doncaster",
+"url": "https://www.visitdoncaster.com/"
+},
+{
+"title": "Doncaster Racecourse",
+"url": "https://www.doncaster-racecourse.co.uk/"
+},
+{
+"title": "English Heritage: Conisbrough Castle",
+"url": "https://www.english-heritage.org.uk/visit/places/conisbrough-castle/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "middlesbrough",
+"intro": "A Teesside town of steel heritage, a giant transporter bridge and modern art, between the moors and the coast.",
+"areas": [
+[
+"Town centre",
+"Centre Square and the Town Hall."
+],
+[
+"Linthorpe Road",
+"Restaurants and bars."
+],
+[
+"Riverside",
+"The Transporter Bridge and the Tees."
+]
+],
+"sights": [
+[
+"Tees Transporter Bridge",
+"Rare working transporter bridge (check operating status)."
+],
+[
+"MIMA",
+"Middlesbrough Institute of Modern Art."
+],
+[
+"Captain Cook Birthplace Museum",
+"In Stewart Park."
+],
+[
+"North York Moors & Roseberry Topping",
+"Hills and walks nearby."
+]
+],
+"eat": [
+[
+"Chicken parmo",
+"Teesside’s famous dish."
+],
+[
+"Linthorpe Road",
+"International restaurants."
+],
+[
+"Whitby fish and chips",
+"On the coast, an hour away."
+]
+],
+"night": [
+[
+"Middlesbrough Town Hall",
+"Concerts and comedy."
+],
+[
+"Linthorpe Road",
+"Bars and clubs."
+],
+[
+"Riverside Stadium",
+"Home of Middlesbrough FC."
+]
+],
+"arrive": "Middlesbrough station has trains to Newcastle, York and Whitby (via the Esk Valley line). Teesside International Airport is about 20 minutes away.",
+"around": "Arriva and Stagecoach buses; the centre is walkable.",
+"pass": "Bus day tickets are available; check current fares.",
+"when": "Spring to autumn for the moors and coast.",
+"tip": "Try a parmo, then walk it off on Roseberry Topping.",
+"sources": [
+{
+"title": "MIMA",
+"url": "https://mima.art/"
+},
+{
+"title": "Teesside International Airport",
+"url": "https://www.teessideinternational.com/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "sunderland",
+"intro": "A seaside city on the Wear with sandy beaches, a glass centre and the Stadium of Light.",
+"areas": [
+[
+"City centre",
+"Keel Square, Sunniside and the Empire."
+],
+[
+"Roker & Seaburn",
+"Beaches, the pier and lighthouse."
+],
+[
+"Riverside",
+"National Glass Centre and Stadium of Light."
+]
+],
+"sights": [
+[
+"Roker Pier & Lighthouse",
+"Victorian pier with seasonal lighthouse tours."
+],
+[
+"National Glass Centre",
+"Glassmaking demonstrations by the Wear."
+],
+[
+"Sunderland Museum & Winter Gardens",
+"Free museum with a tropical glasshouse."
+],
+[
+"Stadium of Light",
+"Home of Sunderland AFC."
+]
+],
+"eat": [
+[
+"Seaburn",
+"Seafront cafés and restaurants."
+],
+[
+"Sunniside",
+"Bars and restaurants."
+],
+[
+"Pease pudding & stotties",
+"North-East classics."
+]
+],
+"night": [
+[
+"Sunderland Empire",
+"Large touring theatre."
+],
+[
+"Sunniside",
+"Bars and live music."
+],
+[
+"Fire Station",
+"Music and arts venue."
+]
+],
+"arrive": "Newcastle International Airport is about 30 minutes away. The Tyne and Wear Metro and Sunderland station link to Newcastle.",
+"around": "Tyne and Wear Metro and Go North East / Stagecoach buses.",
+"pass": "Metro day tickets and Pop cards; check current fares.",
+"when": "Summer for the beaches and the Sunderland Airshow (check dates).",
+"tip": "Walk from Roker to Seaburn along the seafront.",
+"sources": [
+{
+"title": "See It Do It Sunderland",
+"url": "https://www.seeitdoitsunderland.co.uk/"
+},
+{
+"title": "National Glass Centre",
+"url": "https://nationalglasscentre.com/"
+},
+{
+"title": "Nexus: Tyne and Wear Metro",
+"url": "https://www.nexus.org.uk/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "carlisle",
+"intro": "A historic border city with a red sandstone castle, a cathedral and Hadrian’s Wall on its doorstep.",
+"areas": [
+[
+"Historic Quarter",
+"Castle, cathedral and Tullie House."
+],
+[
+"City centre",
+"Market Cross and English Street."
+],
+[
+"Botchergate",
+"Bars and restaurants."
+]
+],
+"sights": [
+[
+"Carlisle Castle",
+"Medieval castle on the Scottish border."
+],
+[
+"Carlisle Cathedral",
+"Cathedral with a painted ceiling."
+],
+[
+"Tullie House Museum",
+"Roman frontier and border history."
+],
+[
+"Hadrian’s Wall",
+"World Heritage Roman frontier."
+]
+],
+"eat": [
+[
+"Cumberland sausage",
+"Coiled sausage from the county."
+],
+[
+"Market Hall",
+"Victorian covered market."
+],
+[
+"Botchergate",
+"Restaurants."
+]
+],
+"night": [
+[
+"Botchergate",
+"The city’s main night out."
+],
+[
+"The Old Fire Station",
+"Arts and music."
+],
+[
+"Sands Centre",
+"Concerts and events."
+]
+],
+"arrive": "Carlisle station has trains to London Euston, Glasgow, Newcastle and the Settle–Carlisle line. Newcastle and Glasgow airports are about 90 minutes away.",
+"around": "Walkable centre; Stagecoach buses to the Lakes and Hadrian’s Wall.",
+"pass": "Stagecoach day tickets; check current fares.",
+"when": "Spring to autumn for Hadrian’s Wall walks.",
+"tip": "Ride the scenic Settle–Carlisle railway.",
+"sources": [
+{
+"title": "Discover Carlisle",
+"url": "https://www.discovercarlisle.co.uk/"
+},
+{
+"title": "English Heritage: Carlisle Castle",
+"url": "https://www.english-heritage.org.uk/visit/places/carlisle-castle/"
+},
+{
+"title": "Tullie House",
+"url": "https://www.tulliehouse.org/"
+}
+],
+"checked": "2026-11-24"
+}
+]
