@@ -5,6 +5,7 @@
 //
 // London uses the TfL Unified API (open data, commercial use allowed with the attribution
 // below, no key needed at visitor volumes; each visitor's browser or phone calls TfL itself).
+import {CITY_COORDS} from './city-coords.js';
 const enc = encodeURIComponent;
 export const TFL = 'https://api.tfl.gov.uk';
 export const TFL_ATTRIBUTION = 'Powered by TfL Open Data. Contains OS data © Crown copyright and database rights 2016 and Geomni UK Map data © and database rights 2019.';
@@ -32,6 +33,23 @@ export const lineStyle = id => TFL_LINES[String(id || '').toLowerCase()] || null
 // `next` is for planning only; nothing about it is shown as live.
 export const LIVE = Object.freeze({london: {provider: 'tfl', name: 'Transport for London'}});
 export const hasLive = slug => Boolean(LIVE[slug]);
+// Cities served by our own /api/get-around, which holds each operator's key. Each one is
+// live only once its key is set in Vercel; the site asks /api/get-around which are on.
+export const KEYED = Object.freeze({
+  paris: {name: 'Île-de-France Mobilités', attribution: 'Live data: Île-de-France Mobilités (PRIM).', centre: CITY_COORDS.paris, ac: true},
+  madrid: {name: 'EMT Madrid', attribution: 'Live bus times: EMT Madrid MobilityLabs.', centre: CITY_COORDS.madrid},
+  prague: {name: 'PID', attribution: 'Live data: Golemio / PID (CC BY 4.0).', centre: CITY_COORDS.prague, ac: true},
+  helsinki: {name: 'HSL', attribution: 'Live data: HSL / Digitransit (CC BY 4.0).', centre: CITY_COORDS.helsinki}
+});
+export async function keyedCitiesLive({base = '', fetchImpl = globalThis.fetch} = {}) {
+  try { const r = await fetchImpl(base + '/api/get-around'); return r.ok ? (await r.json()).live || [] : []; } catch { return []; }
+}
+export async function keyedBoard(slug, [lat, lon], {base = '', fetchImpl = globalThis.fetch} = {}) {
+  const r = await fetchImpl(`${base}/api/get-around?city=${enc(slug)}&lat=${lat}&lon=${lon}`);
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw Error(j.error || 'Live data is not answering right now.');
+  return j;
+}
 
 // Cities Citymapper covers that have TicketBunker pages (same list as get-there.js).
 const CITYMAPPER = ['london', 'manchester', 'birmingham', 'dublin', 'paris', 'lyon', 'barcelona', 'madrid', 'lisbon', 'amsterdam',

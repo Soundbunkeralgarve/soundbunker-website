@@ -1,3 +1,4 @@
+import {handleGetAround} from './lib/get-around-live.js';
 // The existing SoundBunker ticket service owns authentication, authorisation,
 // event inventory, QR signatures and payments. No service credentials reach this site.
 const UPSTREAM = 'https://www.soundbunker.pt';
@@ -54,6 +55,8 @@ export function cleanResponse(endpoint, data) {
 }
 export default async function handler(req, res) {
   const endpoint = String(req.query?.endpoint || '');
+  // Get around live boards are answered here, not by the ticket service.
+  if (endpoint === 'get-around') return handleGetAround(req, res);
   res.setHeader('Cache-Control','private, no-store, max-age=0');
   res.setHeader('Content-Type','application/json; charset=utf-8');
   res.setHeader('X-Content-Type-Options','nosniff');

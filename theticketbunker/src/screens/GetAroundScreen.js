@@ -6,7 +6,7 @@ import {Button, Chip, StatusShade} from '../components/ui.js';
 import {locate} from '../state.js';
 import {openOut, openPage} from '../open.js';
 import {SITE} from '../../lib/config.js';
-import {CITY_PAGES, cityBySlug, nearestCities, distanceKm, CITY_COORDS, MODES, LIVE, TFL_ATTRIBUTION, tflNearby, tflArrivals, tflStatus, tflJourney,
+import {CITY_PAGES, cityBySlug, nearestCities, distanceKm, CITY_COORDS, MODES, LIVE, KEYED, keyedBoard, keyedCitiesLive, TFL_ATTRIBUTION, tflNearby, tflArrivals, tflStatus, tflJourney,
   taxiLinks, plannerLinks, tripLinks, minsText, distanceText} from '../../lib/site.js';
 
 // Get around: live departures from where you're standing, line status, routes with
@@ -24,24 +24,39 @@ export default function GetAroundScreen({route}) {
   const [stops, setStops] = useState([]), [arr, setArr] = useState({}), [open, setOpen] = useState(new Set());
   const [status, setStatus] = useState(null), [err, setErr] = useState(''), [busy, setBusy] = useState(false);
   const [to, setTo] = useState(''), [routes, setRoutes] = useState(null), [routeBusy, setRouteBusy] = useState(false);
-  const city = cityBySlug(slug), name = city[1].replace(/^the /, ''), live = Boolean(LIVE[slug]);
+  const [keyedOn, setKeyedOn] = useState([]), [attr, setAttr] = useState('');
+  useEffect(() => { keyedCitiesLive({base: SITE}).then(setKeyedOn); }, []);
+  const city = cityBySlug(slug), name = city[1].replace(/^the /, ''), tfl = Boolean(LIVE[slug]), keyed = Boolean(KEYED[slug]) && keyedOn.includes(slug), live = tfl || keyed;
+  const acKnown = tfl || (keyed && KEYED[slug].ac);
   const from = here || CITY_COORDS[slug];
   const openRef = useRef(open); openRef.current = open;
+  const fromRef = useRef(from); fromRef.current = from;
 
   const loadArrivals = useCallback(async id => {
+    if (!LIVE[slug]) return;
     try { const list = await tflArrivals(id); setArr(a => ({...a, [id]: {list, at: Date.now()}})); }
     catch (e) { setArr(a => ({...a, [id]: {list: [], error: e.message, at: Date.now()}})); }
-  }, []);
+  }, [slug]);
+  const loadKeyed = useCallback(async (point, keepOpen) => {
+    const j = await keyedBoard(slug, point, {base: SITE});
+    const list = j.stops || [];
+    setAttr(j.attribution || ''); setStops(list);
+    setArr(Object.fromEntries(list.map(x => [x.id, {list: x.departures, at: Date.parse(j.at) || Date.now()}])));
+    if (!keepOpen) { const first = new Set(list.slice(0, 3).map(x => x.id)); const bus = list.find(x => x.mode === 'bus'); if (bus) first.add(bus.id); setOpen(first); }
+    if (!list.length) setErr('No departures from stops within walking distance right now.');
+  }, [slug]);
   const loadBoard = useCallback(async point => {
-    if (!LIVE[slug]) return;
+    const isKeyed = Boolean(KEYED[slug]) && keyedOn.includes(slug);
+    if (!LIVE[slug] && !isKeyed) return;
     setErr(''); setStops([]); setArr({});
+    if (isKeyed) { try { await loadKeyed(point, false); } catch (e) { setErr(e.message); } return; }
     try {
       const list = await tflNearby(point, {radius: 650});
       const first = new Set(list.slice(0, 3).map(x => x.id)); const bus = list.find(x => x.mode === 'bus'); if (bus) first.add(bus.id);
       setStops(list); setOpen(first); await Promise.all([...first].map(loadArrivals));
     } catch (e) { setErr(e.message); }
     tflStatus().then(setStatus).catch(() => setStatus(null));
-  }, [slug, loadArrivals]);
+  }, [slug, loadArrivals, loadKeyed, keyedOn]);
 
   async function findMe() {
     setBusy(true);
@@ -56,16 +71,17 @@ export default function GetAroundScreen({route}) {
   useEffect(() => { findMe(); }, []);
   useEffect(() => { if (route?.params?.slug && cityBySlug(route.params.slug)) setSlug(route.params.slug); }, [route?.params?.slug]);
   const firstRun = useRef(true);
+  useEffect(() => { if (keyedOn.includes(slug)) loadBoard(here && distanceKm(here, CITY_COORDS[slug]) < 40 ? here : CITY_COORDS[slug]); }, [keyedOn]);
   useEffect(() => { if (firstRun.current) { firstRun.current = false; return; } if (here && distanceKm(here, CITY_COORDS[slug]) < 40) loadBoard(here); else loadBoard(CITY_COORDS[slug]); setRoutes(null); }, [slug]);
   // Refresh open boards every 30 seconds while the app is in front.
   useEffect(() => {
-    const t = setInterval(() => { if (AppState.currentState === 'active' && LIVE[slug]) [...openRef.current].forEach(loadArrivals); }, 30000);
+    const t = setInterval(() => { if (AppState.currentState !== 'active') return; if (LIVE[slug]) [...openRef.current].forEach(loadArrivals); else if (KEYED[slug] && keyedOn.includes(slug)) loadKeyed(fromRef.current, true).catch(() => {}); }, 30000);
     return () => clearInterval(t);
-  }, [slug, loadArrivals]);
+  }, [slug, loadArrivals, loadKeyed, keyedOn]);
 
   async function plan(target = to.trim()) {
     if (!target) return;
-    if (!live) { setRoutes({handoff: true}); return; }
+    if (!tfl) { setRoutes({handoff: true}); return; }
     setRouteBusy(true);
     try { setRoutes(await tflJourney(from.join(','), target, opt)); } catch (e) { setRoutes({error: e.message}); }
     finally { setRouteBusy(false); }
@@ -73,7 +89,7 @@ export default function GetAroundScreen({route}) {
   useEffect(() => { if (routes?.journeys && to.trim()) plan(); }, [opt.stepFree, opt.fewerChanges, opt.airCon]);
 
   let shown = stops.filter(x => mode === 'all' || x.modes.includes(mode));
-  if (opt.airCon) shown = shown.filter(x => x.lines.some(l => l.ac));
+  if (opt.airCon) shown = shown.filter(x => x.lines.some(l => l.ac) || (arr[x.id]?.list || []).some(d => d.ac));
   const fastest = routes?.journeys?.length ? Math.min(...routes.journeys.slice(0, 4).map(j => j.mins)) : 0;
   const hand = plannerLinks({slug, from: here, toName: to.trim()});
 
@@ -97,7 +113,7 @@ export default function GetAroundScreen({route}) {
           {MODES.map(([k, l]) => <Chip key={k} label={(k === 'all' ? '' : ICON[k] + ' ') + l} active={mode === k} onPress={() => setMode(k)}/>)}
         </ScrollView>
         <View style={g.card}>
-          {[['stepFree', '♿ Step-free routes'], ['fewerChanges', '⇄ Fewer changes'], ['airCon', '❄ Air-conditioned lines']].map(([k, l]) =>
+          {[['stepFree', tfl ? '♿ Step-free routes' : '♿ Wheelchair accessible'], tfl && ['fewerChanges', '⇄ Fewer changes'], acKnown && ['airCon', '❄ Air-conditioned']].filter(Boolean).map(([k, l]) =>
             <View key={k} style={g.toggle}><Text style={s.body}>{l}</Text>
               <Switch value={opt[k]} onValueChange={v => setOpt(o => ({...o, [k]: v}))} trackColor={{true: C.teal, false: C.line}} thumbColor="#fff" accessibilityLabel={l}/></View>)}
         </View>
@@ -110,6 +126,7 @@ export default function GetAroundScreen({route}) {
           const isOpen = open.has(st.id), a = arr[st.id];
           let list = (a?.list || []).filter(x => mode === 'all' || x.mode === mode);
           if (opt.airCon) list = list.filter(x => x.ac);
+          if (opt.stepFree) list = list.filter(x => x.wheelchair !== false);
           return <View key={st.id} style={g.card}>
             <Pressable accessibilityRole="button" accessibilityState={{expanded: isOpen}} style={{flexDirection: 'row', gap: 12}}
               onPress={() => { const n = new Set(open); isOpen ? n.delete(st.id) : (n.add(st.id), loadArrivals(st.id)); setOpen(n); }}>
@@ -122,16 +139,16 @@ export default function GetAroundScreen({route}) {
             </Pressable>
             {isOpen ? <View style={{marginTop: 10}}>
               {!a ? <Text style={s.muted}>Loading live times…</Text> : a.error ? <Text style={s.muted}>{a.error}</Text>
-                : !list.length ? <Text style={s.muted}>{a.list.length ? 'Nothing matching your choices in the next 30 minutes.' : 'No live times from TfL for this stop right now.'}</Text>
+                : !list.length ? <Text style={s.muted}>{a.list.length ? 'Nothing matching your choices in the next 30 minutes.' : 'No live times for this stop right now.'}</Text>
                 : list.slice(0, 6).map((x, i) => <View key={i} style={g.dep}>
                   <Line l={x}/><View style={{flex: 1}}><Text style={[s.body, {fontFamily: F.medium}]} numberOfLines={1}>{x.towards || '—'}</Text>
-                    {x.platform ? <Text style={s.muted} numberOfLines={1}>{x.platform}</Text> : null}</View>
+                    {x.platform || x.wheelchair || x.live === false ? <Text style={s.muted} numberOfLines={1}>{[x.platform, x.wheelchair && '♿ accessible', x.live === false && 'timetable'].filter(Boolean).join(' · ')}</Text> : null}</View>
                   <Text style={g.min}>{minsText(x.mins)}</Text></View>)}
               {a && !a.error ? <Text style={[s.muted, {fontSize: 12, marginTop: 6}]}>Live · updated {new Date(a.at).toLocaleTimeString('en-GB')}</Text> : null}
             </View> : null}
           </View>;
         })}
-        {status ? <View style={g.card}><Text style={s.h3}>Line status</Text>
+        {tfl && status ? <View style={g.card}><Text style={s.h3}>Line status</Text>
           {status.filter(l => !l.good).map(l => <View key={l.id} style={[g.dep, {alignItems: 'flex-start'}]}><Line l={l}/>
             <View style={{flex: 1}}><Text style={[s.body, {color: C.warn}]}>{l.status}</Text>{l.reason ? <Text style={s.muted}>{l.reason.replace(/^[^:]+:\s*/, '')}</Text> : null}</View></View>)}
           <Text style={[s.body, {color: C.teal}]}>{status.some(l => !l.good) ? 'Good service on all other lines.' : 'Good service on every line.'}</Text></View> : null}
@@ -171,7 +188,7 @@ export default function GetAroundScreen({route}) {
         <View style={{flexDirection: 'row', flexWrap: 'wrap', gap: 8}}>
           {tripLinks({name, country: city[2]}).map(l => <Chip key={l.kind} label={l.label} onPress={() => openPage(SITE + l.href)}/>)}</View></View>
 
-      <Text style={[s.muted, {fontSize: 12}]}>{live ? TFL_ATTRIBUTION + ' Times are TfL’s live predictions and can change.' : 'Live boards are added city by city as we connect each operator’s official feed.'}</Text>
+      <Text style={[s.muted, {fontSize: 12}]}>{tfl ? TFL_ATTRIBUTION + ' Times are TfL’s live predictions and can change.' : keyed ? attr + ' Times marked “timetable” are scheduled, not live.' : 'Live boards are added city by city as we connect each operator’s official feed.'}</Text>
     </ScrollView>
     <StatusShade/>
   </SafeAreaView>;
