@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {normaliseDraft, openDraft, persistDraft, switchDestination, updateDetails, chooseOption, stepProgress,
-  matchingNights, ticketBrowseHref, draftQuery, destinationKey, reconcileSelections, applyTripDetails} from '../trip-builder-model.js';
+  matchingNights, ticketBrowseHref, draftQuery, destinationKey, reconcileSelections, applyTripDetails, savedListingStep, transportBrowseHref} from '../trip-builder-model.js';
 import {tripOptions, TRIP_PARTNERS} from '../trip-partners.js';
 
 test('a saved trip resumes its step, dates and choices and destination plans remain separate',()=>{
@@ -100,4 +100,19 @@ test('draft storage is bounded and restores city keys without carrying ticket se
   assert.equal(Object.keys(store.drafts).length,8);
   assert.equal(store.active,destinationKey('GB','City 11'));
   assert.equal(store.drafts[destinationKey('GB','City 0')],undefined);
+});
+
+test('saved rail, metro, river-bus and water-taxi products belong to travel while dining stays in food',()=>{
+  const draft=normaliseDraft({city:'London',country:'GB',from:'2026-12-10',to:'2026-12-13',party:'couples'});
+  const base={id:'feed:viator:5021CLIPPER',title:'River Roamer Pass',city:'London',countryCode:'GB',url:'https://www.viator.com/tours/London/x?pid=P00333211',external:true,done:{tickets:true}};
+  const saved=matchingNights([{...base,category:'transit'},{...base,id:'feed:viator:taxi',category:'transfer'},{...base,id:'feed:viator:dinner',category:'dining'}],draft);
+  assert.deepEqual(saved.map(n=>savedListingStep(n.category)),['travel','travel','food']);
+  assert.equal(savedListingStep('boat'),'tickets','sightseeing cruises remain activities');
+  assert.equal(saved[0].category,'transit');assert.equal(saved[0].done,undefined);
+  const selected=chooseOption(draft,savedListingStep(saved[0].category),saved[0].id);
+  assert.deepEqual(selected.selected.tickets,[]);assert.deepEqual(selected.selected.travel,[base.id]);assert.equal(selected.progress.travel,'planned');
+  const browse=new URL(transportBrowseHref(draft),'https://theticketbunker.com');
+  assert.equal(browse.searchParams.get('city'),'London');assert.equal(browse.searchParams.get('cat'),'transit');assert.equal(browse.searchParams.get('party'),'couples');
+  assert.equal(browse.searchParams.get('from'),'2026-12-10');assert.equal(browse.searchParams.get('when'),null,'open-dated passes are not incorrectly filtered out by a dated-event filter');
+  assert.equal(new URL(transportBrowseHref(draft,'transfer'),'https://theticketbunker.com').searchParams.get('cat'),'transfer');
 });

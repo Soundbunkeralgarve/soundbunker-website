@@ -17,7 +17,7 @@ for (const guide of GUIDES) {
     {'@type':'BreadcrumbList',itemListElement:[{'@type':'ListItem',position:1,name:'TicketBunker',item:SITE+'/'},{'@type':'ListItem',position:2,name:guide.title,item:url}]}
   ]};
   const cards = providerCards(guideProviders(guide.kind,'GB','London'));
-  const builderAssets = guide.kind === 'all' ? '<link rel="stylesheet" href="/trip-builder.css?v=20261123-builder"><script type="module" src="/trip-builder.js?v=20261123-builder"></script>' : '';
+  const builderAssets = guide.kind === 'all' ? '<link rel="stylesheet" href="/trip-builder.css?v=20261123-builder"><script type="module" src="/trip-builder.js?v=20261123-transit"></script>' : '';
   const builder = guide.kind === 'all' ? '<section class="trip-builder-section" id="trip-builder" aria-labelledby="trip-builder-heading"><div class="wrap" data-trip-builder><h2 id="trip-builder-heading">Build your trip.</h2><p>Choose tickets, a hotel, travel and somewhere to eat, step by step. Your plan stays saved on this device.</p><p><a href="#choose-destination">Browse provider options below</a></p><noscript><p>Enable JavaScript to save a step-by-step plan, or use the provider links below.</p></noscript></div></section>' : '';
 
   const disclosure = guide.kind === 'transfer' ? '<p class="guide-terms">Viator booking links may earn TicketBunker a commission. You book and pay with Viator.</p>' : '';

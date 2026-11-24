@@ -1,6 +1,7 @@
 import {gunzipSync} from 'node:zlib';
 import {readFile} from 'node:fs/promises';
 import {listingCategory, metadataCategory, limoSearchRelevant} from './lib/listing-category.js';
+import {filterByQuery, searchQuery} from '../discovery-model.js';
 // Approved affiliate event feeds. Buyers always book on the provider's own site through
 // our tracked link; the provider sells, delivers and supports the ticket.
 //
@@ -91,11 +92,15 @@ const placeHas = (have, want) => (' ' + have.replace(/[^\p{L}\p{N}]+/gu, ' ') + 
 const place = value => String(value || '').normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase().trim();
 // The soonest listings per category, optionally narrowed to one town or city. Without a
 // town, no more than a few per town so the national picks span the whole country.
-export function pickListings(items, {city = '', country = ''} = {}) {
+export function matchingListings(items, {city = '', country = '', q = ''} = {}) {
+  const want = place(city);
+  return filterByQuery(items, q).filter(item =>
+    (!country || item.countryCode === country) &&
+    (!want || placeHas(place(item.city), want) || (item.provider === 'viator' && place(item.city) === 'algarve' && regionTown(want))));
+}
+export function pickListings(items, {city = '', country = '', q = ''} = {}) {
   const want = place(city), counts = {}, perTown = {};
-  return items.filter(item => {
-    if (country && item.countryCode !== country) return false;
-    if (want && !placeHas(place(item.city), want) && !(item.provider === 'viator' && place(item.city) === 'algarve' && regionTown(want))) return false;
+  return matchingListings(items, {city, country, q}).filter(item => {
     const bucket = item.provider + '|' + item.category;
     // A chosen city gets a much deeper list so its page can show everything that's on.
     // The approved theatre snapshot has over 80 real London products; its full
@@ -159,8 +164,16 @@ const VIATOR_FOCUSED = Object.freeze([
   {place:'London', countryCode:'GB', destinationId:'737', query:'London Zoo Entry Ticket', productCode:'2676ZOO'},
   {place:'Lisbon', countryCode:'PT', destinationId:'538', query:'Lisbon Oceanarium Entrance Ticket', productCode:'111503P1'},
   {place:'Lisbon', countryCode:'PT', destinationId:'538', query:'Lisbon Banksy Museum Admission Ticket', productCode:'420484P3'},
-  {place:'Amsterdam', countryCode:'NL', destinationId:'525', query:'Private Rijksmuseum Guided Tour', productCode:'8718P33'}
+  {place:'Amsterdam', countryCode:'NL', destinationId:'525', query:'Private Rijksmuseum Guided Tour', productCode:'8718P33'},
+  {place:'Barcelona', countryCode:'ES', destinationId:'562', query:'Hola Barcelona Public Transportation Travel Card', productCode:'2512P37', category:'transit', searchTerms:'metro bus tram public transport'},
+  {place:'Lisbon', countryCode:'PT', destinationId:'538', query:'Lisbon City Card', productCode:'59338P4', category:'transit', searchTerms:'metro bus tram public transport rail train'},
+  {place:'London', countryCode:'GB', destinationId:'737', query:'Uber Boat River Roamer', productCode:'5021CLIPPER', category:'transit', searchTerms:'boat waterbus river bus'},
+  {place:'Venice', countryCode:'IT', destinationId:'522', query:'Venice Marco Polo Airport Shared Water Taxi Arrival Transfer', productCode:'2495VENAPTHTL', category:'transfer', searchTerms:'boat water taxi airport'},
+  {place:'Venice', countryCode:'IT', destinationId:'522', query:'Venice Shared Water Taxi Departure Transfer', productCode:'2495VENHTLAPT', category:'transfer', searchTerms:'boat water taxi airport'},
+  {place:'London', countryCode:'GB', destinationId:'737', query:'Heathrow Express Train Ticket', productCode:'366941P584', category:'transit', searchTerms:'rail train airport'},
+  {place:'Venice', countryCode:'IT', destinationId:'522', query:'Venice Marco Polo Airport Direct Bus', productCode:'5648785P23', category:'transit', searchTerms:'bus coach airport'}
 ]);
+const VIATOR_PRODUCT_METADATA = new Map(VIATOR_FOCUSED.filter(p => p.category).map(p => [p.productCode, {category:p.category,searchTerms:p.searchTerms}]));
 
 export function viatorItem(raw, {place, countryCode}) {
   const title = String(raw?.title || '').replace(/\s+/g, ' ').trim().slice(0, 140);
@@ -173,9 +186,10 @@ export function viatorItem(raw, {place, countryCode}) {
   try { const u = new URL(variant?.url || ''); if (u.protocol === 'https:') image = u.href; } catch { /* no image */ }
   const rawFrom = raw.pricing?.summary?.fromPrice;
   const from = typeof rawFrom === 'number' || (typeof rawFrom === 'string' && rawFrom.trim()) ? Number(rawFrom) : NaN;
+  const metadata=VIATOR_PRODUCT_METADATA.get(String(raw.productCode));
   return {
     id: 'viator:' + String(raw.productCode).replace(/[^\w-]/g, '').slice(0, 40), provider: 'viator', seller: 'Viator', title,
-    category: listingCategory(title), city: place, venue: '', countryCode,
+    category: metadata?.category || listingCategory(title), ...(metadata?.searchTerms?{searchTerms:metadata.searchTerms}:{}), city: place, venue: '', countryCode,
     startsAt: '', endsAt: '', timezone: '', priceCents: Number.isFinite(from) && from >= 0 ? Math.round(from * 100) : null,
     currency: String(raw.pricing?.currency || 'EUR').toLowerCase(), image, thumb: false, url: url.href,
     rating: Number(raw.reviews?.combinedAverageRating) || 0, reviews: Number(raw.reviews?.totalReviews) || 0
@@ -207,8 +221,9 @@ export async function loadViator(env = process.env, {fetcher = fetch} = {}) {
   const jobs = VIATOR_PLACES.flatMap(([place, countryCode, destinationId]) =>
     [false, true].map(limo => ({place, countryCode, destinationId, limo}))).concat(VIATOR_FOCUSED);
   const settled = [];
-  // One four-request queue: thirty 5s jobs followed by four focused 3s jobs.
-  // Nine batches have a worst timeout budget of 43s, below the client's 45s limit.
+  // One four-request queue: thirty 5s jobs followed by eleven focused 3s jobs.
+  // Eleven batches have a worst timeout budget of 49s, below the 55s client limit
+  // and the function's 60s budget. Venice is searched only for these exact targets.
   for (let n = 0; n < jobs.length; n += VIATOR_CONCURRENCY) {
     settled.push(...await Promise.allSettled(jobs.slice(n, n + VIATOR_CONCURRENCY).map(searchPlace)));
   }
@@ -335,6 +350,8 @@ export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({events: []});
   const city = String(req.query?.city || '').slice(0, 80);
   const country = /^[A-Z]{2}$/.test(String(req.query?.country || '')) ? req.query.country : '';
+  const q = searchQuery(req.query?.q);
   const all = await listings();
-  return res.status(200).json({events: pickListings(all, {city, country}), total: all.length});
+  const matched = matchingListings(all, {city, country, q}), events = pickListings(matched, {city, country});
+  return res.status(200).json({events, total: all.length, matched: matched.length, count: events.length});
 }
