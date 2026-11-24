@@ -1,7 +1,7 @@
 import {CITY_PAGES} from './city-places.js?v=20261122';
 import {nearestCities} from './city-coords.js?v=20261122';
 import {locate} from './place-finder.js?v=20261122';
-import {tripOptions} from './trip-partners.js?v=20261123-travel';
+import {tripOptions} from './trip-partners.js?v=20261125-dates';
 import {cityBenefits} from './city-guide-benefits.js';
 import {escapeHtml as esc} from './shared.js';
 import {TRIP_BUILDER_KEY, BUILDER_STEPS, TRIP_PARTIES, normaliseDraft, openDraft, persistDraft, switchDestination,
@@ -43,7 +43,7 @@ function mountBuilder(host) {
         draft=chooseOption(draft,step,n.id,false);draft=chooseOption(draft,correct,n.id);
       }
     }
-    providers = Object.fromEntries(tripOptions(draft.country, draft.city, {page:'trip-builder', spot:'step'}).map(o => [o.kind, o.partners]));
+    providers = Object.fromEntries(tripOptions(draft.country, draft.city, {page:'trip-builder', spot:'step', trip:{from:draft.from, to:draft.to, adults:draft.adults}}).map(o => [o.kind, o.partners]));
     const allowed = {tickets:nights.filter(n=>savedListingStep(n.category)==='tickets').map(n => n.id), stay:(providers.stay || []).map(p => providerId('stay', p)),
       travel:[...nights.filter(n=>savedListingStep(n.category)==='travel').map(n=>n.id),...['travel','car','transfer'].flatMap(k => (providers[k] || []).map(p => providerId(k, p)))],
       food:[...nights.filter(n=>savedListingStep(n.category)==='food').map(n=>n.id),...(providers.eat || []).map(p => providerId('eat', p))]};

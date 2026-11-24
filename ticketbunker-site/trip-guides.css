@@ -8,3 +8,15 @@
 
 .partner-event h1{font:800 clamp(2.6rem,5vw,4.5rem)/1.05 "Barlow Condensed",Arial,sans-serif;margin:20px 0}.partner-event-layout{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:42px;align-items:start}.partner-event-poster{display:block;width:100%;height:auto;max-height:650px;object-fit:contain;background:#10251d;border-radius:12px}.partner-event-date{font-weight:700}.partner-event .social-share{margin-top:0}.trip-explore-grid b,.trip-explore-grid span{display:block}.trip-explore-grid span{margin-top:10px}.hero-pillars a{color:inherit}.trip-explore-grid a{display:block}
 @media(max-width:800px){.partner-event-layout{grid-template-columns:1fr;gap:24px}}
+/* Hotel and car hire searches: dates, guests and times, then a summary of the trip. */
+.trip-search{grid-template-columns:repeat(7,minmax(0,1fr));background:#0b1713;border-color:#0b1713;color:#fff;box-shadow:0 18px 40px #0b17132e}
+.trip-search label:first-child{grid-column:span 2}.trip-search label{color:#d8eee3;font-size:.9rem}
+.trip-search input,.trip-search select{border-color:#365247}
+.trip-search button{grid-column:1/-1;min-height:54px;font-size:1.1rem;background:#00e0a6;color:#04140d}.trip-search button:hover{background:#ff4f9a;color:#20030f}
+.trip-when{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin:18px 0 0;padding:14px 18px;border-radius:12px;background:#dff7ec;border:1px solid #9fdcc2}
+.trip-when b{font:800 1.5rem/1 'Barlow Condensed',Arial,sans-serif;text-transform:uppercase}.trip-when span{font-weight:700;color:#0c4d36}
+[data-guide-kind="stay"] .guide-card a,[data-guide-kind="car"] .guide-card a{background:#00e0a6;border-color:#00e0a6;color:#04140d;font-weight:800}
+[data-guide-kind="stay"] .guide-card a:hover,[data-guide-kind="car"] .guide-card a:hover{background:#ff4f9a;border-color:#ff4f9a;color:#20030f}
+@media(max-width:1100px){.trip-search{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:850px){.trip-search{grid-template-columns:1fr 1fr}.trip-search label:first-child{grid-column:1/-1}}
+@media(max-width:650px){.trip-search{grid-template-columns:1fr 1fr}.trip-search button{grid-column:1/-1}}

@@ -1,20 +1,36 @@
 import {CITY_PAGES} from './city-places.js';
-import {tripOptions} from './trip-partners.js?v=20261123-travel';
-import {directoryProviders, tripDestination} from './travel-directory.js?v=20261123-limos';
+import {tripOptions} from './trip-partners.js?v=20261125-dates';
+import {directoryProviders, tripDestination, tripDates} from './travel-directory.js?v=20261125-dates';
 import {escapeHtml as esc} from './shared.js';
 
-export function guideProviders(kind, country, city) {
-  const options = tripOptions(country, city, {page: kind + '-guide', spot: 'directory'});
+export function guideProviders(kind, country, city, trip = {}) {
+  const options = tripOptions(country, city, {page: kind + '-guide', spot: 'directory', trip});
   const chosen = kind === 'all' || kind === 'groups' ? options : options.filter(o =>
     o.kind === kind || (kind === 'travel' && ['car'].includes(o.kind)));
   return [
-    ...(kind === 'groups' ? [{kind: 'groups', label: 'Group specialists', partners: directoryProviders('groups', country, city)}] : []),
+    ...(kind === 'groups' ? [{kind: 'groups', label: 'Group specialists', partners: directoryProviders('groups', country, city, trip)}] : []),
     ...chosen
   ].flatMap(o => o.partners.map(p => ({...p, category: p.serviceLabel || o.label})));
 }
 
 export function providerCards(items) {
   return items.map(p => `<article class="guide-card"><span class="label">${esc(p.category)}</span><h3>${esc(p.name)}</h3><p>${esc(p.description || 'Check current options and complete your booking with the named provider.')}</p><a href="${esc(p.url)}" target="_blank" rel="${p.commercial === 'affiliate' ? 'sponsored ' : ''}noopener noreferrer">${esc(p.name)}</a></article>`).join('');
+}
+
+// "Fri 11 Dec → Sun 13 Dec · 2 nights · 4 adults · 2 rooms" for the hotel and car searches.
+const day = v => new Date(v + 'T12:00:00Z').toLocaleDateString('en-GB', {weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC'});
+export function tripSummary(kind, trip) {
+  const t = tripDates(trip);
+  if (!t.from || !t.to) return '';
+  const plural = (n, w) => n + ' ' + w + (n === 1 ? '' : 's');
+  if (kind === 'car') return [day(t.from) + (t.pickup ? ' ' + t.pickup : '') + ' → ' + day(t.to) + (t.dropoff ? ' ' + t.dropoff : ''), plural(t.nights, 'day')].join(' · ');
+  return [day(t.from) + ' → ' + day(t.to), plural(t.nights, 'night'), t.adults && plural(t.adults, 'adult'), t.adults && plural(t.rooms, 'room')].filter(Boolean).join(' · ');
+}
+// The next Friday-to-Sunday weekend, as a sensible starting point for the date boxes.
+export function nextWeekend(now = new Date()) {
+  const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + ((5 - now.getUTCDay() + 7) % 7 || 7)));
+  const iso = x => x.toISOString().slice(0, 10);
+  return {from: iso(d), to: iso(new Date(d.getTime() + 2 * 864e5))};
 }
 
 if (typeof document !== 'undefined') {
@@ -30,11 +46,28 @@ if (typeof document !== 'undefined') {
     const q = new URLSearchParams(location.search);
     city.value = String(q.get('city') || 'London').slice(0,80);
     country.value = codes.includes(q.get('country')) ? q.get('country') : '';
+    // Hotel and car pages carry dates (and guests/times); other guides have no such boxes.
+    const tripFields = ['from','to','adults','rooms','pickup','dropoff'].filter(k => form.elements[k]);
+    const today = new Date().toISOString().slice(0,10), weekend = nextWeekend();
+    for (const k of tripFields) {
+      const el = form.elements[k], v = q.get(k);
+      if (el.type === 'date') { el.min = today; el.value = /^\d{4}-\d{2}-\d{2}$/.test(v || '') && v >= today ? v : weekend[k]; }
+      else if (v) el.value = v;
+    }
+    const tripValues = () => Object.fromEntries(tripFields.map(k => [k, form.elements[k].value]));
+    if (form.elements.from) form.elements.from.addEventListener('change', () => {
+      const from = form.elements.from, to = form.elements.to;
+      to.min = from.value || today;
+      if (from.value && (!to.value || to.value <= from.value)) to.value = new Date(Date.parse(from.value) + 2 * 864e5).toISOString().slice(0,10);
+    });
     const render = () => {
-      const d = tripDestination(country.value, city.value);
-      document.querySelector('[data-guide-results]').innerHTML = providerCards(guideProviders(kind, d.country, d.city));
+      const d = tripDestination(country.value, city.value), trip = tripValues();
+      document.querySelector('[data-guide-results]').innerHTML = providerCards(guideProviders(kind, d.country, d.city, trip));
+      const summary = tripSummary(kind, trip), when = document.querySelector('[data-trip-summary]');
+      if (when) { when.hidden = !summary; when.innerHTML = summary ? `<b>${esc(d.city)}</b><span>${esc(summary)}</span>` : ''; }
       document.querySelector('[data-guide-status]').textContent = d.search
-        ? `Planning ${d.search}. ${kind === 'transfer' ? 'Check the exact vehicle, pickup, date and passenger capacity. Availability varies by city.' : 'Check your destination and dates on each provider’s site.'}`
+        ? (summary ? 'Each button opens the provider’s live prices with your search filled in. You choose and pay on their site.'
+          : `Planning ${d.search}. ${kind === 'transfer' ? 'Check the exact vehicle, pickup, date and passenger capacity. Availability varies by city.' : 'Check your destination and dates on each provider’s site.'}`)
         : 'Choose your destination on the provider’s site.';
       const event = document.querySelector('[data-guide-events]');
       const found = CITY_PAGES.find(([slug,label,cc,query]) => cc === d.country &&
@@ -45,10 +78,15 @@ if (typeof document !== 'undefined') {
         transport.href = '/vip-transfers?' + new URLSearchParams({city:d.city,country:d.country});
       }
     };
+    form.addEventListener('change', e => { if (tripFields.includes(e.target.name)) render(); });
     form.onsubmit = e => {
       e.preventDefault();
       const d = tripDestination(country.value, city.value);
-      history.replaceState(null,'',location.pathname+'?'+new URLSearchParams({city:d.city,country:d.country}));
+      const to = form.elements.to;
+      if (to && form.elements.from.value && to.value && to.value <= form.elements.from.value) {
+        to.setCustomValidity('Choose a date after the first one.'); to.reportValidity(); to.setCustomValidity(''); return;
+      }
+      history.replaceState(null,'',location.pathname+'?'+new URLSearchParams({city:d.city,country:d.country,...tripValues()}));
       render();
       document.querySelector('[data-guide-status]').focus({preventScroll:true});
     };
