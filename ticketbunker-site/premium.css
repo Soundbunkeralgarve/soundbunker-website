@@ -195,3 +195,27 @@
 .shop-home.city-guide-page .city-guide-directory nav>a:hover{border-color:var(--teal);color:var(--teal)}
 .shop-home.city-guide-page #guide-finder{background:var(--surface);border:1px solid var(--edge);color:var(--text)}
 }
+
+/* ===== Bigger desktop header: larger logo, pill menu tabs, full menu on laptop widths. ===== */
+@media(min-width:1101px){
+.shop-home .header-inner{height:96px;gap:20px}
+.shop-home .header .brand img{width:270px;max-height:none}
+.shop-home .header .navigation{gap:2px}
+.shop-home .header .navigation a{font-size:16px;font-weight:700;letter-spacing:.005em;color:#e6e9ec;padding:11px 15px;border-radius:999px;transition:background .2s,color .2s}
+.shop-home .header .navigation a:hover{background:#ffffff14;color:#fff}
+.shop-home .header .navigation a[aria-current=page]{background:#00e0a61f;color:var(--teal)}
+.shop-home .header .nav-actions{gap:12px}
+.shop-home .header .nav-actions .login{font-size:16px;font-weight:700;color:#e6e9ec;padding:11px 14px;border-radius:999px}
+.shop-home .header .nav-actions .login:hover{background:#ffffff14}
+.shop-home .header .nav-actions .btn-teal{font-size:15px;padding:14px 22px;border-radius:999px}
+.shop-home .destination-bar,.shop-home .section-tabs{top:96px}
+}
+/* Laptop widths: keep the menu visible instead of folding it behind "Menu". */
+@media(min-width:1101px) and (max-width:1450px){
+.shop-home .expanded-navigation .menu-toggle{display:none}
+.shop-home .expanded-navigation .navigation{display:flex;position:static;flex-direction:row;align-items:center;background:none;padding:0;margin:auto}
+.shop-home .expanded-navigation .navigation a{border-bottom:0;padding:9px 10px;font-size:14px}
+.shop-home .expanded-navigation .navigation .mobile-nav-link{display:none}
+.shop-home .header .brand img{width:220px}
+.shop-home .header .nav-actions .login{display:none}
+}
