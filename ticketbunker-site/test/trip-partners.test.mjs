@@ -10,7 +10,7 @@ test('pending affiliate links stay hidden while public searches remain usable', 
     const u = new URL(p.url);
     assert.notEqual(u.hostname, 'www.awin1.com', 'pending Awin routes stay hidden');
     if (p.commercial === 'affiliate') {
-      assert.ok(['viator-limos', 'viator-chauffeurs', 'viator-transfers'].includes(p.id));
+      assert.ok(['viator-limos', 'viator-chauffeurs', 'viator-transfers', 'viator-minibuses', 'viator-helicopters', 'viator-jets', 'viator-boats'].includes(p.id));
       assert.equal(u.hostname, 'www.viator.com');
       assert.equal(u.searchParams.get('pid'), 'P00333211');
     } else assert.equal(p.commercial, 'direct');

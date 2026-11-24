@@ -42,11 +42,21 @@ export function viatorTransportProviders(country = '', city = '') {
     ['chauffeurs', 'private chauffeur', 'Luxury chauffeur cars',
       'Explore private chauffeur options and confirm the car class, pickup, waiting time and passenger capacity.'],
     ['transfers', 'airport transfer', 'Airport & group transfers',
-      'Check airport transfer options, luggage capacity, child seats, pickup details and the final total.']
+      'Check airport transfer options, luggage capacity, child seats, pickup details and the final total.'],
+    ['minibuses', 'party bus minibus', 'Minibuses & party buses',
+      'Group transport for stag, hen and birthday nights. Check seats, music, drinks rules and the final total.'],
+    ['helicopters', 'helicopter', 'Helicopter flights',
+      'Scenic flights and helicopter transfers where offered. Check weight limits, weather policy and meeting point.'],
+    ['jets', 'private jet', 'Private jets & charter flights',
+      'Private jet and charter options where a supplier lists them. Availability varies a lot by city.'],
+    ['boats', 'private boat yacht charter', 'Boats & yacht charters',
+      'Private boats, yachts and sunset cruises. Check group size, skipper, catering and cancellation terms.']
   ].map(([kind, query, serviceLabel, description]) => {
     const url = new URL('https://www.viator.com/searchResults/all');
     for (const [key, value] of Object.entries({text: d.search + ' ' + query, pid: 'P00333211', mcid: '42383', medium: 'link', campaign: 'tb-limos'})) url.searchParams.set(key, value);
-    return {id: 'viator-' + kind, name: 'Search ' + d.city + ' ' + (kind === 'limos' ? 'limos' : kind === 'chauffeurs' ? 'chauffeur cars' : 'airport transfers') + ' on Viator',
+    const noun = {limos: 'limos', chauffeurs: 'chauffeur cars', transfers: 'airport transfers', minibuses: 'minibuses & party buses',
+      helicopters: 'helicopter flights', jets: 'private jets', boats: 'boat & yacht charters'}[kind];
+    return {id: 'viator-' + kind, name: 'Search ' + d.city + ' ' + noun + ' on Viator',
       url: url.href, description, serviceLabel, commercial: 'affiliate'};
   });
 }

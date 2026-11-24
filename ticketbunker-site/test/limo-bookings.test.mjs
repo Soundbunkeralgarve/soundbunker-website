@@ -9,7 +9,7 @@ test('every directory city has tracked limo, chauffeur and airport search routes
   for (const [, label, country] of CITY_PAGES) {
     const city = label.replace(/^the /, ''), destination = tripDestination(country, city);
     const links = viatorTransportProviders(country, city);
-    assert.deepEqual(links.map(p => p.id), ['viator-limos', 'viator-chauffeurs', 'viator-transfers']);
+    assert.deepEqual(links.map(p => p.id), ['viator-limos', 'viator-chauffeurs', 'viator-transfers', 'viator-minibuses', 'viator-helicopters', 'viator-jets', 'viator-boats']);
     for (const p of links) {
       const url = new URL(p.url);
       assert.equal(url.origin, 'https://www.viator.com');
@@ -40,7 +40,7 @@ test('transport queries disambiguate country, preserve accents and cannot change
 
 test('limo searches retain affiliate attribution while public chauffeur directories remain untracked', () => {
   const providers = directoryProviders('transfer', 'PT', 'Lisbon');
-  assert.equal(providers.filter(p => p.commercial === 'affiliate').length, 3);
+  assert.equal(providers.filter(p => p.commercial === 'affiliate').length, 7);
   for (const p of providers.filter(p => p.commercial === 'direct')) {
     assert.ok(['www.blacklane.com', 'www.welcomepickups.com'].includes(new URL(p.url).hostname));
     assert.equal(new URL(p.url).searchParams.has('pid'), false);
