@@ -74,9 +74,10 @@ test('the public feed reports full, matched and returned totals without making p
   const script = `
     import assert from 'node:assert/strict';
     import handler, {loadAwinSnapshots, pickListings} from ${JSON.stringify(new URL('../api/partner-feed.js', import.meta.url).href)};
+    import {approvedAttractions} from ${JSON.stringify(new URL('../api/lib/approved-attractions.js', import.meta.url).href)};
     globalThis.fetch = async () => {throw Error('unexpected provider request');};
     console.log = () => {};
-    const snapshot = await loadAwinSnapshots();
+    const snapshot = [...await loadAwinSnapshots(),...approvedAttractions()];
     const read = async query => {
       let body;
       const res = {setHeader() {}, status(code) {assert.equal(code, 200); return this;}, json(value) {body = value;}};

@@ -2,6 +2,7 @@
 // partner offers share a card shape but keep their own seller, checkout and support
 // route. DEMO, beta-test and pending supplier items never enter the results.
 import {selectFeaturedEvents} from './featured-selection.js';
+import {activityContext} from './activity-search.js';
 
 export const discoveryCategories = Object.freeze({
   music: 'Live music', club: 'Club nights', comedy: 'Comedy', festival: 'Festivals',
@@ -15,7 +16,7 @@ const partnerCategory = {music: 'music', comedy: 'comedy', cinema: 'cinema', att
 export const regionTowns = Object.freeze({
   algarve: ['albufeira', 'alcoutim', 'aljezur', 'almancil', 'alvor', 'armacao de pera', 'carvoeiro', 'castro marim', 'faro', 'ferragudo', 'lagoa', 'lagos', 'loule', 'monchique', 'monte gordo', 'olhao', 'portimao', 'quarteira', 'quinta do lago', 'sagres', 'sao bras de alportel', 'silves', 'tavira', 'vale do lobo', 'vila do bispo', 'vila real de santo antonio', 'vilamoura']
 });
-export const placeText = value => String(value || '').normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase().trim().replace(/\s+/g, ' ');
+export const placeText = value => String(value || '').normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase().replace(/ß/g,'ss').trim().replace(/\s+/g, ' ');
 export const searchQuery = value => String(value ?? '').slice(0, 160).trim().replace(/\s+/g, ' ');
 // Search is literal: every whitespace-separated word must occur in a public
 // listing field. Punctuation is never interpreted as a regular expression.
@@ -112,6 +113,7 @@ export function feedItem(f, now = Date.now()) {
     currency: f.currency || '', soldOut: false, featured: false, image: f.image || '', thumb: f.thumb === true, organiser: typeof f.organiser === 'string' ? f.organiser.slice(0, 160) : '',
     url: f.url, seller: f.seller, external: true, bookable: true,
     ...(typeof f.searchTerms === 'string' ? {searchTerms: f.searchTerms.slice(0, 200)} : {}),
+    ...(activityContext(f.activityContext)?{activityContext:activityContext(f.activityContext)}:{}),
     // Where the venue is, for "Get me there" (address always; map position when known).
     address: typeof f.address === 'string' ? f.address.slice(0, 200) : '',
     ...(Number.isFinite(f.lat) && Number.isFinite(f.lng) && Math.abs(f.lat) <= 90 && Math.abs(f.lng) <= 180 ? {lat: f.lat, lng: f.lng} : {})
