@@ -1,0 +1,48 @@
+/* "Why book with TicketBunker" band and page photos, shared by the public pages. */
+.tbp{background:#07070b;color:#fff;padding:64px 0;font-family:'DM Sans',Arial,sans-serif;position:relative;overflow:hidden;isolation:isolate}
+.tbp::before{content:'';position:absolute;inset:-40% -10% auto auto;width:60%;aspect-ratio:1;background:radial-gradient(circle,#00e0a62e,transparent 65%);z-index:-1}
+.tbp::after{content:'';position:absolute;inset:auto auto -40% -10%;width:55%;aspect-ratio:1;background:radial-gradient(circle,#ff4f9a29,transparent 65%);z-index:-1}
+.tbp-wrap{width:min(1180px,calc(100% - 32px));margin:0 auto}
+.tbp-kicker{display:inline-block;padding:6px 12px;border-radius:999px;background:#00e0a6;color:#04140d;font:800 .8rem/1.2 'Barlow Condensed',Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase}
+.tbp h2{font:900 clamp(2.4rem,6vw,4.4rem)/1 'Barlow Condensed',Arial,sans-serif;text-transform:uppercase;margin:16px 0 30px;color:#fff;letter-spacing:-.01em}
+.tbp .tbp-head h2 em{font:inherit;font-style:normal;text-transform:inherit;letter-spacing:inherit;color:#00e0a6}
+.tbp-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.tbp-card{display:flex;flex-direction:column;background:#12121b;border:1px solid #2a2a38;border-radius:18px;overflow:hidden;min-width:0}
+.tbp-card>img{width:100%;height:220px;object-fit:cover;display:block}
+.tbp-body{padding:22px;display:flex;flex-direction:column;gap:10px;flex:1}
+.tbp-tag{font:800 .78rem/1 'Barlow Condensed',Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#ff4f9a}
+.tbp h3{font:800 1.9rem/1.02 'Barlow Condensed',Arial,sans-serif;text-transform:uppercase;margin:0;color:#fff}
+.tbp p{margin:0;color:#d5d9e0;font-size:1rem;line-height:1.6}
+.tbp p b{color:#fff}
+.tbp-small{font-size:.9rem!important;color:#aeb4bf!important;padding:10px 12px;border-left:3px solid #ff4f9a;background:#ff4f9a14;border-radius:4px}
+.tbp-phone{height:220px;display:grid;place-items:center;background:linear-gradient(135deg,#00e0a6,#0c6d4f 55%,#ff4f9a);}
+.tbp-scan .tbp-phone{background:linear-gradient(135deg,#ff4f9a,#6b1c8f 55%,#00e0a6)}
+.tbp-screen{width:128px;height:196px;margin-top:40px;border-radius:20px 20px 0 0;border:6px solid #050508;border-bottom:0;background:#fff;color:#111;display:flex;flex-direction:column;align-items:center;gap:3px;padding:12px 10px 0;box-shadow:0 -10px 30px #0006;font-size:.62rem;text-align:center}
+.tbp-screen b{font:800 .7rem/1 'Barlow Condensed',Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#0c6d4f}
+.tbp-screen strong{font:800 1rem/1 'Barlow Condensed',Arial,sans-serif;text-transform:uppercase}
+.tbp-qr{width:84px;height:84px;margin-top:4px;fill:#111}
+.tbp-approved{background:#0fbf7a;color:#fff;justify-content:flex-start;padding-top:22px}
+.tbp-approved strong{font-size:1.25rem}.tbp-approved small{margin-top:10px;padding:3px 8px;border-radius:99px;background:#ffffff33}
+.tbp-tick{display:grid;place-items:center;width:58px;height:58px;border-radius:50%;background:#fff;color:#0fbf7a;font-size:2.2rem;font-weight:900;margin-bottom:8px}
+.tbp-badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:auto;padding-top:6px}.tbp-badges img{height:40px;width:auto}
+.tbp-links{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-top:auto!important;padding-top:6px}
+.tbp-links a{color:#00e0a6;font-weight:800}.tbp-links a:first-child{padding:9px 14px;border-radius:999px;background:#00e0a6;color:#04140d}
+.tbp-links a:first-child:hover{background:#ff4f9a;color:#20030f}.tbp-links span{font-size:.88rem;color:#aeb4bf}
+@media(max-width:960px){.tbp-grid{grid-template-columns:1fr 1fr}.tbp-fees{grid-column:1/-1;flex-direction:row}.tbp-fees>img{width:42%;height:auto;min-height:100%}}
+@media(max-width:640px){.tbp{padding:44px 0}.tbp-grid{grid-template-columns:1fr}.tbp-fees{flex-direction:column}.tbp-fees>img{width:100%;height:190px;min-height:0}}
+
+/* Photo headers for pages that were text only. */
+.tbp-photo-hero{position:relative;isolation:isolate;overflow:hidden;color:#fff;background:#07070b}
+.tbp-photo-hero>.tbp-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
+.tbp-photo-hero::after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#07070bf0 0%,#07070bb0 45%,#07070b30 100%),linear-gradient(0deg,#07070bcc,transparent 50%)}
+.tbp-photo-hero h1,.tbp-photo-hero .eyebrow,.tbp-photo-hero .label{color:#fff}
+.tbp-photo-hero h1 em{color:#00e0a6;font-style:normal}
+.about-hero.tbp-photo-hero .wrap{min-height:380px;display:flex;flex-direction:column;justify-content:flex-end;padding-block:64px}
+.tbp-banner{position:relative;border-radius:18px;overflow:hidden;margin:0 0 28px;isolation:isolate;min-height:260px;display:flex;align-items:flex-end;color:#fff}
+.tbp-banner img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
+.tbp-banner::after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(0deg,#07070be6,#07070b10 70%)}
+.tbp-banner p{margin:0;padding:22px 26px;font:800 clamp(1.6rem,4vw,2.6rem)/1.05 'Barlow Condensed',Arial,sans-serif;text-transform:uppercase;color:#fff}
+.tbp-banner p em{font-style:normal;color:#00e0a6}
+/* Travel guides: each page its own, brighter photo. */
+.guide-hero.tbp-guide::before{opacity:.62}
+.guide-hero.tbp-guide::after{background:linear-gradient(90deg,#07130ef0 0%,#07130eb0 45%,#07130e20 100%)}
