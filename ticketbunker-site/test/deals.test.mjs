@@ -30,3 +30,16 @@ test('no token means no fake deals; joined-only search per country', async () =>
   assert.match(readFileSync(new URL('../deals.html', import.meta.url), 'utf8'), /data-deals-grid/);
   assert.match(readFileSync(new URL('../public-navigation.js', import.meta.url), 'utf8'), /a\.href='\/deals'/);
 });
+
+test('offers show only in their own countries and languages, and parks and parties sort as days out or kids', async () => {
+  const {offerItem: item, offerLanguage, offerKind: kind} = await import('../api/partner-offers.js');
+  const de = raw({title: 'Black Friday Deal im Majaland Deutschland', description: 'Jetzt Tickets sichern und sparen', advertiser: {name: 'Plopsaland Deutschland'}, regions: {all: true}});
+  assert.equal(offerLanguage(de.title + ' ' + de.description), 'de');
+  assert.equal(item(de, NOW, 'GB'), null, 'German-language deals stay out of the UK');
+  assert.ok(item(de, NOW, 'DE'));
+  assert.equal(item(raw({regions: {all: false, list: [{countryCode: 'GB', name: 'UK'}]}}), NOW, 'ES'), null, 'Awin region list respected');
+  assert.ok(item(raw({regions: {all: false, list: [{countryCode: 'GB', name: 'UK'}]}}), NOW, 'GB'));
+  assert.equal(kind('Deine Geburtstagsparty im Winter im Majaland'), 'kids');
+  assert.equal(kind('Black Friday Deal im Majaland Deutschland'), 'daysout');
+  assert.equal(kind('ESPECTÁCULOS EN PROMOCIÓN'), 'events');
+});

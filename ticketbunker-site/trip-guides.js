@@ -2,6 +2,7 @@ import {CITY_PAGES} from './city-places.js';
 import {tripOptions} from './trip-partners.js?v=20261125-dates';
 import {directoryProviders, tripDestination, tripDates} from './travel-directory.js?v=20261125-dates';
 import {escapeHtml as esc} from './shared.js';
+import {OFFER_KINDS, pickOffers, offerCards, loadOffers} from './travel-offers.js?v=20261125gg';
 
 export function guideProviders(kind, country, city, trip = {}) {
   const options = tripOptions(country, city, {page: kind + '-guide', spot: 'directory', trip});
@@ -62,7 +63,9 @@ if (typeof document !== 'undefined') {
     });
     const render = () => {
       const d = tripDestination(country.value, city.value), trip = tripValues();
-      document.querySelector('[data-guide-results]').innerHTML = providerCards(guideProviders(kind, d.country, d.city, trip));
+      const results = document.querySelector('[data-guide-results]');
+      results.innerHTML = providerCards(guideProviders(kind, d.country, d.city, trip));
+      showOffers(results, d.city);
       const summary = tripSummary(kind, trip), when = document.querySelector('[data-trip-summary]');
       if (when) { when.hidden = !summary; when.innerHTML = summary ? `<b>${esc(d.city)}</b><span>${esc(summary)}</span>` : ''; }
       document.querySelector('[data-guide-status]').textContent = d.search
@@ -78,6 +81,22 @@ if (typeof document !== 'undefined') {
         transport.href = '/vip-transfers?' + new URLSearchParams({city:d.city,country:d.country});
       }
     };
+    // Real bookable options from the live feed, above the provider search buttons.
+    let offerCity = '';
+    async function showOffers(results, cityName) {
+      if (!(OFFER_KINDS[kind] || []).length) return;
+      let box = document.querySelector('[data-guide-offers]');
+      if (!box) { box = document.createElement('section'); box.className = 'guide-offers'; box.dataset.guideOffers = ''; results.before(box); results.classList.add('guide-more'); }
+      if (offerCity === cityName) return;
+      offerCity = cityName;
+      box.innerHTML = `<div class="guide-offers-head"><span class="label">Bookable now</span><h2>Real options in ${esc(cityName)}</h2></div><div class="offer-grid"><p class="offer-loading">Finding live options…</p></div>`;
+      const items = pickOffers(await loadOffers(cityName), kind, 9);
+      if (offerCity !== cityName) return;
+      box.querySelector('.offer-grid').innerHTML = items.length ? offerCards(items)
+        : `<p class="offer-empty">No live ${kind === 'transfer' ? 'transfers or chauffeur options' : 'options'} listed for ${esc(cityName)} right now. Search the providers below for your dates.</p>`;
+      const more = document.querySelector('.guide-more-head') || Object.assign(document.createElement('h2'), {className: 'guide-more-head'});
+      more.textContent = items.length ? 'Search more providers' : 'Search providers'; if (!more.isConnected) results.before(more);
+    }
     form.addEventListener('change', e => { if (tripFields.includes(e.target.name)) render(); });
     form.onsubmit = e => {
       e.preventDefault();

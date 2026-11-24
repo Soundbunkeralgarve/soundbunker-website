@@ -16,6 +16,7 @@ import ResultsScreen from './src/screens/ResultsScreen.js';
 import CityScreen from './src/screens/CityScreen.js';
 import TicketScreen from './src/screens/TicketScreen.js';
 import VipScreen from './src/screens/VipScreen.js';
+import GetAroundScreen from './src/screens/GetAroundScreen.js';
 import DeleteAccountScreen from './src/screens/DeleteAccountScreen.js';
 import EventDetail from './src/components/EventDetail.js';
 
@@ -30,6 +31,7 @@ function Tabs() {
     tabBarLabelStyle: {fontFamily: F.bold, fontSize: 13}}}>
     <Tab.Screen name="Discover" component={HomeScreen} options={{tabBarIcon: icon('⌂')}}/>
     <Tab.Screen name="Places" component={PlacesScreen} options={{tabBarIcon: icon('◎')}}/>
+    <Tab.Screen name="GetAround" component={GetAroundScreen} options={{title: 'Get around', tabBarIcon: icon('🚇')}}/>
     <Tab.Screen name="Trip" component={TripScreen} options={{title: 'My trip', tabBarIcon: icon('☆'), tabBarBadge: trip.length || undefined, tabBarBadgeStyle: {backgroundColor: C.teal, color: C.tealInk}}}/>
     <Tab.Screen name="Tickets" component={TicketsScreen} options={{title: 'Tickets', tabBarIcon: icon('▤')}}/>
   </Tab.Navigator>;

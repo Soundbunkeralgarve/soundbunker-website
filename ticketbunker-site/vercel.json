@@ -39,8 +39,8 @@
       "includeFiles": "{index.html,partner-data/**}"
     },
     "api/city-guide.js": {
-      "maxDuration": 20,
-      "includeFiles": "{index.html,city-guide.css,city-guide-data/**}"
+      "maxDuration": 30,
+      "includeFiles": "{index.html,city-guide.css,city-guide-data/**,assets/guide-pdf/**,assets/city-photos/pdf/**,lib/city-guide-pdf.js,vendor/jspdf.mjs}"
     }
   },
   "rewrites": [

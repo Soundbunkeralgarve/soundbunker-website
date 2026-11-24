@@ -29,3 +29,44 @@
 .flight-search input:disabled{opacity:.45}
 /* Phone: date and select boxes must shrink inside the two-column search grid. */
 .trip-search label{min-width:0}.trip-search input,.trip-search select{min-width:0;max-width:100%}
+
+/* Real bookable options (travel-offers.js) */
+.guide-offers{margin:8px 0 28px}
+.guide-offers-head h2,.guide-more-head{font:900 clamp(28px,4vw,44px)/1 'Barlow Condensed',Impact,sans-serif;text-transform:uppercase;margin:6px 0 16px}
+.guide-more-head{font-size:clamp(22px,3vw,30px);margin-top:8px;opacity:.85}
+.offer-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.offer-card{display:flex;flex-direction:column;background:#101018;border:1px solid #24242f;border-radius:20px;overflow:hidden;color:#f4f6f8;transition:transform .2s,border-color .2s,box-shadow .2s}
+.offer-card:hover{transform:translateY(-3px);border-color:#00e0a666;box-shadow:0 18px 40px #0008}
+.offer-img{position:relative;display:block;aspect-ratio:16/10;background:#171722;overflow:hidden}
+.offer-img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s}
+.offer-card:hover .offer-img img{transform:scale(1.04)}
+.offer-tag{position:absolute;left:12px;top:12px;background:#07070bd9;backdrop-filter:blur(6px);color:#00e0a6;border:1px solid #00e0a644;border-radius:999px;padding:5px 10px;font:800 11px/1 'DM Sans',Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase}
+.offer-body{display:flex;flex-direction:column;gap:8px;padding:16px;flex:1}
+.offer-body h3{margin:0;font:700 17px/1.3 'DM Sans',Arial,sans-serif}
+.offer-body h3 a{color:inherit;text-decoration:none}
+.offer-rating{margin:0;font-size:14px;color:#a7adb6}.offer-rating b{color:#ffcd4d}
+.offer-price{margin:0;color:#a7adb6;font-size:14px}.offer-price b{color:#f4f6f8;font:900 24px/1 'Barlow Condensed',Impact,sans-serif;letter-spacing:.01em}
+.offer-go{margin-top:auto;display:flex;justify-content:center;gap:6px;background:#00e0a6;color:#04140d;border-radius:12px;padding:12px;font:800 15px 'DM Sans',Arial,sans-serif;text-decoration:none}
+.offer-go:hover{filter:brightness(1.08)}
+.offer-via{color:#7d838c;font-size:12px;line-height:1.35}
+.offer-loading,.offer-empty{grid-column:1/-1;color:#a7adb6;margin:0}
+.guide-more .guide-card{padding:14px 16px}
+@media (max-width:560px){.offer-grid{grid-template-columns:1fr}}
+.offer-body h3,.guide-page .offer-body h3{text-transform:none;letter-spacing:0;font-family:'DM Sans',Arial,sans-serif}
+.guide-more{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))!important;gap:10px!important}
+.guide-more .guide-card h3{font-size:18px!important;line-height:1.15}
+.guide-more .guide-card p{font-size:13px;margin:4px 0 10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.guide-more .guide-card .btn,.guide-more .guide-card a:last-child{padding:9px 12px;font-size:14px}
+/* Flight fares on our page */
+.fares{display:grid;gap:10px;margin-top:18px}
+.fares h3{font:900 26px/1 'Barlow Condensed',Impact,sans-serif;text-transform:uppercase;margin:6px 0}
+.fare{display:grid;grid-template-columns:120px 1fr auto;gap:16px;align-items:center;background:#101018;border:1px solid #24242f;border-radius:16px;padding:14px 16px;color:#f4f6f8}
+.fare.best{border-color:#00e0a6;box-shadow:0 0 0 1px #00e0a6 inset}
+.fare-logo{background:#fff;border-radius:8px;padding:4px;max-width:120px;height:auto}
+.fare-info{display:grid;gap:2px}.fare-info b{font-size:17px}.fare-info span{color:#d8dce2}.fare-info small{color:#a7adb6}
+.fare-price{display:grid;justify-items:end;gap:3px}.fare-price i{font-style:normal;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#00e0a6}
+.fare-price b{font:900 30px/1 'Barlow Condensed',Impact,sans-serif}.fare-price small{color:#a7adb6;font-size:12px}
+.fare-price a{background:#00e0a6;color:#04140d;border-radius:10px;padding:9px 12px;font-weight:800;font-size:14px;text-decoration:none;margin-top:4px}
+.fares-note{color:#a7adb6;font-size:13px;margin:0}
+.fares-all{justify-self:start;color:#00e0a6;font-weight:800}
+@media(max-width:620px){.fare{grid-template-columns:1fr auto}.fare-logo{grid-column:1/-1;max-width:90px}.fare-price b{font-size:26px}}

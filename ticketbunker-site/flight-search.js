@@ -41,6 +41,34 @@ export function aviasalesUrl({from, to, depart, back = '', adults = 1} = {}) {
   return 'https://www.aviasales.com/search/' + a.code + ddmm(depart) + b.code + ret + n + '?marker=' + AVIASALES_MARKER;
 }
 
+// Fares on our own page (when the fares API is switched on), each booked on Aviasales.
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+const when = iso => { try { return new Intl.DateTimeFormat('en-GB', {weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'}).format(new Date(iso)); } catch { return ''; } };
+const hm = m => m ? Math.floor(m / 60) + 'h ' + String(m % 60).padStart(2, '0') + 'm' : '';
+export function quoteCards(quotes) {
+  return quotes.map((q, n) => `<article class="fare${n === 0 ? ' best' : ''}">
+    <img class="fare-logo" src="https://pics.avs.io/120/40/${esc(q.airline)}.png" alt="" width="120" height="40" loading="lazy" onerror="this.remove()">
+    <div class="fare-info"><b>${esc(q.airlineName)}</b><span>${esc(q.from)} → ${esc(q.to)} · ${esc(when(q.departAt))}</span>
+      <small>${q.stops === 0 ? 'Direct' : q.stops + ' stop' + (q.stops > 1 ? 's' : '')}${q.minutes ? ' · ' + hm(q.minutes) : ''}${q.returnAt ? ' · back ' + esc(when(q.returnAt)) + (q.returnStops === 0 ? ' direct' : '') : ' · one way'}</small></div>
+    <div class="fare-price">${n === 0 ? '<i>Cheapest</i>' : ''}<b>${esc(new Intl.NumberFormat('en-GB', {style: 'currency', currency: q.currency.toUpperCase(), maximumFractionDigits: 0}).format(q.price))}</b><small>per adult</small>
+      <a href="${esc(q.url)}" target="_blank" rel="sponsored noopener">Book on Aviasales ↗</a></div></article>`).join('');
+}
+async function showQuotes(form, status, {from, to, depart, back, url}) {
+  let box = document.querySelector('[data-flight-quotes]');
+  if (!box) { box = document.createElement('div'); box.className = 'fares'; box.dataset.flightQuotes = ''; form.after(box); }
+  status.textContent = 'Finding fares…'; box.innerHTML = '';
+  const all = `<a class="fares-all" href="${esc(url)}" target="_blank" rel="sponsored noopener">See every live fare on Aviasales ↗</a>`;
+  try {
+    const r = await fetch('/api/flight-quotes?' + new URLSearchParams({from, to, depart, back, currency: 'gbp'}));
+    const j = await r.json();
+    if (!r.ok) throw Error(j.error || 'Fares are not answering right now.');
+    if (!j.enabled || !j.quotes?.length) { status.textContent = ''; box.innerHTML = `<p class="fares-note">${j.enabled ? 'No recently found fares for this route.' : 'Live fares open on Aviasales.'}</p>${all}`; if (!j.enabled) window.open(url, '_blank', 'noopener'); return; }
+    status.textContent = '';
+    box.innerHTML = `<h3>${j.exact ? 'Fares for your dates' : 'Cheapest days this month'}</h3>${quoteCards(j.quotes)}
+      <p class="fares-note">Recently found prices for 1 adult, from Aviasales searches in the last 48 hours. The final price and seats are confirmed on Aviasales before you pay.</p>${all}`;
+  } catch (e) { status.textContent = e.message; box.innerHTML = all; }
+}
+
 if (typeof document !== 'undefined') {
   const form = document.querySelector('[data-flight-search]');
   if (form) {
@@ -63,8 +91,7 @@ if (typeof document !== 'undefined') {
       if (!flightPlace(f.to.value)) { status.textContent = 'Choose where you are flying to.'; f.to.focus(); return; }
       const url = aviasalesUrl({from: f.from.value, to: f.to.value, depart: f.depart.value, back: f.oneway.checked ? '' : f.back.value, adults: f.adults.value});
       if (!url) { status.textContent = 'Check your cities and dates: the two cities must differ and the return must be after the outbound date.'; return; }
-      status.textContent = 'Opening live fares on Aviasales…';
-      window.open(url, '_blank', 'noopener');
+      showQuotes(form, status, {from: flightPlace(f.from.value).code, to: flightPlace(f.to.value).code, depart: f.depart.value, back: f.oneway.checked ? '' : f.back.value, url});
     });
     f.oneway.addEventListener('change', () => { f.back.disabled = f.oneway.checked; });
   }

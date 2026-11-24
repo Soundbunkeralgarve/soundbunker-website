@@ -152,8 +152,8 @@ function card(item,{featured=false,wide=false}={}){
  const ext=item.external?` target="_blank" rel="sponsored noopener noreferrer" aria-label="${esc(item.title)}: tickets via ${esc(item.seller)} (opens in a new tab)"`:'';
  // Upsell: a stay and the journey for the same city, one tap from the ticket.
  const upCity=item.city?'?city='+encodeURIComponent(item.city)+(item.countryCode?'&country='+encodeURIComponent(item.countryCode):''):'';
- const upsell=item.city?`<div class="card-upsell"><a href="/hotels${upCity}">🏨 Stay nearby</a><a href="/travel${upCity}#flights">✈️ Get there</a></div>`:'';
- return `<article class="listing-card${wide?' is-wide':''}"><a class="tcard${direct?' is-direct':''}${item.soldOut?' is-soldout':''}" href="${esc(href)}"${ext}>${body}</a><div class="listing-actions"><a href="${esc(eventLink(item))}">Event details</a><button type="button" data-share-listing="${esc(item.key)}" aria-label="Share ${esc(item.title)}">Share</button><a href="${esc(buildHref(item))}" data-build-event="${esc(item.key)}">Build this trip →</a></div>${upsell}</article>`;
+ const upsell=item.city?`<div class="card-upsell"><a href="/hotels${upCity}">Stay nearby</a><a href="/travel${upCity}#flights">Get there</a></div>`:'';
+ return `<article class="listing-card${wide?' is-wide':''}"${item.external?` data-seller="${esc(item.seller||'')}" data-country="${esc(item.countryCode||'')}"`:''}><a class="tcard${direct?' is-direct':''}${item.soldOut?' is-soldout':''}" href="${esc(href)}"${ext}>${body}</a><div class="listing-actions"><a href="${esc(eventLink(item))}">Event details</a><button type="button" data-share-listing="${esc(item.key)}" aria-label="Share ${esc(item.title)}">Share</button><a href="${esc(buildHref(item))}" data-build-event="${esc(item.key)}">Build this trip →</a></div>${upsell}</article>`;
 }
 const directTile=()=>`<a class="tcard host-tile direct-tile" href="/for-organisers"><div><span class="label">Organisers</span><h3>Sell direct here.</h3><p>No booking fee for your crowd, wallet tickets and a door app.</p><span class="head-link">Host your event ↗</span></div></a>`;
 const hostTile=()=>`<a class="tcard host-tile" href="/featured"><div><span class="label">Your event here</span><h3>Get featured.</h3><p>Put your event in the spotlight and at the front of these rails.</p><span class="head-link">Featured placement ↗</span></div></a>`;
@@ -280,13 +280,15 @@ async function loadNear(){
  try{const r=await fetch('/api/partner-feed?city='+encodeURIComponent(place),{signal:AbortSignal.timeout(55000)});if(r.ok&&nearFor===place){const d=await r.json();nearFeed=Array.isArray(d.events)?d.events:[];}}catch{if(nearFor===place)nearFeed=[];}
  render();
 }
+// Transfers and city transport have their own rails and the Get around section; event lists stay events only.
+const TRANSPORT=['transit','transfer'];
 function renderNear(now){
  const place=nearPlace(),source=nearSource(),section=$('#rail-near');
  // The chooser at the top fills this city into its travel links.
  if(document.documentElement.dataset.nearPlace!==(place||'')){document.documentElement.dataset.nearPlace=place||'';document.dispatchEvent(new Event('tb:near'));}
  if(!place){section.hidden=true;return;}
  const pool=blend(events,partners,now,state.city?feed:nearFeed);
- const items=mixSellers(sortItems(filterItems(pool,{city:place,when:'any'},now).filter(i=>!i.soldOut))).slice(0,16);
+ const items=mixSellers(sortItems(filterItems(pool,{city:place,when:'any'},now).filter(i=>!i.soldOut&&!TRANSPORT.includes(i.category)))).slice(0,16);
  section.hidden=items.length<3;
  if(section.hidden)return;
  const shown=source==='location'?geoPlace.name:place;
@@ -315,7 +317,8 @@ function renderTabs(){
  tabObserver?.disconnect();
  tabObserver=new IntersectionObserver(entries=>{for(const e of entries)if(e.isIntersecting){
   track.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===e.target.id));
-  track.querySelector('.active')?.scrollIntoView({block:'nearest',inline:'center',behavior:'auto'});
+  // Slide only the tab bar sideways; scrollIntoView here could also scroll the page itself back up to the bar.
+  const a=track.querySelector('.active');if(a)track.scrollTo({left:a.offsetLeft-(track.clientWidth-a.offsetWidth)/2,behavior:'auto'});
  }},{rootMargin:'-45% 0px -50% 0px'});
  ids.forEach(id=>tabObserver.observe(document.getElementById(id)));
 }
@@ -362,7 +365,8 @@ if(pathCity){$('#city-hub').after($('#plan-trip'),$('#gyg-box'));}
 function renderHub(all,now){
  const box=$('#city-hub');
  if(!pathCity||state.city!==pathCity.city){box.hidden=true;return;}
- const name=pathCity.city,list=sortItems(filterItems(all,placeOnly(),now).filter(i=>!i.soldOut));
+ const name=pathCity.city,everything=sortItems(filterItems(all,placeOnly(),now).filter(i=>!i.soldOut));
+ const list=everything.filter(i=>!TRANSPORT.includes(i.category)),transport=everything.length-list.length;
  box.hidden=false;$('#rail-near').hidden=true;
  const counts={};for(const i of list)counts[i.category]=(counts[i.category]||0)+1;
  if(hubCat&&!counts[hubCat])hubCat='';
@@ -375,13 +379,14 @@ function renderHub(all,now){
  $('#city-amenities').innerHTML=[
   jump('city-grid','What\u2019s on',list.length?list.length.toLocaleString('en-GB')+' events':'Gigs, nights, shows'),
   !$('#gyg-box').hidden?jump('gyg-box','Tours & experiences','Day trips and activities'):`<a class="amenity" href="${esc(tourLink(name,pathCity.country))}" target="_blank" rel="sponsored noopener"><b>Tours &amp; experiences</b><small>On GetYourGuide ↗</small></a>`,
+  jump('get-around','Transfers & transport',transport?transport+' to book · live times':'Live times, routes & taxis'),
   jump('plan-trip','Trains & coaches',live('travel')),
   `<a class="amenity" href="${esc('/vip-transfers?'+new URLSearchParams({city:name,country:state.country||pathCity.country||''}))}"><b>Limos &amp; VIP transport</b><small>Check local options</small></a>`,
   jump('plan-trip','Stay nearby',live('stay')),
   jump('plan-trip','Eat nearby',live('eat')),
   jump('rail-trip','Other cities','Tickets further afield')
  ].filter(Boolean).join('');
- $('#city-amenities').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>document.getElementById(b.dataset.go).scrollIntoView({behavior:reduceMotion()?'auto':'smooth',block:'start'}));
+ $('#city-amenities').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{const to=document.getElementById(b.dataset.go);if(!to)return;if(b.dataset.go==='get-around')to.querySelector('[data-tab="trip"]')?.click();to.scrollIntoView({behavior:reduceMotion()?'auto':'smooth',block:'start'});});
  const cats=Object.keys(discoveryCategories).filter(k=>counts[k]);
  $('#city-filters').innerHTML=[['','All',list.length],...cats.map(k=>[k,discoveryCategories[k],counts[k]])].map(([k,l,n])=>`<button type="button" class="${k===hubCat?'active':''}" aria-pressed="${k===hubCat}" data-hub="${k}">${esc(l)} <small>${n}</small></button>`).join('');
  $('#city-filters').querySelectorAll('[data-hub]').forEach(b=>b.onclick=()=>{hubCat=b.dataset.hub;hubLimit=HUB_STEP;render();});
@@ -424,6 +429,25 @@ function varied(list,n){
   while(q.length){const i=q.shift();const t=i.title.toLowerCase();if(!seen.has(t)){seen.add(t);out.push(i);last=seller(i);break;}}if(out.length>=n)break;}
  return out;
 }
+// Hero: the top picks as a deck of real tickets that deals itself forward.
+let heroTimer;
+function heroStack(items){
+ const box=document.querySelector('[data-hero-stack]');if(!box)return;
+ const picks=items.filter(hasArt).slice(0,5);
+ box.hidden=picks.length<3;if(box.hidden)return;
+ const key=picks.map(i=>i.key).join('|');if(box.dataset.key===key)return;box.dataset.key=key;
+ const deck=box.querySelector('[data-hs-deck]'),dots=box.querySelector('[data-hs-dots]');
+ deck.innerHTML=picks.map((i,n)=>{const href=i.external?withClickRef(i.url,pagRef,'hero'):i.url,ext=i.external?' target="_blank" rel="sponsored noopener noreferrer"':'';
+  const price=!i.soldOut&&Number.isInteger(i.priceCents)&&i.priceCents>0?money(i.priceCents,i.currency):'';
+  return `<a class="hs-ticket" data-pos="${n}" href="${esc(href)}"${ext}><span class="hs-art"><img src="${esc(safeUrl(i.image))}" alt="" ${n?'loading="lazy"':'fetchpriority="high"'}></span><span class="hs-info"><span class="hs-cat">${esc(catLabel(i))}</span><b>${esc(i.title)}</b><small>${esc([dateLine(i),i.city].filter(Boolean).join(' · '))}</small></span><span class="hs-stub"><small>${i.soldOut?'Sold out':i.priceCents===0?'Free':price?'From':''}</small><strong>${esc(price)}</strong><em>Tickets →</em></span></a>`;}).join('');
+ dots.innerHTML=picks.map((_,n)=>`<button type="button" aria-label="Show pick ${n+1}" data-hs="${n}"></button>`).join('');
+ const cards=[...deck.children];let front=0;
+ const show=k=>{front=(k+cards.length)%cards.length;cards.forEach((c,n)=>{const pos=(n-front+cards.length)%cards.length;c.dataset.pos=pos;c.tabIndex=pos?-1:0;c.setAttribute('aria-hidden',String(!!pos));});
+  [...dots.children].forEach((d,n)=>d.toggleAttribute('aria-current',n===front));};
+ const restart=()=>{clearInterval(heroTimer);if(!reduceMotion())heroTimer=setInterval(()=>{if(!box.matches(':hover,:focus-within'))show(front+1);},3800);};
+ dots.onclick=e=>{const d=e.target.closest('[data-hs]');if(d){show(Number(d.dataset.hs));restart();}};
+ show(0);restart();
+}
 function spotTile(item,big=false){
  const art=hasArt(item)?`<img src="${esc(safeUrl(item.image))}" alt="" loading="${big?'eager':'lazy'}">`:'';
  return `<a class="spot-tile${big?' is-big':''}${item.thumb?' is-thumb':''}" ${linkAttrs(item)}>${item.thumb&&art?`<span class="spot-fill" style="background-image:url('${esc(safeUrl(item.image))}')"></span>`:''}${art}<span class="spot-shade"></span><span class="spot-copy"><span class="spot-cat">${esc(catLabel(item))}</span><b>${esc(item.title)}</b><span class="spot-meta">${esc([dateLine(item),[item.venue,item.city].filter(Boolean)[0]].filter(Boolean).join(' · '))}</span><span class="spot-foot"><strong>${esc(priceLine(item))}</strong><small>${item.external?'via '+esc(item.seller):'No booking fee'}</small></span></span></a>`;
@@ -436,6 +460,7 @@ function renderShowcase(all,now,place){
  // Spotlight: one big tile and four smaller ones, all with real pictures where we have them.
  const spot=varied(mixedPictures(sortItems(pool).filter(hasArt)),5);
  $('#spotlight').hidden=spot.length<3;
+ heroStack(spot);
  if(spot.length>=3)$('#spot-grid').innerHTML=spot.map((i,n)=>spotTile(i,n===0)).join('');
  // Mood tiles: each shows how many are on and the best picture in that category.
  const counts=new Map();for(const i of pool){counts.set(i.category,(counts.get(i.category)||0)+1);}

@@ -1,0 +1,1446 @@
+[
+{
+"slug": "london",
+"intro": "A global capital of theatre, museums, markets and music, where every neighbourhood feels like its own small city.",
+"areas": [
+[
+"West End & Soho",
+"Theatreland, Leicester Square, Chinatown and Soho’s late bars and restaurants."
+],
+[
+"South Bank & Bankside",
+"Riverside walk past the London Eye, Southbank Centre, Tate Modern and Borough Market."
+],
+[
+"Shoreditch & Hackney",
+"Street art, Brick Lane, Columbia Road flower market and East London’s club scene."
+],
+[
+"Camden",
+"Camden Market, canal-side food stalls and a long history of live music."
+]
+],
+"sights": [
+[
+"British Museum",
+"Free entry to world history, from the Rosetta Stone to the Parthenon sculptures."
+],
+[
+"Tower of London & Tower Bridge",
+"Medieval fortress, Crown Jewels and the river’s most famous bridge."
+],
+[
+"Westminster",
+"Houses of Parliament, Big Ben’s Elizabeth Tower and Westminster Abbey."
+],
+[
+"National Gallery & Trafalgar Square",
+"Free collection of European paintings on the city’s best-known square."
+],
+[
+"Hyde Park & Kensington",
+"Royal park walks, then the free V&A, Natural History and Science museums."
+]
+],
+"eat": [
+[
+"Borough Market",
+"London’s best-known food market, beside London Bridge."
+],
+[
+"Chinatown",
+"Dim sum, noodles and bakeries on Gerrard Street."
+],
+[
+"Brick Lane",
+"Bagel bakeries, curry houses and the Sunday market."
+],
+[
+"Sunday roast",
+"A pub roast is a London weekend ritual; book ahead for popular spots."
+]
+],
+"night": [
+[
+"West End theatre",
+"Musicals and plays nightly; matinees are often cheaper."
+],
+[
+"Soho",
+"Bars, cabaret, jazz at Ronnie Scott’s and LGBTQ+ venues."
+],
+[
+"Shoreditch & Dalston",
+"Cocktail bars, late clubs and DJ nights in East London."
+]
+],
+"arrive": "Heathrow (Elizabeth line or Heathrow Express), Gatwick (Gatwick Express or Thameslink), Stansted (Stansted Express), Luton (Luton DART plus train) and London City (DLR). Eurostar arrives at St Pancras.",
+"around": "The Tube, Elizabeth line, Overground, DLR and buses all take contactless; fares are capped daily and weekly. The Night Tube runs on some lines on Friday and Saturday nights.",
+"pass": "Use contactless or an Oyster card rather than paper tickets; daily capping does the work of a travel pass.",
+"when": "May–September for long light evenings and parks; December for Christmas lights and markets. It can rain any month.",
+"tip": "Stand on the right on Tube escalators, and touch in and out with the same card or phone to get the cap.",
+"sources": [
+{
+"title": "Visit London (official guide)",
+"url": "https://www.visitlondon.com/"
+},
+{
+"title": "Transport for London: fares and contactless",
+"url": "https://tfl.gov.uk/fares/"
+},
+{
+"title": "Heathrow Airport",
+"url": "https://www.heathrow.com/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "manchester",
+"intro": "A music, football and creative powerhouse with red-brick warehouses, big-name venues and a fierce independent streak.",
+"areas": [
+[
+"Northern Quarter",
+"Independent shops, Afflecks, street art, record stores and late bars."
+],
+[
+"Ancoats",
+"Restored mills and canal-side restaurants just north-east of the centre."
+],
+[
+"Deansgate & Spinningfields",
+"Department stores, riverside bars and the business district."
+],
+[
+"Castlefield",
+"Canal basins, Roman fort remains and the Science and Industry Museum."
+]
+],
+"sights": [
+[
+"Science and Industry Museum",
+"Manchester’s industrial story on the site of the world’s oldest surviving passenger railway station."
+],
+[
+"John Rylands Research Institute and Library",
+"Victorian Gothic reading room on Deansgate."
+],
+[
+"Manchester Museum & Whitworth",
+"University museums with natural history, art and textiles."
+],
+[
+"Old Trafford & the Etihad",
+"Stadium tours at the homes of Manchester United and Manchester City."
+],
+[
+"Manchester Art Gallery",
+"Free collection including Pre-Raphaelite paintings."
+]
+],
+"eat": [
+[
+"Mackie Mayor",
+"Food hall in a restored market building in the Northern Quarter."
+],
+[
+"Curry Mile",
+"Wilmslow Road in Rusholme, lined with South Asian and Middle Eastern restaurants."
+],
+[
+"Chinatown",
+"One of the UK’s largest, centred on Faulkner Street."
+],
+[
+"Ancoats dining",
+"Bakeries, pizza and modern British kitchens in former mills."
+]
+],
+"night": [
+[
+"Northern Quarter",
+"Cocktail bars, live music rooms and DJ bars."
+],
+[
+"Canal Street & the Gay Village",
+"One of the UK’s best-known LGBTQ+ nightlife quarters."
+],
+[
+"Big venues",
+"Co-op Live, AO Arena, O2 Apollo and Albert Hall for gigs."
+]
+],
+"arrive": "Manchester Airport has direct trains to Piccadilly (around 15–20 minutes). Piccadilly and Victoria are the main rail stations.",
+"around": "Metrolink trams cover the centre and suburbs, and the free Bee Network buses and contactless capping make short trips simple. The centre is very walkable.",
+"pass": "Contactless tap-in on Metrolink caps fares across the day; a Bee Network day ticket also covers buses.",
+"when": "Spring to early autumn for terraces and festivals; winter for Christmas markets. Bring a waterproof any time.",
+"tip": "Football match days fill trams and pubs; check fixtures before you book a hotel.",
+"sources": [
+{
+"title": "Visit Manchester (official guide)",
+"url": "https://www.visitmanchester.com/"
+},
+{
+"title": "Bee Network / Transport for Greater Manchester",
+"url": "https://tfgm.com/"
+},
+{
+"title": "Manchester Airport",
+"url": "https://www.manchesterairport.co.uk/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "liverpool",
+"intro": "A waterfront city of music, football and museums, where the Beatles story sits beside one of Britain’s friendliest nights out.",
+"areas": [
+[
+"Royal Albert Dock & waterfront",
+"Restored docks with museums, galleries and restaurants."
+],
+[
+"Ropewalks & Bold Street",
+"Independent cafés, vintage shops and global food."
+],
+[
+"Baltic Triangle",
+"Warehouse venues, food halls and creative studios."
+],
+[
+"Georgian Quarter",
+"Elegant terraces, both cathedrals and the Philharmonic."
+]
+],
+"sights": [
+[
+"The Beatles Story",
+"Museum at Royal Albert Dock about the band’s rise."
+],
+[
+"Museum of Liverpool & Merseyside Maritime Museum",
+"Free museums on the waterfront."
+],
+[
+"Tate Liverpool",
+"Modern art at Royal Albert Dock (check the current reopening details)."
+],
+[
+"Liverpool Cathedral",
+"Britain’s largest cathedral, with tower views."
+],
+[
+"Anfield & Everton Stadium",
+"Stadium tours at Liverpool FC’s Anfield and Everton’s new stadium at Bramley-Moore Dock."
+]
+],
+"eat": [
+[
+"Scouse",
+"The city’s namesake slow-cooked stew."
+],
+[
+"Bold Street",
+"One of the city’s best streets for international cafés and restaurants."
+],
+[
+"Baltic Market",
+"Street-food hall in the Baltic Triangle."
+],
+[
+"Chinatown",
+"Europe’s oldest Chinese community, marked by its grand arch."
+]
+],
+"night": [
+[
+"Mathew Street & the Cavern Club",
+"Live music most days where the Beatles played."
+],
+[
+"Seel Street & Concert Square",
+"Bars and clubs that stay busy late."
+],
+[
+"Baltic Triangle",
+"Warehouse clubs, live events and rooftop bars."
+]
+],
+"arrive": "Liverpool John Lennon Airport is linked by bus to the city centre and Liverpool South Parkway station. Lime Street is the main rail station.",
+"around": "Merseyrail trains and buses cover the region; the centre is easy to walk. The Mersey Ferry crosses the river.",
+"pass": "Merseytravel day tickets cover trains, buses and the ferry; check current options before travel.",
+"when": "May–September for waterfront events; spring for the Grand National at Aintree.",
+"tip": "Bring ID for clubs and check the football fixtures, as match days transform the city.",
+"sources": [
+{
+"title": "Visit Liverpool (official guide)",
+"url": "https://www.visitliverpool.com/"
+},
+{
+"title": "Merseytravel",
+"url": "https://www.merseytravel.gov.uk/"
+},
+{
+"title": "Liverpool John Lennon Airport",
+"url": "https://www.liverpoolairport.com/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "glasgow",
+"intro": "Scotland’s largest city: grand Victorian architecture, world-class free museums and a legendary live music scene.",
+"areas": [
+[
+"Merchant City",
+"Restored warehouses with bars, restaurants and boutiques."
+],
+[
+"West End",
+"Kelvingrove, the University, Byres Road and Ashton Lane."
+],
+[
+"Finnieston",
+"Argyle Street’s restaurant strip near the SEC venues."
+],
+[
+"Southside",
+"Shawlands and Pollok Country Park with the Burrell Collection."
+]
+],
+"sights": [
+[
+"Kelvingrove Art Gallery and Museum",
+"Free museum with art, natural history and a daily organ recital."
+],
+[
+"Glasgow Cathedral & Necropolis",
+"Medieval cathedral and a Victorian hilltop cemetery with city views."
+],
+[
+"Riverside Museum",
+"Free transport museum by the Clyde, with the Tall Ship Glenlee."
+],
+[
+"The Burrell Collection",
+"Art and antiquities in Pollok Country Park."
+],
+[
+"Glasgow School of Art area",
+"Charles Rennie Mackintosh’s legacy, also seen at The Lighthouse."
+]
+],
+"eat": [
+[
+"Finnieston",
+"Seafood, small plates and cocktail bars on Argyle Street."
+],
+[
+"Ashton Lane",
+"Cobbled lane of pubs and restaurants in the West End."
+],
+[
+"Scottish classics",
+"Haggis, Cullen skink and a well-fired roll."
+],
+[
+"Barras Market",
+"Weekend market in the East End."
+]
+],
+"night": [
+[
+"King Tut’s Wah Wah Hut",
+"Famous small venue on St Vincent Street."
+],
+[
+"Barrowland Ballroom",
+"A much-loved gig venue in the East End."
+],
+[
+"Sauchiehall Street & Merchant City",
+"Clubs, bars and late venues."
+]
+],
+"arrive": "Glasgow Airport links to the centre by the airport express bus; Glasgow Prestwick has a rail link. Central and Queen Street are the main stations.",
+"around": "The Subway loops through the centre and West End; buses and trains cover the rest.",
+"pass": "Subway day tickets and SPT/ZoneCard options cover longer stays; check current fares.",
+"when": "May–September for long evenings; January for Celtic Connections music festival.",
+"tip": "Buy a ticket for a gig at the Barrowland or King Tut’s; the crowds are part of the show.",
+"sources": [
+{
+"title": "People Make Glasgow (official guide)",
+"url": "https://peoplemakeglasgow.com/"
+},
+{
+"title": "SPT: Subway and transport",
+"url": "https://www.spt.co.uk/"
+},
+{
+"title": "Glasgow Airport",
+"url": "https://www.glasgowairport.com/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "edinburgh",
+"intro": "Scotland’s capital packs a castle, a medieval Old Town and a Georgian New Town into one walkable, festival-loving city.",
+"areas": [
+[
+"Old Town & Royal Mile",
+"Closes, wynds and historic buildings between the castle and Holyrood."
+],
+[
+"New Town",
+"Georgian streets, Princes Street and George Street shops and bars."
+],
+[
+"Leith",
+"Waterfront restaurants, bars and the Royal Yacht Britannia."
+],
+[
+"Stockbridge",
+"Village feel, independent shops and a Sunday market."
+]
+],
+"sights": [
+[
+"Edinburgh Castle",
+"On Castle Rock, home to the Honours of Scotland."
+],
+[
+"Arthur’s Seat",
+"Hike Holyrood Park’s extinct volcano for views across the city."
+],
+[
+"National Museum of Scotland",
+"Free museum with a rooftop terrace."
+],
+[
+"Palace of Holyroodhouse",
+"The monarch’s official residence in Scotland."
+],
+[
+"Calton Hill",
+"Monuments and one of the best sunset viewpoints."
+]
+],
+"eat": [
+[
+"Leith waterfront",
+"Seafood restaurants and bars around The Shore."
+],
+[
+"Grassmarket",
+"Pubs and restaurants beneath the castle."
+],
+[
+"Scottish dishes",
+"Haggis, neeps and tatties, Cullen skink and shortbread."
+],
+[
+"Stockbridge Market",
+"Sunday food and craft stalls."
+]
+],
+"night": [
+[
+"Cowgate & Grassmarket",
+"Late bars and clubs in the Old Town."
+],
+[
+"George Street",
+"Cocktail bars in grand Georgian buildings."
+],
+[
+"Folk and trad music",
+"Sandy Bell’s is known for traditional sessions."
+]
+],
+"arrive": "Edinburgh Airport is linked by tram and Airlink bus to the centre. Waverley is the main rail station with fast trains from London.",
+"around": "Lothian buses and the tram cover the city; the centre is compact but hilly.",
+"pass": "Lothian day tickets work on buses and the tram (airport journeys may cost more); contactless is accepted.",
+"when": "August for the Festival Fringe and International Festival (book well ahead); December for Hogmanay.",
+"tip": "Wear good shoes: the Old Town is steep and cobbled, and the weather changes fast.",
+"sources": [
+{
+"title": "Visit Scotland: Edinburgh",
+"url": "https://www.visitscotland.com/places-to-go/edinburgh"
+},
+{
+"title": "Lothian Buses",
+"url": "https://www.lothianbuses.com/"
+},
+{
+"title": "Edinburgh Airport",
+"url": "https://www.edinburghairport.com/"
+},
+{
+"title": "Edinburgh Festival Fringe",
+"url": "https://www.edfringe.com/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "birmingham",
+"intro": "Britain’s second city, reborn around canals, Victorian landmarks and one of the country’s most diverse food scenes.",
+"areas": [
+[
+"City Centre & New Street",
+"Bullring, Grand Central and the Victorian civic squares."
+],
+[
+"Jewellery Quarter",
+"Historic workshops, independent bars and restaurants."
+],
+[
+"Digbeth",
+"Street art, warehouse venues, the Custard Factory and street food."
+],
+[
+"Brindleyplace & Gas Street Basin",
+"Canal-side bars and restaurants."
+]
+],
+"sights": [
+[
+"Birmingham Museum and Art Gallery",
+"Pre-Raphaelite collection; check current reopening details."
+],
+[
+"Library of Birmingham",
+"Striking modern library with rooftop gardens."
+],
+[
+"Cadbury World",
+"Chocolate attraction in Bournville."
+],
+[
+"Canals",
+"Birmingham has more miles of canal than Venice; walk the towpaths."
+],
+[
+"Peaky Blinders history",
+"Explore the real streets and pubs linked to the era."
+]
+],
+"eat": [
+[
+"Balti Triangle",
+"Sparkbrook restaurants where the balti became famous."
+],
+[
+"Digbeth Dining Club",
+"Street-food events in Digbeth."
+],
+[
+"Jewellery Quarter",
+"Independent restaurants and cocktail bars."
+],
+[
+"Grand Central & Bullring",
+"Plenty of choice near New Street station."
+]
+],
+"night": [
+[
+"Broad Street",
+"Bars and clubs close to the canals."
+],
+[
+"Digbeth",
+"Warehouse clubs, live music and the O2 Institute."
+],
+[
+"Arena gigs",
+"Utilita Arena and bp pulse LIVE for major tours."
+]
+],
+"arrive": "Birmingham Airport has a rail station (Birmingham International) with fast trains to New Street. New Street, Moor Street and Snow Hill serve the centre.",
+"around": "West Midlands Metro trams link Snow Hill, New Street and Edgbaston; National Express West Midlands buses cover the region.",
+"pass": "Swift cards and contactless capping work on many buses and trams; check West Midlands Network for current options.",
+"when": "Spring to autumn for canals and terraces; December for the Frankfurt Christmas Market.",
+"tip": "Many sights are a short walk from New Street, so a central hotel saves on transport.",
+"sources": [
+{
+"title": "Visit Birmingham (official guide)",
+"url": "https://visitbirmingham.com/"
+},
+{
+"title": "West Midlands Network",
+"url": "https://www.wmnetwork.co.uk/"
+},
+{
+"title": "Birmingham Airport",
+"url": "https://www.birminghamairport.co.uk/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "brighton",
+"intro": "Seaside, pier and pebble beach, with The Lanes, an LGBTQ+ heart and a big creative, music-loving spirit.",
+"areas": [
+[
+"The Lanes",
+"Narrow historic alleys of jewellers, cafés and pubs."
+],
+[
+"North Laine",
+"Independent shops, vintage and street food."
+],
+[
+"Seafront",
+"The Palace Pier, i360, beach bars and arches."
+],
+[
+"Kemptown",
+"Pride’s home, cafés and LGBTQ+ bars."
+]
+],
+"sights": [
+[
+"Royal Pavilion",
+"George IV’s exotic seaside palace."
+],
+[
+"Brighton Palace Pier",
+"Classic arcades and rides."
+],
+[
+"Brighton i360",
+"Glass pod viewing tower on the seafront."
+],
+[
+"Seven Sisters & South Downs",
+"Chalk cliffs and downland a short bus ride away."
+],
+[
+"Brighton Museum & Art Gallery",
+"In the Royal Pavilion Garden."
+]
+],
+"eat": [
+[
+"Fish and chips on the beach",
+"A seaside classic."
+],
+[
+"North Laine cafés",
+"Vegan and vegetarian choice is excellent."
+],
+[
+"Seafront arches",
+"Bars and small kitchens under the promenade."
+],
+[
+"Open Market",
+"Indoor market on London Road."
+]
+],
+"night": [
+[
+"Seafront clubs",
+"Clubs in the arches by the beach."
+],
+[
+"Kemptown",
+"LGBTQ+ bars and cabaret."
+],
+[
+"Live music",
+"Concorde 2, Brighton Dome and many small venues."
+]
+],
+"arrive": "Trains from London Victoria, London Bridge and Gatwick Airport arrive at Brighton station; Gatwick is about 30 minutes away.",
+"around": "Walk or cycle (BTN BikeShare); Brighton & Hove Buses run frequently, including nights.",
+"pass": "Brighton & Hove Buses offer day tickets and contactless capping; check the current fares.",
+"when": "May–September for the beach and the Brighton Festival and Fringe (May) and Pride (August).",
+"tip": "Pebble beaches: bring something soft to sit on and shoes for the water.",
+"sources": [
+{
+"title": "Visit Brighton (official guide)",
+"url": "https://www.visitbrighton.com/"
+},
+{
+"title": "Brighton & Hove Buses",
+"url": "https://www.buses.co.uk/"
+},
+{
+"title": "Royal Pavilion & Museums",
+"url": "https://brightonmuseums.org.uk/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "bristol",
+"intro": "Harbourside creativity, Banksy-era street art, Brunel engineering and one of the UK’s best club and sound-system scenes.",
+"areas": [
+[
+"Harbourside",
+"Museums, bars and boats around the Floating Harbour."
+],
+[
+"Stokes Croft",
+"Street art, independent shops and late venues."
+],
+[
+"Clifton",
+"Georgian terraces, the Suspension Bridge and the Downs."
+],
+[
+"Old City & Corn Street",
+"St Nicholas Market and historic pubs."
+]
+],
+"sights": [
+[
+"Clifton Suspension Bridge",
+"Brunel’s bridge over the Avon Gorge."
+],
+[
+"SS Great Britain",
+"Brunel’s iron steamship in dry dock."
+],
+[
+"M Shed",
+"Free museum of Bristol life on the harbour."
+],
+[
+"Bristol Museum & Art Gallery",
+"Free museum in Clifton."
+],
+[
+"Street art walk",
+"Stokes Croft and Bedminster murals, including Upfest areas."
+]
+],
+"eat": [
+[
+"St Nicholas Market",
+"Covered market and street-food stalls."
+],
+[
+"Wapping Wharf",
+"Restaurants in shipping containers by the harbour."
+],
+[
+"Gloucester Road",
+"One of the UK’s longest strips of independent shops and cafés."
+],
+[
+"Cider",
+"The West Country’s classic drink."
+]
+],
+"night": [
+[
+"Club venues",
+"Motion, Lakota and Thekla (a club on a boat)."
+],
+[
+"Stokes Croft",
+"Bars and venues that stay busy late."
+],
+[
+"Harbourside",
+"Bars and boats for summer evenings."
+]
+],
+"arrive": "Bristol Airport is linked to the city centre by an airport express bus. Bristol Temple Meads is the main station, with fast trains to London.",
+"around": "Walk the centre; buses (First and others) and ferries around the harbour do the rest.",
+"pass": "Bus day tickets and contactless are widely accepted; check current offers with the operators.",
+"when": "May–September for harbour festivals and outdoor events; Bristol Balloon Fiesta in August.",
+"tip": "Bristol is hilly; comfortable shoes help between Clifton and the harbour.",
+"sources": [
+{
+"title": "Visit Bristol (official guide)",
+"url": "https://visitbristol.co.uk/"
+},
+{
+"title": "SS Great Britain",
+"url": "https://www.ssgreatbritain.org/"
+},
+{
+"title": "Bristol Airport",
+"url": "https://www.bristolairport.co.uk/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "leeds",
+"intro": "Yorkshire’s big city: Victorian arcades, a strong music and student scene and easy days out in the Dales.",
+"areas": [
+[
+"City Centre",
+"Victoria Quarter arcades, Briggate and Trinity Leeds."
+],
+[
+"Call Lane & Exchange Quarter",
+"Bars and late venues."
+],
+[
+"Leeds Dock",
+"Royal Armouries and waterside space."
+],
+[
+"Headingley & Hyde Park",
+"Student neighbourhoods, cricket and rugby grounds."
+]
+],
+"sights": [
+[
+"Royal Armouries Museum",
+"National collection of arms and armour, free entry."
+],
+[
+"Kirkgate Market",
+"One of Europe’s largest covered markets."
+],
+[
+"Leeds Art Gallery & Henry Moore Institute",
+"Free galleries in the centre."
+],
+[
+"Roundhay Park",
+"Huge park with lakes and gardens."
+],
+[
+"Kirkstall Abbey",
+"Cistercian abbey ruins in the suburbs."
+]
+],
+"eat": [
+[
+"Kirkgate Market",
+"Food stalls and the market’s Food Hall."
+],
+[
+"Trinity Kitchen",
+"Rotating street-food vendors."
+],
+[
+"Yorkshire pudding",
+"The county’s signature, with a roast."
+],
+[
+"Independent coffee",
+"The city has a strong café scene."
+]
+],
+"night": [
+[
+"Call Lane",
+"Bars and DJ bars side by side."
+],
+[
+"Live music",
+"Brudenell Social Club, O2 Academy and First Direct Arena."
+],
+[
+"Clubs",
+"Mint, Wire and others; check current line-ups."
+]
+],
+"arrive": "Leeds Bradford Airport has a bus link to the centre. Leeds station is the main hub, with fast trains to London and across the north.",
+"around": "The centre is walkable; First and Arriva buses and local trains cover the region.",
+"pass": "West Yorkshire MCard day tickets cover buses (and rail options); check current products.",
+"when": "Spring to early autumn; summer brings Leeds Festival at Bramham Park in August.",
+"tip": "Use Leeds as a base for the Yorkshire Dales and York, both reachable by train.",
+"sources": [
+{
+"title": "Visit Leeds (official guide)",
+"url": "https://www.visitleeds.co.uk/"
+},
+{
+"title": "West Yorkshire Metro",
+"url": "https://www.wymetro.com/"
+},
+{
+"title": "Leeds Bradford Airport",
+"url": "https://www.leedsbradfordairport.co.uk/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "newcastle",
+"intro": "A proud, buzzing city on the Tyne with famous bridges, Grey Street grandeur and nights out to match.",
+"areas": [
+[
+"Quayside",
+"The Tyne bridges, bars and the Sunday market."
+],
+[
+"Grainger Town",
+"Grey Street’s elegant Georgian architecture and Grainger Market."
+],
+[
+"Ouseburn",
+"Creative valley with music venues and pubs."
+],
+[
+"Gateshead Quays",
+"BALTIC, The Glasshouse and the Millennium Bridge."
+]
+],
+"sights": [
+[
+"Tyne Bridges",
+"Walk the Quayside past the Tyne Bridge and Gateshead Millennium Bridge."
+],
+[
+"BALTIC Centre for Contemporary Art",
+"Free art in a former flour mill."
+],
+[
+"Newcastle Castle",
+"The keep that gave the city its name."
+],
+[
+"Angel of the North",
+"Antony Gormley’s sculpture in Gateshead."
+],
+[
+"St James’ Park",
+"Home of Newcastle United, with stadium tours."
+]
+],
+"eat": [
+[
+"Grainger Market",
+"Historic indoor market with food stalls."
+],
+[
+"Stottie cake",
+"A local bread, best with ham and pease pudding."
+],
+[
+"Quayside",
+"Restaurants with river views."
+],
+[
+"Ouseburn",
+"Pubs and small kitchens in the valley."
+]
+],
+"night": [
+[
+"Bigg Market & Collingwood Street",
+"Classic Newcastle nights out."
+],
+[
+"The Gate & Pink Triangle",
+"Bars, clubs and LGBTQ+ venues."
+],
+[
+"Ouseburn",
+"The Cluny and other live music pubs."
+]
+],
+"arrive": "Newcastle International Airport is on the Tyne and Wear Metro. Newcastle Central Station has fast trains to London and Edinburgh.",
+"around": "The Tyne and Wear Metro links the centre, airport, coast and Sunderland; buses cover the rest.",
+"pass": "Metro Day Tickets and Pop Pay As You Go cards cut costs; contactless is accepted.",
+"when": "Spring to autumn; the Great North Run in September.",
+"tip": "Ride the Metro to Tynemouth for the coast and a walk on Longsands.",
+"sources": [
+{
+"title": "NewcastleGateshead (official guide)",
+"url": "https://newcastlegateshead.com/"
+},
+{
+"title": "Nexus: Tyne and Wear Metro",
+"url": "https://www.nexus.org.uk/"
+},
+{
+"title": "Newcastle International Airport",
+"url": "https://www.newcastleairport.com/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "sheffield",
+"intro": "The Steel City: green hills, a compact centre, a celebrated music heritage and the Peak District on the doorstep.",
+"areas": [
+[
+"City Centre",
+"Peace Gardens, Winter Garden and the Millennium Gallery."
+],
+[
+"Kelham Island",
+"Former industrial area with breweries, bars and restaurants."
+],
+[
+"Division Street & Devonshire Quarter",
+"Independent shops, bars and cafés."
+],
+[
+"Ecclesall Road",
+"Bars and restaurants on the way to the Botanical Gardens."
+]
+],
+"sights": [
+[
+"Kelham Island Museum",
+"Sheffield’s industrial story, including a giant steam engine."
+],
+[
+"Winter Garden",
+"Large temperate glasshouse in the city centre."
+],
+[
+"Millennium Gallery",
+"Art, design and Sheffield metalwork."
+],
+[
+"Sheffield Botanical Gardens",
+"Victorian glass pavilions and gardens."
+],
+[
+"Peak District",
+"National park less than half an hour away."
+]
+],
+"eat": [
+[
+"Kelham Island",
+"Real-ale pubs, breweries and food halls."
+],
+[
+"Cutlery Works",
+"A large food hall in Neepsend."
+],
+[
+"Henderson’s Relish",
+"Sheffield’s favourite condiment."
+],
+[
+"Division Street",
+"Cafés and casual dining."
+]
+],
+"night": [
+[
+"Kelham Island pubs",
+"Traditional ale houses and modern bars."
+],
+[
+"Live music",
+"The Leadmill and O2 Academy."
+],
+[
+"West Street & Division Street",
+"Busy student-friendly bars."
+]
+],
+"arrive": "Sheffield station has fast trains to London, Manchester and Leeds. The nearest airports are Manchester and Leeds Bradford.",
+"around": "Supertram lines and buses cover the city; the centre is walkable.",
+"pass": "Supertram day tickets and SYPTE options are available; check current fares.",
+"when": "Spring to autumn for Peak District walks; June for Sheffield DocFest.",
+"tip": "Pack walking shoes: the Peak District begins at the city’s western edge.",
+"sources": [
+{
+"title": "Welcome to Sheffield (official guide)",
+"url": "https://www.welcometosheffield.co.uk/"
+},
+{
+"title": "Travel South Yorkshire",
+"url": "https://www.travelsouthyorkshire.com/"
+},
+{
+"title": "Museums Sheffield",
+"url": "https://www.museums-sheffield.org.uk/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "nottingham",
+"intro": "Robin Hood’s city: caves beneath the streets, historic pubs, two universities and a lively centre.",
+"areas": [
+[
+"Lace Market",
+"Historic lace warehouses, bars and restaurants."
+],
+[
+"Hockley",
+"Independent shops, cafés and cocktail bars."
+],
+[
+"Old Market Square",
+"The city’s central square near the Council House."
+],
+[
+"West Bridgford & Trent Bridge",
+"Cricket, football and riverside walks."
+]
+],
+"sights": [
+[
+"Nottingham Castle",
+"Castle grounds, gallery and Robin Hood story."
+],
+[
+"City of Caves",
+"Underground caves beneath the Broadmarsh area."
+],
+[
+"Wollaton Hall",
+"Elizabethan mansion and deer park."
+],
+[
+"Ye Olde Trip to Jerusalem",
+"One of the pubs claiming to be England’s oldest, partly cut into the castle rock."
+],
+[
+"National Justice Museum",
+"Courtroom and prison history in the Lace Market."
+]
+],
+"eat": [
+[
+"Hockley",
+"Cafés and street-food kitchens."
+],
+[
+"Sneinton Market",
+"Weekend markets and creative units."
+],
+[
+"Pub classics",
+"Historic pubs beneath the castle."
+],
+[
+"Mushy peas",
+"A local favourite, often with mint sauce."
+]
+],
+"night": [
+[
+"Hockley & Lace Market",
+"Cocktail bars and late venues."
+],
+[
+"Rock City",
+"Legendary live music and club venue."
+],
+[
+"Motorpoint Arena",
+"Major touring shows."
+]
+],
+"arrive": "East Midlands Airport has a Skylink bus to Nottingham. Nottingham station has direct trains to London St Pancras.",
+"around": "NET trams and frequent Nottingham City Transport buses cover the city.",
+"pass": "Robin Hood network day tickets cover trams and many buses; check current fares.",
+"when": "Spring to autumn; Goose Fair in early October.",
+"tip": "Book ahead for cave tours, which run at set times.",
+"sources": [
+{
+"title": "Visit Nottinghamshire (official guide)",
+"url": "https://www.visit-nottinghamshire.co.uk/"
+},
+{
+"title": "Nottingham Express Transit",
+"url": "https://www.thetram.net/"
+},
+{
+"title": "East Midlands Airport",
+"url": "https://www.eastmidlandsairport.com/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "cardiff",
+"intro": "The Welsh capital: a castle in the city centre, a famous stadium, Victorian arcades and a revived bay.",
+"areas": [
+[
+"City Centre",
+"Cardiff Castle, St Mary Street and the arcades."
+],
+[
+"Cardiff Bay",
+"Wales Millennium Centre, the Senedd and waterfront restaurants."
+],
+[
+"Pontcanna",
+"Leafy streets, cafés and restaurants beside Bute Park."
+],
+[
+"Roath",
+"Independent shops, bars and Roath Park lake."
+]
+],
+"sights": [
+[
+"Cardiff Castle",
+"Roman walls, a Norman keep and Victorian interiors."
+],
+[
+"Principality Stadium",
+"Tours of the home of Welsh rugby."
+],
+[
+"National Museum Cardiff",
+"Free art and natural history museum."
+],
+[
+"Wales Millennium Centre",
+"Arts centre in Cardiff Bay."
+],
+[
+"St Fagans National Museum of History",
+"Open-air museum of Welsh life, free entry."
+]
+],
+"eat": [
+[
+"Cardiff Market",
+"Victorian indoor market with Welsh cakes."
+],
+[
+"Welsh cakes & cawl",
+"Traditional griddle cakes and a hearty stew."
+],
+[
+"Arcades",
+"Cafés and small restaurants in the Victorian arcades."
+],
+[
+"Cardiff Bay",
+"Waterfront dining."
+]
+],
+"night": [
+[
+"St Mary Street & Caroline Street",
+"Bars and late-night food in the centre."
+],
+[
+"Live music",
+"Clwb Ifor Bach and the Tramshed."
+],
+[
+"Stadium events",
+"Rugby and gigs pack the city centre."
+]
+],
+"arrive": "Cardiff Airport is linked by bus and by train from Rhoose station. Cardiff Central has fast trains to London Paddington.",
+"around": "The centre is compact; Cardiff Bus and local trains reach the Bay and suburbs.",
+"pass": "Cardiff Bus day tickets are available; check current fares.",
+"when": "Spring to autumn; Six Nations rugby weekends (February–March) are electric but busy.",
+"tip": "Hotels fill fast on match and concert days at the Principality Stadium.",
+"sources": [
+{
+"title": "Visit Cardiff (official guide)",
+"url": "https://www.visitcardiff.com/"
+},
+{
+"title": "Cardiff Castle",
+"url": "https://www.cardiffcastle.com/"
+},
+{
+"title": "Cardiff Airport",
+"url": "https://www.cardiff-airport.com/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "belfast",
+"intro": "A city of shipbuilding history, murals and music, with a lively Cathedral Quarter and the Causeway Coast close by.",
+"areas": [
+[
+"Cathedral Quarter",
+"Cobbled streets, pubs, live music and street art."
+],
+[
+"Titanic Quarter",
+"Titanic Belfast and the old shipyards."
+],
+[
+"Queen’s Quarter",
+"Queen’s University, the Botanic Gardens and Ulster Museum."
+],
+[
+"City Centre",
+"City Hall, Victoria Square and St George’s Market."
+]
+],
+"sights": [
+[
+"Titanic Belfast",
+"Exhibition where the RMS Titanic was built."
+],
+[
+"City Hall",
+"Free tours of the grand civic building."
+],
+[
+"Ulster Museum",
+"Free museum in the Botanic Gardens."
+],
+[
+"Crumlin Road Gaol",
+"Former Victorian prison with guided tours."
+],
+[
+"Murals of West Belfast",
+"Political murals, best seen on a guided tour."
+]
+],
+"eat": [
+[
+"St George’s Market",
+"Victorian market with food stalls at weekends."
+],
+[
+"Ulster fry",
+"A hearty breakfast with soda and potato bread."
+],
+[
+"Cathedral Quarter",
+"Restaurants and gastropubs."
+],
+[
+"Champ",
+"Mashed potato with spring onion and butter."
+]
+],
+"night": [
+[
+"Cathedral Quarter",
+"Traditional music sessions and late bars."
+],
+[
+"The Duke of York & Kelly’s Cellars",
+"Historic pubs."
+],
+[
+"Big gigs",
+"The SSE Arena and Ulster Hall."
+]
+],
+"arrive": "Belfast International (express bus) and George Best Belfast City (bus, minutes from the centre). Ferries arrive from Scotland and England.",
+"around": "Translink Metro buses and Glider rapid buses; the centre is walkable.",
+"pass": "Translink day tickets and contactless are available; check current fares.",
+"when": "May–September for long days and Causeway Coast trips.",
+"tip": "Take a black taxi tour for local stories behind the murals.",
+"sources": [
+{
+"title": "Visit Belfast (official guide)",
+"url": "https://visitbelfast.com/"
+},
+{
+"title": "Translink",
+"url": "https://www.translink.co.uk/"
+},
+{
+"title": "Titanic Belfast",
+"url": "https://www.titanicbelfast.com/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "dublin",
+"intro": "Ireland’s capital: Georgian squares, literary history, the Liffey and pubs filled with music.",
+"areas": [
+[
+"Temple Bar",
+"Cobbled streets, pubs and traditional music."
+],
+[
+"Grafton Street & St Stephen’s Green",
+"Shopping and a lovely city park."
+],
+[
+"Docklands",
+"Modern waterfront and the EPIC museum."
+],
+[
+"Stoneybatter & Smithfield",
+"Local pubs, cafés and the Jameson Distillery."
+]
+],
+"sights": [
+[
+"Trinity College & the Book of Kells",
+"Historic university and the illuminated manuscript."
+],
+[
+"Guinness Storehouse",
+"The brewery experience with a rooftop bar."
+],
+[
+"Dublin Castle & Chester Beatty",
+"Castle and a free museum of manuscripts and art."
+],
+[
+"Kilmainham Gaol",
+"Prison museum tied to Irish independence."
+],
+[
+"Phoenix Park",
+"One of Europe’s largest city parks, with deer."
+]
+],
+"eat": [
+[
+"Irish stew & seafood chowder",
+"Pub classics."
+],
+[
+"Fresh seafood",
+"Howth’s harbour is a DART ride away."
+],
+[
+"George’s Street Arcade",
+"Victorian market with food stalls."
+],
+[
+"Full Irish",
+"A hearty breakfast to start the day."
+]
+],
+"night": [
+[
+"Temple Bar",
+"Busy and touristy, with music every night."
+],
+[
+"Camden Street & Wexford Street",
+"Bars, clubs and live music."
+],
+[
+"Traditional sessions",
+"The Cobblestone in Smithfield is known for them."
+]
+],
+"arrive": "Dublin Airport is linked by Airlink, Dublin Express and Aircoach buses. Heuston and Connolly are the main rail stations; ferries arrive at Dublin Port.",
+"around": "Luas trams, Dublin Bus and DART trains along the coast.",
+"pass": "Leap Card gives cheaper fares and daily caps; Leap Visitor Cards cover multiple days.",
+"when": "May–September for long evenings; St Patrick’s Day (17 March) is huge.",
+"tip": "Take the DART to Howth or Dún Laoghaire for cliff walks and seafood.",
+"sources": [
+{
+"title": "Visit Dublin (official guide)",
+"url": "https://www.visitdublin.com/"
+},
+{
+"title": "Transport for Ireland: Leap Card",
+"url": "https://www.leapcard.ie/"
+},
+{
+"title": "Dublin Airport",
+"url": "https://www.dublinairport.com/"
+}
+],
+"checked": "2026-11-24"
+}
+]

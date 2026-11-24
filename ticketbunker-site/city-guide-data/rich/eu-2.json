@@ -1,0 +1,1094 @@
+[
+{
+"slug": "munich",
+"intro": "Bavaria’s capital: beer halls, baroque churches, the English Garden and the Alps on the horizon.",
+"areas": [
+[
+"Altstadt",
+"Marienplatz, the Glockenspiel and the Viktualienmarkt."
+],
+[
+"Maxvorstadt",
+"Museums and the university."
+],
+[
+"Schwabing & the English Garden",
+"University district beside the huge park."
+]
+],
+"sights": [
+[
+"Marienplatz & Neues Rathaus",
+"Glockenspiel shows daily."
+],
+[
+"English Garden",
+"Huge park with surfers on the Eisbach."
+],
+[
+"Nymphenburg Palace",
+"Baroque palace and park."
+],
+[
+"BMW Welt & Museum",
+"Car showroom and museum."
+],
+[
+"Dachau Memorial Site",
+"Concentration camp memorial nearby."
+]
+],
+"eat": [
+[
+"Viktualienmarkt",
+"Open-air food market."
+],
+[
+"Weisswurst & pretzels",
+"Bavarian breakfast."
+],
+[
+"Beer halls",
+"Hofbräuhaus and others."
+]
+],
+"night": [
+[
+"Beer gardens",
+"Summer evenings."
+],
+[
+"Oktoberfest",
+"Late September to early October."
+],
+[
+"Clubs",
+"Around Sendlinger Tor and the Kunstpark area."
+]
+],
+"arrive": "Munich Airport is linked by S-Bahn (S1 and S8). Munich Hauptbahnhof has trains across Europe.",
+"around": "U-Bahn, S-Bahn, trams and buses.",
+"pass": "MVV day tickets or the Deutschlandticket; check current fares.",
+"when": "May–September; Oktoberfest (book very early); December markets.",
+"tip": "Hotels triple in price during Oktoberfest; book months ahead.",
+"sources": [
+{
+"title": "Munich Tourism (official guide)",
+"url": "https://www.muenchen.travel/en"
+},
+{
+"title": "MVV",
+"url": "https://www.mvv-muenchen.de/en/"
+},
+{
+"title": "Munich Airport",
+"url": "https://www.munich-airport.com/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "hamburg",
+"intro": "Germany’s port city of canals, warehouses, the Elbphilharmonie and the Reeperbahn.",
+"areas": [
+[
+"Speicherstadt & HafenCity",
+"World Heritage warehouses and the Elbphilharmonie."
+],
+[
+"St Pauli",
+"Reeperbahn nightlife."
+],
+[
+"Sternschanze",
+"Alternative district of cafés and bars."
+]
+],
+"sights": [
+[
+"Elbphilharmonie",
+"Concert hall with a free public plaza."
+],
+[
+"Miniatur Wunderland",
+"The world’s largest model railway."
+],
+[
+"Speicherstadt",
+"Red-brick warehouse district."
+],
+[
+"Harbour tour",
+"Boat trips around the port."
+]
+],
+"eat": [
+[
+"Fischmarkt",
+"Sunday morning fish market."
+],
+[
+"Fischbrötchen",
+"Bread rolls filled with herring or other fish."
+],
+[
+"Franzbrötchen",
+"Cinnamon pastry."
+]
+],
+"night": [
+[
+"Reeperbahn",
+"Clubs, bars and live music."
+],
+[
+"Sternschanze",
+"Bars and street-side drinking."
+],
+[
+"Musicals",
+"Big shows on the harbour."
+]
+],
+"arrive": "Hamburg Airport is linked by S-Bahn (S1). Hamburg Hauptbahnhof has trains across Germany.",
+"around": "U-Bahn, S-Bahn, buses and HADAG ferries (part of public transport).",
+"pass": "HVV day tickets or the Deutschlandticket; check current fares.",
+"when": "May–September.",
+"tip": "Ride ferry line 62 for a cheap harbour tour.",
+"sources": [
+{
+"title": "Hamburg Tourism (official guide)",
+"url": "https://www.hamburg-travel.com/"
+},
+{
+"title": "HVV",
+"url": "https://www.hvv.de/en"
+},
+{
+"title": "Elbphilharmonie",
+"url": "https://www.elbphilharmonie.de/en/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "cologne",
+"intro": "A Rhineland city of a mighty cathedral, Kölsch beer and carnival.",
+"areas": [
+[
+"Altstadt",
+"Cathedral and riverside."
+],
+[
+"Belgian Quarter",
+"Bars and boutiques."
+],
+[
+"Ehrenfeld",
+"Street art and clubs."
+]
+],
+"sights": [
+[
+"Cologne Cathedral",
+"World Heritage Gothic cathedral."
+],
+[
+"Hohenzollern Bridge",
+"Love locks and skyline views."
+],
+[
+"Museum Ludwig",
+"Modern art, including Pop Art and Picasso."
+],
+[
+"Chocolate Museum",
+"Chocolate history on the Rhine."
+]
+],
+"eat": [
+[
+"Kölsch",
+"Local beer in small glasses."
+],
+[
+"Brauhaus food",
+"Halve Hahn and Himmel un Ääd."
+],
+[
+"Altstadt brewhouses",
+"Traditional pubs."
+]
+],
+"night": [
+[
+"Brauhäuser",
+"Traditional brewhouses serving Kölsch."
+],
+[
+"Ehrenfeld",
+"Clubs and music venues in a former industrial area."
+],
+[
+"Carnival",
+"Starts 11 November; peaks in February."
+]
+],
+"arrive": "Cologne Bonn Airport is linked by S-Bahn. Köln Hbf, next to the cathedral, has trains across Europe.",
+"around": "Trams, U-Bahn and buses.",
+"pass": "KVB tickets or the Deutschlandticket; check current fares.",
+"when": "May–September; carnival in February; December markets.",
+"tip": "Your Kölsch glass will keep being refilled until you put a beer mat on top.",
+"sources": [
+{
+"title": "Cologne Tourism (official guide)",
+"url": "https://www.cologne-tourism.com/"
+},
+{
+"title": "KVB",
+"url": "https://www.kvb.koeln/"
+},
+{
+"title": "Cologne Bonn Airport",
+"url": "https://www.cologne-bonn-airport.com/en/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "frankfurt",
+"intro": "‘Mainhattan’: a skyline of towers beside a rebuilt old town, cider taverns and museums.",
+"areas": [
+[
+"Altstadt & Römerberg",
+"Rebuilt old town."
+],
+[
+"Sachsenhausen",
+"Apple-wine taverns."
+],
+[
+"Museumsufer",
+"Museums along the river."
+]
+],
+"sights": [
+[
+"Römerberg",
+"Old town square."
+],
+[
+"Main Tower",
+"Skyline viewing platform."
+],
+[
+"Städel Museum",
+"Major art collection from the Middle Ages to today."
+],
+[
+"Palmengarten",
+"Botanical garden."
+]
+],
+"eat": [
+[
+"Apfelwein",
+"Cider in Sachsenhausen taverns."
+],
+[
+"Grüne Soße",
+"Green herb sauce."
+],
+[
+"Kleinmarkthalle",
+"Market hall with local food stalls."
+]
+],
+"night": [
+[
+"Sachsenhausen",
+"Taverns and bars."
+],
+[
+"Bahnhofsviertel",
+"Bars and clubs near the main station."
+],
+[
+"Alte Oper",
+"Concert hall in a restored opera house."
+]
+],
+"arrive": "Frankfurt Airport has S-Bahn and long-distance train stations. Hauptbahnhof is the city hub.",
+"around": "U-Bahn, S-Bahn, trams and buses.",
+"pass": "RMV tickets or the Deutschlandticket; check current fares.",
+"when": "May–September; December markets.",
+"tip": "Trade fairs fill hotels; check the fair calendar before booking.",
+"sources": [
+{
+"title": "Frankfurt Tourism (official guide)",
+"url": "https://www.frankfurt-tourismus.de/en"
+},
+{
+"title": "RMV",
+"url": "https://www.rmv.de/c/en/"
+},
+{
+"title": "Frankfurt Airport",
+"url": "https://www.frankfurt-airport.com/en.html"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "rotterdam",
+"intro": "The Netherlands’ architecture city: bold buildings, a giant port and a cool food scene.",
+"areas": [
+[
+"Centrum",
+"Markthal and Cube Houses."
+],
+[
+"Kop van Zuid",
+"Erasmus Bridge and riverside towers."
+],
+[
+"Witte de Withstraat",
+"Bars and galleries."
+]
+],
+"sights": [
+[
+"Markthal",
+"Food hall with a painted arch."
+],
+[
+"Cube Houses",
+"Tilted cube-shaped homes by Piet Blom."
+],
+[
+"Erasmus Bridge",
+"The ‘Swan’ bridge."
+],
+[
+"Depot Boijmans Van Beuningen",
+"Public art depot."
+]
+],
+"eat": [
+[
+"Markthal",
+"Food stalls under a giant painted arch."
+],
+[
+"Fenix Food Factory",
+"Food hall in Katendrecht."
+],
+[
+"Kibbeling",
+"Battered fish pieces, a Dutch street snack."
+]
+],
+"night": [
+[
+"Witte de Withstraat",
+"Bars, galleries and restaurants."
+],
+[
+"Katendrecht",
+"Former harbour district with restaurants."
+],
+[
+"Club scene",
+"Techno and house."
+]
+],
+"arrive": "Rotterdam The Hague Airport is small; Schiphol is 25–30 minutes by train. Rotterdam Centraal has fast trains.",
+"around": "Metro, trams, buses and water taxis.",
+"pass": "RET day tickets or OVpay; check current fares.",
+"when": "May–September.",
+"tip": "Take a water taxi across the Maas.",
+"sources": [
+{
+"title": "Rotterdam Tourism (official guide)",
+"url": "https://www.rotterdam.info/en"
+},
+{
+"title": "RET",
+"url": "https://www.ret.nl/en/"
+},
+{
+"title": "Markthal",
+"url": "https://markthal.nl/en/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "utrecht",
+"intro": "A canal city with sunken wharves, a medieval cathedral tower and a young student vibe.",
+"areas": [
+[
+"Binnenstad",
+"Canals and the Dom Tower."
+],
+[
+"Oudegracht wharves",
+"Cafés at water level."
+],
+[
+"Museumkwartier",
+"Museum district with the Centraal Museum."
+]
+],
+"sights": [
+[
+"Dom Tower",
+"Tallest church tower in the Netherlands."
+],
+[
+"Oudegracht",
+"Canal with wharf cellars."
+],
+[
+"Rietveld Schröder House",
+"De Stijl icon and World Heritage site."
+],
+[
+"Miffy Museum",
+"Dick Bruna’s rabbit."
+]
+],
+"eat": [
+[
+"Wharf cafés",
+"Terraces by the canal."
+],
+[
+"Dutch pancakes",
+"Sweet and savoury pannenkoeken."
+],
+[
+"Saturday market",
+"Large market on Vredenburg."
+]
+],
+"night": [
+[
+"TivoliVredenburg",
+"Large multi-hall concert venue."
+],
+[
+"Student bars",
+"Around the Neude."
+],
+[
+"Canal terraces",
+"Summer evenings."
+]
+],
+"arrive": "Schiphol Airport is about 30 minutes by train. Utrecht Centraal is the Netherlands’ biggest rail hub.",
+"around": "Walk or cycle; buses and trams.",
+"pass": "OVpay contactless or day tickets; check current fares.",
+"when": "April–September.",
+"tip": "Book the Dom Tower climb in advance.",
+"sources": [
+{
+"title": "Discover Utrecht (official guide)",
+"url": "https://www.discover-utrecht.com/"
+},
+{
+"title": "Dom Tower",
+"url": "https://www.domtoren.nl/en"
+},
+{
+"title": "NS (Dutch Railways)",
+"url": "https://www.ns.nl/en"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "brussels",
+"intro": "Europe’s capital: the Grand-Place, art nouveau, comics and great beer and chocolate.",
+"areas": [
+[
+"Grand-Place & Centre",
+"Guild houses and the Manneken Pis."
+],
+[
+"Sablon",
+"Antiques and chocolatiers."
+],
+[
+"Saint-Gilles & Ixelles",
+"Art nouveau and bars."
+]
+],
+"sights": [
+[
+"Grand-Place",
+"World Heritage square."
+],
+[
+"Atomium",
+"1958 Expo landmark."
+],
+[
+"Magritte Museum",
+"Surrealist art by René Magritte."
+],
+[
+"Comic strip walls",
+"Murals across the city."
+]
+],
+"eat": [
+[
+"Moules-frites",
+"Mussels and fries."
+],
+[
+"Belgian waffles",
+"Light Brussels waffles and dense Liège waffles."
+],
+[
+"Chocolate",
+"Sablon chocolatiers."
+]
+],
+"night": [
+[
+"Beer bars",
+"Hundreds of Belgian beers."
+],
+[
+"Saint-Géry",
+"Bars around the old market hall."
+],
+[
+"Ancienne Belgique",
+"Legendary concert venue."
+]
+],
+"arrive": "Brussels Airport is linked by train (about 20 minutes). Brussels-Midi has Eurostar and high-speed trains.",
+"around": "Metro, trams and buses.",
+"pass": "STIB tickets, day passes or contactless; check current fares.",
+"when": "April–June and September; December markets.",
+"tip": "Look for the Flower Carpet in mid-August of even years.",
+"sources": [
+{
+"title": "visit.brussels (official guide)",
+"url": "https://www.visit.brussels/en"
+},
+{
+"title": "STIB",
+"url": "https://www.stib-mivb.be/"
+},
+{
+"title": "Brussels Airport",
+"url": "https://www.brusselsairport.be/en"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "antwerp",
+"intro": "Belgium’s fashion and diamond city, with Rubens, a grand station and a lively port.",
+"areas": [
+[
+"Old Town",
+"Grote Markt and the cathedral."
+],
+[
+"Zuid",
+"Museums and bars."
+],
+[
+"Eilandje",
+"Docks and the MAS."
+]
+],
+"sights": [
+[
+"Cathedral of Our Lady",
+"Rubens masterpieces."
+],
+[
+"Antwerpen-Centraal",
+"Grand railway station."
+],
+[
+"Rubens House",
+"The painter’s home (check renovation status)."
+],
+[
+"MAS",
+"Museum with a free rooftop."
+]
+],
+"eat": [
+[
+"Antwerpse handjes",
+"Hand-shaped biscuits."
+],
+[
+"De Koninck",
+"Antwerp’s own beer, served in a ‘bolleke’ glass."
+],
+[
+"Fries",
+"With mayonnaise."
+]
+],
+"night": [
+[
+"Zuid",
+"Bars and restaurants around the museums."
+],
+[
+"Eilandje",
+"Waterside bars in the old docks."
+],
+[
+"Clubs",
+"A big club scene, especially at weekends."
+]
+],
+"arrive": "Brussels Airport is about 35 minutes by train. Antwerpen-Centraal has trains to Brussels and Amsterdam.",
+"around": "Trams, premetro and buses.",
+"pass": "De Lijn tickets; check current options.",
+"when": "April–September.",
+"tip": "Climb to the MAS rooftop for free city views.",
+"sources": [
+{
+"title": "Visit Antwerpen (official guide)",
+"url": "https://www.visitantwerpen.be/en"
+},
+{
+"title": "MAS",
+"url": "https://mas.be/en"
+},
+{
+"title": "De Lijn",
+"url": "https://www.delijn.be/en/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "bruges",
+"intro": "A fairy-tale medieval town of canals, belfries and chocolate shops.",
+"areas": [
+[
+"Markt & Burg",
+"The two main squares, with the Belfry and town hall."
+],
+[
+"Canals",
+"Boat trips and canal-side walks."
+],
+[
+"Begijnhof",
+"Peaceful beguinage."
+]
+],
+"sights": [
+[
+"Belfry of Bruges",
+"Climb 366 steps."
+],
+[
+"Canal boat trip",
+"See the town from the water."
+],
+[
+"Basilica of the Holy Blood",
+"Medieval chapel."
+],
+[
+"Groeninge Museum",
+"Flemish Primitives."
+]
+],
+"eat": [
+[
+"Chocolate shops",
+"Artisan chocolatiers across the town."
+],
+[
+"Belgian beer",
+"De Halve Maan brewery."
+],
+[
+"Fries",
+"Frites from stands on the Markt."
+]
+],
+"night": [
+[
+"Beer cafés",
+"Historic bars with long Belgian beer lists."
+],
+[
+"Concertgebouw",
+"Modern concert hall."
+],
+[
+"Canal walks",
+"Lit up at night."
+]
+],
+"arrive": "Brussels Airport is about 90 minutes by train; Bruges station is a short walk from the centre.",
+"around": "Walk or cycle.",
+"pass": "De Lijn buses; check current options.",
+"when": "April–June and September–October; December markets.",
+"tip": "Stay overnight; the town empties after day-trippers leave.",
+"sources": [
+{
+"title": "Visit Bruges (official guide)",
+"url": "https://www.visitbruges.be/en"
+},
+{
+"title": "Musea Brugge",
+"url": "https://www.museabrugge.be/en"
+},
+{
+"title": "SNCB (Belgian Railways)",
+"url": "https://www.belgiantrain.be/en"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "ghent",
+"intro": "A medieval city with a student buzz: canals, a castle and the Ghent Altarpiece.",
+"areas": [
+[
+"Graslei & Korenlei",
+"Medieval waterfront."
+],
+[
+"Patershol",
+"Medieval quarter of restaurants."
+],
+[
+"Vrijdagmarkt",
+"Square with bars."
+]
+],
+"sights": [
+[
+"Ghent Altarpiece",
+"In St Bavo’s Cathedral."
+],
+[
+"Gravensteen",
+"Medieval castle."
+],
+[
+"Belfry",
+"World Heritage belfry."
+],
+[
+"Graffiti Street",
+"Street art in Werregarenstraatje."
+]
+],
+"eat": [
+[
+"Waterzooi",
+"Creamy chicken or fish stew."
+],
+[
+"Cuberdons",
+"Cone-shaped sweets."
+],
+[
+"Vegetarian food",
+"Ghent is famously veggie-friendly."
+]
+],
+"night": [
+[
+"Overpoort",
+"Student bar street."
+],
+[
+"Ghent Festivities",
+"Ten-day July festival."
+],
+[
+"Canal bars",
+"Graslei terraces."
+]
+],
+"arrive": "Brussels Airport is about an hour by train. Gent-Sint-Pieters station links to Brussels and Bruges.",
+"around": "Trams and buses; walking and cycling.",
+"pass": "De Lijn tickets; check current options.",
+"when": "April–September; July for the Ghent Festivities.",
+"tip": "Book Ghent Altarpiece tickets online.",
+"sources": [
+{
+"title": "Visit Gent (official guide)",
+"url": "https://visit.gent.be/en"
+},
+{
+"title": "St Bavo’s Cathedral",
+"url": "https://www.sintbaafskathedraal.be/en/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "salzburg",
+"intro": "Mozart’s birthplace, with a baroque old town, a hilltop fortress and The Sound of Music.",
+"areas": [
+[
+"Altstadt",
+"World Heritage old town."
+],
+[
+"Neustadt",
+"Mirabell Gardens."
+],
+[
+"Festungsberg",
+"The fortress hill."
+]
+],
+"sights": [
+[
+"Hohensalzburg Fortress",
+"Funicular to a medieval fortress."
+],
+[
+"Mozart’s Birthplace",
+"Museum on Getreidegasse."
+],
+[
+"Mirabell Gardens",
+"Gardens from The Sound of Music."
+],
+[
+"Hellbrunn Palace",
+"Trick fountains."
+]
+],
+"eat": [
+[
+"Salzburger Nockerl",
+"Soufflé dessert."
+],
+[
+"Mozartkugel",
+"Chocolate sweets."
+],
+[
+"Augustiner Bräu",
+"Monastery beer hall."
+]
+],
+"night": [
+[
+"Classical concerts",
+"Including the Salzburg Festival."
+],
+[
+"Beer halls",
+"Augustiner Bräu."
+],
+[
+"Rudolfskai",
+"Bars along the river."
+]
+],
+"arrive": "Salzburg Airport is linked by bus. Salzburg Hbf has trains to Vienna and Munich.",
+"around": "Walk; trolleybuses for longer trips.",
+"pass": "Salzburg Card covers transport and attractions; check current options.",
+"when": "May–September; July–August for the Festival; Advent markets.",
+"tip": "Book Festival tickets far ahead.",
+"sources": [
+{
+"title": "Salzburg Tourism (official guide)",
+"url": "https://www.salzburg.info/en"
+},
+{
+"title": "Salzburg Festival",
+"url": "https://www.salzburgerfestspiele.at/en"
+},
+{
+"title": "Salzburg Airport",
+"url": "https://www.salzburg-airport.com/en/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "zurich",
+"intro": "Switzerland’s largest city: a lake, an old town, art and Alpine views.",
+"areas": [
+[
+"Altstadt",
+"Medieval lanes on both banks."
+],
+[
+"Zurich West",
+"Former industrial district with bars."
+],
+[
+"Lakeside",
+"Promenades and bathing spots."
+]
+],
+"sights": [
+[
+"Lake Zurich",
+"Boat trips and swimming."
+],
+[
+"Kunsthaus",
+"Switzerland’s largest art museum."
+],
+[
+"Uetliberg",
+"Viewpoint by train."
+],
+[
+"Grossmünster",
+"Romanesque church."
+]
+],
+"eat": [
+[
+"Zürcher Geschnetzeltes",
+"Veal in cream sauce."
+],
+[
+"Fondue",
+"Melted cheese, especially in winter."
+],
+[
+"Chocolate",
+"Swiss chocolatiers."
+]
+],
+"night": [
+[
+"Zurich West",
+"Clubs and bars in former factories."
+],
+[
+"Langstrasse",
+"Zurich’s busiest nightlife street."
+],
+[
+"Badis",
+"Lake bars in summer."
+]
+],
+"arrive": "Zurich Airport has trains to the main station (about 10–15 minutes).",
+"around": "Trams, buses, trains and boats.",
+"pass": "ZVV day tickets or the Zürich Card; check current fares.",
+"when": "June–September; December markets.",
+"tip": "Swim in the river at a badi in summer.",
+"sources": [
+{
+"title": "Zürich Tourism (official guide)",
+"url": "https://www.zuerich.com/en"
+},
+{
+"title": "ZVV",
+"url": "https://www.zvv.ch/zvv/en/home.html"
+},
+{
+"title": "Zurich Airport",
+"url": "https://www.flughafen-zuerich.ch/en/passengers"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "geneva",
+"intro": "A lakeside city of diplomacy, watchmaking and Alpine views.",
+"areas": [
+[
+"Old Town",
+"Cathedral and squares."
+],
+[
+"Pâquis",
+"Lakeside and international food."
+],
+[
+"Carouge",
+"Italianate village."
+]
+],
+"sights": [
+[
+"Jet d’Eau",
+"The famous lake fountain."
+],
+[
+"Palais des Nations",
+"UN European headquarters (tours)."
+],
+[
+"CERN",
+"Science Gateway visitor centre."
+],
+[
+"St Pierre Cathedral",
+"Climb the towers for lake views."
+]
+],
+"eat": [
+[
+"Fondue",
+"Melted cheese, a Swiss classic."
+],
+[
+"Perch fillets",
+"Lake fish, often with fries."
+],
+[
+"Chocolate",
+"Swiss chocolatiers."
+]
+],
+"night": [
+[
+"Pâquis",
+"Bars and international restaurants."
+],
+[
+"Carouge",
+"Bars and cafés in an Italianate village."
+],
+[
+"Bains des Pâquis",
+"Lake bathing and fondue in winter."
+]
+],
+"arrive": "Geneva Airport has trains to Cornavin (about 7 minutes). Hotels give guests a free transport card.",
+"around": "Trams, buses and lake shuttles.",
+"pass": "Geneva Transport Card from your hotel; check current conditions.",
+"when": "June–September; December markets.",
+"tip": "Ask your hotel for the free Geneva Transport Card.",
+"sources": [
+{
+"title": "Geneva Tourism (official guide)",
+"url": "https://www.geneve.com/en"
+},
+{
+"title": "CERN Science Gateway",
+"url": "https://visit.cern/"
+},
+{
+"title": "Geneva Airport",
+"url": "https://www.gva.ch/en"
+}
+],
+"checked": "2026-11-24"
+}
+]

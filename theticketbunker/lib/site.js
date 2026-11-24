@@ -5,3 +5,4 @@ export {tripOptions, withClickRef} from '../../ticketbunker-site/trip-partners.j
 export {CITY_PAGES, cityBySlug} from '../../ticketbunker-site/city-places.js';
 export {CITY_COORDS, nearestCities, distanceKm} from '../../ticketbunker-site/city-coords.js';
 export {gygPlace, GYG_PLACES} from '../../ticketbunker-site/gyg-box.js';
+export {MODES, LIVE, TFL_ATTRIBUTION, TFL_LINES, hasLive, tflNearby, tflArrivals, tflStatus, tflJourney, taxiLinks, plannerLinks, tripLinks, minsText, distanceText} from '../../ticketbunker-site/get-around.js';

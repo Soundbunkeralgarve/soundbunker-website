@@ -1,0 +1,1986 @@
+[
+{
+"slug": "algarve",
+"intro": "Portugal’s sunny south coast: golden cliffs and sea caves, fishing towns, golf and lively summer nights.",
+"areas": [
+[
+"Lagos & the west",
+"Ponta da Piedade cliffs, beaches and a historic old town."
+],
+[
+"Albufeira & central coast",
+"Busy resort nightlife, Benagil caves and family beaches."
+],
+[
+"Faro & the east",
+"The regional capital, Ria Formosa lagoon and Tavira."
+],
+[
+"Golden Triangle",
+"Vilamoura, Quinta do Lago and Vale do Lobo for golf and marinas."
+]
+],
+"sights": [
+[
+"Benagil Cave",
+"Famous sea cave, seen by boat or kayak tour (landing on the beach is restricted)."
+],
+[
+"Ponta da Piedade",
+"Rock arches and grottoes near Lagos."
+],
+[
+"Ria Formosa",
+"Protected lagoon with boat trips to barrier islands."
+],
+[
+"Sagres & Cabo de São Vicente",
+"Europe’s south-western tip and its fortress."
+],
+[
+"Silves",
+"Historic town with a red sandstone castle."
+]
+],
+"eat": [
+[
+"Cataplana",
+"Seafood stew cooked in a copper pan."
+],
+[
+"Grilled sardines",
+"Summer favourite, especially in Portimão."
+],
+[
+"Faro & Olhão markets",
+"Fish and produce markets."
+],
+[
+"Medronho",
+"Local fruit brandy from the hills."
+]
+],
+"night": [
+[
+"Albufeira’s ‘Strip’",
+"Avenida Sá Carneiro bars and clubs, busiest in summer."
+],
+[
+"Lagos old town",
+"Bars and live music."
+],
+[
+"Vilamoura marina",
+"Beach clubs and late bars."
+]
+],
+"arrive": "Faro Airport serves the whole region; buses and taxis link it to the resorts. Trains run along the coast from Lagos to Vila Real de Santo António, with connections to Lisbon.",
+"around": "Regional trains and Vamus buses connect the towns; a hire car is easiest for beaches and villages.",
+"pass": "Vamus Algarve and regional rail tickets are bought per journey; check current passes.",
+"when": "May–June and September–October for warm seas and fewer crowds; July–August is peak season.",
+"tip": "Book cave boat trips early in the day when the sea is usually calmer.",
+"sources": [
+{
+"title": "Visit Algarve (official tourism board)",
+"url": "https://www.visitalgarve.pt/"
+},
+{
+"title": "Faro Airport (ANA)",
+"url": "https://www.aeroportofaro.pt/"
+},
+{
+"title": "Visit Portugal",
+"url": "https://www.visitportugal.com/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "lisbon",
+"intro": "Portugal’s sunlit capital of seven hills, vintage trams, fado and miradouros above the Tagus.",
+"areas": [
+[
+"Baixa & Chiado",
+"Grand squares, cafés and shopping."
+],
+[
+"Alfama",
+"Lisbon’s oldest quarter, with fado houses and the castle."
+],
+[
+"Bairro Alto & Príncipe Real",
+"Bars, viewpoints and design shops."
+],
+[
+"Belém",
+"Monuments, museums and the famous custard tarts."
+]
+],
+"sights": [
+[
+"Castelo de São Jorge",
+"Hilltop castle with city views."
+],
+[
+"Jerónimos Monastery & Belém Tower",
+"World Heritage Manueline monuments."
+],
+[
+"Tram 28",
+"Vintage tram through historic neighbourhoods."
+],
+[
+"MAAT & LX Factory",
+"Art, design and a creative quarter by the river."
+],
+[
+"Sintra",
+"Fairy-tale palaces about 40 minutes by train."
+]
+],
+"eat": [
+[
+"Pastéis de nata",
+"Custard tarts, famously in Belém."
+],
+[
+"Time Out Market",
+"Food hall in Mercado da Ribeira."
+],
+[
+"Bacalhau & grilled fish",
+"Portuguese classics."
+],
+[
+"Ginjinha",
+"Cherry liqueur served in small shots."
+]
+],
+"night": [
+[
+"Bairro Alto",
+"Street-drinking bar district."
+],
+[
+"Fado in Alfama",
+"Traditional music in small restaurants."
+],
+[
+"Cais do Sodré",
+"Pink Street bars and clubs."
+]
+],
+"arrive": "Lisbon Airport (Humberto Delgado) is linked by Metro (red line) and taxis. Santa Apolónia and Oriente stations have trains to Porto and the Algarve.",
+"around": "Metro, trams, buses, funiculars and ferries; hills make walking tough, so use trams and lifts.",
+"pass": "Navegante card with zapping credit or a 24-hour ticket; the Lisboa Card adds museum entries.",
+"when": "March–June and September–October; June brings the Santo António festivals.",
+"tip": "Tram 28 gets crowded and is a pickpocket hotspot; ride early or walk the route.",
+"sources": [
+{
+"title": "Visit Lisboa (official guide)",
+"url": "https://www.visitlisboa.com/"
+},
+{
+"title": "Carris (trams and buses)",
+"url": "https://www.carris.pt/"
+},
+{
+"title": "Lisbon Airport (ANA)",
+"url": "https://www.aeroportolisboa.pt/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "porto",
+"intro": "Porto tumbles down to the Douro in a cascade of tiled houses, port lodges and bridges.",
+"areas": [
+[
+"Ribeira",
+"Riverside World Heritage quarter."
+],
+[
+"Baixa",
+"Avenida dos Aliados, São Bento station and Rua de Santa Catarina."
+],
+[
+"Vila Nova de Gaia",
+"Port wine cellars across the river."
+],
+[
+"Foz do Douro",
+"Seafront promenade where the river meets the Atlantic."
+]
+],
+"sights": [
+[
+"Dom Luís I Bridge",
+"Iconic double-deck bridge with views."
+],
+[
+"São Bento Station",
+"Hall lined with azulejo tile panels."
+],
+[
+"Livraria Lello",
+"Ornate bookshop (ticketed entry)."
+],
+[
+"Port wine cellars",
+"Tours and tastings in Gaia."
+],
+[
+"Douro Valley",
+"Vineyard day trips by train, boat or car."
+]
+],
+"eat": [
+[
+"Francesinha",
+"Porto’s famous meat-and-cheese sandwich with sauce."
+],
+[
+"Mercado do Bolhão",
+"Restored traditional market."
+],
+[
+"Tripas à moda do Porto",
+"Tripe stew, a city signature."
+]
+],
+"night": [
+[
+"Galerias de Paris",
+"Street of bars in Baixa."
+],
+[
+"Ribeira",
+"Riverside bars at sunset."
+],
+[
+"Port tastings",
+"Cellars in Gaia."
+]
+],
+"arrive": "Porto Airport is on the Metro (purple line). Campanhã and São Bento stations have trains to Lisbon and the Douro.",
+"around": "Metro, buses, historic trams and the Guindais funicular.",
+"pass": "Andante card for Metro and buses; the Porto Card adds museum discounts.",
+"when": "April–June and September–October; São João festival on 23–24 June.",
+"tip": "Watch the sunset from the Jardim do Morro above the bridge.",
+"sources": [
+{
+"title": "Visit Porto (official guide)",
+"url": "https://visitporto.travel/"
+},
+{
+"title": "Metro do Porto",
+"url": "https://www.metrodoporto.pt/"
+},
+{
+"title": "Porto Airport (ANA)",
+"url": "https://www.aeroportoporto.pt/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "madeira",
+"intro": "A subtropical Atlantic island of levada walks, cliffs, flowers and Funchal’s lively harbour.",
+"areas": [
+[
+"Funchal",
+"Capital with the old town, markets and gardens."
+],
+[
+"Monte",
+"Hilltop gardens and the toboggan ride down."
+],
+[
+"North & west coast",
+"Porto Moniz pools and dramatic cliffs."
+]
+],
+"sights": [
+[
+"Levada walks",
+"Hikes along historic irrigation channels."
+],
+[
+"Pico do Arieiro",
+"High peak with sunrise views."
+],
+[
+"Monte Palace Tropical Garden",
+"Gardens reached by cable car."
+],
+[
+"Porto Moniz",
+"Natural volcanic rock pools."
+],
+[
+"Cabo Girão",
+"Skywalk over one of Europe’s highest sea cliffs."
+]
+],
+"eat": [
+[
+"Espetada",
+"Beef skewers on bay-leaf sticks."
+],
+[
+"Mercado dos Lavradores",
+"Funchal’s colourful market."
+],
+[
+"Black scabbardfish",
+"Often served with banana."
+],
+[
+"Poncha & Madeira wine",
+"Honey and lemon cane-spirit poncha, or fortified wine."
+]
+],
+"night": [
+[
+"Funchal old town",
+"Bars along Rua de Santa Maria."
+],
+[
+"Madeira wine lodges",
+"Tastings in Funchal."
+],
+[
+"New Year fireworks",
+"One of the world’s biggest displays."
+]
+],
+"arrive": "Madeira Airport (Cristiano Ronaldo) is linked to Funchal by Aerobus and taxi.",
+"around": "Buses link towns; a hire car or tour helps for walks. Roads are steep and winding.",
+"pass": "Buy bus tickets per journey or a multi-trip card; check current options.",
+"when": "Year-round mild climate; spring for flowers; New Year for fireworks.",
+"tip": "Check official trail status before levada walks, as some close after bad weather.",
+"sources": [
+{
+"title": "Visit Madeira (official guide)",
+"url": "https://www.visitmadeira.com/"
+},
+{
+"title": "Madeira Airport (ANA)",
+"url": "https://www.aeroportomadeira.pt/"
+},
+{
+"title": "Monte Palace Madeira",
+"url": "https://www.montepalacemadeira.com/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "albufeira",
+"intro": "The Algarve’s liveliest resort: cliff-backed beaches, a whitewashed old town and a famous nightlife strip.",
+"areas": [
+[
+"Old Town",
+"Whitewashed streets above Praia dos Pescadores."
+],
+[
+"The Strip (Areias de São João)",
+"Bars, clubs and restaurants."
+],
+[
+"Marina",
+"Colourful marina with boat trips."
+]
+],
+"sights": [
+[
+"Praia da Falésia",
+"Long beach beneath red cliffs."
+],
+[
+"Benagil Cave",
+"Boat trips leave from nearby beaches."
+],
+[
+"Albufeira Marina",
+"Dolphin and cave boat tours."
+],
+[
+"Zoomarine",
+"Marine park in nearby Guia."
+]
+],
+"eat": [
+[
+"Piri-piri chicken",
+"Guia is known for its chicken."
+],
+[
+"Cataplana",
+"Seafood stew cooked in a copper pan."
+],
+[
+"Fresh fish",
+"Grilled at the old-town restaurants."
+]
+],
+"night": [
+[
+"The Strip",
+"The Algarve’s busiest nightlife."
+],
+[
+"Old Town bars",
+"Squares packed in summer."
+],
+[
+"Beach clubs",
+"Daytime parties in season."
+]
+],
+"arrive": "Faro Airport is about 35–40 minutes by road. Albufeira-Ferreiras station is a few kilometres inland.",
+"around": "Local buses and taxis; the old town is walkable but hilly.",
+"pass": "Buy local bus tickets per journey; check current options.",
+"when": "May–October; July–August is busiest.",
+"tip": "Take the escalator down from the clifftop to Praia dos Pescadores.",
+"sources": [
+{
+"title": "Visit Algarve: Albufeira",
+"url": "https://www.visitalgarve.pt/"
+},
+{
+"title": "Faro Airport (ANA)",
+"url": "https://www.aeroportofaro.pt/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "coimbra",
+"intro": "Portugal’s historic university city, with a World Heritage campus above the Mondego and fado sung by students.",
+"areas": [
+[
+"Alta",
+"Upper town with the University."
+],
+[
+"Baixa",
+"Lower town with shopping streets and cafés."
+],
+[
+"Santa Clara",
+"Across the river, with the old convent."
+]
+],
+"sights": [
+[
+"University of Coimbra",
+"World Heritage site with the Joanina Library."
+],
+[
+"Sé Velha",
+"Romanesque old cathedral."
+],
+[
+"Portugal dos Pequenitos",
+"Miniature park of Portuguese buildings."
+],
+[
+"Santa Clara-a-Velha Monastery",
+"Gothic monastery ruins."
+]
+],
+"eat": [
+[
+"Leitão",
+"Suckling pig from nearby Bairrada."
+],
+[
+"Pastéis de Tentúgal",
+"Flaky pastries from the region."
+],
+[
+"Chanfana",
+"Goat stewed in red wine."
+]
+],
+"night": [
+[
+"Coimbra fado",
+"Sung by men in student capes."
+],
+[
+"Praça da República",
+"Student bars and cafés."
+],
+[
+"Queima das Fitas",
+"Student festival in May."
+]
+],
+"arrive": "Coimbra-B station has trains to Lisbon and Porto. Porto and Lisbon airports are about 1–2 hours away.",
+"around": "Walk (steep); SMTUC buses.",
+"pass": "SMTUC tickets per journey; check current options.",
+"when": "Spring and autumn; May for student festivities.",
+"tip": "Book Joanina Library tickets for a timed slot.",
+"sources": [
+{
+"title": "Visit Centro de Portugal",
+"url": "https://www.centerofportugal.com/"
+},
+{
+"title": "University of Coimbra visits",
+"url": "https://visit.uc.pt/"
+},
+{
+"title": "Visit Portugal",
+"url": "https://www.visitportugal.com/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "braga",
+"intro": "Portugal’s religious capital, with baroque churches, the Bom Jesus staircase and a youthful buzz.",
+"areas": [
+[
+"Historic centre",
+"The cathedral and Avenida Central."
+],
+[
+"Bom Jesus do Monte",
+"World Heritage sanctuary above the city."
+],
+[
+"Praça da República",
+"Cafés and the arcades."
+]
+],
+"sights": [
+[
+"Bom Jesus do Monte",
+"Baroque staircase and sanctuary (funicular available)."
+],
+[
+"Braga Cathedral",
+"Portugal’s oldest cathedral."
+],
+[
+"Sameiro Sanctuary",
+"Hilltop sanctuary near Bom Jesus."
+],
+[
+"Guimarães",
+"Medieval birthplace of Portugal, close by."
+]
+],
+"eat": [
+[
+"Bacalhau à Braga",
+"Fried salt cod with onions."
+],
+[
+"Pudim abade de Priscos",
+"Rich local pudding."
+],
+[
+"Vinho verde",
+"The Minho region’s fresh wine."
+]
+],
+"night": [
+[
+"Historic centre bars",
+"Student-friendly nights."
+],
+[
+"Theatro Circo",
+"Grand theatre with concerts."
+],
+[
+"Holy Week",
+"Famous Easter processions."
+]
+],
+"arrive": "Porto Airport is about 45 minutes by road (airport buses run). Braga station has trains to Porto.",
+"around": "Walkable centre; TUB buses to Bom Jesus.",
+"pass": "TUB tickets per journey; check current options.",
+"when": "Spring to autumn; Holy Week and São João (June).",
+"tip": "Take the water-powered funicular up to Bom Jesus and walk down the stairs.",
+"sources": [
+{
+"title": "Visit Braga",
+"url": "https://www.visitbraga.travel/"
+},
+{
+"title": "Bom Jesus do Monte",
+"url": "https://bomjesus.pt/"
+},
+{
+"title": "Visit Porto and North",
+"url": "https://www.portoenorte.pt/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "barcelona",
+"intro": "Gaudí, beaches and late nights: Barcelona mixes Gothic lanes, modernista icons and a famous food scene.",
+"areas": [
+[
+"Gothic Quarter & El Born",
+"Medieval lanes, the cathedral and the Picasso Museum."
+],
+[
+"Eixample",
+"Gaudí’s Casa Batlló and La Pedrera on grid streets."
+],
+[
+"Gràcia",
+"Village-like squares and local bars."
+],
+[
+"Barceloneta",
+"Beach, seafood and the seafront promenade."
+]
+],
+"sights": [
+[
+"Sagrada Família",
+"Gaudí’s basilica (book timed tickets)."
+],
+[
+"Park Güell",
+"Mosaic park with city views (ticketed)."
+],
+[
+"Casa Batlló & La Pedrera",
+"Modernista houses on Passeig de Gràcia."
+],
+[
+"Montjuïc",
+"Gardens, museums and the castle."
+],
+[
+"Picasso Museum",
+"Early works in medieval palaces."
+]
+],
+"eat": [
+[
+"La Boqueria",
+"Famous market off La Rambla."
+],
+[
+"Tapas",
+"Bombas, patatas bravas and pan con tomate."
+],
+[
+"Paella & seafood",
+"By the beach at Barceloneta."
+],
+[
+"Vermut",
+"A weekend aperitif tradition."
+]
+],
+"night": [
+[
+"El Born & Gothic Quarter",
+"Cocktail bars in old streets."
+],
+[
+"Poblenou & Port Olímpic",
+"Clubs and beach bars."
+],
+[
+"Palau de la Música",
+"Concerts in a modernista hall."
+]
+],
+"arrive": "Barcelona-El Prat Airport is linked by Aerobús, train (R2 Nord) and Metro L9 Sud. Sants station has high-speed trains to Madrid and France.",
+"around": "Metro, buses and trams; the centre is walkable.",
+"pass": "T-casual (10 trips) or Hola Barcelona travel cards; check current zones and fares.",
+"when": "May–June and September–October; August is hot and busy.",
+"tip": "Keep valuables zipped away on La Rambla and the Metro.",
+"sources": [
+{
+"title": "Barcelona Turisme (official guide)",
+"url": "https://www.barcelonaturisme.com/"
+},
+{
+"title": "TMB: Metro and buses",
+"url": "https://www.tmb.cat/"
+},
+{
+"title": "Aena: Barcelona-El Prat Airport",
+"url": "https://www.aena.es/en/josep-tarradellas-barcelona-el-prat.html"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "madrid",
+"intro": "Spain’s energetic capital of grand boulevards, world-class art and dinners that start late and end later.",
+"areas": [
+[
+"Centro & Sol",
+"Puerta del Sol, Plaza Mayor and the Royal Palace."
+],
+[
+"Paseo del Arte",
+"Prado, Thyssen and Reina Sofía museums."
+],
+[
+"Malasaña & Chueca",
+"Bars, vintage shops and LGBTQ+ nightlife."
+],
+[
+"La Latina",
+"Tapas bars and the Sunday Rastro market."
+]
+],
+"sights": [
+[
+"Museo del Prado",
+"Velázquez, Goya and old masters."
+],
+[
+"Royal Palace",
+"One of Europe’s largest royal palaces."
+],
+[
+"Retiro Park",
+"Lake, rowing boats and the Crystal Palace."
+],
+[
+"Reina Sofía",
+"Picasso’s Guernica."
+],
+[
+"Santiago Bernabéu",
+"Tours of Real Madrid’s stadium."
+]
+],
+"eat": [
+[
+"Mercado de San Miguel",
+"Gourmet market near Plaza Mayor."
+],
+[
+"Bocadillo de calamares",
+"Squid sandwich, a Madrid classic."
+],
+[
+"Churros con chocolate",
+"Famously at San Ginés."
+],
+[
+"Cocido madrileño",
+"Hearty chickpea stew."
+]
+],
+"night": [
+[
+"Malasaña",
+"Bars and indie clubs."
+],
+[
+"Chueca",
+"LGBTQ+ heart of the city."
+],
+[
+"Flamenco",
+"Tablao shows across the centre."
+]
+],
+"arrive": "Madrid-Barajas Airport is linked by Metro (line 8), Cercanías trains and the Airport Express bus. Atocha and Chamartín have high-speed trains.",
+"around": "Metro is extensive and easy; buses and Cercanías trains too.",
+"pass": "Tourist Travel Pass (1–7 days) or a Multi card with 10-trip tickets; check current fares.",
+"when": "April–June and September–October; summer is very hot.",
+"tip": "Museums have free entry at set times; check each museum’s schedule.",
+"sources": [
+{
+"title": "esMADRID (official guide)",
+"url": "https://www.esmadrid.com/"
+},
+{
+"title": "Metro de Madrid",
+"url": "https://www.metromadrid.es/"
+},
+{
+"title": "Aena: Madrid-Barajas Airport",
+"url": "https://www.aena.es/en/adolfo-suarez-madrid-barajas.html"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "seville",
+"intro": "Andalusia’s passionate capital of flamenco, orange trees, a vast cathedral and Moorish palaces.",
+"areas": [
+[
+"Santa Cruz",
+"Old Jewish quarter of lanes near the cathedral."
+],
+[
+"Triana",
+"Across the river; ceramics, flamenco and tapas."
+],
+[
+"Alameda de Hércules",
+"Bars and a young crowd."
+]
+],
+"sights": [
+[
+"Real Alcázar",
+"Royal palace with Mudéjar halls and gardens."
+],
+[
+"Seville Cathedral & Giralda",
+"One of the world’s largest Gothic cathedrals."
+],
+[
+"Plaza de España",
+"Grand pavilion in María Luisa Park."
+],
+[
+"Metropol Parasol (Las Setas)",
+"Wooden canopy with a rooftop walkway."
+]
+],
+"eat": [
+[
+"Tapas",
+"Salmorejo, espinacas con garbanzos and fried fish."
+],
+[
+"Mercado de Triana",
+"Market by the river."
+],
+[
+"Jamón ibérico",
+"Andalusia’s prized ham."
+]
+],
+"night": [
+[
+"Flamenco",
+"Shows and peñas, especially in Triana."
+],
+[
+"Alameda de Hércules",
+"Bars late into the night."
+],
+[
+"Riverside terraces",
+"Summer evenings by the Guadalquivir."
+]
+],
+"arrive": "Seville Airport is linked by bus. Santa Justa station has high-speed trains to Madrid.",
+"around": "Walk; Metro, trams and buses for longer trips. Rent a bike on the cycle lanes.",
+"pass": "Tussam multi-trip card for buses; check current options.",
+"when": "March–May (Semana Santa and the April Fair) and October–November; summer is extremely hot.",
+"tip": "Book Alcázar tickets ahead; visit early in the morning.",
+"sources": [
+{
+"title": "Visita Sevilla (official guide)",
+"url": "https://visitasevilla.es/"
+},
+{
+"title": "Real Alcázar de Sevilla",
+"url": "https://www.alcazarsevilla.org/"
+},
+{
+"title": "Aena: Seville Airport",
+"url": "https://www.aena.es/en/sevilla.html"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "malaga",
+"intro": "Picasso’s birthplace, with a Moorish fortress, a buzzing old town and beaches minutes from the centre.",
+"areas": [
+[
+"Centro Histórico",
+"Calle Larios, the cathedral and Plaza de la Merced."
+],
+[
+"Soho",
+"Street art and galleries."
+],
+[
+"Malagueta & Pedregalejo",
+"City beaches and seafood."
+]
+],
+"sights": [
+[
+"Alcazaba",
+"Moorish fortress-palace above the port."
+],
+[
+"Picasso Museum",
+"Works by the city’s most famous son."
+],
+[
+"Gibralfaro Castle",
+"Hilltop views over the bay."
+],
+[
+"Muelle Uno & Centre Pompidou",
+"Port promenade and modern art."
+]
+],
+"eat": [
+[
+"Espetos de sardinas",
+"Sardines grilled on skewers on the beach."
+],
+[
+"Atarazanas Market",
+"Central market hall."
+],
+[
+"Sweet Málaga wine",
+"Local dessert wine."
+]
+],
+"night": [
+[
+"Old town bars",
+"Around Plaza de la Merced."
+],
+[
+"Beach chiringuitos",
+"Bars on Pedregalejo."
+],
+[
+"Teatro Cervantes",
+"Concerts and theatre."
+]
+],
+"arrive": "Málaga Airport is linked by Cercanías train (C1) and buses. María Zambrano station has high-speed trains to Madrid.",
+"around": "Walk; Metro and EMT buses cover the city; trains along the coast.",
+"pass": "EMT multi-trip cards; Cercanías tickets per journey.",
+"when": "April–June and September–November.",
+"tip": "Many museums offer free entry on Sunday afternoons; check each.",
+"sources": [
+{
+"title": "Visit Málaga (official guide)",
+"url": "https://visita.malaga.eu/"
+},
+{
+"title": "Aena: Málaga-Costa del Sol Airport",
+"url": "https://www.aena.es/en/malaga-costa-del-sol.html"
+},
+{
+"title": "Picasso Museum Málaga",
+"url": "https://www.museopicassomalaga.org/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "ibiza",
+"intro": "World-famous club island with a World Heritage old town, hidden coves and spectacular sunsets.",
+"areas": [
+[
+"Ibiza Town (Eivissa)",
+"Dalt Vila, the port and the marina."
+],
+[
+"Sant Antoni",
+"Sunset strip and bars."
+],
+[
+"Playa d’en Bossa",
+"Beach clubs and big venues."
+],
+[
+"North of the island",
+"Quiet coves and villages."
+]
+],
+"sights": [
+[
+"Dalt Vila",
+"Walled World Heritage old town."
+],
+[
+"Es Vedrà",
+"Dramatic islet viewed at sunset."
+],
+[
+"Hippy markets",
+"Las Dalias and Es Canar."
+],
+[
+"Formentera",
+"Day trips by ferry to its beaches."
+]
+],
+"eat": [
+[
+"Bullit de peix",
+"Fish stew with rice."
+],
+[
+"Flaó",
+"Mint-scented cheesecake."
+],
+[
+"Hierbas ibicencas",
+"Aniseed herbal liqueur."
+]
+],
+"night": [
+[
+"Superclubs",
+"Big-name clubs in Sant Antoni and Playa d’en Bossa."
+],
+[
+"Sunset strip",
+"Café del Mar area in Sant Antoni."
+],
+[
+"Boat parties",
+"Summer day parties at sea."
+]
+],
+"arrive": "Ibiza Airport is linked by bus and taxi. Ferries sail to Formentera, Denia, Valencia, Barcelona and Palma.",
+"around": "Buses connect towns; a hire car or scooter helps for coves. Taxis can be scarce in peak summer.",
+"pass": "Buy bus tickets on board or by app; check current options.",
+"when": "Late May–early October for clubs; spring and autumn for quieter days.",
+"tip": "Book club tickets online, and plan taxis or night buses home in advance.",
+"sources": [
+{
+"title": "Ibiza Travel (official guide)",
+"url": "https://ibiza.travel/en/"
+},
+{
+"title": "Aena: Ibiza Airport",
+"url": "https://www.aena.es/en/ibiza.html"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "tenerife",
+"intro": "The largest Canary Island: Spain’s highest peak, year-round sunshine, whale watching and lively resorts.",
+"areas": [
+[
+"Costa Adeje & Los Cristianos",
+"Southern resorts and beaches."
+],
+[
+"Puerto de la Cruz",
+"Northern town with gardens and pools."
+],
+[
+"Santa Cruz & La Laguna",
+"Capital and World Heritage old town."
+]
+],
+"sights": [
+[
+"Teide National Park",
+"Spain’s highest peak; cable car and trails."
+],
+[
+"Whale and dolphin watching",
+"Boat trips from the south-west coast."
+],
+[
+"Masca",
+"Village in a dramatic ravine."
+],
+[
+"Siam Park & Loro Parque",
+"Water park and wildlife park."
+]
+],
+"eat": [
+[
+"Papas arrugadas con mojo",
+"Wrinkled potatoes with sauce."
+],
+[
+"Guachinches",
+"Rustic family eateries in the north."
+],
+[
+"Fresh fish",
+"In coastal villages."
+]
+],
+"night": [
+[
+"Veronicas & Las Américas",
+"Bars and clubs in the south."
+],
+[
+"Santa Cruz Carnival",
+"One of the world’s biggest (February)."
+],
+[
+"Beach bars",
+"Bars along the Costa Adeje beaches."
+]
+],
+"arrive": "Tenerife South Airport serves the resorts; Tenerife North serves Santa Cruz and La Laguna. Buses and taxis link both.",
+"around": "TITSA buses cover the island; a tram runs in Santa Cruz–La Laguna. A hire car helps for Teide.",
+"pass": "Ten+ travel cards on TITSA buses; check current fares.",
+"when": "Year-round; winter is warm and popular.",
+"tip": "Book Teide cable car and summit permits in advance.",
+"sources": [
+{
+"title": "Webtenerife (official guide)",
+"url": "https://www.webtenerife.co.uk/"
+},
+{
+"title": "TITSA buses",
+"url": "https://titsa.com/"
+},
+{
+"title": "Aena: Tenerife South Airport",
+"url": "https://www.aena.es/en/tenerife-sur.html"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "mallorca",
+"intro": "The largest Balearic island: Palma’s Gothic cathedral, mountain villages and turquoise coves.",
+"areas": [
+[
+"Palma",
+"Cathedral, old town and the seafront."
+],
+[
+"Serra de Tramuntana",
+"World Heritage mountains with Sóller and Deià."
+],
+[
+"East coast",
+"Coves and the Caves of Drach."
+],
+[
+"Magaluf & Playa de Palma",
+"Busy resorts with nightlife."
+]
+],
+"sights": [
+[
+"La Seu (Palma Cathedral)",
+"Gothic cathedral by the sea."
+],
+[
+"Sóller train",
+"Vintage railway through the mountains."
+],
+[
+"Caves of Drach",
+"Caves with an underground lake."
+],
+[
+"Cap de Formentor",
+"Dramatic northern peninsula."
+]
+],
+"eat": [
+[
+"Ensaïmada",
+"Spiral pastry dusted with sugar."
+],
+[
+"Sobrassada",
+"Paprika sausage."
+],
+[
+"Mercat de l’Olivar",
+"Palma’s main market."
+]
+],
+"night": [
+[
+"Palma old town",
+"Bars in La Lonja."
+],
+[
+"Magaluf",
+"Clubs and party bars."
+],
+[
+"Beach clubs",
+"Along the bay of Palma."
+]
+],
+"arrive": "Palma de Mallorca Airport is linked by bus to Palma. Ferries sail to Barcelona, Valencia and the other islands.",
+"around": "TIB buses island-wide; EMT buses in Palma. A hire car helps for the mountains.",
+"pass": "Intercard and TIB tickets; check current options.",
+"when": "May–June and September–October.",
+"tip": "Drive the Formentor road early; access is restricted at peak times.",
+"sources": [
+{
+"title": "Mallorca (official guide)",
+"url": "https://www.infomallorca.net/"
+},
+{
+"title": "Aena: Palma de Mallorca Airport",
+"url": "https://www.aena.es/en/palma-de-mallorca.html"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "valencia",
+"intro": "The home of paella, with futuristic architecture, a riverbed park and city beaches.",
+"areas": [
+[
+"Ciutat Vella",
+"Old town with the cathedral and Central Market."
+],
+[
+"Ruzafa",
+"Bars, cafés and restaurants."
+],
+[
+"El Cabanyal & the beach",
+"Seafront and seafood."
+]
+],
+"sights": [
+[
+"City of Arts and Sciences",
+"Futuristic complex with the Oceanogràfic."
+],
+[
+"Turia Gardens",
+"Park in the old riverbed."
+],
+[
+"Mercado Central",
+"Art Nouveau market hall."
+],
+[
+"La Lonja de la Seda",
+"Gothic silk exchange (World Heritage)."
+]
+],
+"eat": [
+[
+"Paella valenciana",
+"Born here; best at lunchtime."
+],
+[
+"Horchata & fartons",
+"Tiger nut drink with pastries."
+],
+[
+"Agua de Valencia",
+"A local cocktail."
+]
+],
+"night": [
+[
+"Ruzafa",
+"Bars and clubs in a trendy district."
+],
+[
+"El Carmen",
+"Bars in the old town."
+],
+[
+"Las Fallas",
+"Fireworks festival in March."
+]
+],
+"arrive": "Valencia Airport is on the Metro (lines 3 and 5). Joaquín Sorolla station has high-speed trains to Madrid.",
+"around": "Metro, trams and EMT buses; Valenbisi bikes along the Turia.",
+"pass": "SUMA card or Valencia Tourist Card; check current options.",
+"when": "April–June and September–October; March for Las Fallas.",
+"tip": "Book a paella lunch near the beach or in El Palmar by the Albufera.",
+"sources": [
+{
+"title": "Visit València (official guide)",
+"url": "https://www.visitvalencia.com/en"
+},
+{
+"title": "Metrovalencia",
+"url": "https://www.metrovalencia.es/"
+},
+{
+"title": "Aena: Valencia Airport",
+"url": "https://www.aena.es/en/valencia.html"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "bilbao",
+"intro": "A Basque city transformed by the Guggenheim, with a pintxos-packed old town and green hills.",
+"areas": [
+[
+"Casco Viejo",
+"Seven Streets of the old town."
+],
+[
+"Abandoibarra",
+"Riverside with the Guggenheim."
+],
+[
+"Indautxu",
+"Shops and modern Bilbao."
+]
+],
+"sights": [
+[
+"Guggenheim Museum Bilbao",
+"Frank Gehry’s titanium landmark."
+],
+[
+"Bilbao Fine Arts Museum",
+"Spanish and Basque art."
+],
+[
+"Mercado de la Ribera",
+"Riverside market hall."
+],
+[
+"Vizcaya Bridge",
+"World Heritage transporter bridge at Portugalete."
+]
+],
+"eat": [
+[
+"Pintxos",
+"Bar snacks, especially in Plaza Nueva."
+],
+[
+"Bacalao al pil-pil",
+"Salt cod in garlic emulsion."
+],
+[
+"Txakoli",
+"Crisp Basque white wine."
+]
+],
+"night": [
+[
+"Plaza Nueva",
+"Pintxos and bars."
+],
+[
+"Poza Street",
+"Bars in Indautxu."
+],
+[
+"Bilbao BBK Live",
+"Summer music festival."
+]
+],
+"arrive": "Bilbao Airport is linked by Bizkaibus to the centre. Trains and buses link to San Sebastián and Madrid.",
+"around": "Metro Bilbao, trams and buses; the centre is walkable.",
+"pass": "Barik card for Metro, tram and buses; check current options.",
+"when": "May–October; August for Aste Nagusia.",
+"tip": "Pintxos are paid as you go; ask for the bill at the end.",
+"sources": [
+{
+"title": "Bilbao Turismo (official guide)",
+"url": "https://www.bilbaoturismo.net/"
+},
+{
+"title": "Guggenheim Bilbao",
+"url": "https://www.guggenheim-bilbao.eus/"
+},
+{
+"title": "Aena: Bilbao Airport",
+"url": "https://www.aena.es/en/bilbao.html"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "granada",
+"intro": "Moorish Granada: the Alhambra, the Albaicín’s white lanes and tapas served free with your drink.",
+"areas": [
+[
+"Albaicín",
+"Moorish quarter with viewpoints."
+],
+[
+"Sacromonte",
+"Cave houses and flamenco."
+],
+[
+"Centro",
+"The cathedral and the Alcaicería."
+]
+],
+"sights": [
+[
+"Alhambra & Generalife",
+"Palace-fortress and gardens (book well ahead)."
+],
+[
+"Mirador de San Nicolás",
+"Famous sunset view of the Alhambra."
+],
+[
+"Granada Cathedral & Royal Chapel",
+"Tombs of Ferdinand and Isabella."
+],
+[
+"Sacromonte caves",
+"Flamenco and cave museum."
+]
+],
+"eat": [
+[
+"Free tapas",
+"Many bars serve a tapa with each drink."
+],
+[
+"Calle Navas",
+"Street of tapas bars near the town hall."
+],
+[
+"Piononos",
+"Sweet pastries from nearby Santa Fe."
+]
+],
+"night": [
+[
+"Flamenco in Sacromonte",
+"Shows in hillside cave venues."
+],
+[
+"Calle Elvira",
+"Bars and teterías."
+],
+[
+"Student bars",
+"A lively university city."
+]
+],
+"arrive": "Federico García Lorca Granada Airport is linked by bus. Granada station has trains to Madrid and Málaga; Málaga Airport is about 90 minutes away.",
+"around": "Walk; minibuses climb the Albaicín and Alhambra.",
+"pass": "Credibus card for city buses; check current options.",
+"when": "Spring and autumn; Sierra Nevada skiing in winter.",
+"tip": "Alhambra tickets sell out; book weeks ahead for a Nasrid Palaces time slot.",
+"sources": [
+{
+"title": "Andalucía Tourism (official guide)",
+"url": "https://www.andalucia.org/en/"
+},
+{
+"title": "Alhambra (official tickets)",
+"url": "https://www.alhambra-patronato.es/en"
+},
+{
+"title": "Aena: Granada Airport",
+"url": "https://www.aena.es/en/f.g.l.-granada-jaen.html"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "alicante",
+"intro": "A sunny Costa Blanca city with a palm-lined promenade, a hilltop castle and a beach in town.",
+"areas": [
+[
+"Old Town (El Barrio)",
+"Lanes, bars and Santa María Basilica."
+],
+[
+"Explanada de España",
+"Mosaic promenade by the marina."
+],
+[
+"San Juan",
+"Long sandy beach north of the city."
+]
+],
+"sights": [
+[
+"Santa Bárbara Castle",
+"Hilltop fortress with views."
+],
+[
+"Postiguet Beach",
+"City-centre beach."
+],
+[
+"MARQ Archaeological Museum",
+"Award-winning museum."
+],
+[
+"Tabarca Island",
+"Day trip by boat."
+]
+],
+"eat": [
+[
+"Arroz a banda",
+"Rice cooked in fish stock."
+],
+[
+"Mercado Central",
+"Art deco market hall."
+],
+[
+"Turrón",
+"Nougat from nearby Jijona."
+]
+],
+"night": [
+[
+"El Barrio",
+"Bars and clubs in the old town."
+],
+[
+"Marina & port",
+"Late bars by the harbour."
+],
+[
+"Hogueras de San Juan",
+"Bonfire festival in June."
+]
+],
+"arrive": "Alicante-Elche Airport is linked by bus. Alicante station has high-speed trains to Madrid.",
+"around": "TRAM Alicante and buses; the centre is walkable.",
+"pass": "Móbilis card for tram and bus; check current options.",
+"when": "Year-round; May–June and September–October are ideal.",
+"tip": "Take the lift inside the mountain up to the castle.",
+"sources": [
+{
+"title": "Alicante City & Beach (official guide)",
+"url": "https://www.alicanteturismo.com/"
+},
+{
+"title": "Aena: Alicante-Elche Airport",
+"url": "https://www.aena.es/en/alicante-elche-miguel-hernandez.html"
+},
+{
+"title": "TRAM d’Alacant",
+"url": "https://www.tramalacant.es/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "benidorm",
+"intro": "Skyscrapers, two long beaches and round-the-clock entertainment on the Costa Blanca.",
+"areas": [
+[
+"Old Town",
+"Balcón del Mediterráneo and tapas streets."
+],
+[
+"Levante Beach",
+"Main resort strip and nightlife."
+],
+[
+"Poniente Beach",
+"Quieter, longer beach."
+]
+],
+"sights": [
+[
+"Balcón del Mediterráneo",
+"Viewpoint between the beaches."
+],
+[
+"Terra Mítica & Aqualandia",
+"Theme and water parks."
+],
+[
+"Benidorm Island",
+"Boat trips from the port."
+],
+[
+"Guadalest",
+"Mountain village nearby."
+]
+],
+"eat": [
+[
+"Calle Santo Domingo (Tapas Alley)",
+"Tapas bars in the old town."
+],
+[
+"Paella",
+"Beachfront restaurants."
+],
+[
+"International cafés",
+"British and Dutch favourites."
+]
+],
+"night": [
+[
+"The British Square",
+"Bars and tribute acts."
+],
+[
+"Levante strip",
+"Bars and clubs near Levante beach."
+],
+[
+"Benidorm Palace",
+"Cabaret dinner shows."
+]
+],
+"arrive": "Alicante Airport is about 45 minutes away by bus or transfer. TRAM line 1 runs along the coast.",
+"around": "TRAM Alicante and local buses; walkable seafront.",
+"pass": "Móbilis card for the tram; check current options.",
+"when": "Year-round; spring and autumn are ideal.",
+"tip": "Watch the sunset from Poniente beach’s promenade.",
+"sources": [
+{
+"title": "Visit Benidorm (official guide)",
+"url": "https://www.visitbenidorm.es/"
+},
+{
+"title": "Aena: Alicante-Elche Airport",
+"url": "https://www.aena.es/en/alicante-elche-miguel-hernandez.html"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "marbella",
+"intro": "Costa del Sol glamour: a whitewashed old town, the Golden Mile and Puerto Banús.",
+"areas": [
+[
+"Old Town (Casco Antiguo)",
+"Plaza de los Naranjos and flower-filled streets."
+],
+[
+"Puerto Banús",
+"Luxury marina, shopping and nightlife."
+],
+[
+"Golden Mile",
+"Hotels and beach clubs."
+]
+],
+"sights": [
+[
+"Plaza de los Naranjos",
+"Orange-tree square in the old town."
+],
+[
+"Puerto Banús",
+"Superyachts and boutiques."
+],
+[
+"Avenida del Mar",
+"Dalí sculptures on the way to the beach."
+],
+[
+"Ronda",
+"Clifftop town about an hour inland."
+]
+],
+"eat": [
+[
+"Espetos",
+"Sardine skewers on the beach."
+],
+[
+"Old Town tapas",
+"Restaurants around the square."
+],
+[
+"Beach clubs",
+"Lunch by the sea."
+]
+],
+"night": [
+[
+"Puerto Banús",
+"Bars and clubs at the marina."
+],
+[
+"Beach clubs",
+"Sunset sessions."
+],
+[
+"Old Town bars",
+"Quieter evenings."
+]
+],
+"arrive": "Málaga Airport is about 45 minutes away by bus or transfer.",
+"around": "Avanza buses along the coast; taxis.",
+"pass": "Buy bus tickets per journey; check current options.",
+"when": "April–June and September–October.",
+"tip": "Puerto Banús prices are high; old-town restaurants are better value.",
+"sources": [
+{
+"title": "Marbella Turismo (official guide)",
+"url": "https://turismo.marbella.es/"
+},
+{
+"title": "Aena: Málaga-Costa del Sol Airport",
+"url": "https://www.aena.es/en/malaga-costa-del-sol.html"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "gran-canaria",
+"intro": "A ‘miniature continent’ of dunes, mountains and beaches, with lively Las Palmas.",
+"areas": [
+[
+"Las Palmas",
+"Capital with Las Canteras beach and Vegueta."
+],
+[
+"Maspalomas & Playa del Inglés",
+"Dunes, beaches and resorts."
+],
+[
+"Interior",
+"Mountain villages and Roque Nublo."
+]
+],
+"sights": [
+[
+"Maspalomas Dunes",
+"Protected sand dunes."
+],
+[
+"Roque Nublo",
+"Volcanic monolith with hiking trails."
+],
+[
+"Vegueta",
+"Historic quarter of Las Palmas."
+],
+[
+"Las Canteras",
+"City beach with a natural reef."
+]
+],
+"eat": [
+[
+"Papas arrugadas",
+"Canarian potatoes with mojo."
+],
+[
+"Mercado de Vegueta",
+"Market in Las Palmas."
+],
+[
+"Bienmesabe",
+"Almond and honey dessert."
+]
+],
+"night": [
+[
+"Yumbo Centre",
+"LGBTQ+ nightlife in Playa del Inglés."
+],
+[
+"Las Palmas",
+"Bars and clubs near Las Canteras."
+],
+[
+"Carnival",
+"Big February celebrations."
+]
+],
+"arrive": "Gran Canaria Airport is linked by Global buses to Las Palmas and the south.",
+"around": "Global intercity buses; a hire car helps for the mountains.",
+"pass": "Bono cards on Global buses; check current options.",
+"when": "Year-round sun.",
+"tip": "Hike to Roque Nublo early to avoid clouds and crowds.",
+"sources": [
+{
+"title": "Gran Canaria (official guide)",
+"url": "https://www.grancanaria.com/turismo/en/"
+},
+{
+"title": "Global buses",
+"url": "https://www.guaguasglobal.com/"
+},
+{
+"title": "Aena: Gran Canaria Airport",
+"url": "https://www.aena.es/en/gran-canaria.html"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "lanzarote",
+"intro": "A volcanic island of black lava fields, César Manrique art and golden beaches.",
+"areas": [
+[
+"Puerto del Carmen",
+"Main resort with a long beach."
+],
+[
+"Playa Blanca",
+"Southern resort near Papagayo beaches."
+],
+[
+"Costa Teguise",
+"Resort with watersports."
+]
+],
+"sights": [
+[
+"Timanfaya National Park",
+"Volcanic landscapes and fire demonstrations."
+],
+[
+"Jameos del Agua",
+"Manrique’s lava-tube creation."
+],
+[
+"Papagayo beaches",
+"Coves in the south."
+],
+[
+"La Geria",
+"Vineyards grown in volcanic ash."
+]
+],
+"eat": [
+[
+"Lanzarote wines",
+"Malvasía from La Geria."
+],
+[
+"Fresh fish",
+"In El Golfo and harbour towns."
+],
+[
+"Papas arrugadas",
+"With mojo sauces."
+]
+],
+"night": [
+[
+"Puerto del Carmen strip",
+"Bars and clubs along the Avenida."
+],
+[
+"Costa Teguise",
+"Bars by the beach."
+],
+[
+"Arrecife",
+"Charco de San Ginés bars."
+]
+],
+"arrive": "César Manrique-Lanzarote Airport is linked by bus and taxi to the resorts.",
+"around": "Arrecife Bus routes; a hire car is best for sights.",
+"pass": "Buy bus tickets per journey or a bono; check current options.",
+"when": "Year-round sun; can be windy.",
+"tip": "Combine Manrique sites with a discounted multi-centre ticket (check current options).",
+"sources": [
+{
+"title": "Turismo Lanzarote (official guide)",
+"url": "https://www.turismolanzarote.com/en/"
+},
+{
+"title": "Centros Turísticos (Manrique sites)",
+"url": "https://cactlanzarote.com/en/"
+},
+{
+"title": "Aena: Lanzarote Airport",
+"url": "https://www.aena.es/en/cesar-manrique-lanzarote.html"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "san-sebastian",
+"intro": "A Basque seaside city famous for pintxos, Michelin stars and La Concha bay.",
+"areas": [
+[
+"Parte Vieja",
+"Old town packed with pintxos bars."
+],
+[
+"La Concha",
+"Elegant beach and promenade."
+],
+[
+"Gros",
+"Surf beach and a younger vibe."
+]
+],
+"sights": [
+[
+"La Concha beach",
+"One of Europe’s best city beaches."
+],
+[
+"Monte Igueldo",
+"Funicular to bay views."
+],
+[
+"Monte Urgull",
+"Castle walk above the old town."
+],
+[
+"San Telmo Museum",
+"Basque society and history museum."
+]
+],
+"eat": [
+[
+"Pintxos",
+"Old-town bars with counter snacks."
+],
+[
+"Gilda",
+"Olive, anchovy and pepper skewer."
+],
+[
+"Basque cheesecake",
+"Famous burnt cheesecake."
+]
+],
+"night": [
+[
+"Parte Vieja",
+"Bar-hopping late."
+],
+[
+"Jazzaldia",
+"Jazz festival in July."
+],
+[
+"Gros",
+"Bars near Zurriola beach."
+]
+],
+"arrive": "San Sebastián Airport (Hondarribia) has limited flights; Bilbao and Biarritz airports are about an hour away.",
+"around": "Walk; Dbus buses and Euskotren trains.",
+"pass": "Mugi card for buses and trains; check current options.",
+"when": "June–September; January for the Tamborrada drum festival.",
+"tip": "Pintxos culture: a couple per bar, then move on.",
+"sources": [
+{
+"title": "San Sebastián Turismo (official guide)",
+"url": "https://www.sansebastianturismoa.eus/en/"
+},
+{
+"title": "Dbus",
+"url": "https://www.dbus.eus/en/"
+},
+{
+"title": "Aena: Bilbao Airport",
+"url": "https://www.aena.es/en/bilbao.html"
+}
+],
+"checked": "2026-11-24"
+}
+]
