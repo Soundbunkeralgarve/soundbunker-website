@@ -11,7 +11,7 @@ test('digital guides have local content, source links, download, print and corre
   assert.match(html,/canonical" href="https:\/\/theticketbunker.com\/guides\/london/);
   assert.match(html,/A local historical fact/);assert.match(html,/A shopping street/);
   assert.match(html,/https:\/\/example.com\/city/);assert.match(html,/download="ticketbunker-london-city-guide.html"/);
-  assert.match(html,/Print \/ Save PDF/);assert.match(html,/Choose London/);
+  assert.match(html,/data-guide-print>.*Print/);assert.match(html,/Choose London/);
   assert.doesNotMatch(html,/Code:|exclusive discount|guaranteed discount/);
 });
 test('downloaded guide embeds its own styles and keeps absolute links for offline reading',()=>{
