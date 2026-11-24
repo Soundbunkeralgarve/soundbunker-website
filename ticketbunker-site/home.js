@@ -294,7 +294,8 @@ $('#near-locate').onclick=()=>useMyLocation();
 $('#near-change').onclick=()=>{form.scrollIntoView({block:'center'});city.focus();};
 
 // Section tabs under the destination bar: one tap to any rail that has listings.
-const TAB_LABELS={'spotlight':'Spotlight','moods':'Moods','top10':'Top 10','rail-under':'Under 20','city-hub':'Everything on','plan-trip':'Plan your trip','rail-near':'Near you','gyg-box':'Tours','big-feature':'Featured','rail-trip':'Heading away?','rail-featured':'Featured picks','rail-direct':'Bunker direct','rail-music':'Live music','rail-club':'Raves','rail-festival':'Festivals','rail-family':'Family','rail-comedy':'Comedy','rail-shows':'Theatre','rail-cinema':'Cinema','rail-boat':'Boat trips','rail-transfer':'Limos & transfers','rail-transit':'City transport','rail-sport':'Sport & racing','rail-seasonal':'Special days','rail-daysout':'Experiences','rail-dining':'Dining','rail-weekend':'This weekend'};
+// Only the main ways in: when, then what. Everything else is one scroll away.
+const TAB_LABELS={'rail-weekend':'This weekend','top10':'Top 10','rail-music':'Gigs','rail-club':'Raves','rail-festival':'Festivals','rail-shows':'Theatre','rail-comedy':'Comedy','rail-family':'Family','rail-daysout':'Days out','rail-boat':'Boat trips','rail-sport':'Sport','rail-cinema':'Cinema','rail-seasonal':'Special days','rail-dining':'Dining','rail-near':'Near you'};
 let tabObserver;
 function renderTabs(){
  const nav=$('#section-tabs');
@@ -402,13 +403,20 @@ const bigArt=i=>hasArt(i)&&!i.thumb;
 const linkAttrs=item=>{const href=item.external?withClickRef(item.url,pagRef,'showcase'):item.url;
  return `href="${esc(href)}"${item.external?` target="_blank" rel="sponsored noopener noreferrer" aria-label="${esc(item.title)}: tickets via ${esc(item.seller)} (opens in a new tab)"`:''}`;};
 const pictureFirst=list=>[...list.filter(bigArt),...list.filter(i=>!bigArt(i)&&hasArt(i)),...list.filter(i=>!hasArt(i))];
+// Sellers take turns, each leading with its best pictures, so no rail is one seller's block.
+const mixedPictures=list=>[...mixSellers(pictureFirst(list.filter(hasArt))),...mixSellers(list.filter(i=>!hasArt(i)))];
 // One per category, in this order, so the first screen mixes nights out and days out.
 const SHOWCASE_ORDER=['festival','music','shows','club','boat','daysout','family','comedy','sport','seasonal','cinema','dining'];
 function varied(list,n){
  const by=new Map();for(const i of list){if(!by.has(i.category))by.set(i.category,[]);by.get(i.category).push(i);}
  const keys=[...SHOWCASE_ORDER.filter(k=>by.has(k)),...[...by.keys()].filter(k=>!SHOWCASE_ORDER.includes(k)&&!['transit','transfer'].includes(k))];
  const out=[],seen=new Set();
- while(out.length<n&&keys.some(k=>by.get(k).length))for(const k of keys){const q=by.get(k);while(q.length){const i=q.shift();const t=i.title.toLowerCase();if(!seen.has(t)){seen.add(t);out.push(i);break;}}if(out.length>=n)break;}
+ // Each pick also tries a different seller from the one before, so the row is a real mix.
+ const seller=i=>i.source||i.provider||'';let last='';
+ while(out.length<n&&keys.some(k=>by.get(k).length))for(const k of keys){const q=by.get(k);
+  const at=q.findIndex(i=>seller(i)!==last&&!seen.has(i.title.toLowerCase()));
+  if(at>0)q.unshift(...q.splice(at,1));
+  while(q.length){const i=q.shift();const t=i.title.toLowerCase();if(!seen.has(t)){seen.add(t);out.push(i);last=seller(i);break;}}if(out.length>=n)break;}
  return out;
 }
 function spotTile(item,big=false){
@@ -417,11 +425,11 @@ function spotTile(item,big=false){
 }
 const MOODS=[['music','Gigs','Live sets and big nights'],['club','Raves','Warehouses and terraces'],['festival','Festivals','Weekenders and day fests'],['shows','Theatre','West End and stage'],['comedy','Comedy','Stand-up and showcases'],['family','Family','Days out with the kids'],['boat','Boat trips','Coast, caves and dolphins'],['daysout','Experiences','Tours, kayaks and more'],['sport','Sport','Race days and match days'],['seasonal','Seasonal','Christmas and special days'],['cinema','Cinema','Open air and late screens'],['dining','Dining','Restaurant deals near the show']];
 let moreRails=false;
-const RAILS_SHOWN=6;
+const RAILS_SHOWN=99;
 function renderShowcase(all,now,place){
  const pool=filterItems(all,place,now).filter(i=>!i.soldOut&&!['transit','transfer'].includes(i.category));
  // Spotlight: one big tile and four smaller ones, all with real pictures where we have them.
- const spot=varied(pictureFirst(sortItems(pool).filter(hasArt)),5);
+ const spot=varied(mixedPictures(sortItems(pool).filter(hasArt)),5);
  $('#spotlight').hidden=spot.length<3;
  if(spot.length>=3)$('#spot-grid').innerHTML=spot.map((i,n)=>spotTile(i,n===0)).join('');
  // Mood tiles: each shows how many are on and the best picture in that category.
@@ -434,7 +442,7 @@ function renderShowcase(all,now,place){
   if(rail&&rail.classList.contains('rail-folded')){moreRails=true;render();}
   const target=document.getElementById('rail-'+k);if(target&&!target.hidden)target.scrollIntoView({behavior:reduceMotion()?'auto':'smooth',block:'start'});else commitForm({category:k},{scroll:true});});
  // Top 10: soonest dated events over the next five weeks, mixed by type, numbered.
- const soon=pictureFirst(sortItems(pool.filter(i=>i.startsAt&&Date.parse(i.startsAt)<now+35*864e5)));
+ const soon=mixedPictures(sortItems(pool.filter(i=>i.startsAt&&Date.parse(i.startsAt)<now+35*864e5)));
  const top=varied(soon,10);
  $('#top10').hidden=top.length<5;
  if(top.length>=5)mountRail($('#top10'),top.map((i,n)=>`<div class="top-item"><span class="top-num" aria-hidden="true">${n+1}</span>${card(i)}</div>`));
@@ -520,7 +528,7 @@ function render(){
   const section=document.getElementById('rail-'+k);
   // Paid features lead, then sellers take turns; long rails are capped.
   // Listings with proper pictures lead; the rest follow in the same seller mix.
-  const real=pictureFirst(mixSellers(sortItems(filterItems(all,{...place,category:k},now)))).slice(0,24);
+  const real=mixedPictures(sortItems(filterItems(all,{...place,category:k},now))).slice(0,24);
   shownRails+=real.length?1:0;
   const folded=!moreRails&&real.length&&shownRails>RAILS_SHOWN;
   section.hidden=!real.length||folded;section.classList.toggle('rail-folded',!!folded);
@@ -543,7 +551,7 @@ function render(){
  const direct=sortItems(filterItems(all,place,now)).filter(i=>i.source==='ticketbunker'&&!i.soldOut).slice(0,24);
  $('#rail-direct').hidden=!direct.length;
  if(direct.length)mountRail($('#rail-direct'),direct.map(i=>card(i)),directTile());
- const weekend=sortItems(filterItems(all,{...place,when:'weekend'},now)).filter(i=>!i.soldOut).slice(0,24);
+ const weekend=mixedPictures(sortItems(filterItems(all,{...place,when:'weekend'},now)).filter(i=>!i.soldOut)).slice(0,24);
  $('#rail-weekend').hidden=!weekend.length;
  if(weekend.length)mountRail($('#rail-weekend'),weekend.map(i=>card(i)));
 

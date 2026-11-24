@@ -1,0 +1,33 @@
+/* Homepage: "Your tickets. Your whole trip." as four photo cards and one chip row. */
+.trip-path{padding:56px 0;background:#07070b;color:#fff;border:0}
+.tp-head{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:22px}
+.trip-path .label{color:#00e0a6;font-size:11px;margin-bottom:8px}
+.trip-path h2{font:900 clamp(2.2rem,5vw,3.8rem)/1 'Barlow Condensed',Arial,sans-serif;text-transform:uppercase;margin:0;color:#fff}
+.trip-path h2 em{font:inherit;font-style:normal;text-transform:uppercase;color:#00e0a6}
+.trip-path #trip-path-place{font-size:15px;color:#c9cfd6;margin:10px 0 0;max-width:60ch;line-height:1.5}
+.tp-build{display:inline-flex;align-items:center;min-height:48px;padding:12px 22px;border-radius:999px;background:#00e0a6;color:#04140d;font-weight:800;text-decoration:none;white-space:nowrap}
+.tp-build:hover{background:#ff4f9a;color:#20030f}
+.tp-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.tp-cards a{position:relative;display:block;aspect-ratio:4/3;border-radius:16px;overflow:hidden;isolation:isolate;color:#fff;text-decoration:none;background:#1a1a22}
+.tp-cards img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;transition:transform .5s ease}
+.tp-cards a::after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(0deg,#000000e0 0%,#00000055 50%,#00000000 80%)}
+.tp-cards a:hover img{transform:scale(1.06)}
+.tp-cards span{position:absolute;left:0;right:0;bottom:0;padding:16px;display:grid;gap:4px}
+.tp-cards b{font:800 1.9rem/1 'Barlow Condensed',Arial,sans-serif;text-transform:uppercase}
+.tp-cards small{font-size:13px;color:#e3e6ea}
+.tp-cards a:focus-visible{outline:3px solid #00e0a6;outline-offset:3px}
+.trip-path .trip-types{justify-content:flex-start;margin-top:20px;gap:8px}
+.trip-path .trip-types>span{color:#aeb4bf;font-size:11px}
+.trip-path .trip-types button{background:transparent;border-color:#3a3a48;color:#fff;font-size:13px;padding:9px 15px}
+.trip-path .trip-types button:hover{border-color:#00e0a6}
+.trip-path .trip-types button[aria-pressed=true]{background:#00e0a6;border-color:#00e0a6;color:#04140d}
+.trip-path .trip-type-note{color:#aeb4bf;font-size:13px}
+@media(max-width:900px){.tp-cards{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.trip-path{padding:40px 0}.tp-cards{gap:10px}.tp-cards b{font-size:1.5rem}.tp-cards small{display:none}.tp-build{width:100%;justify-content:center}}
+@media(prefers-reduced-motion:reduce){.tp-cards img{transition:none}.tp-cards a:hover img{transform:none}}
+/* Slim promise strip straight under the hero; the full band is further down. */
+.tbp-strip{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px 26px;padding:13px 16px;background:#00e0a6;color:#04140d;text-decoration:none;font-weight:800;font-size:14px}
+.tbp-strip b{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#04140d;color:#00e0a6;font-size:11px;margin-right:6px}
+.tbp-strip em{font-style:normal;text-decoration:underline;text-underline-offset:3px}
+.tbp-strip:hover{background:#ff4f9a;color:#20030f}.tbp-strip:hover b{color:#ff4f9a}
+@media(max-width:700px){.tbp-strip{justify-content:flex-start;flex-direction:column;align-items:flex-start;gap:6px;font-size:13px;padding:12px 16px}}

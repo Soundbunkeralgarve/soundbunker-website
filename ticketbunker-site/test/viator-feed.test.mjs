@@ -208,3 +208,29 @@ test('verified transport targets enter only from exact live responses with real 
  assert.match(items.find(i=>i.id==='viator:2495VENAPTHTL').title,/Shared/,'shared water taxis retain the supplier’s exact service wording');
  assert.equal(viatorItem(product({productCode:'unverified',title:'A transport-themed walking tour'}),{place:'London',countryCode:'GB'}).searchTerms,undefined);
 });
+
+test('a city search that times out on the cold first batch is retried once and recovers', async () => {
+  const tries = {}, budgets = new WeakMap(), timeout = AbortSignal.timeout;
+  AbortSignal.timeout = ms => { const s = timeout(ms); budgets.set(s, ms); return s; };
+  const fetcher = async (url, opts) => {
+    const body = JSON.parse(opts.body), text = url.endsWith('/search/freetext');
+    if (text) return {ok:true, json:async () => ({products:{results:[]}})};
+    const id = body.filtering.destination; tries[id] = (tries[id] || 0) + 1;
+    if ((id === '774' || id === '538') && tries[id] === 1) throw Object.assign(Error('timeout'), {name:'TimeoutError'});
+    if (id === '774') assert.equal(budgets.get(opts.signal), 8000, 'the retry gets a longer budget');
+    return {ok:true, json:async () => ({products:[product({productCode:'P' + id})]})};
+  };
+  let items; try { items = await loadViator({VIATOR_API_KEY:'fixture-token'}, {fetcher}); } finally { AbortSignal.timeout = timeout; }
+  assert.ok(items.some(i => i.city === 'Algarve') && items.some(i => i.city === 'Lisbon'));
+  assert.equal(items.partialFailure, undefined, 'a recovered refresh is cached normally');
+  assert.equal(tries['774'], 2); assert.equal(tries['26879'], 1, 'cities that worked are not searched again');
+  // No retry once the budget is nearly spent.
+  let clock = 0; const late = {};
+  const lateItems = await loadViator({VIATOR_API_KEY:'fixture-token'}, {now:() => (clock += 40000), fetcher:async (url, opts) => {
+    const body = JSON.parse(opts.body); if (url.endsWith('/search/freetext')) return {ok:true, json:async () => ({products:{results:[]}})};
+    const id = body.filtering.destination; late[id] = (late[id] || 0) + 1;
+    if (id === '774') return {ok:false, status:503};
+    return {ok:true, json:async () => ({products:[product({productCode:'P' + id})]})};
+  }});
+  assert.equal(late['774'], 1); assert.equal(lateItems.partialFailure, true);
+});
