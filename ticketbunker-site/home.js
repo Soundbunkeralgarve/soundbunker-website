@@ -152,7 +152,7 @@ function card(item,{featured=false,wide=false}={}){
  const ext=item.external?` target="_blank" rel="sponsored noopener noreferrer" aria-label="${esc(item.title)}: tickets via ${esc(item.seller)} (opens in a new tab)"`:'';
  // Upsell: a stay and the journey for the same city, one tap from the ticket.
  const upCity=item.city?'?city='+encodeURIComponent(item.city)+(item.countryCode?'&country='+encodeURIComponent(item.countryCode):''):'';
- const upsell=item.city?`<div class="card-upsell"><a href="/hotels${upCity}">🏨 Stay nearby</a><a href="/travel${upCity}#flights">✈️ Get there</a></div>`:'';
+ const upsell=item.city?`<div class="card-upsell"><a href="/hotels${upCity}">Stay nearby</a><a href="/travel${upCity}#flights">Get there</a></div>`:'';
  return `<article class="listing-card${wide?' is-wide':''}"><a class="tcard${direct?' is-direct':''}${item.soldOut?' is-soldout':''}" href="${esc(href)}"${ext}>${body}</a><div class="listing-actions"><a href="${esc(eventLink(item))}">Event details</a><button type="button" data-share-listing="${esc(item.key)}" aria-label="Share ${esc(item.title)}">Share</button><a href="${esc(buildHref(item))}" data-build-event="${esc(item.key)}">Build this trip →</a></div>${upsell}</article>`;
 }
 const directTile=()=>`<a class="tcard host-tile direct-tile" href="/for-organisers"><div><span class="label">Organisers</span><h3>Sell direct here.</h3><p>No booking fee for your crowd, wallet tickets and a door app.</p><span class="head-link">Host your event ↗</span></div></a>`;
@@ -424,6 +424,25 @@ function varied(list,n){
   while(q.length){const i=q.shift();const t=i.title.toLowerCase();if(!seen.has(t)){seen.add(t);out.push(i);last=seller(i);break;}}if(out.length>=n)break;}
  return out;
 }
+// Hero: the top picks as a deck of real tickets that deals itself forward.
+let heroTimer;
+function heroStack(items){
+ const box=document.querySelector('[data-hero-stack]');if(!box)return;
+ const picks=items.filter(hasArt).slice(0,5);
+ box.hidden=picks.length<3;if(box.hidden)return;
+ const key=picks.map(i=>i.key).join('|');if(box.dataset.key===key)return;box.dataset.key=key;
+ const deck=box.querySelector('[data-hs-deck]'),dots=box.querySelector('[data-hs-dots]');
+ deck.innerHTML=picks.map((i,n)=>{const href=i.external?withClickRef(i.url,pagRef,'hero'):i.url,ext=i.external?' target="_blank" rel="sponsored noopener noreferrer"':'';
+  const price=!i.soldOut&&Number.isInteger(i.priceCents)&&i.priceCents>0?money(i.priceCents,i.currency):'';
+  return `<a class="hs-ticket" data-pos="${n}" href="${esc(href)}"${ext}><span class="hs-art"><img src="${esc(safeUrl(i.image))}" alt="" ${n?'loading="lazy"':'fetchpriority="high"'}></span><span class="hs-info"><span class="hs-cat">${esc(catLabel(i))}</span><b>${esc(i.title)}</b><small>${esc([dateLine(i),i.city].filter(Boolean).join(' · '))}</small></span><span class="hs-stub"><small>${i.soldOut?'Sold out':i.priceCents===0?'Free':price?'From':''}</small><strong>${esc(price)}</strong><em>Tickets →</em></span></a>`;}).join('');
+ dots.innerHTML=picks.map((_,n)=>`<button type="button" aria-label="Show pick ${n+1}" data-hs="${n}"></button>`).join('');
+ const cards=[...deck.children];let front=0;
+ const show=k=>{front=(k+cards.length)%cards.length;cards.forEach((c,n)=>{const pos=(n-front+cards.length)%cards.length;c.dataset.pos=pos;c.tabIndex=pos?-1:0;c.setAttribute('aria-hidden',String(!!pos));});
+  [...dots.children].forEach((d,n)=>d.toggleAttribute('aria-current',n===front));};
+ const restart=()=>{clearInterval(heroTimer);if(!reduceMotion())heroTimer=setInterval(()=>{if(!box.matches(':hover,:focus-within'))show(front+1);},3800);};
+ dots.onclick=e=>{const d=e.target.closest('[data-hs]');if(d){show(Number(d.dataset.hs));restart();}};
+ show(0);restart();
+}
 function spotTile(item,big=false){
  const art=hasArt(item)?`<img src="${esc(safeUrl(item.image))}" alt="" loading="${big?'eager':'lazy'}">`:'';
  return `<a class="spot-tile${big?' is-big':''}${item.thumb?' is-thumb':''}" ${linkAttrs(item)}>${item.thumb&&art?`<span class="spot-fill" style="background-image:url('${esc(safeUrl(item.image))}')"></span>`:''}${art}<span class="spot-shade"></span><span class="spot-copy"><span class="spot-cat">${esc(catLabel(item))}</span><b>${esc(item.title)}</b><span class="spot-meta">${esc([dateLine(item),[item.venue,item.city].filter(Boolean)[0]].filter(Boolean).join(' · '))}</span><span class="spot-foot"><strong>${esc(priceLine(item))}</strong><small>${item.external?'via '+esc(item.seller):'No booking fee'}</small></span></span></a>`;
@@ -436,6 +455,7 @@ function renderShowcase(all,now,place){
  // Spotlight: one big tile and four smaller ones, all with real pictures where we have them.
  const spot=varied(mixedPictures(sortItems(pool).filter(hasArt)),5);
  $('#spotlight').hidden=spot.length<3;
+ heroStack(spot);
  if(spot.length>=3)$('#spot-grid').innerHTML=spot.map((i,n)=>spotTile(i,n===0)).join('');
  // Mood tiles: each shows how many are on and the best picture in that category.
  const counts=new Map();for(const i of pool){counts.set(i.category,(counts.get(i.category)||0)+1);}
