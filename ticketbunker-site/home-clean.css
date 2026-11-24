@@ -39,3 +39,32 @@
 .hero-two span:first-child b{color:#00e0a6}
 .hero-two small{font-size:12px;color:#d5d9e0}
 @media(max-width:600px){.hero-two{flex-direction:column;align-items:stretch;padding:0 16px}}
+/* "What are you planning?" chooser under the hero. */
+.hub{padding:44px 0 30px;background:#f3f1ea}
+.hub-head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.hub h2{font:900 clamp(2.2rem,5vw,3.6rem)/1 'Barlow Condensed',Arial,sans-serif;text-transform:uppercase;margin:6px 0 0}
+.hub-where{margin:0;color:#4c5a52;font-size:14px;max-width:46ch}
+.hub-tabs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px 2px 12px;margin:0 -2px}
+.hub-tabs button{flex:0 0 auto;border:1px solid #c7ccc3;background:#fff;border-radius:999px;padding:11px 18px;font-weight:800;font-size:15px;cursor:pointer;white-space:nowrap}
+.hub-tabs button[aria-selected=true]{background:#07070b;border-color:#07070b;color:#fff;box-shadow:0 6px 18px #07070b33}
+.hub-tabs button:focus-visible{outline:3px solid #00e0a6;outline-offset:2px}
+.hub .moods{padding:6px 0 0;background:none}.hub .moods .wrap{width:100%;padding:0}
+.hub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;padding-top:6px}
+.hub-tile{display:grid;gap:4px;padding:18px;border-radius:16px;background:#fff;border:1px solid #dcdfd6;color:#07070b;text-decoration:none;transition:transform .2s,box-shadow .2s,border-color .2s}
+.hub-tile:hover{transform:translateY(-3px);box-shadow:0 12px 28px #07070b1f;border-color:#00e0a6}
+.hub-tile .hub-ic{font-size:30px;line-height:1}
+.hub-tile b{font:800 1.35rem/1.05 'Barlow Condensed',Arial,sans-serif;text-transform:uppercase;margin-top:6px}
+.hub-tile small{font-size:13px;color:#5b665f;line-height:1.4}
+.hub-tile.vip{background:linear-gradient(135deg,#07070b,#2a0b1c);color:#fff;border-color:#2a0b1c}.hub-tile.vip small{color:#d6c7d0}.hub-tile.vip:hover{border-color:#ff4f9a}
+.hub-note{font-size:13px;color:#5b665f;margin:14px 0 0;max-width:90ch}
+.hub-more{display:flex;gap:16px;flex-wrap:wrap;margin:14px 0 0;font-weight:800}.hub-more a{color:#0c6d4f}
+@media(prefers-reduced-motion:reduce){.hub-tile{transition:none}.hub-tile:hover{transform:none}}
+/* Rails: the first card of a category is double width; upsell links under each card. */
+.rail-track .listing-card.is-wide{grid-column:span 2}
+.rail-track .listing-card.is-wide .card-media{aspect-ratio:16/8}
+.rail-track .listing-card.is-wide h3{font-size:1.9rem}
+@media(max-width:700px){.rail-track .listing-card.is-wide{grid-column:auto}.rail-track .listing-card.is-wide .card-media{aspect-ratio:auto}.rail-track .listing-card.is-wide h3{font-size:inherit}}
+.card-upsell{display:flex;gap:6px;flex-wrap:wrap;padding:8px 2px 0}
+.card-upsell a{font-size:12px;font-weight:800;padding:6px 10px;border-radius:999px;background:#eef8f3;color:#0c6d4f;text-decoration:none;border:1px solid #cfe9dc}
+.card-upsell a:hover{background:#00e0a6;color:#04140d}
+@media(max-width:560px){.hub{padding:32px 0 22px}.hub-grid{grid-template-columns:1fr 1fr;gap:8px}.hub-tile{padding:12px}.hub-tile .hub-ic{font-size:24px}.hub-tile b{font-size:1.1rem}.hub-tile small{font-size:12px}.hub-tabs button{padding:9px 14px;font-size:14px}}

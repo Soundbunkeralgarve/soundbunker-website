@@ -139,7 +139,7 @@ const catLabel=item=>item.kind?eventKind(item.kind):discoveryCategories[item.cat
 // Awin click reference for this page: a city page's slug, otherwise home.
 const pagRef=pathCity?.slug||'home';
 const shareItems=new Map();
-function card(item,{featured=false}={}){
+function card(item,{featured=false,wide=false}={}){
  const href=item.external?withClickRef(item.url,pagRef,'card'):item.url;
  shareItems.set(item.key,item);
  const place=[item.venue,item.city].filter(Boolean).join(' · ');
@@ -150,7 +150,10 @@ function card(item,{featured=false}={}){
  const action=item.soldOut?'':`<span class="get">${item.external?'Get tickets ↗':'Get tickets'}</span>`;
  const body=`<div class="card-media">${image(item)}<span class="card-cat">${esc(catLabel(item))}</span>${badges}</div><div class="card-body"><p class="card-date">${esc(dateLine(item))}</p><h3>${esc(item.title)}</h3><p class="card-place">${esc(place)}</p><div class="card-foot"><div class="price"><strong>${esc(priceLine(item))}</strong>${via}</div>${action}</div></div>`;
  const ext=item.external?` target="_blank" rel="sponsored noopener noreferrer" aria-label="${esc(item.title)}: tickets via ${esc(item.seller)} (opens in a new tab)"`:'';
- return `<article class="listing-card"><a class="tcard${direct?' is-direct':''}${item.soldOut?' is-soldout':''}" href="${esc(href)}"${ext}>${body}</a><div class="listing-actions"><a href="${esc(eventLink(item))}">Event details</a><button type="button" data-share-listing="${esc(item.key)}" aria-label="Share ${esc(item.title)}">Share</button><a href="${esc(buildHref(item))}" data-build-event="${esc(item.key)}">Build this trip →</a></div></article>`;
+ // Upsell: a stay and the journey for the same city, one tap from the ticket.
+ const upCity=item.city?'?city='+encodeURIComponent(item.city)+(item.countryCode?'&country='+encodeURIComponent(item.countryCode):''):'';
+ const upsell=item.city?`<div class="card-upsell"><a href="/hotels${upCity}">🏨 Stay nearby</a><a href="/travel${upCity}#flights">✈️ Get there</a></div>`:'';
+ return `<article class="listing-card${wide?' is-wide':''}"><a class="tcard${direct?' is-direct':''}${item.soldOut?' is-soldout':''}" href="${esc(href)}"${ext}>${body}</a><div class="listing-actions"><a href="${esc(eventLink(item))}">Event details</a><button type="button" data-share-listing="${esc(item.key)}" aria-label="Share ${esc(item.title)}">Share</button><a href="${esc(buildHref(item))}" data-build-event="${esc(item.key)}">Build this trip →</a></div>${upsell}</article>`;
 }
 const directTile=()=>`<a class="tcard host-tile direct-tile" href="/for-organisers"><div><span class="label">Organisers</span><h3>Sell direct here.</h3><p>No booking fee for your crowd, wallet tickets and a door app.</p><span class="head-link">Host your event ↗</span></div></a>`;
 const hostTile=()=>`<a class="tcard host-tile" href="/featured"><div><span class="label">Your event here</span><h3>Get featured.</h3><p>Put your event in the spotlight and at the front of these rails.</p><span class="head-link">Featured placement ↗</span></div></a>`;
@@ -279,6 +282,8 @@ async function loadNear(){
 }
 function renderNear(now){
  const place=nearPlace(),source=nearSource(),section=$('#rail-near');
+ // The chooser at the top fills this city into its travel links.
+ if(document.documentElement.dataset.nearPlace!==(place||'')){document.documentElement.dataset.nearPlace=place||'';document.dispatchEvent(new Event('tb:near'));}
  if(!place){section.hidden=true;return;}
  const pool=blend(events,partners,now,state.city?feed:nearFeed);
  const items=mixSellers(sortItems(filterItems(pool,{city:place,when:'any'},now).filter(i=>!i.soldOut))).slice(0,16);
@@ -532,7 +537,8 @@ function render(){
   shownRails+=real.length?1:0;
   const folded=!moreRails&&real.length&&shownRails>RAILS_SHOWN;
   section.hidden=!real.length||folded;section.classList.toggle('rail-folded',!!folded);
-  if(real.length&&!folded)mountRail(section,real.map(i=>card(i)));
+  // The first listing in each category is the big 'prime' card.
+  if(real.length&&!folded)mountRail(section,real.map((i,n)=>card(i,{wide:n===0})));
  }
  // Adverts go only into slots that follow a rail on show, so two never sit together.
  const fillPromos=()=>{const ads=[...sponsoredAds(fillPromos).map(sponsoredHtml),...adverts(filterItems(all,place,now)).filter(Boolean)];let adAt=0;
@@ -553,7 +559,7 @@ function render(){
  if(direct.length)mountRail($('#rail-direct'),direct.map(i=>card(i)),directTile());
  const weekend=mixedPictures(sortItems(filterItems(all,{...place,when:'weekend'},now)).filter(i=>!i.soldOut)).slice(0,24);
  $('#rail-weekend').hidden=!weekend.length;
- if(weekend.length)mountRail($('#rail-weekend'),weekend.map(i=>card(i)));
+ if(weekend.length)mountRail($('#rail-weekend'),weekend.map((i,n)=>card(i,{wide:n===0})));
 
  $('#partner-note').hidden=!all.some(i=>i.external);
  renderGygBox($('#gyg-box'),state);
