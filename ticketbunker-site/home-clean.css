@@ -31,3 +31,11 @@
 .tbp-strip em{font-style:normal;text-decoration:underline;text-underline-offset:3px}
 .tbp-strip:hover{background:#ff4f9a;color:#20030f}.tbp-strip:hover b{color:#ff4f9a}
 @media(max-width:700px){.tbp-strip{justify-content:flex-start;flex-direction:column;align-items:flex-start;gap:6px;font-size:13px;padding:12px 16px}}
+/* Hero: the two halves of what we do, side by side. */
+.hero-two{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin:14px auto 18px;max-width:760px}
+.hero-two span{display:grid;gap:2px;padding:10px 16px;border-radius:14px;background:#ffffff14;border:1px solid #ffffff2e;backdrop-filter:blur(6px);text-align:left}
+.hero-two span:first-child{border-color:#00e0a6;background:#00e0a61f}
+.hero-two b{font:800 1.05rem/1.1 'Barlow Condensed',Arial,sans-serif;text-transform:uppercase;letter-spacing:.02em;color:#fff}
+.hero-two span:first-child b{color:#00e0a6}
+.hero-two small{font-size:12px;color:#d5d9e0}
+@media(max-width:600px){.hero-two{flex-direction:column;align-items:stretch;padding:0 16px}}

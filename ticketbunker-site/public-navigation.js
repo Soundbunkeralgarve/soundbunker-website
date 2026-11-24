@@ -1,4 +1,4 @@
-import "./coming-soon.js?v=20261125e";
+import "./coming-soon.js?v=20261125g";
 const nav=document.getElementById('navigation'),toggle=document.getElementById('menu-toggle');
 if(nav&&toggle){
  if(!nav.querySelector('[data-route="guides"]')){const a=document.createElement('a');a.href='/city-guides';a.dataset.route='guides';a.textContent='City guides';nav.insertBefore(a,nav.querySelector('[data-route="vip"]'));}
