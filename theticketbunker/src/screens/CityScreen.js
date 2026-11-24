@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {View, Text} from 'react-native';
 import {s} from '../theme.js';
-import {Loading, Empty} from '../components/ui.js';
+import {Loading, Empty, Button} from '../components/ui.js';
 import SplitList from '../components/SplitList.js';
 import {useSearch, Filters} from './ResultsScreen.js';
 import {countryName} from '../../lib/listings.js';
@@ -16,6 +16,7 @@ export default function CityScreen({route, navigation}) {
     <Text style={s.eyebrow}>{countryName(city.country)}</Text>
     <Text style={[s.h1, {fontSize: 38, lineHeight: 40, textTransform: 'uppercase', marginTop: 4}]}>What’s on in {city.name}</Text>
     <Text style={[s.muted, {marginVertical: 10}]}>{city.pitch.charAt(0).toUpperCase() + city.pitch.slice(1)}.</Text>
+    <Button title={`Get around ${city.name}`} icon="🚇" kind="secondary" small style={{marginBottom: 12}} onPress={() => navigation.navigate('Tabs', {screen: 'GetAround', params: {slug: city.slug}})}/>
     <Filters {...{when, setWhen, category, setCategory}}/>
     {!result.loading ? <Text style={[s.muted, {marginBottom: 4}]}>{result.items.length} found · soonest first</Text> : null}
   </View>;

@@ -20,3 +20,52 @@
 @media(max-width:850px){.cg-facts{grid-template-columns:repeat(2,minmax(0,1fr))}.cg-list{grid-template-columns:1fr}}
 @media(max-width:650px){.cg-hero-photo{min-height:480px;padding:40px 0 44px}.cg-tips>div{grid-template-columns:1fr;gap:4px}.cg-coupon{grid-template-columns:1fr}.cg-stub{flex-direction:row;gap:10px;padding:12px;border-right:0;border-bottom:2px dashed #ff4f9a}.cg-coupon-body{border:2px dashed #ff4f9a;border-top:0;border-radius:0 0 16px 16px;padding:20px}.cg-actions{gap:8px}.cg-actions>a.cg-pdf{flex-basis:100%;justify-content:center}.cg-actions>a,.cg-actions>button{padding:10px 12px;font-size:15px;min-height:44px}.cg-actions>a.cg-quiet{flex-basis:100%}.city-guide-page .cg-hero h1{font-size:3.2rem}}
 @media print{.cg-hero-img,.cg-hero-photo::after,.cg-jumps-bar,.cg-credit{display:none!important}.cg-hero-photo{min-height:0;padding:0 0 16px;background:#fff}.cg-facts{color:#000;grid-template-columns:repeat(3,1fr)}.cg-dark{background:#fff;color:#000}.cg-dark .cg-card{background:#fff;color:#000}.cg-list{display:block}.cg-list li{break-inside:avoid}.cg-coupon{break-inside:avoid}}
+/* Directory v2: photo cards by country */
+.cgd .cgd-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.cgd .cgd-head h2{margin:6px 0 0}
+.cgd-search input{width:min(420px,100%);background:#101018;border:1px solid #2a2a36;color:#f4f6f8;border-radius:999px;padding:13px 18px 13px 44px;font:500 16px 'DM Sans',Arial,sans-serif;background-image:radial-gradient(circle at 21px 50%,transparent 6px,#a7adb6 7px,transparent 8px);}
+.cgd-search input:focus{outline:2px solid #00e0a6;border-color:transparent}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.cgd-chips{display:flex;gap:8px;overflow-x:auto;padding:4px 0 14px;scrollbar-width:none;position:sticky;top:64px;z-index:4;background:linear-gradient(#07070b 75%,#07070b00)}
+.cgd-chips::-webkit-scrollbar{display:none}
+.cgd-chips button{flex:none;display:inline-flex;align-items:center;gap:6px;background:#101018;color:#d8dce2;border:1px solid #2a2a36;border-radius:999px;padding:8px 13px;font:700 14px 'DM Sans',Arial,sans-serif;cursor:pointer;white-space:nowrap}
+.cgd-chips button span{color:#7d838c;font-weight:600;font-size:12px}
+.cgd-chips button[aria-pressed="true"]{background:#00e0a6;color:#04140d;border-color:#00e0a6}.cgd-chips button[aria-pressed="true"] span{color:#04140d}
+.cgd-group{margin:22px 0 8px}.cgd-group[hidden]{display:none}
+.cgd-group h3{display:flex;align-items:baseline;gap:10px;font:900 26px/1 'Barlow Condensed',Impact,sans-serif;text-transform:uppercase;color:#f4f6f8;margin:0 0 12px}
+.cgd-group h3 span{font:600 13px 'DM Sans',Arial,sans-serif;color:#7d838c;text-transform:none}
+.cgd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.cgd-grid.big{grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.city-guide-directory .cgd-card{position:relative;display:block;aspect-ratio:4/3;border-radius:16px;overflow:hidden;background:linear-gradient(135deg,#0f3b31,#3a1530);border:1px solid #24242f;color:#fff;text-decoration:none;padding:0;min-height:0}
+.cgd-grid.big .cgd-card{aspect-ratio:16/10}
+.cgd-card[hidden]{display:none}
+.cgd-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .5s}
+.cgd-card:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#0000 35%,#000000d9)}
+.cgd-card:hover img{transform:scale(1.06)}
+.cgd-card:hover{border-color:#00e0a6}
+.cgd-card:focus-visible{outline:3px solid #00e0a6;outline-offset:2px}
+.cgd-text{position:absolute;left:12px;right:12px;bottom:10px;z-index:1;display:grid;gap:2px}
+.cgd-text b{font:900 22px/1 'Barlow Condensed',Impact,sans-serif;text-transform:uppercase;letter-spacing:.01em}
+.cgd-grid.big .cgd-text b{font-size:30px}
+.cgd-text small{font-size:12px;color:#d8dce2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cgd-none{color:#a7adb6}
+@media(max-width:650px){.cgd-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.cgd-grid.big{grid-template-columns:1fr 1fr}.cgd-grid.big .cgd-text b{font-size:22px}.cgd-grid.big .cgd-card{aspect-ratio:4/3}}
+.city-guide-directory nav.cgd-chips{display:flex;grid-template-columns:none}
+/* Guide page v2: one clear download, a tidy share toolbar, icon section bar with scroll-spy */
+.cg-actions-v2{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.cg-actions-v2 .cg-pdf{display:inline-flex;align-items:center;gap:10px;background:#00e0a6;color:#04140d;border-radius:14px;padding:15px 22px;font:800 17px 'DM Sans',Arial,sans-serif;text-decoration:none;box-shadow:0 10px 30px #00e0a633}
+.cg-tools{display:inline-flex;background:#07070bb3;backdrop-filter:blur(10px);border:1px solid #ffffff2b;border-radius:14px;padding:4px}
+.cg-tools>button,.cg-tools>a{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:10px;color:#f4f6f8;font:700 14px 'DM Sans',Arial,sans-serif}
+.cg-tools>button:hover,.cg-tools>a:hover{background:#ffffff1a}
+.cg-tools>button:focus-visible,.cg-tools>a:focus-visible{outline:2px solid #00e0a6}
+.cg-tools span{opacity:.8}
+.cg-jumps-bar{position:sticky!important;top:0;z-index:30}
+.cg-jumps{display:flex!important;gap:6px!important;overflow-x:auto;scrollbar-width:none}
+.cg-jumps::-webkit-scrollbar{display:none}
+.cg-jumps a{flex:none;display:inline-flex!important;align-items:center;gap:8px;border:1px solid transparent!important;background:#ffffff0d!important;color:#d8dce2!important;border-radius:12px!important;padding:9px 14px!important;font:700 14px 'DM Sans',Arial,sans-serif!important;text-decoration:none;white-space:nowrap;transition:background .15s,color .15s}
+.cg-jumps a:hover{background:#ffffff1f!important;color:#fff!important}
+.cg-jumps a.active{background:#00e0a6!important;color:#04140d!important}
+.cg-jumps a.cg-jump-out{border-color:#00e0a655!important;color:#00e0a6!important}
+.cg-ji{font-size:16px;line-height:1}
+@media(max-width:650px){.cg-actions-v2{display:grid}.cg-actions-v2 .cg-pdf{justify-content:center}.cg-tools{justify-content:space-between}.cg-tools>button,.cg-tools>a{padding:10px 8px;font-size:13px}}
+.cgd-search input{min-width:300px}@media(max-width:650px){.cgd-search,.cgd-search input{width:100%;min-width:0}}

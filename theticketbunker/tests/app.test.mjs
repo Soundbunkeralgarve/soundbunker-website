@@ -208,3 +208,14 @@ test('Delete my account opens a support case with the signed-in account, and say
   assert.equal(calls[0].url, 'https://theticketbunker.com/api/ticketbunker-support');
   assert.equal(calls[0].o.method, 'POST'); assert.equal(calls[0].o.headers.authorization, 'Bearer tok');
 });
+
+test('Get around: the app uses the site module and has its own tab', async () => {
+  const site = await import('../lib/site.js');
+  for (const k of ['tflNearby', 'tflArrivals', 'tflStatus', 'tflJourney', 'taxiLinks', 'plannerLinks', 'tripLinks']) assert.equal(typeof site[k], 'function', k);
+  assert.equal(site.LIVE.london.provider, 'tfl');
+  const app = readFileSync(new URL('../App.js', import.meta.url), 'utf8');
+  assert.match(app, /name="GetAround" component={GetAroundScreen}/);
+  const screen = readFileSync(new URL('../src/screens/GetAroundScreen.js', import.meta.url), 'utf8');
+  assert.match(screen, /TFL_ATTRIBUTION/, 'TfL attribution is shown with live times');
+  assert.match(screen, /Live departure boards for \{name\} are on the way/, 'cities without a live feed say so');
+});
