@@ -68,3 +68,4 @@
 .cg-jumps a.cg-jump-out{border-color:#00e0a655!important;color:#00e0a6!important}
 .cg-ji{font-size:16px;line-height:1}
 @media(max-width:650px){.cg-actions-v2{display:grid}.cg-actions-v2 .cg-pdf{justify-content:center}.cg-tools{justify-content:space-between}.cg-tools>button,.cg-tools>a{padding:10px 8px;font-size:13px}}
+.cgd-search input{min-width:300px}@media(max-width:650px){.cgd-search,.cgd-search input{width:100%;min-width:0}}
