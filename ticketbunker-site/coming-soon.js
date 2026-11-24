@@ -29,6 +29,8 @@ if (typeof document !== 'undefined' && needsNotice(location.pathname, remembered
 .tb-soon a{display:inline-flex;min-height:48px;align-items:center;padding:12px 22px;border-radius:999px;background:#00e0a6;color:#04140d;font-weight:800;text-decoration:none}
 .tb-soon a:hover{background:#ff4f9a;color:#20030f}
 .tb-soon small{display:block;margin-top:26px;color:#7d8590;font-size:.85rem}
+.tb-soon .tb-soon-what{font-size:1.2rem;color:#fff;margin-bottom:12px}.tb-soon .tb-soon-what b{color:#00e0a6}
+.tb-soon .tb-soon-partners{font:800 .85rem/1.4 'Barlow Condensed',Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#ff4f9a;margin-bottom:10px}
 .tb-soon-count{display:inline-flex;flex-direction:column;align-items:center;gap:4px;margin:0 0 26px;padding:16px 26px;border:1px solid #2a2a38;border-radius:18px;background:#12121b}
 .tb-soon-count[hidden]{display:none}
 .tb-soon-count b{font:900 clamp(2.6rem,8vw,4rem)/1 'Barlow Condensed',Arial,sans-serif;color:#00e0a6;font-variant-numeric:tabular-nums}
@@ -63,9 +65,10 @@ html.tb-soon-on,html.tb-soon-on body{overflow:hidden!important}
   box.innerHTML = `<div class="tb-soon-bg" aria-hidden="true">${KINDS.map(([, img], i) => `<img src="${img}" alt=""${i ? ' loading="lazy"' : ''}>`).join('')}</div><div class="tb-soon-box"><img src="/brand-compact.png" alt="The TicketBunker" width="220">
 <h1 id="tb-soon-h">We’re not <span data-soon-enter>open</span> yet.<br><em>Coming soon.</em></h1>
 <p class="tb-soon-kind" aria-hidden="true"><b data-soon-kind>Gigs</b></p>
+<p class="tb-soon-what"><b>Premium event tickets. No booking fees.</b><br>Plus the best travel deals from the biggest names in hotels, flights, trains &amp; tours.</p><p class="tb-soon-partners">Viator · GetYourGuide · Aviasales · Skiddle · Entradas.com</p>
 <div class="tb-soon-count" data-soon-count hidden aria-live="polite"><b>0</b><span><i></i>events, tours &amp; days out lined up, live now</span></div>
 <ul class="tb-soon-perks" aria-label="What you get when we open"><li><em>🎟️</em><b>No booking fees</b><span>Our events cost the ticket price, nothing added.</span></li><li><em>📱</em><b>Wallet tickets</b><span>Apple &amp; Google Wallet, ready at the door.</span></li><li><em>⭐</em><b>VIP perks</b><span>Early access, faster entry and guestlist spots.</span></li><li><em>✈️</em><b>The whole trip</b><span>Hotels, flights, trains and food in one place.</span></li></ul>
-<p>Tickets for gigs, shows, tours and days out across the UK and Europe, with no booking fees on our events. We’re putting the finishing touches to it now.</p>
+<p>Across the UK and Europe. We’re putting the finishing touches to it now.</p>
 <a href="/organiser">Hosting an event? Organiser portal →</a>
 <small>Already have tickets? <a href="/my-tickets" style="all:unset;cursor:pointer;text-decoration:underline">My tickets</a></small></div>`;
   const show = () => { document.documentElement.classList.add('tb-soon-on'); document.head.append(style); document.body.append(box); };

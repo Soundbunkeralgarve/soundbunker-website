@@ -11,3 +11,15 @@ test('the coming-soon notice covers public pages but never ticket, organiser or 
   assert.match(js, /not <span data-soon-enter>open<\/span> yet/);
   assert.match(readFileSync(new URL('../public-navigation.js', import.meta.url), 'utf8'), /^import "\.\/coming-soon\.js\?v=/);
 });
+
+test('the promo banner carries the tightened pitch, the partner-fee note, and loads with the notice', async () => {
+  const {promoHtml, PROMO} = await import('../promo-banner.js');
+  assert.equal(PROMO.headline, 'Premium event tickets. No booking fees.');
+  const html = promoHtml();
+  assert.match(html, /best travel deals from the biggest names/);
+  assert.match(html, /partner prices may include their own fees/);
+  const nav = readFileSync(new URL('../public-navigation.js', import.meta.url), 'utf8');
+  const soon = /coming-soon\.js\?v=([^"]+)/.exec(nav)[1];
+  assert.match(readFileSync(new URL('../promo-banner.js', import.meta.url), 'utf8'), new RegExp('coming-soon\\.js\\?v=' + soon), 'one shared module, so the notice never runs twice');
+  assert.match(nav, /import "\.\/promo-banner\.js\?v=/);
+});

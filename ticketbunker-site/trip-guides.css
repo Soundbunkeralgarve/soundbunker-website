@@ -27,3 +27,5 @@
 .flight-search .flight-oneway{display:flex;align-items:center;gap:8px;align-self:center;padding-top:20px}
 .flight-search .flight-oneway input{width:auto;min-height:0}
 .flight-search input:disabled{opacity:.45}
+/* Phone: date and select boxes must shrink inside the two-column search grid. */
+.trip-search label{min-width:0}.trip-search input,.trip-search select{min-width:0;max-width:100%}
