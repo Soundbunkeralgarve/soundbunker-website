@@ -2,15 +2,16 @@ import {getPublicEvents} from './featured-events.js?v=20261020';
 import {escapeHtml as esc,money,safeUrl} from './shared.js';
 import {eventKind} from './event-content.js';
 import {approvedPartnerListings} from './partner-listings-model.js?v=20261121-city';
-import {discoveryCategories,blend,filterItems,sortItems,mixSellers,featureFor,readState,stateQuery} from './discovery-model.js?v=20261123-live-search';
+import {discoveryCategories,blend,filterItems,sortItems,mixSellers,featureFor,readState,stateQuery} from './discovery-model.js?v=20261124-adventures';
 import {homeRails} from './sample-listings.js?v=20261123-live-search';
 import {selectFeaturedEvents} from './featured-selection.js';
 import {renderGygBox} from './gyg-box.js?v=20261121c';
 import {renderPartnerDirectory} from './partner-directory.js?v=20261123';
 import {saveNightToMyTrip,mountMyTrip,tourLink} from './night-planner.js?v=20261123-live-search';
-import {openShare,eventLink} from './event-share.js?v=20261123';
+import {openShare,eventLink} from './event-share.js?v=20261124-adventures';
 import {PARTY_TYPES,partyType,tripHref,eventTripState} from './home-trip-context.js?v=20261123-trip-flow';
 import {debounce,feedSearchUrl,createLatestLoader} from './live-search.js?v=20261123-live-search';
+import {activityProviderSearch} from './activity-search.js?v=20261124-adventures';
 const $=s=>document.querySelector(s);
 const reduceMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -71,6 +72,7 @@ document.querySelectorAll('[data-party]').forEach(b=>b.onclick=()=>{
  commit(next,{scroll:false});
 });
 document.querySelector('[data-trip-tickets]').onclick=e=>{e.preventDefault();commit(formState(),{scroll:true});};
+document.querySelectorAll('[data-activity]').forEach(button=>button.onclick=()=>commitForm({q:button.dataset.activity,category:'daysout'},{scroll:true}));
 const coverage=$('#coverage-count');if(coverage)coverage.textContent=CITY_PAGES.length+' destinations · UK & Europe';
 
 const opt=(v,l)=>{const o=document.createElement('option');o.value=v;o.textContent=l;return o;};
@@ -416,6 +418,8 @@ function render(){
   const widen=[state.q&&[{q:''},'Any event name'],state.city&&state.country&&[{city:''},'All of '+countryName(state.country)],state.when!=='any'&&[{when:'any'},'Any date'],state.category&&[{category:''},'Everything'],[{country:'',city:''},'Everywhere']].filter(Boolean);
   $('#event-status').innerHTML=(loadError?'<p class="catalogue-status">Live listings are temporarily unavailable. <button type="button" id="retry-events">Try again</button></p>':'')+(pending?'<p class="catalogue-status">Searching current partner listings…</p>':feedError?'<p class="catalogue-status">Partner search is temporarily unavailable. <button type="button" id="retry-search">Try again</button></p>':list.length?'':`<div class="listing-empty"><h3>${esc(['Nothing listed',where&&'in '+where,whenLabel(),'yet.'].filter(Boolean).join(' '))}</h3><p>Try a wider search; we won’t change your place without asking.</p><div class="empty-actions">${widen.map(([v,l])=>`<button type="button" class="btn-quiet" data-widen='${esc(JSON.stringify(v))}'>${esc(l)}</button>`).join('')}</div></div>`);
   $('#retry-events')?.addEventListener('click',load);
+  const adventure=activityProviderSearch(state);
+  if(adventure)$('#event-status').insertAdjacentHTML('beforeend',`<p class="catalogue-status"><a href="${esc(adventure.url)}" target="_blank" rel="sponsored noopener noreferrer">${esc(adventure.label)}</a>. Choose dates, check age and group rules, and pay with the provider.</p>`);
   $('#retry-search')?.addEventListener('click',()=>{const pending=loadFeed();render();pending.then(render);});
   document.querySelectorAll('[data-widen]').forEach(b=>b.onclick=()=>commitForm(JSON.parse(b.dataset.widen)));
  }
@@ -503,8 +507,8 @@ async function loadFeed(){
  feedCity=want;feedQueryKey=url;feedDone=false;feedLoading=true;feedError=false;
  const result=await feedLoader.run(async signal=>{const r=await fetch(url,{signal});if(!r.ok)throw Error('Partner search '+r.status);return r.json();});
  if(!result.current||feedQueryKey!==url)return;
- feedLoading=false;feedDone=true;feedError=Boolean(result.error);
- if(!result.error){const d=result.value;feed=Array.isArray(d.events)?d.events:[];if(Number.isInteger(d.total)&&d.total>0)feedTotal=d.total;}
+ feedLoading=false;feedDone=true;feedError=Boolean(result.error || result.value?.activitySearchFailed);
+ if(!result.error){const d=result.value;feed=Array.isArray(d.events)?d.events:[];if(Number.isInteger(d.total)&&d.total>0)feedTotal=d.total;}else feed=[];
  liveCount();
 }
 async function load(){

@@ -1,11 +1,34 @@
 # Ticket Bunker partner listings
 
-Updated 23 November 2026. This document describes the original controlled static
+Updated 24 November 2026. This document describes the original controlled static
 catalogue. The shop also has the separately implemented affiliate feeds and the
 Entradas.com browse directory described below; their publication paths do not use
 this legacy JSON configuration.
 
 ## Current integrations
+
+- Plopsaland Deutschland is approved on Awin programme 116511. Its default
+  publisher 3163272 redirect was verified against the actual park website with
+  supplier attribution preserved. A reviewed, unpriced family listing uses the
+  shared feed/card/detail/share/trip flow. It names the 2027 season explicitly:
+  the main park reopens 19 March 2027; winter attractions are separate admission.
+  `approved-attractions.js` schedules a publication review by 24 December 2026.
+  No booking, admission barcode or commission payment was tested.
+- Searches for go-karting, paintball, quad bikes and off-road experiences query
+  Viator's live free-text API alongside the existing catalogue. Only matching
+  supplier titles become day-out cards; prices, images and booking URLs come
+  from the actual response. Queries use verified destination IDs and a bounded
+  four-request queue, independent of the general catalogue's timeout budget.
+  Unsupported towns retain an approved Viator search link with the chosen city
+  and country; they never acquire guessed inventory or a guessed destination ID.
+  Activity context travels in public listing URLs so detail/share links can
+  refetch the actual product after a reload. Failed refreshes do not renew stale
+  activity prices; partial supply retries after five minutes.
+- UK cinema currently has no approved public resale/affiliate integration in
+  this configuration. Retail and corporate vouchers are not published as resale
+  stock. NOS remains on hold. Trip.com's affiliate link tool currently reports
+  that account activation is required; its welcome email alone has not enabled
+  a public flight or rail sales route here.
 
 - `partner-directory.js` adds approved Entradas.com browse links for Spain, using
   Awin programme 24761 and the existing publisher configuration. Madrid,

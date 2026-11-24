@@ -222,6 +222,11 @@
 @media(max-width:650px){.shop-home .hero.hero-sales .hero-grid{padding-top:30px}.shop-home .hero.hero-sales h1{font-size:clamp(54px,15vw,74px);margin-bottom:16px}.shop-home .hero.hero-sales .hero-kicker{font-size:9px;margin-bottom:20px}.shop-home .hero.hero-sales .h1-outline{-webkit-text-stroke:0}.shop-home .hero.hero-sales .hero-intro{font-size:14px;line-height:1.5;margin-bottom:16px}.shop-home .hero.hero-sales .hero-tagline{font-size:17px;line-height:1.35;margin-bottom:10px}.hero-place-note{font-size:9px}}
 
 /* One large name search, then optional destination filters. */
+.adventure-picks{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.adventure-picks>span{font-size:11px;font-weight:700;color:#59645b;margin-right:4px}
+.adventure-picks button{border:1px solid #c7ccc3;border-radius:999px;background:#fff;color:#202820;padding:9px 14px;min-height:44px;font:600 12px var(--body);cursor:pointer}
+.adventure-picks button:hover{background:var(--teal);border-color:var(--teal)}
+.adventure-picks button:focus-visible{outline:2px solid #087354;outline-offset:3px}
 .shop-home .hero.hero-sales .destination-search{border-radius:24px}
 .shop-home .hero.hero-sales .ds-keyword{grid-column:1/-1;border-right:0;border-bottom:1px solid #e2e2e2;padding:14px 22px 15px}
 .shop-home .hero.hero-sales .ds-keyword label{font-size:11px;letter-spacing:.09em;color:#505050}

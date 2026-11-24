@@ -1,9 +1,10 @@
 import {escapeHtml as esc, date} from './shared.js';
+import {activityContext} from './activity-search.js';
 const SITE = 'https://theticketbunker.com';
 export function eventLink(e) {
   if (e.preview) return SITE + '/event-preview?slug=' + encodeURIComponent(e.slug);
   const id = e.listingId || (e.key?.startsWith('feed:') ? e.key.slice(5) : '');
-  if (id) return SITE + '/listing/' + encodeURIComponent(id);
+  if (id) {const context=activityContext(e.activityContext);return SITE + '/listing/' + encodeURIComponent(id)+(context?'?'+new URLSearchParams(context):'');}
   const slug = e.slug || e.raw?.slug;
   if (slug) return SITE + '/event/' + encodeURIComponent(slug);
   if (!e.external && /^\/event\/[^/?#]+$/.test(e.url || '')) return SITE + e.url;

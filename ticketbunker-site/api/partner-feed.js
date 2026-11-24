@@ -1,7 +1,10 @@
 import {gunzipSync} from 'node:zlib';
 import {readFile} from 'node:fs/promises';
 import {listingCategory, metadataCategory, limoSearchRelevant} from './lib/listing-category.js';
-import {filterByQuery, searchQuery} from '../discovery-model.js';
+import {filterByQuery, searchQuery, placeText} from '../discovery-model.js';
+import {activityContext, activityIntent, ACTIVITY_SEARCHES} from '../activity-search.js';
+import {searchAdventures} from './lib/adventure-catalogue.js';
+import {approvedAttractions} from './lib/approved-attractions.js';
 // Approved affiliate event feeds. Buyers always book on the provider's own site through
 // our tracked link; the provider sells, delivers and supports the ticket.
 //
@@ -89,7 +92,7 @@ const ALGARVE = new Set(['albufeira', 'alvor', 'armacao de pera', 'carvoeiro', '
 const regionTown = want => ALGARVE.has(want);
 // Whole-word match, so "Hull" does not pick up "Solihull".
 const placeHas = (have, want) => (' ' + have.replace(/[^\p{L}\p{N}]+/gu, ' ') + ' ').includes(' ' + want.replace(/[^\p{L}\p{N}]+/gu, ' ').trim() + ' ');
-const place = value => String(value || '').normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase().trim();
+const place = placeText;
 // The soonest listings per category, optionally narrowed to one town or city. Without a
 // town, no more than a few per town so the national picks span the whole country.
 export function matchingListings(items, {city = '', country = '', q = ''} = {}) {
@@ -322,7 +325,7 @@ async function listings() {
       if (awin.status === 'fulfilled') console.log('partner-feed awin', awin.value.length);
       const keep = (r, test) => r.value || cached?.items.filter(test) || [];
       // Expired Viator search prices cannot be renewed by an unsuccessful refresh.
-      const items = [...keep(skiddle, i => i.provider === 'skiddle'), ...(viator.value || []), ...keep(awin, i => i.provider.startsWith('awin-'))];
+      const items = [...keep(skiddle, i => i.provider === 'skiddle'), ...(viator.value || []), ...keep(awin, i => i.provider.startsWith('awin-') && i.provider!=='awin-116511'), ...approvedAttractions()];
       cached = {until: Date.now() + feedCacheDuration([skiddle, viator, awin]), items}; return items;
     })
     .catch(() => { cached = {until: Date.now() + 5 * 6e4, items: cached?.items.filter(i => i.provider !== 'viator') || []}; return cached.items; })
@@ -340,8 +343,12 @@ export function findPartnerListing(items, id, now = Date.now()) {
     return u.protocol === 'https:' && hosts.has(u.hostname) && !u.username && !u.password && !u.port ? item : null;
   } catch { return null; }
 }
-export async function getPartnerListing(id) {
+export async function getPartnerListing(id, context) {
   if (!/^(?:skiddle:[\w-]+|viator:[\w-]+|awin:\d+:[\w-]+)$/.test(String(id || '')) || String(id).length > 120) return null;
+  const activity=activityContext(context);
+  if(activity && String(id).startsWith('viator:')) {
+    try {return findPartnerListing(await searchAdventures({q:ACTIVITY_SEARCHES[activity.activity].query,city:activity.city,country:activity.country},{normalise:viatorItem,places:VIATOR_PLACES}),id);}catch{return null;}
+  }
   return findPartnerListing(await listings(), id);
 }
 
@@ -351,7 +358,10 @@ export default async function handler(req, res) {
   const city = String(req.query?.city || '').slice(0, 80);
   const country = /^[A-Z]{2}$/.test(String(req.query?.country || '')) ? req.query.country : '';
   const q = searchQuery(req.query?.q);
-  const all = await listings();
+  let activitySearchFailed=false;
+  const [base,adventures] = await Promise.all([listings(),activityIntent(q) ? searchAdventures({q,city,country},{normalise:viatorItem,places:VIATOR_PLACES}).catch(()=>{activitySearchFailed=true;return [];}) : []]);
+  activitySearchFailed ||= adventures.partialFailure===true;
+  const all=[...new Map([...base,...adventures].map(item=>[item.id,item])).values()];
   const matched = matchingListings(all, {city, country, q}), events = pickListings(matched, {city, country});
-  return res.status(200).json({events, total: all.length, matched: matched.length, count: events.length});
+  return res.status(200).json({events, total: all.length, matched: matched.length, count: events.length,...(activitySearchFailed?{activitySearchFailed:true}:{})});
 }
