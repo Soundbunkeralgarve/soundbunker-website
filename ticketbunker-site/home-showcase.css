@@ -96,3 +96,20 @@
   .promo{min-height:240px}
 }
 @media(prefers-reduced-motion:reduce){.spot-tile img,.mood-tile img{transition:none}}
+
+/* Hero: brighter, crisper black and white. The photos carry the light; shade stays behind the words. */
+.shop-home .hero.hero-sales .hero-scene{filter:grayscale(1) contrast(1.28) brightness(1.02)}
+.shop-home .hero.hero-sales .hero-shade{background:
+  radial-gradient(48% 42% at 50% 34%,#0505058c,#05050540 62%,#05050500 100%),
+  radial-gradient(70% 55% at 50% -8%,#ffffff2e,#ffffff00 70%),
+  linear-gradient(0deg,#050505 0%,#050505b3 22%,#05050526 55%,#05050559 100%)}
+.shop-home .hero.hero-sales .hero-shade::after{content:"";position:absolute;inset:0;opacity:.09;mix-blend-mode:overlay;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.shop-home .hero.hero-sales h1{text-shadow:0 2px 24px #000a,0 0 2px #0008}
+.shop-home .hero.hero-sales .h1-solid{color:#fff}
+.shop-home .hero.hero-sales .h1-outline{color:#fff;-webkit-text-stroke:0;text-shadow:0 2px 24px #000a}
+.shop-home .hero.hero-sales .h1-outline::after{content:"";display:block;width:min(220px,40%);height:4px;margin:14px auto 0;background:var(--teal);border-radius:2px}
+.shop-home .hero.hero-sales .hero-tagline{color:#fff;text-shadow:0 1px 12px #000c}
+.shop-home .hero.hero-sales .hero-kicker{background:#ffffff1f;border-color:#ffffff59;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.shop-home .hero.hero-sales .discovery-entry button{background:#ffffff1a;border-color:#ffffff73;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.shop-home .hero.hero-sales .discovery-entry button:hover{background:#fff;color:#050505;border-color:#fff}
