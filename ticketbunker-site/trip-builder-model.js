@@ -132,8 +132,18 @@ export function matchingNights(raw, draft, now = Date.now()) {
   return (Array.isArray(raw) ? raw : []).filter(n => n && clean(n.id, 160) && clean(n.title, 140) && publicBookingUrl(n.url) &&
     (!n.startsAt || Date.parse(n.startsAt) > now - 864e5) &&
     (!draft.country || String(n.countryCode || '').toUpperCase() === draft.country) && cityMatches(n.city, draft.city))
-    .slice(0, 12).map(n => ({id: clean(n.id, 160), title: clean(n.title, 140), city: clean(n.city), countryCode: clean(n.countryCode, 2).toUpperCase(),
+    .slice(0, 12).map(n => ({id: clean(n.id, 160), title: clean(n.title, 140), category:clean(n.category,30), city: clean(n.city), countryCode: clean(n.countryCode, 2).toUpperCase(),
       startsAt: typeof n.startsAt === 'string' ? n.startsAt : '', timezone: clean(n.timezone), seller: clean(n.seller, 60), url: publicBookingUrl(n.url), external: n.external === true}));
+}
+
+export const savedListingStep = category => ['transit','transfer'].includes(category) ? 'travel' : category === 'dining' ? 'food' : 'tickets';
+
+export function transportBrowseHref(draft, category = 'transit') {
+  const d=normaliseDraft(draft), q=new URLSearchParams({city:d.city,country:d.country,cat:category==='transfer'?'transfer':'transit',party:d.party});
+  if(d.from)q.set('from',d.from);
+  if(d.to)q.set('to',d.to);
+  // Transport products are open-dated; the provider checks the selected dates.
+  return '/?'+q;
 }
 
 export function ticketBrowseHref(draft) {

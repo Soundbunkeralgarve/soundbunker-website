@@ -49,7 +49,7 @@ export const nightId = item => item.key || item.id || item.url;
 export function saveNight(list, item, now = Date.now()) {
   const id = nightId(item), keep = list.find(n => n.id === id);
   const night = {id, title: item.title, startsAt: item.startsAt || '', timezone: item.timezone || '', city: item.city || '',
-    countryCode: item.countryCode || '', venue: item.venue || '', seller: item.seller || '', url: item.url, external: Boolean(item.external),
+    countryCode: item.countryCode || '', category: item.category || '', venue: item.venue || '', seller: item.seller || '', url: item.url, external: Boolean(item.external),
     address: item.address || '', ...(Number.isFinite(item.lat) && Number.isFinite(item.lng) ? {lat: item.lat, lng: item.lng} : {}),
     done: {tickets: false, ...(keep?.done || {})}, userMarked: {...(keep?.userMarked || {})}};
   return tidyTrip([night, ...list.filter(n => n.id !== id)], now);

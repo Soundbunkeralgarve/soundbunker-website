@@ -220,3 +220,11 @@
 .hero-place-note{font-size:10px;color:#c7c7c7;margin:9px 0 0;line-height:1.5}
 .hero-place-note a{color:#fff;text-underline-offset:3px;margin-left:6px}
 @media(max-width:650px){.shop-home .hero.hero-sales .hero-grid{padding-top:30px}.shop-home .hero.hero-sales h1{font-size:clamp(54px,15vw,74px);margin-bottom:16px}.shop-home .hero.hero-sales .hero-kicker{font-size:9px;margin-bottom:20px}.shop-home .hero.hero-sales .h1-outline{-webkit-text-stroke:0}.shop-home .hero.hero-sales .hero-intro{font-size:14px;line-height:1.5;margin-bottom:16px}.shop-home .hero.hero-sales .hero-tagline{font-size:17px;line-height:1.35;margin-bottom:10px}.hero-place-note{font-size:9px}}
+
+/* One large name search, then optional destination filters. */
+.shop-home .hero.hero-sales .destination-search{border-radius:24px}
+.shop-home .hero.hero-sales .ds-keyword{grid-column:1/-1;border-right:0;border-bottom:1px solid #e2e2e2;padding:14px 22px 15px}
+.shop-home .hero.hero-sales .ds-keyword label{font-size:11px;letter-spacing:.09em;color:#505050}
+.shop-home .hero.hero-sales .ds-keyword input{font-size:24px;line-height:1.35;font-weight:600;min-height:42px;padding:5px 0;color:#111}
+.shop-home .hero.hero-sales .ds-keyword input::placeholder{font-weight:400;color:#777}
+@media(max-width:650px){.shop-home .hero.hero-sales .destination-search{border-radius:18px}.shop-home .hero.hero-sales .ds-keyword{padding:12px 13px}.shop-home .hero.hero-sales .ds-keyword input{font-size:20px;min-height:40px}.shop-home .hero.hero-sales .ds-keyword label{font-size:10px;letter-spacing:.05em}}

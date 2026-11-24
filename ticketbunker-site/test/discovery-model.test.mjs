@@ -57,8 +57,8 @@ test('paid feature never escapes the chosen destination',()=>{
 
 test('destination state round-trips through the URL and rejects junk',()=>{
  const s=readState('?country=gb&city=London&cat=comedy&when=dates&from=2026-12-01&to=bad');
- assert.deepEqual(s,{country:'GB',city:'London',category:'comedy',when:'dates',range:{from:'2026-12-01',to:''}});
+ assert.deepEqual(s,{country:'GB',city:'London',category:'comedy',when:'dates',q:'',range:{from:'2026-12-01',to:''}});
  assert.equal(stateQuery(s),'?country=GB&city=London&cat=comedy&when=dates&from=2026-12-01');
- assert.deepEqual(readState('?cat=nope&when=never&country=Portugal',{country:'PT',city:'Faro'}),{country:'',city:'Faro',category:'',when:'any',range:{from:'',to:''}});
+ assert.deepEqual(readState('?cat=nope&when=never&country=Portugal',{country:'PT',city:'Faro'}),{country:'',city:'Faro',category:'',when:'any',q:'',range:{from:'',to:''}});
  assert.equal(readState('',{country:'PT',city:'Faro'}).city,'Faro');
 });

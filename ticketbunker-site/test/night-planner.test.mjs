@@ -56,10 +56,10 @@ test('a public event handoff saves its details but legacy done is not a user boo
   const oldStorage=globalThis.localStorage;let stored='[]';
   globalThis.localStorage={getItem:()=>stored,setItem:(key,value)=>{assert.equal(key,'tb-my-trip');stored=value;}};
   try {
-    const item={...gig,key:'feed:skiddle:handoff',startsAt:''};
+    const item={...gig,key:'feed:skiddle:handoff',startsAt:'',category:'transit'};
     const selected=saveNightToMyTrip(item);
     assert.equal(selected.id,item.key);assert.equal(selected.title,item.title);assert.equal(selected.url,item.url);
-    assert.equal(selected.done.tickets,false);assert.deepEqual(selected.userMarked,{});
+    assert.equal(selected.done.tickets,false);assert.deepEqual(selected.userMarked,{});assert.equal(selected.category,'transit');
     const legacy=saveNight([{...selected,done:{tickets:true,stay:true},userMarked:{}}],item)[0];
     assert.deepEqual(legacy.done,{tickets:true,stay:true});assert.deepEqual(legacy.userMarked,{});
   } finally {if(oldStorage===undefined)delete globalThis.localStorage;else globalThis.localStorage=oldStorage;}

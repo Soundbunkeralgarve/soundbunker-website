@@ -6,7 +6,7 @@ import {selectFeaturedEvents} from './featured-selection.js';
 export const discoveryCategories = Object.freeze({
   music: 'Live music', club: 'Club nights', comedy: 'Comedy', festival: 'Festivals',
   shows: 'Theatre & shows', family: 'Family & kids', cinema: 'Cinema', boat: 'Boat trips', daysout: 'Experiences & days out',
-  sport: 'Sport & racing', seasonal: 'Seasonal & special days', transfer: 'Limos, chauffeurs & transfers', dining: 'Restaurants & dining', events: 'Concerts & events', other: 'More events'
+  sport: 'Sport & racing', seasonal: 'Seasonal & special days', transit: 'Trains, buses & city transport', transfer: 'Limos, chauffeurs & transfers', dining: 'Restaurants & dining', events: 'Concerts & events', other: 'More events'
 });
 const nativeCategory = {show: 'music', club: 'club', comedy: 'comedy', festival: 'festival', sports: 'sport', workshop: 'daysout'};
 const partnerCategory = {music: 'music', comedy: 'comedy', cinema: 'cinema', attractions: 'daysout', events: 'events'};
@@ -16,6 +16,18 @@ export const regionTowns = Object.freeze({
   algarve: ['albufeira', 'alcoutim', 'aljezur', 'almancil', 'alvor', 'armacao de pera', 'carvoeiro', 'castro marim', 'faro', 'ferragudo', 'lagoa', 'lagos', 'loule', 'monchique', 'monte gordo', 'olhao', 'portimao', 'quarteira', 'quinta do lago', 'sagres', 'sao bras de alportel', 'silves', 'tavira', 'vale do lobo', 'vila do bispo', 'vila real de santo antonio', 'vilamoura']
 });
 export const placeText = value => String(value || '').normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase().trim().replace(/\s+/g, ' ');
+export const searchQuery = value => String(value ?? '').slice(0, 160).trim().replace(/\s+/g, ' ');
+// Search is literal: every whitespace-separated word must occur in a public
+// listing field. Punctuation is never interpreted as a regular expression.
+export function filterByQuery(items, q = '') {
+  const tokens = placeText(searchQuery(q)).split(' ').filter(Boolean);
+  if (!tokens.length) return items;
+  return items.filter(item => {
+    const terms = typeof item.searchTerms === 'string' ? item.searchTerms.slice(0, 200) : '';
+    const text = placeText([item.title, item.venue, item.city, item.organiser, terms].filter(v => typeof v === 'string').join(' '));
+    return tokens.every(token => text.includes(token));
+  });
+}
 export function regionFor(city) {
   const town = placeText(city);
   return Object.keys(regionTowns).find(region => regionTowns[region].includes(town)) || '';
@@ -97,8 +109,9 @@ export function feedItem(f, now = Date.now()) {
     key: 'feed:' + f.id, source: f.provider, title: f.title, category: f.category, kind: '',
     city: f.city || '', venue: f.venue || '', countryCode: f.countryCode || '', startsAt: f.startsAt, endsAt: f.endsAt || '',
     timezone: f.timezone || 'Europe/London', priceCents: Number.isInteger(f.priceCents) ? f.priceCents : null,
-    currency: f.currency || '', soldOut: false, featured: false, image: f.image || '', thumb: f.thumb === true, organiser: '',
+    currency: f.currency || '', soldOut: false, featured: false, image: f.image || '', thumb: f.thumb === true, organiser: typeof f.organiser === 'string' ? f.organiser.slice(0, 160) : '',
     url: f.url, seller: f.seller, external: true, bookable: true,
+    ...(typeof f.searchTerms === 'string' ? {searchTerms: f.searchTerms.slice(0, 200)} : {}),
     // Where the venue is, for "Get me there" (address always; map position when known).
     address: typeof f.address === 'string' ? f.address.slice(0, 200) : '',
     ...(Number.isFinite(f.lat) && Number.isFinite(f.lng) && Math.abs(f.lat) <= 90 && Math.abs(f.lng) <= 180 ? {lat: f.lat, lng: f.lng} : {})
@@ -114,8 +127,8 @@ export function blend(nativeEvents = [], partnerListings = [], now = Date.now(),
   return out;
 }
 
-export function filterItems(items, {country = '', city = '', category = '', when = 'any', range = {}} = {}, now = Date.now()) {
-  return items.filter(item =>
+export function filterItems(items, {country = '', city = '', category = '', when = 'any', range = {}, q = ''} = {}, now = Date.now()) {
+  return filterByQuery(items, q).filter(item =>
     (!country || item.countryCode === country) && cityMatches(item.city, city) &&
     (!category || item.category === category) && inWindow(item, when, now, range));
 }
@@ -193,6 +206,7 @@ export function readState(search = '', saved = {}) {
     city: String(pick('city', saved.city || '')).slice(0, 80),
     category: Object.hasOwn(discoveryCategories, pick('cat')) ? pick('cat') : '',
     when: WHEN.has(pick('when')) ? pick('when') : 'any',
+    q: searchQuery(pick('q')),
     range: {from: DAY.test(pick('from')) ? pick('from') : '', to: DAY.test(pick('to')) ? pick('to') : ''}
   };
   if (state.when !== 'dates') state.range = {from: '', to: ''};
@@ -205,6 +219,7 @@ export function stateQuery(state) {
   if (state.category) q.set('cat', state.category);
   if (state.when && state.when !== 'any') q.set('when', state.when);
   if (state.when === 'dates') { if (state.range.from) q.set('from', state.range.from); if (state.range.to) q.set('to', state.range.to); }
+  if (searchQuery(state.q)) q.set('q', searchQuery(state.q));
   const s = q.toString();
   return s ? '?' + s : '';
 }
