@@ -2,10 +2,11 @@
 // Layout: header → bird's-eye map (you, nearby stops, the chosen route) → line status →
 // four tabs (Departures · Route · Taxi · Travel). Live boards: London via TfL in the browser,
 // keyed cities via /api/get-around once their key is set. Nothing is guessed.
-import {MODES, LIVE, KEYED, keyedBoard, keyedCitiesLive, TFL_ATTRIBUTION, tflNearby, tflArrivals, tflStatus, tflJourney, taxiLinks, plannerLinks, tripLinks, minsText, distanceText} from './get-around.js?v=20261125gd';
+import {MODES, LIVE, KEYED, keyedBoard, keyedCitiesLive, TFL_ATTRIBUTION, tflNearby, tflArrivals, tflStatus, tflJourney, taxiLinks, plannerLinks, tripLinks, minsText, distanceText} from './get-around.js?v=20261125gf';
 import {CITY_COORDS, distanceKm, nearestCities} from './city-coords.js';
 import {cityBySlug} from './city-places.js';
 import {storeButtons} from './app-promo.js?v=20261125ga';
+import {pickOffers, offerCards, loadOffers, tripSearchLinks} from './travel-offers.js?v=20261125gg';
 
 const LEAFLET = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/';
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
@@ -65,7 +66,7 @@ export function mount(root, {slug, autoLocate = false, to = null, toName = '', k
         ${tfl() ? needs(true) : ''}<button class="ga-go" type="submit">Show routes</button></form>
       <div data-routes aria-live="polite"></div></section>
     <section class="ga-panel" id="ga-p-taxi" role="tabpanel" aria-labelledby="ga-t-taxi" hidden><div class="ga-big" data-taxis></div></section>
-    <section class="ga-panel" id="ga-p-trip" role="tabpanel" aria-labelledby="ga-t-trip" hidden><div class="ga-big" data-trip></div></section>
+    <section class="ga-panel" id="ga-p-trip" role="tabpanel" aria-labelledby="ga-t-trip" hidden><div class="ga-travel" data-trip></div></section>
     <aside class="ga-app"><div><b>Get around live, in your pocket.</b><span>Departures where you’re standing, step-free routes and taxis, next to your tickets.</span></div><div>${storeButtons()}</div></aside>
     <p class="ga-attr" data-attr>${tfl() ? esc(TFL_ATTRIBUTION) + ' Times are TfL’s live predictions and can change.' : keyed() ? esc(KEYED[st.slug].attribution) + ' Times marked “timetable” are scheduled, not live.' : 'Live boards are added city by city as we connect each operator’s official feed.'} Map © OpenStreetMap contributors.</p>`;
 
@@ -226,8 +227,26 @@ export function mount(root, {slug, autoLocate = false, to = null, toName = '', k
   function renderLinks() {
     $('[data-taxis]').innerHTML = taxiLinks({from: st.here, to: st.to, toName: st.toName}).map(l => `<a href="${esc(l.url)}" target="_blank" rel="noopener"><b>${l.kind === 'uber' ? '🚕' : '🚖'} ${esc(l.name)}</b><small>${esc(l.note)}</small></a>`).join('')
       + '<p class="ga-muted">Prices and pickup times are shown in the taxi app before you book.</p>';
+    if (!$('[data-trip]').dataset.ready) renderTrip();
+  }
+  // Travel tab: one "where to, when" search, real bookable transfers and passes, then the rest.
+  async function renderTrip() {
+    const box = $('[data-trip]'); box.dataset.ready = '1';
     const icons = {flights: '✈', hotels: '🛏', coaches: '🚆', limos: '🥂', 'car-hire': '🚗'};
-    $('[data-trip]').innerHTML = tripLinks({name: st.name, country: st.country}).map(l => `<a href="${esc(l.href)}"><b>${icons[l.kind] || ''} ${esc(l.label)}</b><small>For ${esc(st.name)}</small></a>`).join('');
+    const today = new Date().toISOString().slice(0, 10);
+    box.innerHTML = `<form class="ga-tripsearch" data-tripsearch><b>Getting to ${esc(st.name)}</b>
+        <div class="ga-ts-row"><label>From<input name="from" required placeholder="e.g. Manchester" autocomplete="off"></label><label>To<input name="to" required value="${esc(st.name)}" autocomplete="off"></label>
+        <label>Date<input name="depart" type="date" min="${today}" value="${today}"></label></div><button class="ga-go" type="submit">Search trains, flights &amp; buses</button></form>
+      <div class="ga-ts-results" data-ts-results></div>
+      <h3 class="ga-sub">Transfers, limos &amp; passes in ${esc(st.name)}</h3><div class="offer-grid" data-offers><p class="offer-loading">Finding live options…</p></div>
+      <h3 class="ga-sub">More for your trip</h3><div class="ga-big">${tripLinks({name: st.name, country: st.country}).map(l => `<a href="${esc(l.href)}"><b>${icons[l.kind] || ''} ${esc(l.label)}</b><small>For ${esc(st.name)}</small></a>`).join('')}</div>`;
+    box.querySelector('[data-tripsearch]').addEventListener('submit', e => {
+      e.preventDefault(); const f = e.target.elements;
+      box.querySelector('[data-ts-results]').innerHTML = tripSearchLinks({from: f.from.value.trim(), to: f.to.value.trim(), depart: f.depart.value})
+        .map(l => `<a href="${esc(l.url)}" target="_blank" rel="noopener"><b>${{flights: '✈', trains: '🚆', buses: '🚌'}[l.kind]} ${esc(l.name)}</b><small>${esc(l.note)} ↗</small></a>`).join('');
+    });
+    const items = pickOffers(await loadOffers(st.name), 'getaround', 6);
+    box.querySelector('[data-offers]').innerHTML = items.length ? offerCards(items) : `<p class="offer-empty">No live transfers or passes listed for ${esc(st.name)} right now.</p>`;
   }
 
   // ---------- events ----------

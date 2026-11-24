@@ -47,7 +47,7 @@ export function cityHtml(shell, [slug, name, country, , pitch], listings = []) {
     .replace('<section class="faq-section"', guide + '<section class="faq-section"')
     // Every city page carries the full Get around widget in place of the homepage teaser.
     .replace(/<section class="get-around-section ga-home"[\s\S]*?<\/section>/, getAroundSection(slug, inName))
-    .replace('</head>', '<script type="module" src="/get-around-ui.js?v=20261125gd"></script></head>');
+    .replace('</head>', '<script type="module" src="/get-around-ui.js?v=20261125gh"></script></head>');
 }
 
 export default async function handler(req, res) {
