@@ -141,3 +141,26 @@
 .shop-home :is(#rail-music,#rail-festival,#rail-cinema,#rail-sport,#rail-seasonal) [data-track]{grid-auto-flow:row dense!important;grid-auto-columns:auto!important;overflow-x:visible!important;transform:none!important}
 .shop-home :is(#rail-cinema,#rail-sport,#rail-seasonal) .listing-card{grid-column:auto!important}
 .shop-home :is(#rail-cinema,#rail-sport,#rail-seasonal) .card-foot .get{display:none!important}
+
+/* Plan your trip: dark tiles instead of white cards with a stack of black pills */
+.shop-home #plan-grid{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;align-items:stretch}
+.shop-home #plan-grid .plan-tile{display:flex!important;flex-direction:column;gap:8px;background:#101018!important;border:1px solid #24242f!important;border-radius:18px!important;padding:18px!important;color:#d8dce2!important;box-shadow:none!important;min-height:0!important}
+.shop-home #plan-grid .plan-tile:hover{border-color:#00e0a666!important}
+.shop-home #plan-grid .plan-ic{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:#00e0a61a;font-size:20px}
+.shop-home #plan-grid .plan-tile>b{color:#f4f6f8!important;font:900 22px/1.05 'Barlow Condensed',Impact,sans-serif!important;text-transform:uppercase;letter-spacing:.01em;opacity:1!important}
+.shop-home #plan-grid .plan-blurb{color:#a7adb6!important;font-size:14px;line-height:1.4;margin-bottom:auto;padding-bottom:6px}
+.shop-home #plan-grid .plan-main{display:block;text-align:center;background:#00e0a6!important;color:#04140d!important;border-radius:12px!important;padding:11px 12px!important;font-weight:800;font-size:14px;text-decoration:none;border:0!important}
+.shop-home #plan-grid .plan-main:hover{filter:brightness(1.08)}
+.shop-home #plan-grid .plan-alt{display:grid;gap:2px}
+.shop-home #plan-grid .plan-link{display:block;background:none!important;color:#d8dce2!important;border:0!important;padding:6px 2px!important;font-size:13px;font-weight:600;text-decoration:none;border-radius:0!important;white-space:normal}
+.shop-home #plan-grid .plan-link:hover{color:#00e0a6!important}
+.shop-home #plan-grid .plan-more summary{cursor:pointer;color:#00e0a6;font-size:13px;font-weight:700;padding:6px 2px;list-style:none}
+.shop-home #plan-grid .plan-more summary::-webkit-details-marker{display:none}
+.shop-home #plan-grid .plan-more[open] summary{color:#a7adb6}
+.shop-home #plan-grid .plan-soon{color:#7d838c;font-style:normal;font-size:13px}
+.shop-home #plan-grid .plan-transfer .plan-ic{background:#ff4f9a1a}
+.shop-home #plan-grid .plan-note{grid-column:1/-1;color:#7d838c;font-size:12px;margin:4px 0 0}
+.shop-home #plan-grid small{display:none}
+@media(min-width:1100px){.shop-home #plan-grid{grid-template-columns:repeat(5,minmax(0,1fr))!important}}
+.shop-home #plan-grid .plan-blurb{margin-bottom:0!important;min-height:2.8em}
+.shop-home #plan-grid .plan-main{width:100%;box-sizing:border-box}
