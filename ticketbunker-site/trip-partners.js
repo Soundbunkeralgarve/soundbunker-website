@@ -39,11 +39,11 @@ export const TRIP_KINDS = Object.freeze([
   ['transfer', 'Private transfers', 'Check airport rides and chauffeur coverage.']
 ]);
 
-export function tripOptions(country, city, {page = '', spot = '', providers = TRIP_PARTNERS} = {}) {
+export function tripOptions(country, city, {page = '', spot = '', providers = TRIP_PARTNERS, trip = {}} = {}) {
   return TRIP_KINDS.map(([kind, label, blurb]) => ({kind, label, blurb,
     partners: [
       ...providers.filter(([k, , countries, approved]) => k === kind && approved && (countries.includes('*') || countries.includes(country)))
         .map(([, name, , , link]) => ({name, url: withClickRef(link(city), page, spot), commercial: 'affiliate'})),
-      ...directoryProviders(kind, country, city)
+      ...directoryProviders(kind, country, city, trip)
     ]}));
 }

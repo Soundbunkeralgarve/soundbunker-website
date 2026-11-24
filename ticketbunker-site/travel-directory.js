@@ -16,6 +16,21 @@ export function tripDestination(country = '', city = '') {
 }
 
 const entry = (id, name, url, description) => ({id, name, url, description, commercial: 'direct'});
+// Dates, guests and rooms the visitor chose on our site, checked before they go into a
+// provider's search. Anything unusable is dropped so the provider asks for it instead.
+const isoDay = v => /^\d{4}-\d{2}-\d{2}$/.test(String(v || '')) && !Number.isNaN(Date.parse(v + 'T00:00:00Z')) ? String(v) : '';
+const whole = (v, lo, hi) => { const n = Number(v); return Number.isInteger(n) && n >= lo && n <= hi ? n : 0; };
+const clock = v => /^([01]\d|2[0-3]):[0-5]\d$/.test(String(v || '')) ? String(v) : '';
+export function tripDates(trip = {}) {
+  let from = isoDay(trip.from), to = isoDay(trip.to);
+  if (from && to && to <= from) to = '';
+  const adults = whole(trip.adults, 1, 30), rooms = whole(trip.rooms, 1, 8);
+  const nights = from && to ? Math.round((Date.parse(to) - Date.parse(from)) / 864e5) : 0;
+  return {from, to, nights, adults, rooms: adults ? Math.min(rooms || 1, adults) : rooms, pickup: clock(trip.pickup), dropoff: clock(trip.dropoff)};
+}
+// Expedia wants one adults value per room, e.g. 5 adults in 2 rooms → adults=3&adults=2.
+const perRoom = (adults, rooms) => Array.from({length: rooms}, (_, i) => Math.floor(adults / rooms) + (i < adults % rooms ? 1 : 0));
+const ampm = t => { const [h, m] = t.split(':').map(Number); return String(h % 12 || 12).padStart(2, '0') + String(m).padStart(2, '0') + (h < 12 ? 'AM' : 'PM'); };
 // Parameters match the approved account's link builder (23 Nov 2026). Public
 // destination searches are not inventory records and contain no API credential.
 export function viatorTransportProviders(country = '', city = '') {
@@ -36,21 +51,45 @@ export function viatorTransportProviders(country = '', city = '') {
   });
 }
 const forkDomains = {GB: 'www.thefork.co.uk', PT: 'www.thefork.pt', ES: 'www.thefork.es', FR: 'www.thefork.fr', IT: 'www.thefork.it'};
-export function directoryProviders(kind, country = '', city = '') {
-  const d = tripDestination(country, city);
+export function directoryProviders(kind, country = '', city = '', trip = {}) {
+  const d = tripDestination(country, city), t = tripDates(trip);
   switch (kind) {
     case 'stay': {
       const url = new URL('https://www.expedia.co.uk/Hotel-Search');
       if (d.search) url.searchParams.set('destination', d.search);
-      return [entry('expedia-hotels', 'Search hotels on Expedia', url.href,
-        'Choose your dates, guests, location and cancellation terms on Expedia.')];
+      if (t.from) url.searchParams.set('startDate', t.from);
+      if (t.to) url.searchParams.set('endDate', t.to);
+      if (t.adults) { url.searchParams.set('rooms', String(t.rooms)); for (const n of perRoom(t.adults, t.rooms)) url.searchParams.append('adults', String(n)); }
+      const booking = new URL('https://www.booking.com/searchresults.en-gb.html');
+      if (d.search) booking.searchParams.set('ss', d.search);
+      if (t.from) booking.searchParams.set('checkin', t.from);
+      if (t.to) booking.searchParams.set('checkout', t.to);
+      if (t.adults) { booking.searchParams.set('group_adults', String(t.adults)); booking.searchParams.set('no_rooms', String(t.rooms)); booking.searchParams.set('group_children', '0'); }
+      const ready = t.from && t.to;
+      return [
+        entry('expedia-hotels', 'Search hotels on Expedia', url.href, ready
+          ? 'Opens Expedia with your city, dates and rooms filled in: see live prices, then book there.'
+          : 'Choose your dates, guests, location and cancellation terms on Expedia.'),
+        entry('booking-hotels', 'Search stays on Booking.com', booking.href, ready
+          ? 'Opens Booking.com with the same search, so you can compare hotel and apartment prices.'
+          : 'Compare hotels, apartments and guest houses; choose your dates on Booking.com.')
+      ];
     }
     case 'travel': return [
       entry('trainline-direct', 'Search Trainline', 'https://www.thetrainline.com/', 'Compare available train and coach routes; enter your departure and destination.'),
       entry('omio-direct', 'Search Omio', 'https://www.omio.com/', 'Check train, coach and other travel options for your journey.')
     ];
-    case 'car': return [entry('expedia-cars', 'Search car hire on Expedia', 'https://www.expedia.co.uk/Cars',
-      'Choose pickup location and times, driver details and cover; check deposits, excess and fuel policy.')];
+    case 'car': {
+      if (!d.city) return [entry('expedia-cars', 'Search car hire on Expedia', 'https://www.expedia.co.uk/Cars',
+        'Choose pickup location and times, driver details and cover; check deposits, excess and fuel policy.')];
+      const url = new URL('https://www.expedia.co.uk/carsearch');
+      url.searchParams.set('locn', d.search);
+      if (t.from) { url.searchParams.set('d1', t.from); url.searchParams.set('time1', ampm(t.pickup || '10:00')); }
+      if (t.to) { url.searchParams.set('d2', t.to); url.searchParams.set('time2', ampm(t.dropoff || '10:00')); }
+      return [entry('expedia-cars', 'Search car hire on Expedia', url.href, t.from && t.to
+        ? 'Opens Expedia with your pickup place, dates and times filled in: compare cars and prices, then book there.'
+        : 'Choose pickup location and times, driver details and cover; check deposits, excess and fuel policy.')];
+    }
     case 'eat': {
       const maps = new URL('https://www.google.com/maps/search/');
       maps.searchParams.set('api', '1');
