@@ -1,0 +1,1398 @@
+[
+{
+"slug": "copenhagen",
+"intro": "Scandinavian cool: colourful Nyhavn, design, cycling and New Nordic food.",
+"areas": [
+[
+"Indre By",
+"Old town and Strøget."
+],
+[
+"Nyhavn",
+"Colourful harbour."
+],
+[
+"Nørrebro",
+"Bars and multicultural food."
+],
+[
+"Vesterbro",
+"Meatpacking District nightlife."
+]
+],
+"sights": [
+[
+"Tivoli Gardens",
+"Historic amusement park."
+],
+[
+"Nyhavn",
+"Colourful 17th-century harbour."
+],
+[
+"Rosenborg Castle",
+"Renaissance castle with the Crown Jewels."
+],
+[
+"Christiania",
+"Freetown community (respect the no-photos rule)."
+]
+],
+"eat": [
+[
+"Smørrebrød",
+"Open sandwiches."
+],
+[
+"Torvehallerne",
+"Glass market halls with food stalls."
+],
+[
+"Danish pastries",
+"Wienerbrød and cinnamon rolls."
+]
+],
+"night": [
+[
+"Meatpacking District",
+"Bars and clubs in Kødbyen."
+],
+[
+"Nørrebro",
+"Cocktail bars and cafés."
+],
+[
+"Jazz Festival",
+"Copenhagen Jazz Festival every July."
+]
+],
+"arrive": "Copenhagen Airport has Metro and trains to the centre (about 15 minutes).",
+"around": "Metro, S-trains, buses and harbour buses; cycling everywhere.",
+"pass": "City Pass or Copenhagen Card; check current fares.",
+"when": "May–September.",
+"tip": "Rent a bike and stay in the right lane.",
+"sources": [
+{
+"title": "Visit Copenhagen (official guide)",
+"url": "https://www.visitcopenhagen.com/"
+},
+{
+"title": "DOT (public transport)",
+"url": "https://dinoffentligetransport.dk/en/"
+},
+{
+"title": "Copenhagen Airport",
+"url": "https://www.cph.dk/en"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "stockholm",
+"intro": "A capital built on 14 islands, with a medieval old town, design and archipelago boat trips.",
+"areas": [
+[
+"Gamla Stan",
+"Medieval old town."
+],
+[
+"Södermalm",
+"Bars, vintage shops and views."
+],
+[
+"Djurgården",
+"Museums and parks."
+]
+],
+"sights": [
+[
+"Vasa Museum",
+"Recovered 17th-century warship."
+],
+[
+"Gamla Stan",
+"Royal Palace and lanes."
+],
+[
+"ABBA The Museum",
+"Interactive museum of the band."
+],
+[
+"Archipelago",
+"Boat trips to the islands."
+]
+],
+"eat": [
+[
+"Meatballs",
+"With lingonberries."
+],
+[
+"Fika",
+"Coffee and cinnamon buns."
+],
+[
+"Östermalms Saluhall",
+"Historic food hall."
+]
+],
+"night": [
+[
+"Södermalm",
+"Bars and live music."
+],
+[
+"Stureplan",
+"Upmarket clubs."
+],
+[
+"Summer rooftop bars",
+"Long light evenings."
+]
+],
+"arrive": "Arlanda Airport has the Arlanda Express and commuter trains.",
+"around": "Tunnelbana metro, trams, buses and commuter ferries all run on SL tickets.",
+"pass": "SL travel cards or contactless; check current fares.",
+"when": "May–September.",
+"tip": "Most places are cashless; bring a card.",
+"sources": [
+{
+"title": "Visit Stockholm (official guide)",
+"url": "https://www.visitstockholm.com/"
+},
+{
+"title": "SL",
+"url": "https://sl.se/en"
+},
+{
+"title": "Swedavia: Arlanda",
+"url": "https://www.swedavia.com/arlanda/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "oslo",
+"intro": "A green waterfront capital of fjords, Munch and modern architecture.",
+"areas": [
+[
+"Sentrum",
+"Karl Johans gate and the Palace."
+],
+[
+"Bjørvika",
+"Opera House and the MUNCH museum."
+],
+[
+"Grünerløkka",
+"Cafés, vintage shops and bars by the Akerselva river."
+]
+],
+"sights": [
+[
+"Oslo Opera House",
+"Walk on its roof."
+],
+[
+"MUNCH",
+"Edvard Munch’s works."
+],
+[
+"Vigeland Park",
+"More than 200 sculptures by Gustav Vigeland."
+],
+[
+"Fram & Viking ships",
+"Bygdøy peninsula museums."
+]
+],
+"eat": [
+[
+"Mathallen",
+"Food hall in Vulkan."
+],
+[
+"Brunost",
+"Sweet brown cheese, sliced thin."
+],
+[
+"Seafood",
+"Fresh fish and shrimp."
+]
+],
+"night": [
+[
+"Grünerløkka",
+"Bars and pubs."
+],
+[
+"Aker Brygge",
+"Waterfront bars."
+],
+[
+"Øya Festival",
+"August music festival."
+]
+],
+"arrive": "Oslo Airport Gardermoen has the Flytoget and regional trains.",
+"around": "Metro, trams, buses and ferries.",
+"pass": "Ruter tickets and the Oslo Pass; check current fares.",
+"when": "May–September.",
+"tip": "Take a ferry into the Oslofjord on public transport tickets.",
+"sources": [
+{
+"title": "Visit Oslo (official guide)",
+"url": "https://www.visitoslo.com/en/"
+},
+{
+"title": "Ruter",
+"url": "https://ruter.no/en/"
+},
+{
+"title": "Oslo Airport",
+"url": "https://avinor.no/en/airport/oslo-airport/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "helsinki",
+"intro": "A design city on the Baltic, with saunas, islands and a neoclassical centre.",
+"areas": [
+[
+"Senate Square",
+"Cathedral and the centre."
+],
+[
+"Design District",
+"Shops and galleries."
+],
+[
+"Kallio",
+"Bohemian district of bars and cafés."
+]
+],
+"sights": [
+[
+"Helsinki Cathedral",
+"White neoclassical cathedral on Senate Square."
+],
+[
+"Suomenlinna",
+"Sea fortress (World Heritage)."
+],
+[
+"Temppeliaukio Church",
+"Church carved into solid rock."
+],
+[
+"Public saunas",
+"Löyly and Allas Sea Pool."
+]
+],
+"eat": [
+[
+"Market Square",
+"Harbour market with stalls and cafés."
+],
+[
+"Cinnamon buns",
+"Korvapuusti, the Finnish cinnamon bun."
+],
+[
+"Reindeer and salmon",
+"Finnish classics."
+]
+],
+"night": [
+[
+"Kallio",
+"Local bars and karaoke."
+],
+[
+"Saunas",
+"Evening sauna sessions."
+],
+[
+"Flow Festival",
+"Music and arts festival in August."
+]
+],
+"arrive": "Helsinki Airport has trains to the centre (about 30 minutes).",
+"around": "Trams, Metro, buses and ferries.",
+"pass": "HSL day tickets; the ferry to Suomenlinna is included.",
+"when": "June–August; December markets.",
+"tip": "Try a public sauna with a sea dip.",
+"sources": [
+{
+"title": "MyHelsinki (official guide)",
+"url": "https://www.myhelsinki.fi/"
+},
+{
+"title": "HSL",
+"url": "https://www.hsl.fi/en"
+},
+{
+"title": "Helsinki Airport",
+"url": "https://www.finavia.fi/en/airports/helsinki-airport"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "tallinn",
+"intro": "A fairy-tale walled old town, with a digital-savvy, creative modern city around it.",
+"areas": [
+[
+"Old Town",
+"World Heritage medieval town."
+],
+[
+"Telliskivi",
+"Creative City: former factories with cafés and shops."
+],
+[
+"Kalamaja",
+"Wooden houses and cafés."
+]
+],
+"sights": [
+[
+"Old Town walls",
+"Medieval towers."
+],
+[
+"Toompea",
+"Hilltop viewpoints."
+],
+[
+"Kadriorg Palace",
+"Baroque palace and park."
+],
+[
+"Seaplane Harbour",
+"Maritime museum."
+]
+],
+"eat": [
+[
+"Balti Jaama Turg",
+"Market hall by the train station."
+],
+[
+"Black bread",
+"Dense Estonian rye bread."
+],
+[
+"Kama",
+"Traditional roasted-grain dessert."
+]
+],
+"night": [
+[
+"Telliskivi",
+"Bars and music venues."
+],
+[
+"Old Town bars",
+"Medieval-themed taverns."
+],
+[
+"Clubs",
+"Rotermann quarter."
+]
+],
+"arrive": "Tallinn Airport is linked by tram line 4. Ferries arrive from Helsinki.",
+"around": "Trams and buses; free for registered residents, paid for visitors.",
+"pass": "Tallinn Card or Ühiskaart tickets; check current fares.",
+"when": "May–September; December market.",
+"tip": "Take the day ferry from Helsinki or vice versa.",
+"sources": [
+{
+"title": "Visit Tallinn (official guide)",
+"url": "https://www.visittallinn.ee/eng"
+},
+{
+"title": "Tallinn Airport",
+"url": "https://www.tallinn-airport.ee/en/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "riga",
+"intro": "The Baltics’ biggest city: an art nouveau showcase with a lively medieval centre.",
+"areas": [
+[
+"Old Riga",
+"World Heritage old town."
+],
+[
+"Art Nouveau District",
+"Streets of ornate facades around Alberta iela."
+],
+[
+"Central Market",
+"Zeppelin hangars."
+]
+],
+"sights": [
+[
+"House of the Blackheads",
+"Gothic guild house."
+],
+[
+"Art Nouveau buildings",
+"Riga has one of Europe’s richest art nouveau collections."
+],
+[
+"Riga Central Market",
+"In former Zeppelin hangars."
+],
+[
+"Freedom Monument",
+"National symbol."
+]
+],
+"eat": [
+[
+"Grey peas with bacon",
+"Latvian classic."
+],
+[
+"Riga Black Balsam",
+"Herbal liqueur, often mixed with blackcurrant juice."
+],
+[
+"Central Market",
+"Smoked fish, rye bread and produce."
+]
+],
+"night": [
+[
+"Old Riga bars",
+"Bars and clubs in the old town."
+],
+[
+"Miera iela",
+"Hip street of cafés and bars."
+],
+[
+"Latvian National Opera",
+"Opera and ballet."
+]
+],
+"arrive": "Riga International Airport is about 10 km from the centre, linked by city bus 22 and taxis. Long-distance buses and trains arrive near the Central Market.",
+"around": "Trams, trolleybuses and buses run by Rīgas Satiksme; Old Riga is compact and walkable.",
+"pass": "Rīgas Satiksme e-tickets; check current fares.",
+"when": "May–September; Midsummer (Jāņi) in June.",
+"tip": "Old town bar touts: check prices before ordering.",
+"sources": [
+{
+"title": "Live Riga (official guide)",
+"url": "https://www.liveriga.com/en"
+},
+{
+"title": "Riga Airport",
+"url": "https://www.riga-airport.com/en"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "vilnius",
+"intro": "A baroque old town, quirky Užupis and a laid-back, green capital.",
+"areas": [
+[
+"Old Town",
+"World Heritage baroque streets."
+],
+[
+"Užupis",
+"Self-declared republic."
+],
+[
+"Naujamiestis",
+"New Town with cafés and bars."
+]
+],
+"sights": [
+[
+"Gediminas Tower",
+"Views over the old town."
+],
+[
+"Vilnius Cathedral",
+"Cathedral Square."
+],
+[
+"Gates of Dawn",
+"City gate chapel."
+],
+[
+"Užupis",
+"Artists’ republic."
+]
+],
+"eat": [
+[
+"Cepelinai",
+"Potato dumplings."
+],
+[
+"Šaltibarščiai",
+"Pink cold beetroot soup."
+],
+[
+"Halės Market",
+"Historic market hall with food stalls."
+]
+],
+"night": [
+[
+"Vokiečių gatvė",
+"Bars on German Street."
+],
+[
+"Užupis",
+"Cafés and bars by the river."
+],
+[
+"Loftas",
+"Arts venue for gigs and events."
+]
+],
+"arrive": "Vilnius Airport is linked by train and bus.",
+"around": "Buses and trolleybuses; the Old Town is walkable.",
+"pass": "Vilnius Pass or e-tickets; check current fares.",
+"when": "May–September.",
+"tip": "Read the Užupis constitution on the wall.",
+"sources": [
+{
+"title": "Go Vilnius (official guide)",
+"url": "https://www.govilnius.lt/visit-vilnius"
+},
+{
+"title": "Vilnius Airport",
+"url": "https://www.vilnius-airport.lt/en"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "krakow",
+"intro": "Poland’s royal city: a huge market square, Wawel Castle and a lively Jewish quarter.",
+"areas": [
+[
+"Old Town",
+"Main Market Square."
+],
+[
+"Kazimierz",
+"Jewish quarter, bars and food."
+],
+[
+"Podgórze",
+"Schindler’s Factory."
+]
+],
+"sights": [
+[
+"Rynek Główny",
+"One of Europe’s largest medieval squares."
+],
+[
+"Wawel Castle",
+"Royal castle and cathedral."
+],
+[
+"Wieliczka Salt Mine",
+"Underground chapels."
+],
+[
+"Auschwitz-Birkenau Memorial",
+"Book a guided visit."
+]
+],
+"eat": [
+[
+"Pierogi",
+"Dumplings with savoury or sweet fillings."
+],
+[
+"Obwarzanek",
+"Kraków’s ring-shaped bread from street carts."
+],
+[
+"Zapiekanka",
+"Open sandwich in Kazimierz."
+]
+],
+"night": [
+[
+"Kazimierz",
+"Bars around Plac Nowy."
+],
+[
+"Old Town cellars",
+"Clubs and bars in medieval cellars."
+],
+[
+"Jazz clubs",
+"A long-standing jazz scene."
+]
+],
+"arrive": "Kraków Airport (Balice) has a train link to Kraków Główny station, about 20 minutes. Trains run to Warsaw and across Poland.",
+"around": "Trams and buses run by MPK; the Old Town and Kazimierz are easy to walk.",
+"pass": "Time-based and 24-hour MPK tickets, bought from machines or apps; validate on boarding.",
+"when": "April–June and September–October; December market.",
+"tip": "Book Auschwitz-Birkenau visits well ahead.",
+"sources": [
+{
+"title": "Visit Kraków (official guide)",
+"url": "https://www.krakow.travel/en"
+},
+{
+"title": "Auschwitz-Birkenau Memorial",
+"url": "https://www.auschwitz.org/en/"
+},
+{
+"title": "Kraków Airport",
+"url": "https://www.krakowairport.pl/en"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "warsaw",
+"intro": "A resilient capital: a rebuilt old town, Chopin and a dynamic modern city.",
+"areas": [
+[
+"Old Town",
+"Rebuilt World Heritage centre."
+],
+[
+"Śródmieście",
+"Palace of Culture and Science."
+],
+[
+"Praga",
+"Bars and street art."
+]
+],
+"sights": [
+[
+"Old Town Market Square",
+"Rebuilt after 1944."
+],
+[
+"Palace of Culture and Science",
+"Viewing terrace."
+],
+[
+"Warsaw Uprising Museum",
+"The story of the 1944 uprising."
+],
+[
+"Łazienki Park",
+"Palace on the Isle."
+]
+],
+"eat": [
+[
+"Pierogi",
+"Dumplings with many fillings."
+],
+[
+"Milk bars",
+"Budget canteens serving Polish home cooking."
+],
+[
+"Hala Koszyki",
+"Food hall in a restored market."
+]
+],
+"night": [
+[
+"Praga",
+"Bars on the east bank."
+],
+[
+"Mazowiecka",
+"Clubs and bars in the centre."
+],
+[
+"Chopin concerts",
+"Łazienki (summer Sundays)."
+]
+],
+"arrive": "Warsaw Chopin Airport is linked by train and bus.",
+"around": "Metro, trams and buses.",
+"pass": "ZTM tickets; check current fares.",
+"when": "May–September.",
+"tip": "Free Chopin concerts in Łazienki on summer Sundays.",
+"sources": [
+{
+"title": "Go to Warsaw (official guide)",
+"url": "https://go2warsaw.pl/en/"
+},
+{
+"title": "ZTM",
+"url": "https://www.wtp.waw.pl/en/"
+},
+{
+"title": "Warsaw Chopin Airport",
+"url": "https://www.lotnisko-chopina.pl/en/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "gdansk",
+"intro": "A Hanseatic port city with colourful gabled houses, amber and Solidarity history.",
+"areas": [
+[
+"Main Town",
+"Long Market and Mariacka Street."
+],
+[
+"Waterfront",
+"Long Embankment."
+],
+[
+"Oliwa",
+"Cathedral and park."
+]
+],
+"sights": [
+[
+"Long Market",
+"Gabled merchant houses."
+],
+[
+"European Solidarity Centre",
+"History of Solidarity."
+],
+[
+"Museum of the Second World War",
+"Large museum on the war’s impact."
+],
+[
+"Sopot",
+"Seaside resort with a long pier."
+]
+],
+"eat": [
+[
+"Pierogi & fish",
+"Dumplings and Baltic fish."
+],
+[
+"Goldwasser",
+"Gold-flake liqueur."
+],
+[
+"Amber shops",
+"Mariacka Street."
+]
+],
+"night": [
+[
+"Waterfront bars",
+"Long Embankment."
+],
+[
+"Sopot",
+"Clubs in the seaside resort."
+],
+[
+"Summer festivals",
+"St Dominic’s Fair."
+]
+],
+"arrive": "Gdańsk Airport is linked by train and bus.",
+"around": "Trams, buses and SKM trains to Sopot and Gdynia.",
+"pass": "ZTM tickets; check current fares.",
+"when": "May–September.",
+"tip": "Take the SKM train to Sopot for the beach.",
+"sources": [
+{
+"title": "Visit Gdańsk (official guide)",
+"url": "https://visitgdansk.com/"
+},
+{
+"title": "European Solidarity Centre",
+"url": "https://ecs.gda.pl/en/"
+},
+{
+"title": "Gdańsk Airport",
+"url": "https://www.airport.gdansk.pl/en"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "bratislava",
+"intro": "A compact Danube capital with a hilltop castle and an easy-going old town.",
+"areas": [
+[
+"Old Town",
+"Compact centre of squares and lanes."
+],
+[
+"Castle Hill",
+"The castle and views over the Danube."
+],
+[
+"Eurovea & riverside",
+"Modern riverfront with shops and restaurants."
+]
+],
+"sights": [
+[
+"Bratislava Castle",
+"Hilltop castle with views to Austria and Hungary."
+],
+[
+"St Martin’s Cathedral",
+"Coronation church of Hungarian kings."
+],
+[
+"Devín Castle",
+"Ruins above the meeting of the Danube and Morava."
+],
+[
+"Blue Church",
+"Art nouveau Church of St Elizabeth."
+]
+],
+"eat": [
+[
+"Bryndzové halušky",
+"Potato dumplings with sheep cheese and bacon."
+],
+[
+"Kofola",
+"A local cola-style soft drink."
+],
+[
+"Small Carpathian wines",
+"From vineyards just outside the city."
+]
+],
+"night": [
+[
+"Old Town bars",
+"Pubs and cocktail bars in the centre."
+],
+[
+"Riverside",
+"Bars along the Danube in summer."
+],
+[
+"Slovak National Theatre",
+"Opera and ballet."
+]
+],
+"arrive": "Bratislava Airport is linked by bus; Vienna Airport is about 45 minutes away.",
+"around": "Trams, trolleybuses and buses; the Old Town is small and walkable.",
+"pass": "Short-term tickets from machines or via the IDS BK app; check current fares.",
+"when": "May–September; December market.",
+"tip": "Combine Bratislava and Vienna on one trip.",
+"sources": [
+{
+"title": "Visit Bratislava (official guide)",
+"url": "https://www.visitbratislava.com/"
+},
+{
+"title": "Bratislava Airport",
+"url": "https://www.bts.aero/en/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "ljubljana",
+"intro": "A green, walkable capital of dragons, bridges and riverside cafés.",
+"areas": [
+[
+"Old Town",
+"Prešeren Square and riverside streets."
+],
+[
+"Ljubljanica riverbanks",
+"Cafés and bars along the river."
+],
+[
+"Metelkova",
+"Alternative culture centre in a former barracks."
+]
+],
+"sights": [
+[
+"Ljubljana Castle",
+"Hilltop castle reached by funicular."
+],
+[
+"Triple Bridge",
+"Jože Plečnik’s trio of bridges."
+],
+[
+"Dragon Bridge",
+"Art nouveau bridge with the city’s dragon symbol."
+],
+[
+"Lake Bled",
+"Island church and castle, about an hour away."
+]
+],
+"eat": [
+[
+"Open Kitchen (Odprta kuhna)",
+"Friday street-food market in spring to autumn."
+],
+[
+"Kranjska klobasa",
+"Carniolan sausage."
+],
+[
+"Potica",
+"Rolled nut cake."
+]
+],
+"night": [
+[
+"Metelkova",
+"Clubs and alternative venues."
+],
+[
+"Riverside bars",
+"Bars along the Ljubljanica."
+],
+[
+"Summer festivals",
+"Ljubljana Festival and open-air events."
+]
+],
+"arrive": "Ljubljana Airport is linked by shuttle and bus.",
+"around": "The centre is largely car-free and walkable; LPP city buses and the castle funicular cover the rest.",
+"pass": "Urbana card for buses and the funicular; the Ljubljana Card adds attractions.",
+"when": "May–September.",
+"tip": "Take a boat trip on the Ljubljanica.",
+"sources": [
+{
+"title": "Visit Ljubljana (official guide)",
+"url": "https://www.visitljubljana.com/en/"
+},
+{
+"title": "Ljubljana Airport",
+"url": "https://www.fraport-slovenija.si/en"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "zagreb",
+"intro": "Croatia’s capital: Austro-Hungarian grandeur, quirky museums and lively café culture.",
+"areas": [
+[
+"Upper Town (Gornji Grad)",
+"Historic hilltop quarter with churches and museums."
+],
+[
+"Lower Town (Donji Grad)",
+"Austro-Hungarian squares, parks and museums."
+],
+[
+"Tkalčićeva Street",
+"Café and bar street below the Upper Town."
+]
+],
+"sights": [
+[
+"St Mark’s Church",
+"Famous for its coloured tiled roof."
+],
+[
+"Museum of Broken Relationships",
+"Objects and stories from ended relationships."
+],
+[
+"Dolac Market",
+"Open-air market above the main square."
+],
+[
+"Zagreb Cathedral",
+"Neo-Gothic cathedral (check restoration access)."
+]
+],
+"eat": [
+[
+"Štrukli",
+"Baked or boiled dough with cottage cheese."
+],
+[
+"Dolac Market",
+"Fresh produce, cheese and cream."
+],
+[
+"Café culture",
+"Long coffee sessions on Saturday mornings (špica)."
+]
+],
+"night": [
+[
+"Tkalčićeva",
+"The city’s main bar street."
+],
+[
+"Lake Jarun",
+"Summer clubs and bars by the lake."
+],
+[
+"Advent in Zagreb",
+"Award-winning Christmas markets in December."
+]
+],
+"arrive": "Zagreb Airport is linked by shuttle bus.",
+"around": "ZET trams run all over the centre; the funicular links the Lower and Upper Town.",
+"pass": "ZET tickets and day tickets; check current fares.",
+"when": "April–June, September; December Advent.",
+"tip": "Ride the short funicular between towns.",
+"sources": [
+{
+"title": "Zagreb Tourist Board (official guide)",
+"url": "https://www.infozagreb.hr/en"
+},
+{
+"title": "Zagreb Airport",
+"url": "https://www.zagreb-airport.hr/en"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "split",
+"intro": "A city built into a Roman palace, gateway to the Dalmatian islands.",
+"areas": [
+[
+"Diocletian’s Palace",
+"The Roman palace that is the old town itself."
+],
+[
+"Riva",
+"Palm-lined harbour promenade."
+],
+[
+"Bačvice",
+"Popular sandy city beach east of the port."
+]
+],
+"sights": [
+[
+"Diocletian’s Palace",
+"World Heritage Roman palace with the cathedral and cellars."
+],
+[
+"Marjan Hill",
+"Forest park with viewpoints and beaches."
+],
+[
+"Island day trips",
+"Ferries and catamarans to Hvar, Brač and Vis."
+],
+[
+"Krka National Park",
+"Waterfalls and lakes about an hour away."
+]
+],
+"eat": [
+[
+"Peka",
+"Meat or octopus slow-cooked under an iron bell (often order ahead)."
+],
+[
+"Grilled fish",
+"Fresh from the fish market."
+],
+[
+"Green Market (Pazar)",
+"Fruit and vegetables beside the palace walls."
+]
+],
+"night": [
+[
+"Palace bars",
+"Bars hidden in the old town’s lanes."
+],
+[
+"Bačvice",
+"Beach bars and clubs."
+],
+[
+"Ultra Europe",
+"Electronic music festival in July (check dates)."
+]
+],
+"arrive": "Split Airport is linked by bus. Ferries sail to the islands and Italy.",
+"around": "Walk; Promet buses.",
+"pass": "Buy tickets per journey; check current options.",
+"when": "May–June and September; July–August busy.",
+"tip": "Book island ferries ahead in summer.",
+"sources": [
+{
+"title": "Visit Split (official guide)",
+"url": "https://visitsplit.com/en"
+},
+{
+"title": "Jadrolinija ferries",
+"url": "https://www.jadrolinija.hr/en"
+},
+{
+"title": "Split Airport",
+"url": "https://www.split-airport.hr/en"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "dubrovnik",
+"intro": "The Pearl of the Adriatic: walled old town, Game of Thrones and island trips.",
+"areas": [
+[
+"Old Town",
+"Walled World Heritage city of marble streets."
+],
+[
+"Lapad & Babin Kuk",
+"Hotels, beaches and promenades west of the centre."
+],
+[
+"Lokrum",
+"Wooded island a short boat ride away."
+]
+],
+"sights": [
+[
+"City Walls",
+"Walk the full circuit of the walls (ticketed)."
+],
+[
+"Mount Srđ cable car",
+"Views over the Old Town and islands."
+],
+[
+"Lokrum Island",
+"Nature reserve with peacocks and a botanical garden."
+],
+[
+"Stradun",
+"The Old Town’s polished main street."
+]
+],
+"eat": [
+[
+"Black risotto",
+"Cuttlefish-ink risotto, a Dalmatian classic."
+],
+[
+"Ston oysters",
+"From the bay of Mali Ston, about an hour away."
+],
+[
+"Rozata",
+"Dubrovnik’s caramel custard."
+]
+],
+"night": [
+[
+"Old Town bars",
+"Bars tucked into the lanes and squares."
+],
+[
+"Buža bars",
+"Cliffside bars outside the city walls."
+],
+[
+"Dubrovnik Summer Festival",
+"Theatre and music, July–August."
+]
+],
+"arrive": "Dubrovnik Airport (Čilipi) is about 20 km south; airport shuttle buses meet flights and run to the Old Town and bus station.",
+"around": "Libertas city buses link the Old Town, Gruž port and Lapad; the Old Town itself is pedestrian.",
+"pass": "The Dubrovnik Pass bundles the walls, museums and bus travel; check current options.",
+"when": "May–June and September–October.",
+"tip": "Walk the walls early to avoid heat and crowds.",
+"sources": [
+{
+"title": "Dubrovnik Tourist Board (official guide)",
+"url": "https://www.tzdubrovnik.hr/"
+},
+{
+"title": "Dubrovnik Airport",
+"url": "https://www.airport-dubrovnik.hr/en"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "bucharest",
+"intro": "A big, lively capital of belle époque boulevards, a vast palace and great nightlife.",
+"areas": [
+[
+"Old Town (Lipscani)",
+"Pedestrian streets packed with bars, clubs and restaurants."
+],
+[
+"Calea Victoriei",
+"Grand avenue of palaces, museums and cafés."
+],
+[
+"Herăstrău (King Michael I Park)",
+"Large lakeside park in the north of the city."
+]
+],
+"sights": [
+[
+"Palace of the Parliament",
+"One of the world’s largest administrative buildings; guided tours."
+],
+[
+"Romanian Athenaeum",
+"Domed concert hall, home of the George Enescu Philharmonic."
+],
+[
+"Village Museum",
+"Open-air museum of traditional houses."
+],
+[
+"Stavropoleos Monastery",
+"Small, ornate 18th-century church in the Old Town."
+]
+],
+"eat": [
+[
+"Sarmale",
+"Cabbage rolls with sour cream and polenta."
+],
+[
+"Mici",
+"Grilled skinless sausages with mustard."
+],
+[
+"Papanași",
+"Fried doughnuts with sour cream and jam."
+]
+],
+"night": [
+[
+"Lipscani",
+"The Old Town’s bars and clubs, busy every night."
+],
+[
+"Rooftop and garden bars",
+"Summer terraces across the centre."
+],
+[
+"Club scene",
+"Electronic music clubs with international DJs."
+]
+],
+"arrive": "Henri Coandă Airport is linked by train and bus.",
+"around": "Metro, trams and buses; ride-hailing is common.",
+"pass": "STB and Metrorex cards; check current fares.",
+"when": "May–June and September–October.",
+"tip": "Use ride-hailing apps rather than street taxis.",
+"sources": [
+{
+"title": "Romania Tourism",
+"url": "https://romania.travel/"
+},
+{
+"title": "Bucharest Airports",
+"url": "https://www.bucharestairports.ro/en"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "sofia",
+"intro": "An affordable Balkan capital of golden domes, mineral springs and mountain views.",
+"areas": [
+[
+"City centre",
+"Alexander Nevsky Cathedral and the ancient Serdica ruins."
+],
+[
+"Vitosha Boulevard",
+"Pedestrian street of shops and cafés, with mountain views."
+],
+[
+"Oborishte",
+"Leafy residential district with bars and restaurants."
+]
+],
+"sights": [
+[
+"Alexander Nevsky Cathedral",
+"Gold-domed Orthodox cathedral."
+],
+[
+"Boyana Church",
+"World Heritage medieval frescoes."
+],
+[
+"Vitosha Nature Park",
+"Hiking and skiing on the city’s doorstep."
+],
+[
+"Rila Monastery",
+"World Heritage monastery, about two hours away."
+]
+],
+"eat": [
+[
+"Banitsa",
+"Filo pastry with cheese, a breakfast staple."
+],
+[
+"Shopska salad",
+"Tomato, cucumber and grated white cheese."
+],
+[
+"Kebapche & kyufte",
+"Grilled minced-meat dishes."
+]
+],
+"night": [
+[
+"Vitosha Boulevard bars",
+"Cafés and bars along the main street."
+],
+[
+"Club scene",
+"Late-night clubs in the centre."
+],
+[
+"National Opera and Ballet",
+"Affordable opera and ballet."
+]
+],
+"arrive": "Sofia Airport’s Terminal 2 has a Metro station (line 4) to the centre. Trains and buses link to Plovdiv and beyond.",
+"around": "Metro, trams, trolleybuses and buses; the centre is walkable.",
+"pass": "Metro and city tickets; check current fares.",
+"when": "May–June and September–October.",
+"tip": "Drink from the mineral springs near the Banya Bashi mosque.",
+"sources": [
+{
+"title": "Visit Sofia (official guide)",
+"url": "https://www.visitsofia.bg/en/"
+},
+{
+"title": "Sofia Airport",
+"url": "https://www.sofia-airport.eu/en"
+}
+],
+"checked": "2026-11-24"
+}
+]

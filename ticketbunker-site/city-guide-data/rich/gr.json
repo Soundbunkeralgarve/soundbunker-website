@@ -1,0 +1,906 @@
+[
+{
+"slug": "athens",
+"intro": "The cradle of democracy: the Acropolis above, lively neighbourhoods and rooftop bars below.",
+"areas": [
+[
+"Plaka & Anafiotika",
+"Old lanes beneath the Acropolis."
+],
+[
+"Monastiraki & Psyrri",
+"Flea market, street food and bars."
+],
+[
+"Koukaki",
+"Cafés near the Acropolis Museum."
+],
+[
+"Kolonaki",
+"Upmarket shops and cafés."
+]
+],
+"sights": [
+[
+"Acropolis & Parthenon",
+"Book timed tickets and go early."
+],
+[
+"Acropolis Museum",
+"Sculptures and a glass floor over excavations."
+],
+[
+"Ancient Agora",
+"Temple of Hephaestus."
+],
+[
+"Panathenaic Stadium",
+"Marble stadium of the first modern Olympics."
+],
+[
+"Cape Sounion",
+"Temple of Poseidon at sunset."
+]
+],
+"eat": [
+[
+"Souvlaki",
+"Monastiraki is famous for it."
+],
+[
+"Central Market (Varvakios)",
+"Meat, fish and spices."
+],
+[
+"Mezedes",
+"Small plates with ouzo."
+]
+],
+"night": [
+[
+"Psyrri & Gazi",
+"Bars, clubs and live music."
+],
+[
+"Rooftop bars",
+"Acropolis views."
+],
+[
+"Open-air cinemas",
+"Summer screenings."
+]
+],
+"arrive": "Athens International Airport is linked by Metro, suburban rail and express buses. Piraeus port has ferries to the islands.",
+"around": "Metro, trams and buses; the centre is walkable.",
+"pass": "Athens transport tickets, 24-hour and 5-day passes; tourist ticket includes the airport.",
+"when": "April–June and September–October; summer is very hot.",
+"tip": "Visit ancient sites at opening time in summer.",
+"sources": [
+{
+"title": "This is Athens (official guide)",
+"url": "https://www.thisisathens.org/"
+},
+{
+"title": "OASA (public transport)",
+"url": "https://www.oasa.gr/en/"
+},
+{
+"title": "Athens International Airport",
+"url": "https://www.aia.gr/en/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "thessaloniki",
+"intro": "Greece’s second city: a seafront promenade, Byzantine churches and the country’s best food scene.",
+"areas": [
+[
+"Ladadika",
+"Bars and tavernas in old warehouses."
+],
+[
+"Ano Poli",
+"Upper town with walls and views."
+],
+[
+"Waterfront",
+"Promenade and the White Tower."
+]
+],
+"sights": [
+[
+"White Tower",
+"City symbol and museum."
+],
+[
+"Rotunda & Arch of Galerius",
+"Roman monuments."
+],
+[
+"Byzantine churches",
+"World Heritage sites."
+],
+[
+"Archaeological Museum",
+"Macedonian treasures."
+]
+],
+"eat": [
+[
+"Bougatsa",
+"Custard or cheese pastry."
+],
+[
+"Modiano & Kapani markets",
+"Historic markets."
+],
+[
+"Koulouri",
+"Sesame bread rings."
+]
+],
+"night": [
+[
+"Ladadika",
+"Bars and tavernas in old warehouses."
+],
+[
+"Valaoritou",
+"Bars and clubs in a former trade district."
+],
+[
+"Waterfront",
+"Evening stroll along the promenade."
+]
+],
+"arrive": "Thessaloniki Airport is linked by bus. Trains run to Athens.",
+"around": "Buses and the new Metro line; walkable centre.",
+"pass": "OASTH tickets; check current fares.",
+"when": "April–June and September–October.",
+"tip": "Walk the waterfront to the Umbrellas sculpture at sunset.",
+"sources": [
+{
+"title": "Thessaloniki Tourism",
+"url": "https://thessaloniki.travel/en/"
+},
+{
+"title": "Thessaloniki Airport",
+"url": "https://www.skg-airport.gr/en"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "mykonos",
+"intro": "Cycladic cool: whitewashed lanes, windmills, beach clubs and legendary nightlife.",
+"areas": [
+[
+"Mykonos Town (Chora)",
+"Lanes, shops and bars."
+],
+[
+"Little Venice",
+"Waterfront houses and sunset bars."
+],
+[
+"South coast beaches",
+"Paradise, Super Paradise and Psarou."
+]
+],
+"sights": [
+[
+"Windmills (Kato Mili)",
+"Iconic hilltop windmills."
+],
+[
+"Little Venice",
+"Sunset viewpoint."
+],
+[
+"Delos",
+"Sacred island and World Heritage site."
+],
+[
+"Armenistis Lighthouse",
+"Viewpoint on the north-west coast."
+]
+],
+"eat": [
+[
+"Kopanisti",
+"Spicy fermented cheese."
+],
+[
+"Louza",
+"Cured pork with herbs."
+],
+[
+"Seafood",
+"Harbour tavernas."
+]
+],
+"night": [
+[
+"Beach clubs",
+"Paradise and Super Paradise."
+],
+[
+"Little Venice",
+"Sunset cocktail bars by the water."
+],
+[
+"LGBTQ+ scene",
+"Long-established."
+]
+],
+"arrive": "Mykonos Airport has flights from Athens and Europe. Ferries sail from Piraeus and Rafina.",
+"around": "KTEL buses, taxis (limited) and boats to beaches.",
+"pass": "Buy bus tickets per journey; check current options.",
+"when": "Late May–June and September; July–August busiest.",
+"tip": "Taxis are scarce; book transfers ahead.",
+"sources": [
+{
+"title": "Visit Greece: Mykonos",
+"url": "https://www.visitgreece.gr/islands/cyclades/mykonos/"
+},
+{
+"title": "Mykonos Airport",
+"url": "https://www.mykonos-airport.com/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "santorini",
+"intro": "A volcanic caldera island of white villages, sunsets and volcanic beaches.",
+"areas": [
+[
+"Fira",
+"Capital on the caldera rim."
+],
+[
+"Oia",
+"Famous sunset village."
+],
+[
+"Kamari & Perissa",
+"Black-sand beaches."
+]
+],
+"sights": [
+[
+"Oia sunset",
+"Arrive early for a spot."
+],
+[
+"Fira to Oia hike",
+"Caldera footpath, about 10 km."
+],
+[
+"Akrotiri",
+"Bronze Age site."
+],
+[
+"Caldera boat trips",
+"Volcano and hot springs."
+]
+],
+"eat": [
+[
+"Tomatokeftedes",
+"Tomato fritters."
+],
+[
+"Fava",
+"Yellow split-pea purée."
+],
+[
+"Assyrtiko",
+"Crisp white wine from volcanic soil."
+]
+],
+"night": [
+[
+"Fira bars",
+"Caldera-view bars and clubs."
+],
+[
+"Kamari",
+"Beach bars on the black sand."
+],
+[
+"Wineries",
+"Sunset tastings."
+]
+],
+"arrive": "Santorini Airport is linked by bus and taxi. Ferries arrive at Athinios port.",
+"around": "KTEL buses; a hire car or quad helps.",
+"pass": "Buy bus tickets per journey; check current options.",
+"when": "May–June and September–October.",
+"tip": "Cruise-ship days crowd Fira and Oia; check the schedule.",
+"sources": [
+{
+"title": "Visit Greece: Santorini",
+"url": "https://www.visitgreece.gr/islands/cyclades/santorini/"
+},
+{
+"title": "Akrotiri (Ministry of Culture)",
+"url": "https://odysseus.culture.gr/h/3/eh351.jsp?obj_id=2410"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "crete",
+"intro": "Greece’s largest island: Minoan palaces, gorges, Venetian harbours and beaches.",
+"areas": [
+[
+"Chania",
+"Venetian harbour, lighthouse and old town."
+],
+[
+"Heraklion",
+"Capital, Knossos and the archaeological museum."
+],
+[
+"Rethymno",
+"Venetian fortress, old town and long beach."
+],
+[
+"Elounda & Agios Nikolaos",
+"Eastern resorts on Mirabello Bay."
+]
+],
+"sights": [
+[
+"Knossos",
+"Bronze Age Minoan palace near Heraklion."
+],
+[
+"Samaria Gorge",
+"Long hike through a national park (open in season)."
+],
+[
+"Balos & Elafonissi",
+"Lagoon and pink-tinged sand beaches in the west."
+],
+[
+"Heraklion Archaeological Museum",
+"The world’s best Minoan collection."
+]
+],
+"eat": [
+[
+"Dakos",
+"Barley rusk with tomato and cheese."
+],
+[
+"Raki (tsikoudia)",
+"Grape spirit, often offered after meals."
+],
+[
+"Cretan cheeses",
+"Graviera and mizithra."
+]
+],
+"night": [
+[
+"Chania harbour",
+"Bars along the waterfront."
+],
+[
+"Malia & Hersonissos",
+"Party resorts with clubs."
+],
+[
+"Rethymno",
+"Old-town bars."
+]
+],
+"arrive": "Heraklion and Chania airports. Ferries from Piraeus.",
+"around": "KTEL buses; a hire car helps.",
+"pass": "KTEL tickets; check current options.",
+"when": "May–June and September–October.",
+"tip": "Start Samaria Gorge early; check opening dates.",
+"sources": [
+{
+"title": "Visit Greece: Crete",
+"url": "https://www.visitgreece.gr/islands/crete/"
+},
+{
+"title": "KTEL Chania-Rethymno",
+"url": "https://www.e-ktel.com/en/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "corfu",
+"intro": "A green Ionian island with a Venetian-British old town and beautiful bays.",
+"areas": [
+[
+"Corfu Town",
+"World Heritage old town with Venetian, French and British influences."
+],
+[
+"Paleokastritsa",
+"West-coast bays and a hilltop monastery."
+],
+[
+"North coast",
+"Kassiopi, Sidari and resort villages."
+]
+],
+"sights": [
+[
+"Corfu Old Town & Liston",
+"Arcaded promenade facing the Spianada square."
+],
+[
+"Achilleion",
+"Palace built for Empress Elisabeth (Sisi) of Austria."
+],
+[
+"Paleokastritsa",
+"Boat trips to sea caves from its bays."
+],
+[
+"Old Fortress",
+"Venetian fortress by the town."
+]
+],
+"eat": [
+[
+"Sofrito",
+"Veal in white wine and garlic sauce."
+],
+[
+"Pastitsada",
+"Spiced meat with pasta."
+],
+[
+"Kumquat liqueur",
+"Corfu’s sweet speciality."
+]
+],
+"night": [
+[
+"Corfu Town",
+"Bars and cafés in the old town."
+],
+[
+"Kavos",
+"The island’s party resort in the south."
+],
+[
+"Liston cafés",
+"Evening drinks under the arcades."
+]
+],
+"arrive": "Corfu Airport is near the town. Ferries to Italy and the mainland.",
+"around": "Green and blue buses; hire car.",
+"pass": "Bus tickets per journey; check current options.",
+"when": "May–June and September–October.",
+"tip": "Watch planes land by the Kanoni viewpoint.",
+"sources": [
+{
+"title": "Visit Greece: Corfu",
+"url": "https://www.visitgreece.gr/islands/ionian-islands/corfu/"
+},
+{
+"title": "Corfu Airport",
+"url": "https://www.cfu-airport.gr/en"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "rhodes",
+"intro": "A sunny Dodecanese island with a medieval walled city and Lindos’ acropolis.",
+"areas": [
+[
+"Rhodes Old Town",
+"World Heritage medieval city of the Knights."
+],
+[
+"Lindos",
+"White village below an acropolis."
+],
+[
+"Faliraki",
+"Resort with beaches and nightlife."
+]
+],
+"sights": [
+[
+"Palace of the Grand Master",
+"Restored palace of the Knights of St John."
+],
+[
+"Street of the Knights",
+"Medieval street lined with inns."
+],
+[
+"Lindos Acropolis",
+"Clifftop ruins with views over the bay."
+],
+[
+"Valley of the Butterflies",
+"Seasonal butterfly valley (usually summer)."
+]
+],
+"eat": [
+[
+"Pitaroudia",
+"Chickpea fritters."
+],
+[
+"Melekouni",
+"Honey and sesame bar."
+],
+[
+"Seafood",
+"Harbour tavernas in Rhodes Town and Lindos."
+]
+],
+"night": [
+[
+"Faliraki",
+"Clubs and bars."
+],
+[
+"Old Town",
+"Bars in medieval squares."
+],
+[
+"Rhodes New Town",
+"Bars and clubs near Elli beach."
+]
+],
+"arrive": "Rhodes Airport is linked by bus. Ferries to other islands.",
+"around": "KTEL and RODA buses; hire car.",
+"pass": "Bus tickets per journey; check current options.",
+"when": "May–June and September–October.",
+"tip": "Visit Lindos early before day trips arrive.",
+"sources": [
+{
+"title": "Visit Greece: Rhodes",
+"url": "https://www.visitgreece.gr/islands/dodecanese/rhodes/"
+},
+{
+"title": "Rhodes Airport",
+"url": "https://www.rho-airport.gr/en"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "malta",
+"intro": "A sunny island nation of knights’ fortresses, megalithic temples and turquoise water.",
+"areas": [
+[
+"Valletta",
+"Baroque World Heritage capital, small enough to walk."
+],
+[
+"Sliema & St Julian’s",
+"Seafront hotels, shopping and Paceville nightlife."
+],
+[
+"Mdina & Rabat",
+"The fortified ‘Silent City’ and its neighbour."
+],
+[
+"Gozo & Comino",
+"Quieter islands reached by ferry."
+]
+],
+"sights": [
+[
+"St John’s Co-Cathedral",
+"Baroque interior with Caravaggio’s Beheading of St John."
+],
+[
+"Mdina",
+"Walled medieval city on a hilltop."
+],
+[
+"Blue Lagoon, Comino",
+"Clear water reached by boat; very busy in summer."
+],
+[
+"Ħaġar Qim & Mnajdra",
+"Prehistoric temples older than Stonehenge."
+]
+],
+"eat": [
+[
+"Pastizzi",
+"Flaky ricotta or pea pastries from small shops."
+],
+[
+"Stuffat tal-fenek",
+"Rabbit stew, Malta’s national dish."
+],
+[
+"Ftira",
+"Maltese bread, often filled with tuna, capers and tomatoes."
+]
+],
+"night": [
+[
+"Paceville",
+"Malta’s main club district in St Julian’s."
+],
+[
+"Strait Street, Valletta",
+"Historic street of bars and live music."
+],
+[
+"Village festas",
+"Summer saints’ festivals with fireworks and bands."
+]
+],
+"arrive": "Malta International Airport is linked by bus. Ferries to Gozo.",
+"around": "Malta Public Transport buses cover Malta and Gozo; ferries cross the harbour from Valletta to Sliema and the Three Cities.",
+"pass": "Tallinja card and Explore cards for visitors; check current fares.",
+"when": "April–June and September–October.",
+"tip": "Take the short harbour ferry from Sliema to Valletta instead of the bus.",
+"sources": [
+{
+"title": "Visit Malta (official guide)",
+"url": "https://www.visitmalta.com/en/"
+},
+{
+"title": "Malta Public Transport",
+"url": "https://www.publictransport.com.mt/en/"
+},
+{
+"title": "Malta International Airport",
+"url": "https://www.maltairport.com/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "ayia-napa",
+"intro": "Cyprus’s party resort with white-sand beaches and sea caves.",
+"areas": [
+[
+"Town centre",
+"The main square and surrounding streets, packed with bars and clubs in summer."
+],
+[
+"Nissi Beach",
+"Shallow turquoise water and a sandbar islet, a short walk west of town."
+],
+[
+"Cape Greco",
+"Protected headland of sea caves and coastal paths to the east."
+]
+],
+"sights": [
+[
+"Nissi Beach",
+"One of Cyprus’s best-known beaches; busy in high season."
+],
+[
+"Cape Greco National Forest Park",
+"Sea caves, cliff paths and the ‘Lovers’ Bridge’ rock arch."
+],
+[
+"Ayia Napa Monastery",
+"Venetian-era monastery in the centre, which gave the town its name."
+],
+[
+"Ayia Napa Sculpture Park",
+"Open-air park of works by international sculptors near the sea."
+]
+],
+"eat": [
+[
+"Halloumi",
+"Cyprus’s squeaky cheese, best grilled."
+],
+[
+"Meze",
+"A long parade of small dishes; come hungry and share."
+],
+[
+"Souvla & souvlaki",
+"Charcoal-grilled meat, a Cypriot favourite."
+]
+],
+"night": [
+[
+"The square & bar street",
+"Clubs and bars around the centre, at their busiest in July and August."
+],
+[
+"Beach parties",
+"Daytime and evening events at Nissi and nearby beaches in summer."
+],
+[
+"Quieter bars",
+"Harbourfront bars and restaurants for a slower evening."
+]
+],
+"arrive": "Larnaca Airport is about 45 minutes away.",
+"around": "Intercity and local buses link Ayia Napa with Protaras and Larnaca; a hire car helps for Cape Greco (drive on the left).",
+"pass": "Local bus day tickets are available; check current fares.",
+"when": "May–October.",
+"tip": "Walk or swim at Konnos Bay below Cape Greco for clearer, calmer water.",
+"sources": [
+{
+"title": "Visit Cyprus",
+"url": "https://www.visitcyprus.com/"
+},
+{
+"title": "Hermes Airports",
+"url": "https://www.hermesairports.com/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "paphos",
+"intro": "World Heritage mosaics, a harbour castle and the birthplace of Aphrodite.",
+"areas": [
+[
+"Kato Paphos",
+"The harbour area with hotels, the castle and the archaeological park."
+],
+[
+"Paphos old town (Ktima)",
+"The upper town with the municipal market and craft shops."
+],
+[
+"Coral Bay",
+"Sandy bay north of town with restaurants and watersports."
+]
+],
+"sights": [
+[
+"Paphos Archaeological Park",
+"World Heritage Roman villas with famous floor mosaics."
+],
+[
+"Tombs of the Kings",
+"Rock-cut underground tombs by the sea."
+],
+[
+"Petra tou Romiou (Aphrodite’s Rock)",
+"The legendary birthplace of Aphrodite, east of town."
+],
+[
+"Paphos Castle",
+"Small medieval fort at the end of the harbour."
+]
+],
+"eat": [
+[
+"Meze",
+"Fish or meat meze at the harbour and in the villages."
+],
+[
+"Halloumi & loukaniko",
+"Local cheese and village sausage."
+],
+[
+"Commandaria",
+"Sweet dessert wine from the Troodos foothills."
+]
+],
+"night": [
+[
+"Bar Street (Agiou Antoniou)",
+"Clubs and bars in Kato Paphos."
+],
+[
+"Harbourfront",
+"Bars and tavernas along the promenade."
+],
+[
+"Summer events",
+"Open-air performances, including an opera festival at the castle in some years."
+]
+],
+"arrive": "Paphos International Airport is about 15 km from town, linked by bus and taxi. Larnaca Airport is about 90 minutes away.",
+"around": "Paphos buses link the harbour, old town and Coral Bay; a hire car is useful for the coast and villages (drive on the left).",
+"pass": "Paphos bus day and weekly tickets; check current fares.",
+"when": "April–June and September–October.",
+"tip": "Visit the mosaics and Tombs of the Kings early, before the midday heat.",
+"sources": [
+{
+"title": "Visit Cyprus",
+"url": "https://www.visitcyprus.com/"
+},
+{
+"title": "Hermes Airports",
+"url": "https://www.hermesairports.com/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "limassol",
+"intro": "Cyprus’s cosmopolitan seafront city, with a castle, a marina and wine villages.",
+"areas": [
+[
+"Old Town",
+"Lanes around the medieval castle, with bars and restaurants."
+],
+[
+"Limassol Marina",
+"Upmarket marina with restaurants and shops."
+],
+[
+"Seafront (Molos)",
+"Long palm-lined promenade with sculptures and play areas."
+]
+],
+"sights": [
+[
+"Limassol Castle",
+"Medieval castle housing the Cyprus Medieval Museum."
+],
+[
+"Kourion",
+"Clifftop Greco-Roman city with a theatre over the sea."
+],
+[
+"Troodos wine villages",
+"Omodos and other villages in the hills."
+],
+[
+"Molos promenade",
+"Seafront walk between the old port and the city."
+]
+],
+"eat": [
+[
+"Meze",
+"Taverns in the old town and the hills."
+],
+[
+"Souvlaki & sheftalia",
+"Grilled meat and local sausage."
+],
+[
+"Cypriot wine",
+"Commandaria and village wines from the Troodos."
+]
+],
+"night": [
+[
+"Saripolou Square",
+"Bars and restaurants in the old town."
+],
+[
+"Marina & old port",
+"Cocktail bars by the water."
+],
+[
+"Limassol Wine Festival",
+"Traditionally held in early autumn; check dates."
+]
+],
+"arrive": "Larnaca and Paphos airports are about 45–60 minutes away.",
+"around": "EMEL buses run along the seafront and to the suburbs; a hire car helps for Kourion and the Troodos villages (drive on the left).",
+"pass": "Bus day tickets are available; check current fares.",
+"when": "April–June and September–October.",
+"tip": "Visit Kourion’s clifftop theatre late in the afternoon for the light and the views.",
+"sources": [
+{
+"title": "Visit Cyprus",
+"url": "https://www.visitcyprus.com/"
+},
+{
+"title": "Hermes Airports",
+"url": "https://www.hermesairports.com/"
+}
+],
+"checked": "2026-11-24"
+}
+]

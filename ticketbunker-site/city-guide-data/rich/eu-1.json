@@ -1,0 +1,1554 @@
+[
+{
+"slug": "paris",
+"intro": "The City of Light: boulevards, cafés, world-class museums and the Seine running through it all.",
+"areas": [
+[
+"Le Marais",
+"Medieval lanes, boutiques, falafel and LGBTQ+ bars."
+],
+[
+"Saint-Germain & Latin Quarter",
+"Cafés, bookshops and the Luxembourg Gardens."
+],
+[
+"Montmartre",
+"Hilltop village with Sacré-Cœur."
+],
+[
+"Canal Saint-Martin & Belleville",
+"Young, creative neighbourhoods."
+]
+],
+"sights": [
+[
+"Eiffel Tower",
+"Book summit tickets in advance."
+],
+[
+"Louvre",
+"Home of the Mona Lisa (timed entry)."
+],
+[
+"Musée d’Orsay",
+"Impressionist masterpieces in a former station."
+],
+[
+"Notre-Dame de Paris",
+"Restored cathedral, reopened in December 2024."
+],
+[
+"Seine river cruise",
+"See the monuments from the water."
+]
+],
+"eat": [
+[
+"Bistros",
+"Steak frites, confit de canard and onion soup."
+],
+[
+"Boulangeries",
+"Croissants and baguettes."
+],
+[
+"Rue Cler & Marché d’Aligre",
+"Food streets and markets."
+]
+],
+"night": [
+[
+"Oberkampf & Pigalle",
+"Bars, clubs and live music in two of the liveliest districts."
+],
+[
+"Le Marais",
+"Cocktail and LGBTQ+ bars."
+],
+[
+"Cabaret",
+"Shows at Montmartre and the Champs-Élysées."
+]
+],
+"arrive": "Charles de Gaulle (RER B or Roissybus) and Orly (Orlyval or Metro line 14) airports. Eurostar arrives at Gare du Nord.",
+"around": "Metro, RER, buses and trams; the centre is walkable.",
+"pass": "Navigo Easy card or Navigo Découverte weekly pass; contactless payment is rolling out. The Paris Museum Pass covers many sights.",
+"when": "April–June and September–October.",
+"tip": "Many museums close one day a week (often Monday or Tuesday); check first.",
+"sources": [
+{
+"title": "Paris je t’aime (official guide)",
+"url": "https://parisjetaime.com/eng/"
+},
+{
+"title": "RATP",
+"url": "https://www.ratp.fr/en"
+},
+{
+"title": "Paris Aéroport",
+"url": "https://www.parisaeroport.fr/en"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "amsterdam",
+"intro": "Canals, gabled houses, cycling and great museums, with a famous nightlife scene.",
+"areas": [
+[
+"Canal Ring (Grachtengordel)",
+"World Heritage canals and the Nine Streets."
+],
+[
+"Jordaan",
+"Cafés, markets and brown bars."
+],
+[
+"De Pijp",
+"Albert Cuyp Market and restaurants."
+],
+[
+"Amsterdam Noord",
+"Creative venues across the IJ by free ferry."
+]
+],
+"sights": [
+[
+"Rijksmuseum",
+"Rembrandt and the Dutch Golden Age."
+],
+[
+"Van Gogh Museum",
+"The world’s largest Van Gogh collection (timed tickets)."
+],
+[
+"Anne Frank House",
+"Book online well ahead."
+],
+[
+"Canal cruise",
+"The city from the water."
+]
+],
+"eat": [
+[
+"Albert Cuyp Market",
+"Street food and stroopwafels."
+],
+[
+"Bitterballen",
+"Snack in brown cafés."
+],
+[
+"Indonesian rijsttafel",
+"A Dutch-Indonesian feast."
+]
+],
+"night": [
+[
+"Leidseplein & Rembrandtplein",
+"Squares packed with clubs, bars and music venues."
+],
+[
+"Brown cafés",
+"Traditional pubs."
+],
+[
+"Club scene",
+"Techno and house venues."
+]
+],
+"arrive": "Schiphol Airport has trains to Amsterdam Centraal (about 15–20 minutes). Eurostar arrives at Centraal.",
+"around": "Trams, Metro, buses and free ferries; cycling is everywhere.",
+"pass": "GVB day tickets or contactless OVpay; I amsterdam City Card includes transport and museums.",
+"when": "April–May for tulips; June–September for long days; King’s Day on 27 April.",
+"tip": "Stay out of bike lanes and look both ways for cyclists.",
+"sources": [
+{
+"title": "I amsterdam (official guide)",
+"url": "https://www.iamsterdam.com/en"
+},
+{
+"title": "GVB",
+"url": "https://www.gvb.nl/en"
+},
+{
+"title": "Schiphol Airport",
+"url": "https://www.schiphol.nl/en/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "berlin",
+"intro": "A city of history and reinvention: the Wall, world-class museums and legendary techno.",
+"areas": [
+[
+"Mitte",
+"Brandenburg Gate, Museum Island and Unter den Linden."
+],
+[
+"Kreuzberg",
+"Street food, bars and a multicultural mix."
+],
+[
+"Prenzlauer Berg",
+"Cafés and the Mauerpark flea market."
+],
+[
+"Friedrichshain",
+"Clubs and the East Side Gallery."
+]
+],
+"sights": [
+[
+"Brandenburg Gate & Reichstag",
+"Book the Reichstag dome visit online (free)."
+],
+[
+"Museum Island",
+"World Heritage museums including the Pergamon."
+],
+[
+"East Side Gallery",
+"Longest surviving stretch of the Berlin Wall."
+],
+[
+"Berlin Wall Memorial",
+"On Bernauer Strasse."
+],
+[
+"Holocaust Memorial",
+"Memorial to the Murdered Jews of Europe."
+]
+],
+"eat": [
+[
+"Currywurst & döner",
+"Berlin street-food icons."
+],
+[
+"Markthalle Neun",
+"Market hall with Thursday Street Food."
+],
+[
+"Beer gardens",
+"Summer favourites."
+]
+],
+"night": [
+[
+"Techno clubs",
+"Famous venues with strict door policies."
+],
+[
+"Kreuzberg bars",
+"Late bars and live music."
+],
+[
+"Späti culture",
+"Corner shops where people gather."
+]
+],
+"arrive": "Berlin Brandenburg Airport (BER) is linked by FEX airport express and S-Bahn. Hauptbahnhof has trains across Germany.",
+"around": "U-Bahn, S-Bahn, trams and buses run late; night services at weekends.",
+"pass": "AB-zone day tickets or the Berlin WelcomeCard; the Deutschlandticket for longer stays.",
+"when": "May–September; December for Christmas markets.",
+"tip": "Cash is still handy in some bars and clubs.",
+"sources": [
+{
+"title": "visitBerlin (official guide)",
+"url": "https://www.visitberlin.de/en"
+},
+{
+"title": "BVG",
+"url": "https://www.bvg.de/en"
+},
+{
+"title": "Berlin Brandenburg Airport",
+"url": "https://ber.berlin-airport.de/en.html"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "rome",
+"intro": "The Eternal City: ancient ruins, Baroque piazzas and the Vatican, with food at every corner.",
+"areas": [
+[
+"Centro Storico",
+"Pantheon, Piazza Navona and the Trevi Fountain."
+],
+[
+"Trastevere",
+"Cobbled lanes and trattorias."
+],
+[
+"Monti",
+"Boutiques and wine bars near the Forum."
+],
+[
+"Vatican & Prati",
+"St Peter’s and the Vatican Museums."
+]
+],
+"sights": [
+[
+"Colosseum & Roman Forum",
+"Combined ticket with the Palatine (book ahead)."
+],
+[
+"Vatican Museums & Sistine Chapel",
+"Book timed tickets."
+],
+[
+"St Peter’s Basilica",
+"Free entry; dress codes apply."
+],
+[
+"Pantheon",
+"Ancient temple with a ticketed entry."
+],
+[
+"Trevi Fountain",
+"Throw a coin over your shoulder."
+]
+],
+"eat": [
+[
+"Roman pastas",
+"Carbonara, cacio e pepe and amatriciana."
+],
+[
+"Pizza al taglio",
+"Pizza by the slice."
+],
+[
+"Campo de’ Fiori & Testaccio markets",
+"Morning food markets with fresh produce and street food."
+],
+[
+"Gelato",
+"From an artisanal gelateria."
+]
+],
+"night": [
+[
+"Trastevere",
+"Bars and piazzas at night."
+],
+[
+"Testaccio",
+"Clubs and late bars."
+],
+[
+"Aperitivo",
+"Early-evening drinks with snacks."
+]
+],
+"arrive": "Fiumicino Airport (Leonardo Express train or FL1) and Ciampino (bus). Roma Termini has high-speed trains.",
+"around": "Metro (lines A, B and C), buses and trams; the centre is best on foot.",
+"pass": "BIT single tickets, 24–72 hour passes or contactless; the Roma Pass adds museum entry.",
+"when": "April–June and September–October.",
+"tip": "Cover shoulders and knees for churches; carry a refillable bottle for the street fountains (nasoni).",
+"sources": [
+{
+"title": "Turismo Roma (official guide)",
+"url": "https://www.turismoroma.it/en"
+},
+{
+"title": "ATAC (public transport)",
+"url": "https://www.atac.roma.it/en"
+},
+{
+"title": "Parco archeologico del Colosseo",
+"url": "https://colosseo.it/en/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "prague",
+"intro": "A fairy-tale city of spires and bridges, with a castle, great beer and a famous astronomical clock.",
+"areas": [
+[
+"Old Town (Staré Město)",
+"Old Town Square and the Astronomical Clock."
+],
+[
+"Lesser Town (Malá Strana)",
+"Baroque streets below the castle."
+],
+[
+"Vinohrady & Žižkov",
+"Local bars, cafés and beer gardens."
+]
+],
+"sights": [
+[
+"Prague Castle",
+"One of the largest ancient castle complexes."
+],
+[
+"Charles Bridge",
+"Statue-lined medieval bridge."
+],
+[
+"Astronomical Clock",
+"Medieval clock on the Old Town Hall."
+],
+[
+"Jewish Quarter (Josefov)",
+"Synagogues and the old cemetery."
+]
+],
+"eat": [
+[
+"Svíčková",
+"Beef in cream sauce with dumplings."
+],
+[
+"Trdelník",
+"A tourist pastry; Czech classics are better."
+],
+[
+"Czech beer",
+"Pilsner, served fresh in pubs."
+]
+],
+"night": [
+[
+"Beer halls",
+"Traditional pubs."
+],
+[
+"Riegrovy sady",
+"Beer garden with views."
+],
+[
+"Clubs",
+"Big clubs near the river."
+]
+],
+"arrive": "Václav Havel Airport is linked by bus to the Metro and the Airport Express to the main station.",
+"around": "Metro, trams and buses; walkable centre.",
+"pass": "Short-term tickets and 24/72-hour passes via the PID Lítačka app.",
+"when": "April–June and September–October; December for Christmas markets.",
+"tip": "Use official exchange offices and pay in koruna, not euros.",
+"sources": [
+{
+"title": "Prague City Tourism (official guide)",
+"url": "https://prague.eu/en"
+},
+{
+"title": "PID (Prague Integrated Transport)",
+"url": "https://pid.cz/en/"
+},
+{
+"title": "Prague Airport",
+"url": "https://www.prg.aero/en"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "vienna",
+"intro": "Imperial palaces, coffee houses and classical music in one of the world’s most liveable cities.",
+"areas": [
+[
+"Innere Stadt",
+"St Stephen’s Cathedral and the Hofburg."
+],
+[
+"MuseumsQuartier",
+"Museums, courtyards and cafés."
+],
+[
+"Naschmarkt & Wieden",
+"Market and restaurants."
+],
+[
+"Leopoldstadt",
+"The Prater and its Giant Ferris Wheel."
+]
+],
+"sights": [
+[
+"Schönbrunn Palace",
+"Habsburg summer palace and gardens."
+],
+[
+"Hofburg & Spanish Riding School",
+"Imperial palace and Lipizzaner horses."
+],
+[
+"Belvedere",
+"Klimt’s The Kiss."
+],
+[
+"Vienna State Opera",
+"Standing-room tickets are a local tradition."
+]
+],
+"eat": [
+[
+"Coffee houses",
+"Café Central, Sperl and others."
+],
+[
+"Wiener Schnitzel",
+"Breaded veal escalope, Vienna’s signature dish."
+],
+[
+"Sachertorte",
+"Rich chocolate cake with apricot jam."
+],
+[
+"Heurigen",
+"Wine taverns on the city edge."
+]
+],
+"night": [
+[
+"Classical concerts",
+"Musikverein and the Opera."
+],
+[
+"Bermuda Triangle",
+"Bars near Schwedenplatz."
+],
+[
+"Danube Canal",
+"Summer bars and beach bars along the canal."
+]
+],
+"arrive": "Vienna Airport has the CAT express and S-Bahn trains. Wien Hauptbahnhof has trains across Europe.",
+"around": "U-Bahn, trams and buses; Wiener Linien runs a dense network.",
+"pass": "24–72 hour tickets or the Vienna City Card; check current fares.",
+"when": "April–June and September–October; Advent markets in December.",
+"tip": "Order a Melange in a coffee house and stay as long as you like.",
+"sources": [
+{
+"title": "Vienna Tourist Board (official guide)",
+"url": "https://www.wien.info/en"
+},
+{
+"title": "Wiener Linien",
+"url": "https://www.wienerlinien.at/en"
+},
+{
+"title": "Vienna Airport",
+"url": "https://www.viennaairport.com/en/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "budapest",
+"intro": "Two cities across the Danube: thermal baths, grand architecture and the famous ruin bars.",
+"areas": [
+[
+"Buda Castle District",
+"Castle, Fisherman’s Bastion and Matthias Church."
+],
+[
+"District VII (Jewish Quarter)",
+"Ruin bars and the Great Synagogue."
+],
+[
+"Pest riverside",
+"Parliament and the Chain Bridge."
+]
+],
+"sights": [
+[
+"Hungarian Parliament",
+"Neo-Gothic landmark on the Danube."
+],
+[
+"Széchenyi Baths",
+"Outdoor thermal pools in City Park."
+],
+[
+"Fisherman’s Bastion",
+"Viewpoint over the river."
+],
+[
+"Danube cruise",
+"Best at night when the city is lit."
+]
+],
+"eat": [
+[
+"Great Market Hall",
+"Grand central market with food stalls upstairs."
+],
+[
+"Goulash & lángos",
+"Hungarian classics."
+],
+[
+"Chimney cake",
+"Sweet spiral pastry."
+]
+],
+"night": [
+[
+"Ruin bars",
+"Szimpla Kert started the trend."
+],
+[
+"Gozsdu Courtyard",
+"Bars and restaurants."
+],
+[
+"Thermal bath parties",
+"Weekend night events at some thermal baths (check dates)."
+]
+],
+"arrive": "Budapest Airport is linked by the 100E airport bus. Keleti station has international trains.",
+"around": "Metro, trams and buses; tram 2 along the Danube is scenic.",
+"pass": "24-hour to weekly travel cards; the Budapest Card adds attractions.",
+"when": "April–June and September–October.",
+"tip": "Check menu prices and pay in forints; tip only if service is not included.",
+"sources": [
+{
+"title": "Visit Budapest (official guide)",
+"url": "https://www.budapestinfo.hu/"
+},
+{
+"title": "BKK (public transport)",
+"url": "https://bkk.hu/en/"
+},
+{
+"title": "Budapest Airport",
+"url": "https://www.bud.hu/en"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "nice",
+"intro": "The capital of the Riviera: a pebble beach, the Promenade des Anglais and a colourful old town.",
+"areas": [
+[
+"Vieux Nice",
+"Old town lanes and the Cours Saleya market."
+],
+[
+"Promenade des Anglais",
+"Seafront promenade."
+],
+[
+"Port Lympia",
+"Harbour with restaurants."
+]
+],
+"sights": [
+[
+"Castle Hill",
+"Viewpoint over the Bay of Angels."
+],
+[
+"Cours Saleya",
+"Flower and food market."
+],
+[
+"Matisse Museum",
+"Works by Matisse in a villa in Cimiez."
+],
+[
+"Èze & Monaco",
+"Day trips along the coast."
+]
+],
+"eat": [
+[
+"Socca",
+"Chickpea pancake."
+],
+[
+"Salade niçoise & pan bagnat",
+"Local classics with tuna, egg and olives."
+],
+[
+"Pissaladière",
+"Onion tart with anchovies and olives."
+]
+],
+"night": [
+[
+"Vieux Nice bars",
+"Pubs and wine bars."
+],
+[
+"Port Lympia",
+"Bars and restaurants around the harbour."
+],
+[
+"Carnival",
+"February parades."
+]
+],
+"arrive": "Nice Côte d’Azur Airport is linked by tram line 2. Nice-Ville station has trains along the coast.",
+"around": "Trams and Lignes d’Azur buses; walk the centre.",
+"pass": "Lignes d’Azur tickets and day passes; check current fares.",
+"when": "May–June and September; Carnival in February.",
+"tip": "Take the regional train to Villefranche-sur-Mer or Monaco.",
+"sources": [
+{
+"title": "Explore Nice Côte d’Azur (official guide)",
+"url": "https://www.explorenicecotedazur.com/en/"
+},
+{
+"title": "Lignes d’Azur",
+"url": "https://www.lignesdazur.com/"
+},
+{
+"title": "Nice Côte d’Azur Airport",
+"url": "https://www.nice.aeroport.fr/en"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "lyon",
+"intro": "France’s food capital, with Renaissance lanes, traboules and two rivers.",
+"areas": [
+[
+"Vieux Lyon",
+"Renaissance quarter and traboules."
+],
+[
+"Presqu’île",
+"Between the rivers, with squares and shops."
+],
+[
+"Croix-Rousse",
+"Hilltop silk-weavers’ district."
+]
+],
+"sights": [
+[
+"Basilica of Notre-Dame de Fourvière",
+"Hilltop basilica with views."
+],
+[
+"Traboules",
+"Hidden passageways in old Lyon."
+],
+[
+"Musée des Confluences",
+"Science and anthropology museum."
+],
+[
+"Les Halles Paul Bocuse",
+"Gourmet food hall."
+]
+],
+"eat": [
+[
+"Bouchons",
+"Traditional Lyonnais restaurants."
+],
+[
+"Quenelles",
+"Light pike dumplings in a creamy sauce."
+],
+[
+"Praline tart",
+"Pink praline pastry."
+]
+],
+"night": [
+[
+"Vieux Lyon bars",
+"Pubs and wine bars."
+],
+[
+"Péniches",
+"Bars on boats on the Rhône."
+],
+[
+"Fête des Lumières",
+"Light festival around 8 December."
+]
+],
+"arrive": "Lyon-Saint Exupéry Airport has the Rhônexpress tram. Part-Dieu station has TGVs to Paris.",
+"around": "Metro, trams, funiculars and buses.",
+"pass": "TCL tickets and the Lyon City Card; check current fares.",
+"when": "April–June, September–October; December for the Fête des Lumières.",
+"tip": "Book bouchons ahead at weekends.",
+"sources": [
+{
+"title": "Lyon Tourism (official guide)",
+"url": "https://en.visiterlyon.com/"
+},
+{
+"title": "TCL",
+"url": "https://www.tcl.fr/en"
+},
+{
+"title": "Lyon Airport",
+"url": "https://www.lyonaeroports.com/en"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "marseille",
+"intro": "France’s oldest city: a buzzing Old Port, the calanques and a proud multicultural spirit.",
+"areas": [
+[
+"Vieux-Port",
+"Harbour with the fish market."
+],
+[
+"Le Panier",
+"Oldest quarter with street art."
+],
+[
+"Cours Julien",
+"Bars, cafés and murals."
+]
+],
+"sights": [
+[
+"Notre-Dame de la Garde",
+"Hilltop basilica with views."
+],
+[
+"MuCEM",
+"Museum of Mediterranean civilisations."
+],
+[
+"Calanques National Park",
+"Limestone coves by boat or on foot."
+],
+[
+"Château d’If",
+"Island fortress from The Count of Monte Cristo."
+]
+],
+"eat": [
+[
+"Bouillabaisse",
+"The famous fish stew."
+],
+[
+"Panisse",
+"Chickpea fritters."
+],
+[
+"Navettes",
+"Orange-blossom biscuits."
+]
+],
+"night": [
+[
+"Cours Julien",
+"Bars and live music."
+],
+[
+"Vieux-Port",
+"Bars by the harbour."
+],
+[
+"Orange Vélodrome",
+"Home of Olympique de Marseille."
+]
+],
+"arrive": "Marseille Provence Airport is linked by shuttle bus. Saint-Charles station has TGVs to Paris.",
+"around": "Metro, trams and buses; ferries to the islands.",
+"pass": "RTM tickets and the City Pass; check current fares.",
+"when": "May–June and September–October.",
+"tip": "Check calanques access rules in summer; some need a free reservation.",
+"sources": [
+{
+"title": "Marseille Tourism (official guide)",
+"url": "https://www.marseille-tourisme.com/en/"
+},
+{
+"title": "RTM",
+"url": "https://www.rtm.fr/"
+},
+{
+"title": "Calanques National Park",
+"url": "https://www.calanques-parcnational.fr/en"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "bordeaux",
+"intro": "The world’s wine capital, with an elegant riverside, World Heritage architecture and a great food scene.",
+"areas": [
+[
+"Centre & Saint-Pierre",
+"Old town and squares."
+],
+[
+"Chartrons",
+"Antique shops and wine bars."
+],
+[
+"Bastide",
+"Right bank with parks."
+]
+],
+"sights": [
+[
+"Place de la Bourse & Water Mirror",
+"Iconic riverside square."
+],
+[
+"La Cité du Vin",
+"Immersive museum of world wine with a tasting deck."
+],
+[
+"Saint-Émilion",
+"Wine village day trip."
+],
+[
+"Cathedral Saint-André",
+"Gothic cathedral."
+]
+],
+"eat": [
+[
+"Canelés",
+"Caramelised little cakes."
+],
+[
+"Entrecôte à la bordelaise",
+"Steak with wine sauce."
+],
+[
+"Marché des Capucins",
+"Bordeaux’s main covered market."
+]
+],
+"night": [
+[
+"Wine bars",
+"Chartrons and Saint-Pierre."
+],
+[
+"Quai bars",
+"Riverside bars along the Garonne quays."
+],
+[
+"Grand Théâtre",
+"Opera and ballet."
+]
+],
+"arrive": "Bordeaux-Mérignac Airport is linked by tram line A and shuttle bus. Saint-Jean station has TGVs to Paris (about 2 hours).",
+"around": "Trams and buses; the centre is walkable.",
+"pass": "TBM tickets and the Bordeaux CityPass; check current fares.",
+"when": "May–June and September–October (harvest).",
+"tip": "Book vineyard tours in advance, especially in harvest season.",
+"sources": [
+{
+"title": "Bordeaux Tourism (official guide)",
+"url": "https://www.bordeaux-tourisme.com/en"
+},
+{
+"title": "TBM",
+"url": "https://www.infotbm.com/en"
+},
+{
+"title": "La Cité du Vin",
+"url": "https://www.laciteduvin.com/en"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "toulouse",
+"intro": "La Ville Rose: pink-brick streets, aerospace heritage and a lively student city on the Garonne.",
+"areas": [
+[
+"Capitole",
+"Main square and city hall."
+],
+[
+"Saint-Cyprien",
+"Left bank with galleries."
+],
+[
+"Carmes",
+"Market and restaurants."
+]
+],
+"sights": [
+[
+"Place du Capitole",
+"Grand main square in front of the city hall."
+],
+[
+"Basilica of Saint-Sernin",
+"Romanesque basilica (World Heritage)."
+],
+[
+"Cité de l’espace",
+"Space theme park."
+],
+[
+"Aeroscopia",
+"Aviation museum."
+]
+],
+"eat": [
+[
+"Cassoulet",
+"Bean and meat stew."
+],
+[
+"Saucisse de Toulouse",
+"Coarse pork sausage, a regional staple."
+],
+[
+"Victor Hugo Market",
+"Market with upstairs restaurants."
+]
+],
+"night": [
+[
+"Saint-Pierre",
+"Student bars by the river."
+],
+[
+"Le Bikini",
+"Well-known concert venue south of the city."
+],
+[
+"Rugby",
+"Stade Toulousain."
+]
+],
+"arrive": "Toulouse-Blagnac Airport is linked by shuttle bus and tram. Matabiau station has trains to Paris and Bordeaux.",
+"around": "Metro, trams and buses.",
+"pass": "Tisséo tickets and passes; check current fares.",
+"when": "April–June and September–October.",
+"tip": "Visit the Garonne quays at sunset when the bricks glow pink.",
+"sources": [
+{
+"title": "Toulouse Tourism (official guide)",
+"url": "https://www.toulouse-tourisme.com/en"
+},
+{
+"title": "Tisséo",
+"url": "https://www.tisseo.fr/en"
+},
+{
+"title": "Toulouse-Blagnac Airport",
+"url": "https://www.toulouse.aeroport.fr/en"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "milan",
+"intro": "Italy’s capital of fashion and design, with the Duomo, The Last Supper and aperitivo culture.",
+"areas": [
+[
+"Duomo & Centro",
+"Cathedral and the Galleria."
+],
+[
+"Brera",
+"Art and boutiques."
+],
+[
+"Navigli",
+"Canals and bars."
+]
+],
+"sights": [
+[
+"Duomo di Milano",
+"Gothic cathedral with rooftop terraces."
+],
+[
+"The Last Supper",
+"Book weeks ahead."
+],
+[
+"Galleria Vittorio Emanuele II",
+"Historic arcade."
+],
+[
+"Sforza Castle",
+"Castle and museums."
+]
+],
+"eat": [
+[
+"Risotto alla milanese",
+"Saffron risotto."
+],
+[
+"Cotoletta",
+"Breaded veal cutlet."
+],
+[
+"Panettone",
+"Christmas bread."
+]
+],
+"night": [
+[
+"Navigli",
+"Aperitivo and bars along the canals."
+],
+[
+"La Scala",
+"World-famous opera house."
+],
+[
+"San Siro",
+"Home of AC Milan and Inter."
+]
+],
+"arrive": "Malpensa (Malpensa Express), Linate (Metro M4) and Bergamo (bus) airports. Milano Centrale has high-speed trains.",
+"around": "Metro, trams and buses.",
+"pass": "ATM tickets, day passes or contactless; check current fares.",
+"when": "April–June and September–October.",
+"tip": "Book The Last Supper well in advance; tickets sell out.",
+"sources": [
+{
+"title": "YesMilano (official guide)",
+"url": "https://www.yesmilano.it/en"
+},
+{
+"title": "ATM Milano",
+"url": "https://www.atm.it/en"
+},
+{
+"title": "Milan Airports",
+"url": "https://www.milanomalpensa-airport.com/en"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "florence",
+"intro": "Renaissance art and architecture, the Duomo and Tuscan food.",
+"areas": [
+[
+"Duomo area",
+"Cathedral and Baptistery."
+],
+[
+"Oltrarno",
+"Artisans and Pitti Palace."
+],
+[
+"Santa Croce",
+"Basilica and bars."
+]
+],
+"sights": [
+[
+"Duomo & Brunelleschi’s Dome",
+"Climb the dome (book ahead)."
+],
+[
+"Uffizi Gallery",
+"Botticelli and the Renaissance."
+],
+[
+"Accademia",
+"Michelangelo’s David."
+],
+[
+"Ponte Vecchio",
+"Medieval bridge with jewellers."
+],
+[
+"Piazzale Michelangelo",
+"Sunset viewpoint."
+]
+],
+"eat": [
+[
+"Bistecca alla fiorentina",
+"Thick-cut T-bone steak, served rare."
+],
+[
+"Mercato Centrale",
+"Food hall above the San Lorenzo market."
+],
+[
+"Lampredotto",
+"Tripe sandwich, a street classic."
+]
+],
+"night": [
+[
+"Santo Spirito",
+"Bars in the square."
+],
+[
+"Aperitivo",
+"Evenings in the Oltrarno."
+],
+[
+"Concerts",
+"Churches and theatres."
+]
+],
+"arrive": "Florence Airport is linked by tram T2; Pisa Airport has trains. Santa Maria Novella station has high-speed trains.",
+"around": "Walk; trams and buses for the outskirts.",
+"pass": "Autolinee Toscane tickets; check current options.",
+"when": "April–June and September–October.",
+"tip": "Book museum tickets ahead to skip long queues.",
+"sources": [
+{
+"title": "Feel Florence (official guide)",
+"url": "https://www.feelflorence.it/en"
+},
+{
+"title": "Uffizi Galleries",
+"url": "https://www.uffizi.it/en"
+},
+{
+"title": "Florence Airport",
+"url": "https://www.aeroporto.firenze.it/en/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "venice",
+"intro": "The city on water: canals, palaces and St Mark’s Basilica.",
+"areas": [
+[
+"San Marco",
+"St Mark’s Square and the Doge’s Palace."
+],
+[
+"Cannaregio",
+"Local bars and the Jewish Ghetto."
+],
+[
+"Dorsoduro",
+"Galleries and the Zattere."
+]
+],
+"sights": [
+[
+"St Mark’s Basilica",
+"Byzantine mosaics."
+],
+[
+"Doge’s Palace",
+"Gothic palace of the Venetian Republic."
+],
+[
+"Grand Canal",
+"By vaporetto or gondola."
+],
+[
+"Murano & Burano",
+"Glass and colourful islands."
+]
+],
+"eat": [
+[
+"Cicchetti",
+"Venetian bar snacks."
+],
+[
+"Sarde in saor",
+"Sweet-and-sour sardines."
+],
+[
+"Spritz",
+"Born in the Veneto."
+]
+],
+"night": [
+[
+"Cannaregio",
+"Bars on Fondamenta della Misericordia."
+],
+[
+"La Fenice",
+"Venice’s historic opera house."
+],
+[
+"Carnival",
+"Masked festival (February)."
+]
+],
+"arrive": "Marco Polo Airport is linked by bus and Alilaguna water bus. Santa Lucia station is on the Grand Canal.",
+"around": "Vaporetto water buses run the Grand Canal and lagoon; otherwise everything is on foot.",
+"pass": "ACTV travel cards (1–7 days); check current fares.",
+"when": "April–May and October; check day-tripper fee dates.",
+"tip": "Day-trippers may need to pay the access fee on certain dates; check before travelling.",
+"sources": [
+{
+"title": "Venezia Unica (official city portal)",
+"url": "https://www.veneziaunica.it/en"
+},
+{
+"title": "Venice Airport",
+"url": "https://www.veniceairport.it/en/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "naples",
+"intro": "Vibrant, chaotic and delicious: the birthplace of pizza, with Vesuvius and Pompeii close by.",
+"areas": [
+[
+"Centro Storico",
+"World Heritage old town."
+],
+[
+"Quartieri Spagnoli",
+"Narrow lanes and Maradona murals."
+],
+[
+"Chiaia & Lungomare",
+"Seafront promenade."
+]
+],
+"sights": [
+[
+"Pompeii",
+"Roman city buried by Vesuvius."
+],
+[
+"National Archaeological Museum",
+"Finds from Pompeii and Herculaneum."
+],
+[
+"Naples Underground",
+"Tunnels and cisterns."
+],
+[
+"Vesuvius",
+"Hike to the crater."
+]
+],
+"eat": [
+[
+"Pizza napoletana",
+"Margherita in its home city."
+],
+[
+"Sfogliatella",
+"Shell-shaped pastry."
+],
+[
+"Street food",
+"Fried pizza and cuoppo."
+]
+],
+"night": [
+[
+"Piazza Bellini",
+"Bars in the old town."
+],
+[
+"Chiaia",
+"Aperitivo bars in an elegant seafront district."
+],
+[
+"Maradona stadium",
+"Home of SSC Napoli."
+]
+],
+"arrive": "Naples Airport is linked by Alibus. Napoli Centrale has high-speed trains; Circumvesuviana goes to Pompeii.",
+"around": "Metro (art stations), funiculars and buses.",
+"pass": "Unico Campania tickets; check current fares.",
+"when": "April–June and September–October.",
+"tip": "Visit Pompeii early and bring water and sun protection.",
+"sources": [
+{
+"title": "Visit Naples",
+"url": "https://www.visitnaples.eu/en"
+},
+{
+"title": "Pompeii Archaeological Park",
+"url": "https://pompeiisites.org/en/"
+},
+{
+"title": "Naples Airport",
+"url": "https://www.aeroportodinapoli.it/en"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "bologna",
+"intro": "‘La Grassa’: porticoes, medieval towers and Italy’s richest food city.",
+"areas": [
+[
+"Centro Storico",
+"Piazza Maggiore and the towers."
+],
+[
+"Quadrilatero",
+"Old market lanes."
+],
+[
+"University Quarter",
+"Student bars and cafés."
+]
+],
+"sights": [
+[
+"Porticoes of Bologna",
+"World Heritage arcades."
+],
+[
+"Two Towers",
+"Asinelli and Garisenda towers."
+],
+[
+"Archiginnasio",
+"Anatomical Theatre."
+],
+[
+"San Luca Sanctuary",
+"Long portico walk."
+]
+],
+"eat": [
+[
+"Tagliatelle al ragù",
+"The real ‘bolognese’."
+],
+[
+"Mortadella",
+"Local cured meat."
+],
+[
+"Tortellini in brodo",
+"Tiny filled pasta in a rich broth."
+]
+],
+"night": [
+[
+"Via del Pratello",
+"Bohemian street of bars and osterie."
+],
+[
+"University district",
+"Student nightlife."
+],
+[
+"Aperitivo",
+"Quadrilatero wine bars."
+]
+],
+"arrive": "Bologna Airport is linked by the Marconi Express monorail. Bologna Centrale has high-speed trains.",
+"around": "Walk under the porticoes; TPER buses.",
+"pass": "TPER tickets; check current fares.",
+"when": "April–June and September–October.",
+"tip": "Climb the Asinelli Tower (book ahead; check current access).",
+"sources": [
+{
+"title": "Bologna Welcome (official guide)",
+"url": "https://www.bolognawelcome.com/en/"
+},
+{
+"title": "TPER",
+"url": "https://www.tper.it/"
+},
+{
+"title": "Bologna Airport",
+"url": "https://www.bologna-airport.it/en/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "turin",
+"intro": "An elegant Alpine-edge city of baroque squares, royal palaces, Egyptian treasures and chocolate.",
+"areas": [
+[
+"Centro",
+"Piazza Castello and Via Roma."
+],
+[
+"Quadrilatero Romano",
+"Bars and restaurants."
+],
+[
+"San Salvario",
+"Multicultural district with Turin’s busiest nightlife."
+]
+],
+"sights": [
+[
+"Egyptian Museum",
+"One of the world’s great Egyptian collections."
+],
+[
+"Mole Antonelliana",
+"Cinema museum with a panoramic lift."
+],
+[
+"Royal Palace",
+"Savoy royal residence."
+],
+[
+"Superga Basilica",
+"Hilltop basilica by rack railway."
+]
+],
+"eat": [
+[
+"Bicerin",
+"Coffee, chocolate and cream."
+],
+[
+"Vermouth",
+"Turin is the birthplace of vermouth; try it at aperitivo."
+],
+[
+"Agnolotti",
+"Piedmontese pasta."
+]
+],
+"night": [
+[
+"San Salvario",
+"Bars and clubs around Largo Saluzzo."
+],
+[
+"Murazzi",
+"Bars along the Po riverbank."
+],
+[
+"Aperitivo",
+"A Turin tradition."
+]
+],
+"arrive": "Turin Airport is linked by train and bus. Porta Nuova and Porta Susa stations have high-speed trains.",
+"around": "Metro, trams and buses.",
+"pass": "GTT tickets and the Torino+Piemonte Card; check current options.",
+"when": "April–June and September–October.",
+"tip": "Try a bicerin at a historic café.",
+"sources": [
+{
+"title": "Turismo Torino (official guide)",
+"url": "https://www.turismotorino.org/en"
+},
+{
+"title": "Museo Egizio",
+"url": "https://museoegizio.it/en/"
+},
+{
+"title": "Turin Airport",
+"url": "https://www.aeroportoditorino.it/en"
+}
+],
+"checked": "2026-11-24"
+}
+]

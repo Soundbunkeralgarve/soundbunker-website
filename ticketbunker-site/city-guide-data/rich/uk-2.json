@@ -1,0 +1,1686 @@
+[
+{
+"slug": "preston",
+"intro": "Lancashire’s only city: Victorian civic grandeur, riverside parks and an easy hub for the Lakes and the coast.",
+"areas": [
+[
+"City centre & Fishergate",
+"The main shopping street, Winckley Square and the Flag Market."
+],
+[
+"Avenham & Miller Parks",
+"Victorian riverside parks on the Ribble."
+],
+[
+"Friargate",
+"Bars and independent shops close to the university."
+]
+],
+"sights": [
+[
+"Harris Museum",
+"Landmark museum and gallery on the Flag Market (check current opening after its refurbishment)."
+],
+[
+"Avenham & Miller Parks",
+"Ornamental gardens, a Japanese garden and river walks."
+],
+[
+"Preston Markets",
+"Traditional market under a restored Victorian canopy."
+],
+[
+"Deepdale",
+"Home of Preston North End, one of the Football League’s founding clubs."
+]
+],
+"eat": [
+[
+"Preston Markets",
+"Food stalls and local produce."
+],
+[
+"Lancashire hotpot",
+"The county’s slow-baked lamb and potato classic."
+],
+[
+"Friargate & Fishergate",
+"Cafés and casual restaurants."
+]
+],
+"night": [
+[
+"Friargate",
+"Student-friendly bars and pubs."
+],
+[
+"Preston Guild Hall",
+"Concerts, comedy and events."
+],
+[
+"Real-ale pubs",
+"Traditional pubs around the centre."
+]
+],
+"arrive": "Preston station is on the West Coast Main Line with direct trains to London, Manchester, Glasgow and Blackpool. Manchester Airport is about an hour by train.",
+"around": "The centre is walkable; Preston Bus and Stagecoach cover the city and county.",
+"pass": "Bus day tickets are available from the operators; check current fares.",
+"when": "Spring to early autumn for parks; the Preston Guild is held every 20 years.",
+"tip": "Use Preston as a base for Blackpool, the Ribble Valley and the Lake District.",
+"sources": [
+{
+"title": "Visit Lancashire: Preston",
+"url": "https://www.visitlancashire.com/explore/preston"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "chester",
+"intro": "A walled Roman city with medieval Rows, a riverside racecourse and one of the UK’s most popular zoos.",
+"areas": [
+[
+"The Rows & Eastgate",
+"Two-tier medieval galleries of shops around the Cross."
+],
+[
+"City Walls",
+"Walk Britain’s most complete Roman and medieval city walls."
+],
+[
+"The Groves & River Dee",
+"Riverside promenade, boat trips and the Queen’s Park Bridge."
+]
+],
+"sights": [
+[
+"Eastgate Clock",
+"Victorian clock on the city walls, one of England’s most photographed."
+],
+[
+"Chester Cathedral",
+"Medieval cathedral with a rooftop tour."
+],
+[
+"Roman Amphitheatre",
+"Remains of Britain’s largest known Roman amphitheatre."
+],
+[
+"Chester Zoo",
+"Large conservation zoo a short bus ride north of the city."
+],
+[
+"Chester Racecourse",
+"The Roodee, claimed as England’s oldest racecourse still in use."
+]
+],
+"eat": [
+[
+"Chester Market",
+"Food hall with local and global stalls."
+],
+[
+"Watergate Street",
+"Restaurants and wine bars in historic buildings."
+],
+[
+"Cheshire cheese",
+"One of Britain’s oldest named cheeses."
+]
+],
+"night": [
+[
+"Watergate Street & Frodsham Street",
+"Cocktail bars and late venues."
+],
+[
+"Storyhouse",
+"Theatre, cinema and library in a converted Odeon."
+],
+[
+"Riverside pubs",
+"Summer evenings by the Dee."
+]
+],
+"arrive": "Chester station has trains from London, Manchester and North Wales. Liverpool and Manchester airports are under an hour away.",
+"around": "The centre is compact and walkable; buses and Park & Ride serve the zoo and suburbs.",
+"pass": "Park & Ride and Stagecoach day tickets are available; check current fares.",
+"when": "Spring to autumn; race days (May–September) are busy and fun.",
+"tip": "Walk the full circuit of the walls, around two miles, for the best introduction to the city.",
+"sources": [
+{
+"title": "Visit Cheshire: Chester",
+"url": "https://www.visitcheshire.com/chester"
+},
+{
+"title": "Chester Zoo",
+"url": "https://www.chesterzoo.org/"
+},
+{
+"title": "Chester Cathedral",
+"url": "https://chestercathedral.com/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "southampton",
+"intro": "A historic port city of medieval walls, cruise ships and Titanic stories, with the New Forest close by.",
+"areas": [
+[
+"Old Town",
+"Medieval walls, the Bargate and Tudor House."
+],
+[
+"Ocean Village & waterfront",
+"Marina, bars and the cruise terminals."
+],
+[
+"Bedford Place & London Road",
+"Bars, restaurants and nightlife north of the centre."
+]
+],
+"sights": [
+[
+"SeaCity Museum",
+"Southampton’s maritime story, including the Titanic crew."
+],
+[
+"Tudor House and Garden",
+"Historic house museum in the Old Town."
+],
+[
+"Medieval walls & Bargate",
+"Some of England’s most complete town walls."
+],
+[
+"The New Forest",
+"National park with ponies and villages a short drive west."
+]
+],
+"eat": [
+[
+"Oxford Street",
+"A cluster of restaurants near Ocean Village."
+],
+[
+"Westquay",
+"Leisure dining terrace above the shopping centre."
+],
+[
+"Fresh seafood",
+"From the Solent and south coast."
+]
+],
+"night": [
+[
+"Bedford Place",
+"Bars and late venues."
+],
+[
+"Mayflower Theatre",
+"One of the largest theatres in the south."
+],
+[
+"O2 Guildhall",
+"Gigs and comedy."
+]
+],
+"arrive": "Southampton Airport has its own rail station (Southampton Airport Parkway). Southampton Central has fast trains to London Waterloo. Red Funnel ferries sail to the Isle of Wight.",
+"around": "Bluestar, Unilink and First buses cover the city; the centre is walkable.",
+"pass": "Bus day tickets are available from the operators; check current fares.",
+"when": "May–September for waterfront events and New Forest days out.",
+"tip": "Check the cruise calendar: big ship days fill hotels and taxis.",
+"sources": [
+{
+"title": "Visit Southampton (official guide)",
+"url": "https://www.visitsouthampton.co.uk/"
+},
+{
+"title": "SeaCity Museum",
+"url": "https://seacitymuseum.co.uk/"
+},
+{
+"title": "Southampton Airport",
+"url": "https://www.southamptonairport.com/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "portsmouth",
+"intro": "Britain’s island city and home of the Royal Navy, with a historic dockyard, a seafront and the Spinnaker Tower.",
+"areas": [
+[
+"Historic Dockyard & Gunwharf Quays",
+"Naval history, waterfront shopping and restaurants."
+],
+[
+"Old Portsmouth",
+"Cobbled streets, the Round Tower and harbour views."
+],
+[
+"Southsea",
+"Seafront, Southsea Castle and Albert Road’s bars."
+]
+],
+"sights": [
+[
+"Portsmouth Historic Dockyard",
+"HMS Victory, the Mary Rose and HMS Warrior."
+],
+[
+"Spinnaker Tower",
+"Viewing tower with a glass floor over the harbour."
+],
+[
+"The D-Day Story",
+"Museum on Southsea seafront."
+],
+[
+"Southsea Castle",
+"Henry VIII’s fort on the seafront."
+]
+],
+"eat": [
+[
+"Gunwharf Quays",
+"Waterfront restaurants and bars."
+],
+[
+"Albert Road",
+"Independent restaurants and cafés."
+],
+[
+"Fish and chips on the seafront",
+"A Southsea classic."
+]
+],
+"night": [
+[
+"Albert Road",
+"Bars and live music, including The Wedgewood Rooms."
+],
+[
+"Guildhall",
+"Concerts and comedy."
+],
+[
+"Gunwharf Quays",
+"Bars and late venues by the harbour."
+]
+],
+"arrive": "Portsmouth Harbour and Portsmouth & Southsea stations have trains from London Waterloo. Southampton Airport is about 40 minutes away. Wightlink and Hovertravel cross to the Isle of Wight.",
+"around": "First and Stagecoach buses cover the city; the seafront is great for walking and cycling.",
+"pass": "Bus day tickets are available from the operators; check current fares.",
+"when": "May–September; Victorious Festival in late August.",
+"tip": "Buy a multi-attraction Dockyard ticket if you plan to see several ships.",
+"sources": [
+{
+"title": "Visit Portsmouth (official guide)",
+"url": "https://www.visitportsmouth.co.uk/"
+},
+{
+"title": "Portsmouth Historic Dockyard",
+"url": "https://www.historicdockyard.co.uk/"
+},
+{
+"title": "Spinnaker Tower",
+"url": "https://www.spinnakertower.co.uk/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "leicester",
+"intro": "A diverse, food-loving city where King Richard III was rediscovered and Diwali lights up the Golden Mile.",
+"areas": [
+[
+"Cultural Quarter",
+"Curve theatre, Phoenix cinema and the LCB Depot."
+],
+[
+"Old Town",
+"Cathedral, Guildhall and the King Richard III centre."
+],
+[
+"Belgrave & the Golden Mile",
+"Indian restaurants, sweet shops and sari stores."
+]
+],
+"sights": [
+[
+"King Richard III Visitor Centre",
+"The story of the king found under a car park."
+],
+[
+"Leicester Cathedral",
+"Where Richard III was reburied in 2015."
+],
+[
+"National Space Centre",
+"Rockets, planetarium and space science."
+],
+[
+"Leicester Museum & Art Gallery",
+"Free museum in New Walk."
+]
+],
+"eat": [
+[
+"Golden Mile",
+"Belgrave Road’s vegetarian and South Asian restaurants and sweet shops."
+],
+[
+"Leicester Market",
+"One of England’s largest outdoor covered markets."
+],
+[
+"Red Leicester & pork pies",
+"Local favourites from the county."
+]
+],
+"night": [
+[
+"Curve",
+"Major theatre in the Cultural Quarter."
+],
+[
+"De Montfort Hall",
+"Gigs and concerts."
+],
+[
+"Diwali celebrations",
+"One of the largest outside India, in October or November."
+]
+],
+"arrive": "East Midlands Airport is linked by Skylink bus. Leicester station has fast trains to London St Pancras.",
+"around": "The centre is walkable; Arriva, First and Centrebus routes cover the city.",
+"pass": "Bus day tickets are available from the operators; check current fares.",
+"when": "Spring to autumn; Diwali (October or November) and Caribbean Carnival (August).",
+"tip": "Arrive hungry on the Golden Mile and try mithai from a sweet shop.",
+"sources": [
+{
+"title": "Visit Leicester (official guide)",
+"url": "https://www.visitleicester.info/"
+},
+{
+"title": "King Richard III Visitor Centre",
+"url": "https://kriii.com/"
+},
+{
+"title": "National Space Centre",
+"url": "https://spacecentre.co.uk/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "derby",
+"intro": "A compact cathedral city at the start of the Derwent Valley Mills World Heritage Site, with the Peak District close by.",
+"areas": [
+[
+"Cathedral Quarter",
+"Independent shops, bars and restaurants around the cathedral."
+],
+[
+"Riverside & Silk Mill",
+"The Derwent and the Museum of Making."
+],
+[
+"Friar Gate",
+"Georgian street with bars and restaurants."
+]
+],
+"sights": [
+[
+"Museum of Making",
+"In the Silk Mill, part of the Derwent Valley Mills World Heritage Site."
+],
+[
+"Derby Cathedral",
+"Tallest tower in the city, famous for nesting peregrine falcons."
+],
+[
+"Derby Museum & Art Gallery",
+"Paintings by Joseph Wright of Derby."
+],
+[
+"Derwent Valley Mills",
+"World Heritage mills north of the city, including Belper and Cromford."
+]
+],
+"eat": [
+[
+"Cathedral Quarter",
+"Cafés and independent restaurants."
+],
+[
+"Derbyshire oatcakes",
+"Savoury pancakes, a regional classic."
+],
+[
+"Bakewell pudding",
+"Made in nearby Bakewell in the Peak District."
+]
+],
+"night": [
+[
+"Friar Gate",
+"Bars and late venues."
+],
+[
+"Derby Theatre",
+"Plays and productions."
+],
+[
+"Real ale",
+"Derby is known for traditional pubs and beer festivals."
+]
+],
+"arrive": "East Midlands Airport is about 30 minutes away. Derby station has direct trains to London St Pancras, Birmingham and Sheffield.",
+"around": "Walkable centre; Arriva and trentbarton buses cover the city and the Peak District.",
+"pass": "Bus day tickets are available from the operators; check current fares.",
+"when": "Spring to autumn for Peak District trips.",
+"tip": "Combine a city visit with the Derwent Valley Mills and Matlock Bath.",
+"sources": [
+{
+"title": "Visit Derby (official guide)",
+"url": "https://www.visitderby.co.uk/"
+},
+{
+"title": "Derby Museums",
+"url": "https://www.derbymuseums.org/"
+},
+{
+"title": "Derwent Valley Mills",
+"url": "https://www.derwentvalleymills.org/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "coventry",
+"intro": "A city of reinvention: a bombed cathedral beside its modern successor, motor heritage and 2 Tone music.",
+"areas": [
+[
+"Cathedral Quarter",
+"The cathedrals, the Herbert and medieval streets."
+],
+[
+"Fargo Village",
+"Creative village of independent shops and street food."
+],
+[
+"Far Gosford Street",
+"Historic street of bars and restaurants."
+]
+],
+"sights": [
+[
+"Coventry Cathedral",
+"The bombed medieval ruins and Basil Spence’s 1962 cathedral."
+],
+[
+"Coventry Transport Museum",
+"Free museum of cars, bikes and land-speed record vehicles."
+],
+[
+"Herbert Art Gallery & Museum",
+"Free art and local history museum."
+],
+[
+"Lady Godiva statue",
+"In Broadgate, with the city’s famous legend."
+]
+],
+"eat": [
+[
+"Fargo Village",
+"Street food and independent cafés."
+],
+[
+"Far Gosford Street",
+"International restaurants."
+],
+[
+"Coventry godcakes",
+"Traditional triangular pastries."
+]
+],
+"night": [
+[
+"Coventry Building Society Arena",
+"Stadium gigs and sport."
+],
+[
+"Belgrade Theatre",
+"Plays and touring shows."
+],
+[
+"2 Tone heritage",
+"The city that gave the world The Specials."
+]
+],
+"arrive": "Birmingham Airport is about 15 minutes by train. Coventry station has fast trains to London Euston and Birmingham.",
+"around": "Walkable centre; National Express Coventry and Stagecoach buses cover the city.",
+"pass": "West Midlands network day tickets and contactless caps apply on many buses; check current fares.",
+"when": "Spring to autumn for outdoor events.",
+"tip": "Visit the cathedral ruins at dusk, when the bombed walls are at their most moving.",
+"sources": [
+{
+"title": "Visit Coventry (official guide)",
+"url": "https://www.visitcoventry.co.uk/"
+},
+{
+"title": "Coventry Cathedral",
+"url": "https://www.coventrycathedral.org.uk/"
+},
+{
+"title": "Coventry Transport Museum",
+"url": "https://www.transport-museum.com/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "wolverhampton",
+"intro": "A Black Country city with a famous football club, fine Victorian art and easy tram links to Birmingham.",
+"areas": [
+[
+"City centre",
+"Queen Square, Lichfield Street and the Mander Centre."
+],
+[
+"West Park & Whitmore Reans",
+"Victorian park and residential streets."
+],
+[
+"Molineux area",
+"Home of Wolverhampton Wanderers."
+]
+],
+"sights": [
+[
+"Wolverhampton Art Gallery",
+"Victorian art and pop art in the city centre."
+],
+[
+"Molineux Stadium",
+"Home of Wolves, with stadium tours."
+],
+[
+"Wightwick Manor",
+"National Trust Arts and Crafts house."
+],
+[
+"Black Country Living Museum",
+"Open-air museum in nearby Dudley."
+]
+],
+"eat": [
+[
+"Punjabi food",
+"Wolverhampton has a large Sikh and Punjabi community."
+],
+[
+"Black Country faggots and peas",
+"A traditional local dish."
+],
+[
+"Mander Centre & Lichfield Street",
+"Cafés and casual dining."
+]
+],
+"night": [
+[
+"The Halls Wolverhampton",
+"Major gig venue."
+],
+[
+"Grand Theatre",
+"Touring shows and pantomime."
+],
+[
+"Broad Street & Lichfield Street",
+"Bars and pubs."
+]
+],
+"arrive": "Birmingham Airport is about 40 minutes away. Wolverhampton station has direct trains to London, Birmingham and Manchester.",
+"around": "West Midlands Metro trams run to Birmingham; buses cover the city.",
+"pass": "West Midlands network tickets and contactless caps cover trams and many buses.",
+"when": "Spring to autumn; check the Wolves fixture list.",
+"tip": "Ride the tram through the Black Country to Birmingham city centre.",
+"sources": [
+{
+"title": "Enjoy Wolverhampton",
+"url": "https://www.enjoywolverhampton.com/"
+},
+{
+"title": "West Midlands Network",
+"url": "https://www.wmnetwork.co.uk/"
+},
+{
+"title": "National Trust: Wightwick Manor",
+"url": "https://www.nationaltrust.org.uk/visit/birmingham-west-midlands/wightwick-manor-and-gardens"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "solihull",
+"intro": "A leafy town between Birmingham and the countryside, home to the NEC, Birmingham Airport and Touchwood.",
+"areas": [
+[
+"Town centre",
+"Touchwood, the High Street and St Alphege Church."
+],
+[
+"NEC & Resorts World",
+"Exhibition halls, arena and leisure complex."
+],
+[
+"Knowle & Dorridge",
+"Village high streets with pubs and restaurants."
+]
+],
+"sights": [
+[
+"The NEC",
+"National Exhibition Centre and bp pulse LIVE arena."
+],
+[
+"Resorts World Birmingham",
+"Shopping, dining and entertainment by the NEC."
+],
+[
+"Malvern & Brueton Parks",
+"Parks next to the town centre."
+],
+[
+"St Alphege Church",
+"Medieval parish church in the old centre."
+]
+],
+"eat": [
+[
+"Touchwood",
+"Restaurant terrace in the shopping centre."
+],
+[
+"High Street",
+"Cafés and restaurants."
+],
+[
+"Village pubs",
+"Knowle, Dorridge and Hampton-in-Arden."
+]
+],
+"night": [
+[
+"bp pulse LIVE",
+"Arena concerts at the NEC."
+],
+[
+"Resorts World",
+"Bars, cinema and casino."
+],
+[
+"The Core Theatre",
+"Local arts venue."
+]
+],
+"arrive": "Birmingham Airport and Birmingham International station sit within the borough. Solihull station has trains to Birmingham Moor Street and London Marylebone.",
+"around": "National Express buses and local trains; many visitors drive.",
+"pass": "West Midlands network tickets and contactless caps cover many buses.",
+"when": "Year-round; check the NEC events calendar, as big shows fill hotels.",
+"tip": "For NEC events, book hotels early or stay in Birmingham and take the train.",
+"sources": [
+{
+"title": "The NEC",
+"url": "https://www.thenec.co.uk/"
+},
+{
+"title": "Birmingham Airport",
+"url": "https://www.birminghamairport.co.uk/"
+},
+{
+"title": "Touchwood Solihull",
+"url": "https://www.touchwoodsolihull.co.uk/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "stoke-on-trent",
+"intro": "The Potteries: six towns made famous by Wedgwood, Spode and Moorcroft, with factory shops and museums.",
+"areas": [
+[
+"Hanley",
+"City centre with the Potteries Museum, theatres and shopping."
+],
+[
+"Burslem",
+"Mother town of the Potteries, with Middleport Pottery nearby."
+],
+[
+"Longton",
+"Gladstone Pottery Museum and factory shops."
+]
+],
+"sights": [
+[
+"Gladstone Pottery Museum",
+"The last complete Victorian pottery with bottle ovens."
+],
+[
+"World of Wedgwood",
+"Factory, museum and tearoom at Barlaston."
+],
+[
+"Potteries Museum & Art Gallery",
+"Ceramics and the Staffordshire Hoard."
+],
+[
+"Trentham Estate",
+"Gardens, lake, shopping village and Monkey Forest."
+]
+],
+"eat": [
+[
+"Staffordshire oatcakes",
+"Local savoury pancakes from oatcake shops."
+],
+[
+"Lobby",
+"The Potteries’ traditional stew."
+],
+[
+"Factory tearooms",
+"Afternoon tea at the pottery visitor centres."
+]
+],
+"night": [
+[
+"Victoria Hall & Regent Theatre",
+"Concerts and touring shows in Hanley."
+],
+[
+"Hanley bars",
+"The city’s main night out."
+],
+[
+"Bet365 Stadium",
+"Home of Stoke City."
+]
+],
+"arrive": "Stoke-on-Trent station has direct trains to London Euston and Manchester. Manchester Airport is about 45 minutes away.",
+"around": "First buses connect the six towns; driving helps for factory shops.",
+"pass": "First day tickets are available; check current fares.",
+"when": "Spring to autumn; Alton Towers and Trentham are busiest in summer.",
+"tip": "Factory shops sell seconds and samples; check opening days before you travel.",
+"sources": [
+{
+"title": "Visit Stoke (official guide)",
+"url": "https://www.visitstoke.co.uk/"
+},
+{
+"title": "Gladstone Pottery Museum",
+"url": "https://www.stokemuseums.org.uk/gpm/"
+},
+{
+"title": "World of Wedgwood",
+"url": "https://www.worldofwedgwood.com/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "milton-keynes",
+"intro": "A planned new city of parks, lakes and public art, with Bletchley Park’s codebreaking story on its doorstep.",
+"areas": [
+[
+"Central Milton Keynes",
+"centre:mk, the Theatre District and Campbell Park."
+],
+[
+"Bletchley",
+"Bletchley Park and the National Museum of Computing."
+],
+[
+"Willen",
+"Willen Lake and the Peace Pagoda."
+]
+],
+"sights": [
+[
+"Bletchley Park",
+"Home of the Second World War codebreakers."
+],
+[
+"The National Museum of Computing",
+"Working historic computers at Bletchley Park."
+],
+[
+"Willen Lake",
+"Watersports, walks and the Peace Pagoda."
+],
+[
+"The Concrete Cows",
+"Milton Keynes’ famous public sculpture."
+]
+],
+"eat": [
+[
+"Theatre District",
+"Restaurants before a show."
+],
+[
+"centre:mk",
+"Casual dining and cafés."
+],
+[
+"Old Wolverton & Stony Stratford",
+"Older town high streets with pubs."
+]
+],
+"night": [
+[
+"Milton Keynes Theatre",
+"Touring musicals and plays."
+],
+[
+"The Stables",
+"Live music venue at Wavendon."
+],
+[
+"Xscape",
+"Indoor real-snow slope, cinema and bars."
+]
+],
+"arrive": "Milton Keynes Central has fast trains to London Euston and Birmingham. Luton Airport is around 30–40 minutes by road.",
+"around": "Buses and Redways (a city-wide network of cycle and walking paths); grid roads make driving easy.",
+"pass": "Bus day tickets are available; MK Connect offers on-demand rides.",
+"when": "Spring to autumn for the parks and lakes.",
+"tip": "Borrow a bike or e-scooter where available and use the Redways.",
+"sources": [
+{
+"title": "Destination Milton Keynes",
+"url": "https://www.destinationmiltonkeynes.co.uk/"
+},
+{
+"title": "Bletchley Park",
+"url": "https://bletchleypark.org.uk/"
+},
+{
+"title": "The National Museum of Computing",
+"url": "https://www.tnmoc.org/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "northampton",
+"intro": "England’s shoemaking capital, with a historic round church, a Mackintosh house and Saints rugby.",
+"areas": [
+[
+"Town centre",
+"Market Square, the Guildhall and the Cultural Quarter."
+],
+[
+"St Giles Street",
+"Independent shops and cafés."
+],
+[
+"Franklin’s Gardens",
+"Home of Northampton Saints."
+]
+],
+"sights": [
+[
+"Northampton Museum & Art Gallery",
+"Home to a world-famous shoe collection."
+],
+[
+"78 Derngate",
+"House remodelled by Charles Rennie Mackintosh."
+],
+[
+"Church of the Holy Sepulchre",
+"One of England’s few surviving medieval round churches."
+],
+[
+"Delapré Abbey",
+"Historic house and parkland."
+]
+],
+"eat": [
+[
+"Market Square",
+"Market stalls in one of England’s largest market squares."
+],
+[
+"St Giles Street",
+"Cafés and independent restaurants."
+],
+[
+"Bridge Street",
+"Bars and restaurants."
+]
+],
+"night": [
+[
+"Royal & Derngate",
+"Theatre and concerts."
+],
+[
+"Bridge Street",
+"Bars and clubs."
+],
+[
+"The Picturedrome",
+"Live music and events."
+]
+],
+"arrive": "Northampton station has trains to London Euston and Birmingham. Luton and Birmingham airports are around an hour away.",
+"around": "Stagecoach buses cover the town; the centre is walkable.",
+"pass": "Stagecoach day tickets are available; check current fares.",
+"when": "Spring to autumn; Silverstone race weekends fill hotels across the county.",
+"tip": "Visit the factory shops of famous Northamptonshire shoemakers (check opening hours).",
+"sources": [
+{
+"title": "Northampton Museums",
+"url": "https://www.northamptonmuseums.com/"
+},
+{
+"title": "78 Derngate",
+"url": "https://www.78derngate.org.uk/"
+},
+{
+"title": "Royal & Derngate",
+"url": "https://www.royalandderngate.co.uk/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "peterborough",
+"intro": "A cathedral city on the River Nene, with the Nene Park lakes and grand Burghley House close by.",
+"areas": [
+[
+"Cathedral Square",
+"Cathedral, Guildhall and cafés."
+],
+[
+"Queensgate & Bridge Street",
+"Shopping and the riverside."
+],
+[
+"Nene Park & Ferry Meadows",
+"Lakes, walking and cycling on the edge of the city."
+]
+],
+"sights": [
+[
+"Peterborough Cathedral",
+"Norman cathedral where Catherine of Aragon is buried."
+],
+[
+"Ferry Meadows",
+"Country park with lakes and trails."
+],
+[
+"Nene Valley Railway",
+"Heritage steam railway."
+],
+[
+"Burghley House",
+"Elizabethan house near Stamford."
+]
+],
+"eat": [
+[
+"Cathedral Square",
+"Cafés and restaurants."
+],
+[
+"Bridge Street",
+"Casual dining."
+],
+[
+"Lincolnshire sausages",
+"From the neighbouring county."
+]
+],
+"night": [
+[
+"The Cresset & New Theatre",
+"Theatre and shows."
+],
+[
+"Cathedral Square bars",
+"Evenings in the centre."
+],
+[
+"Embankment events",
+"Summer festivals by the river."
+]
+],
+"arrive": "Peterborough station is on the East Coast Main Line, about 45–50 minutes from London King’s Cross. Stansted is about an hour away.",
+"around": "Stagecoach buses cover the city; Nene Park is good by bike.",
+"pass": "Stagecoach day tickets are available; check current fares.",
+"when": "Spring to autumn for the parks and river.",
+"tip": "Combine a visit with Stamford, one of England’s best-preserved stone towns.",
+"sources": [
+{
+"title": "Visit Peterborough",
+"url": "https://www.visitpeterborough.com/"
+},
+{
+"title": "Peterborough Cathedral",
+"url": "https://www.peterborough-cathedral.org.uk/"
+},
+{
+"title": "Nene Park",
+"url": "https://www.neneparktrust.org.uk/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "cambridge",
+"intro": "A historic university city of colleges, chapels, punts on the Cam and riverside meadows.",
+"areas": [
+[
+"Historic centre",
+"King’s Parade, Market Square and the colleges."
+],
+[
+"The Backs",
+"Riverside lawns behind the colleges, best seen from a punt."
+],
+[
+"Mill Road",
+"Independent shops and global food."
+]
+],
+"sights": [
+[
+"King’s College Chapel",
+"Gothic chapel with a famous fan-vaulted ceiling."
+],
+[
+"Punting on the Cam",
+"Hire a punt or take a chauffeured trip along the Backs."
+],
+[
+"Fitzwilliam Museum",
+"Free museum of art and antiquities."
+],
+[
+"Cambridge University Botanic Garden",
+"Gardens and glasshouses."
+],
+[
+"Grantchester",
+"Village reached by a riverside walk."
+]
+],
+"eat": [
+[
+"Market Square",
+"Daily market with food stalls."
+],
+[
+"Mill Road",
+"International restaurants and cafés."
+],
+[
+"Chelsea bun",
+"Associated with the old Fitzbillies bakery."
+]
+],
+"night": [
+[
+"Historic pubs",
+"Including The Eagle, where the DNA discovery was announced."
+],
+[
+"Cambridge Corn Exchange",
+"Concerts and comedy."
+],
+[
+"The Junction",
+"Gigs and club nights."
+]
+],
+"arrive": "Cambridge station has trains to London King’s Cross and Liverpool Street, and direct trains to Stansted Airport.",
+"around": "Walk or cycle; the centre has limited car access. Buses and Park & Ride run from the outskirts.",
+"pass": "Stagecoach day tickets and Park & Ride tickets are available; check current fares.",
+"when": "April–June for punting and gardens; avoid exam time if you want college access.",
+"tip": "Many colleges charge entry or close at exam times; check before you go.",
+"sources": [
+{
+"title": "Visit Cambridge (official guide)",
+"url": "https://www.visitcambridge.org/"
+},
+{
+"title": "Fitzwilliam Museum",
+"url": "https://fitzmuseum.cam.ac.uk/"
+},
+{
+"title": "King’s College Chapel",
+"url": "https://www.kings.cam.ac.uk/chapel"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "oxford",
+"intro": "The city of dreaming spires: golden-stone colleges, world-famous libraries and museums, and punts on the Cherwell.",
+"areas": [
+[
+"Historic centre",
+"Radcliffe Camera, Bodleian Library and the High Street."
+],
+[
+"Jericho",
+"Canal-side pubs and restaurants."
+],
+[
+"Cowley Road",
+"Multicultural food and nightlife east of the centre."
+]
+],
+"sights": [
+[
+"Bodleian Library & Radcliffe Camera",
+"Guided tours of the historic library buildings."
+],
+[
+"Ashmolean Museum",
+"Free museum of art and archaeology."
+],
+[
+"Christ Church",
+"College, cathedral and the Great Hall."
+],
+[
+"Pitt Rivers & Natural History Museum",
+"Free museums in one striking building."
+],
+[
+"Punting on the Cherwell",
+"Hire from Magdalen Bridge."
+]
+],
+"eat": [
+[
+"Covered Market",
+"Historic market with food stalls and cafés."
+],
+[
+"Jericho",
+"Restaurants and pubs by the canal."
+],
+[
+"Cowley Road",
+"Global food and late cafés."
+]
+],
+"night": [
+[
+"Historic pubs",
+"The Turf Tavern and The Bear are among the oldest."
+],
+[
+"O2 Academy Oxford",
+"Gigs on Cowley Road."
+],
+[
+"New Theatre & Playhouse",
+"Shows and plays."
+]
+],
+"arrive": "Oxford station has trains to London Paddington and Marylebone. Airline coaches run to Heathrow and Gatwick, and coaches run frequently to London.",
+"around": "Walk the centre; buses and Park & Ride cover the rest. Cycling is popular.",
+"pass": "Bus day tickets and Park & Ride options are available; check current fares.",
+"when": "Spring and early summer; autumn is lovely as term starts.",
+"tip": "Some colleges charge entry and close for events; check visiting hours.",
+"sources": [
+{
+"title": "Experience Oxfordshire (official guide)",
+"url": "https://www.experienceoxfordshire.org/"
+},
+{
+"title": "Ashmolean Museum",
+"url": "https://www.ashmolean.org/"
+},
+{
+"title": "Bodleian Libraries",
+"url": "https://visit.bodleian.ox.ac.uk/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "reading",
+"intro": "A Thames Valley town with abbey ruins, the Thames and Kennet, and one of Britain’s best-known music festivals.",
+"areas": [
+[
+"Town centre",
+"Broad Street, The Oracle and the riverside."
+],
+[
+"Abbey Quarter",
+"Reading Abbey ruins and Forbury Gardens."
+],
+[
+"Caversham",
+"Thames-side village across the river."
+]
+],
+"sights": [
+[
+"Reading Abbey ruins",
+"Founded by Henry I, who is buried there."
+],
+[
+"Forbury Gardens",
+"Victorian park with the Maiwand Lion."
+],
+[
+"Reading Museum",
+"Includes a full-size Victorian replica of the Bayeux Tapestry."
+],
+[
+"Museum of English Rural Life",
+"Free museum of country life."
+]
+],
+"eat": [
+[
+"The Oracle riverside",
+"Restaurants by the Kennet."
+],
+[
+"Market Place & Friar Street",
+"Cafés and bars."
+],
+[
+"Thames-side pubs",
+"Caversham and Sonning."
+]
+],
+"night": [
+[
+"Reading Festival",
+"Big rock and pop festival every August bank holiday weekend."
+],
+[
+"Sub89 & Hexagon",
+"Gigs and shows."
+],
+[
+"Friar Street",
+"Bars and clubs."
+]
+],
+"arrive": "Reading station has fast trains to London Paddington and the Elizabeth line. RailAir coaches link to Heathrow.",
+"around": "Reading Buses cover the town; the centre is walkable.",
+"pass": "Reading Buses day tickets and contactless capping; check current fares.",
+"when": "Spring to autumn; August bank holiday for the festival.",
+"tip": "Book hotels early for the Reading Festival weekend.",
+"sources": [
+{
+"title": "Reading Museum",
+"url": "https://www.readingmuseum.org.uk/"
+},
+{
+"title": "Reading Buses",
+"url": "https://www.reading-buses.co.uk/"
+},
+{
+"title": "Reading Festival",
+"url": "https://www.readingfestival.com/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "norwich",
+"intro": "A medieval city of cathedral spires, cobbled lanes and a giant market, close to the Norfolk Broads.",
+"areas": [
+[
+"Norwich Lanes",
+"Independent shops, cafés and bars."
+],
+[
+"Tombland & Cathedral Close",
+"Historic streets around the cathedral."
+],
+[
+"Elm Hill",
+"One of England’s best-preserved medieval streets."
+]
+],
+"sights": [
+[
+"Norwich Cathedral",
+"Norman cathedral with a tall spire and large cloisters."
+],
+[
+"Norwich Castle",
+"Norman keep and museum."
+],
+[
+"Norwich Market",
+"One of England’s largest open-air markets."
+],
+[
+"Norfolk Broads",
+"Waterways for boat trips, a short trip away."
+]
+],
+"eat": [
+[
+"Norwich Market",
+"Street food and local produce."
+],
+[
+"Colman’s mustard",
+"Norwich’s famous condiment."
+],
+[
+"Norfolk crab",
+"From nearby Cromer."
+]
+],
+"night": [
+[
+"Prince of Wales Road",
+"Clubs and late bars."
+],
+[
+"Norwich Arts Centre & The Waterfront",
+"Live music."
+],
+[
+"Theatre Royal",
+"Touring productions."
+]
+],
+"arrive": "Norwich Airport has limited routes; Norwich station has trains to London Liverpool Street (about two hours).",
+"around": "Walkable centre; First and Konect buses serve the city.",
+"pass": "Bus day tickets are available; check current fares.",
+"when": "May–September for the Broads and outdoor events.",
+"tip": "Hire a day boat on the Broads from nearby Wroxham.",
+"sources": [
+{
+"title": "Visit Norwich (official guide)",
+"url": "https://www.visitnorwich.co.uk/"
+},
+{
+"title": "Norwich Cathedral",
+"url": "https://www.cathedral.org.uk/"
+},
+{
+"title": "Norfolk Museums: Norwich Castle",
+"url": "https://www.museums.norfolk.gov.uk/norwich-castle"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "colchester",
+"intro": "Britain’s first recorded town, with Roman walls, a Norman castle and a popular zoo.",
+"areas": [
+[
+"Town centre",
+"High Street, the Dutch Quarter and Castle Park."
+],
+[
+"Castle Park",
+"Parkland around the castle with Roman remains."
+],
+[
+"Mersea Island",
+"Oysters and beaches south of the city."
+]
+],
+"sights": [
+[
+"Colchester Castle",
+"The largest surviving Norman keep, built on a Roman temple."
+],
+[
+"Roman Wall",
+"Britain’s oldest surviving Roman town wall."
+],
+[
+"Colchester Zoo",
+"Large zoo on the edge of the city."
+],
+[
+"Firstsite",
+"Free contemporary art gallery."
+]
+],
+"eat": [
+[
+"Colchester oysters",
+"From the nearby Colne estuary and Mersea."
+],
+[
+"Dutch Quarter cafés",
+"Small cafés in historic streets."
+],
+[
+"High Street",
+"Restaurants and bars."
+]
+],
+"night": [
+[
+"Mercury Theatre",
+"Plays and productions."
+],
+[
+"Colchester Arts Centre",
+"Gigs and comedy in a converted church."
+],
+[
+"High Street bars",
+"The main night out."
+]
+],
+"arrive": "Colchester station has trains to London Liverpool Street (around an hour). Stansted Airport is about 45 minutes by road.",
+"around": "Walkable centre; First and Arriva buses serve the area.",
+"pass": "Bus day tickets are available; check current fares.",
+"when": "Spring to autumn.",
+"tip": "Walk the circuit of the Roman wall to see the Balkerne Gate.",
+"sources": [
+{
+"title": "Visit Colchester",
+"url": "https://www.visitcolchester.com/"
+},
+{
+"title": "Colchester + Ipswich Museums",
+"url": "https://cimuseums.org.uk/"
+},
+{
+"title": "Colchester Zoo",
+"url": "https://www.colchester-zoo.com/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "chelmsford",
+"intro": "Essex’s county town and one of England’s newest cities, the birthplace of radio manufacturing.",
+"areas": [
+[
+"City centre",
+"High Street, Bond Street and the Cathedral."
+],
+[
+"Moulsham Street",
+"Independent restaurants and bars."
+],
+[
+"Hylands Park",
+"Historic house and parkland."
+]
+],
+"sights": [
+[
+"Chelmsford Cathedral",
+"Medieval church that became a cathedral in 1914."
+],
+[
+"Hylands House & Park",
+"Restored Georgian house in landscaped grounds."
+],
+[
+"Marconi heritage",
+"Site of the world’s first radio factory."
+],
+[
+"Central Park",
+"Riverside park in the centre."
+]
+],
+"eat": [
+[
+"Moulsham Street",
+"Independent restaurants."
+],
+[
+"Bond Street",
+"Restaurant terraces."
+],
+[
+"Essex markets",
+"Chelmsford Market."
+]
+],
+"night": [
+[
+"Chelmsford Civic Theatre",
+"Shows and comedy."
+],
+[
+"City centre bars",
+"Moulsham Street and Springfield Road."
+],
+[
+"Essex cricket",
+"County Ground summer matches."
+]
+],
+"arrive": "Chelmsford station has trains to London Liverpool Street (around 35 minutes). Stansted Airport is about 30 minutes by road.",
+"around": "First buses and Park & Ride; the centre is walkable.",
+"pass": "Park & Ride and bus day tickets are available; check current fares.",
+"when": "Spring to autumn.",
+"tip": "Hylands Park hosts big summer events; check dates before booking.",
+"sources": [
+{
+"title": "Visit Essex: Chelmsford",
+"url": "https://www.visitessex.com/chelmsford"
+},
+{
+"title": "Chelmsford Cathedral",
+"url": "https://www.chelmsfordcathedral.org.uk/"
+},
+{
+"title": "Hylands Estate",
+"url": "https://www.hylandsestate.co.uk/"
+}
+],
+"checked": "2026-11-24"
+},
+{
+"slug": "southend",
+"intro": "Seaside city at the Thames Estuary, with the world’s longest pleasure pier and Old Leigh’s cockle sheds.",
+"areas": [
+[
+"Seafront",
+"Adventure Island, arcades and beaches."
+],
+[
+"Old Leigh",
+"Fishing village with cockle sheds and pubs."
+],
+[
+"Westcliff",
+"Cliffs Pavilion and gardens."
+]
+],
+"sights": [
+[
+"Southend Pier",
+"The longest pleasure pier in the world, with its own railway."
+],
+[
+"Adventure Island",
+"Seafront amusement park."
+],
+[
+"Old Leigh",
+"Historic fishing village."
+],
+[
+"Hadleigh Castle",
+"Ruined castle overlooking the estuary."
+]
+],
+"eat": [
+[
+"Cockles and seafood",
+"Fresh from Old Leigh’s sheds."
+],
+[
+"Fish and chips",
+"On the seafront."
+],
+[
+"Hamlet Court Road",
+"Restaurants in Westcliff."
+]
+],
+"night": [
+[
+"Cliffs Pavilion",
+"Concerts and shows."
+],
+[
+"Seafront bars",
+"Summer evenings by the beach."
+],
+[
+"Leigh-on-Sea pubs",
+"Estuary views."
+]
+],
+"arrive": "London Southend Airport has its own station. c2c trains run to London Fenchurch Street and Greater Anglia to Liverpool Street.",
+"around": "Arriva and First buses; the seafront is good for walking.",
+"pass": "Bus day tickets are available; check current fares.",
+"when": "May–September for the beach.",
+"tip": "Take the pier train out and walk back to see the estuary.",
+"sources": [
+{
+"title": "Visit Southend (official guide)",
+"url": "https://www.visitsouthend.co.uk/"
+},
+{
+"title": "Southend Pier",
+"url": "https://www.southendpier.co.uk/"
+},
+{
+"title": "London Southend Airport",
+"url": "https://www.southendairport.com/"
+}
+],
+"checked": "2026-11-24"
+}
+]
