@@ -1,4 +1,4 @@
-# TicketBunker Organiser: organiser app (iPhone, iPad, Android)
+# TicketBunker For Organisers: organiser app (iPhone, iPad, Android)
 
 Organisers can create, publish and run their TicketBunker events from a phone. The app uses the same account and APIs as the web portal at theticketbunker.com/organiser. Its setup copies the fan app (`../theticketbunker`) and the door scanner (Expo SDK 57, React Native 0.86.3, EAS profiles, session stored in Keychain/Keystore).
 
@@ -29,7 +29,7 @@ npx expo run:android
 ## Release (Steve)
 - Store records (created 22 Nov 2026): App Store Connect app 6837950804 · Google Play app 4974060826560110726 (Play developer account 8835832747595155098).
 - iOS and Android always ship together, with the same `version` in `app.json` (tests check this).
-- The bundle ID and package are `pt.soundbunker.theticketbunker.organiser`. The home-screen name is "TicketBunker Organiser" (`expo.name`).
+- The bundle ID and package are `pt.soundbunker.theticketbunker.organiser`. The home-screen name is "TicketBunker For Organisers" (`expo.name`).
 - Store text, privacy answers and App Review notes are in `STORE-LISTING.md`.
 - The existing EAS project is `c3c754ba-b9e9-4b76-a679-88c310f87d7e`, owned by `soundbunker`; `eas.json` already points to App Store Connect `6837950804`. Preserve these identities and existing signing access. Store builds need the existing `EXPO_TOKEN`.
 - **App Review risks:**

@@ -6,7 +6,7 @@ const API_ORIGIN = 'https://api.appstoreconnect.apple.com';
 const APPS = Object.freeze([
   { name: 'TicketBunker Scanner', id: '6823316315', bundleId: 'pt.soundbunker.ticketbunkerscanner', scanner: true },
   { name: 'The TicketBunker', id: '6837950372', bundleId: 'pt.soundbunker.theticketbunker' },
-  { name: 'TicketBunker Organiser', id: '6837950804', bundleId: 'pt.soundbunker.theticketbunker.organiser' },
+  { name: 'TicketBunker For Organisers', id: '6837950804', bundleId: 'pt.soundbunker.theticketbunker.organiser' },
 ]);
 
 function apiUrl(path, version = 'v1') {

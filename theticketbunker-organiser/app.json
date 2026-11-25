@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "TicketBunker Organiser",
+    "name": "TicketBunker For Organisers",
     "slug": "theticketbunker-organiser",
     "scheme": "tborganiser",
     "version": "1.0.1",
@@ -11,10 +11,10 @@
     "ios": {
       "bundleIdentifier": "pt.soundbunker.theticketbunker.organiser",
       "supportsTablet": true,
-      "buildNumber": "3",
+      "buildNumber": "4",
       "infoPlist": {
-        "NSPhotoLibraryUsageDescription": "TicketBunker Organiser uses your photos only when you choose an event poster to upload.",
-        "NSCameraUsageDescription": "TicketBunker Organiser uses the camera only when you take a photo for an event poster.",
+        "NSPhotoLibraryUsageDescription": "TicketBunker For Organisers uses your photos only when you choose an event poster to upload.",
+        "NSCameraUsageDescription": "TicketBunker For Organisers uses the camera only when you take a photo for an event poster.",
         "ITSAppUsesNonExemptEncryption": false,
         "LSApplicationQueriesSchemes": [
           "ticketbunkerscanner"
@@ -47,8 +47,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "TicketBunker Organiser uses your photos only when you choose an event poster to upload.",
-          "cameraPermission": "TicketBunker Organiser uses the camera only when you take a photo for an event poster.",
+          "photosPermission": "TicketBunker For Organisers uses your photos only when you choose an event poster to upload.",
+          "cameraPermission": "TicketBunker For Organisers uses the camera only when you take a photo for an event poster.",
           "microphonePermission": false
         }
       ],
