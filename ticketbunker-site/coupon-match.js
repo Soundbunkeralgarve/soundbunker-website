@@ -5,10 +5,12 @@ import {escapeHtml as esc} from './shared.js';
 
 // "Entradas.com_PRM ES" and "Entradas.com" are the same seller.
 export const sellerKey = v => String(v || '').toLowerCase().replace(/_prm\b.*$/, '').replace(/\b(uk|es|de|pt|fr|nl|ie)\b$/, '').replace(/[^a-z0-9]/g, '');
-export function matchCoupon(offers, seller) {
+export function matchCoupon(offers, seller, now = Date.now()) {
   const key = sellerKey(seller);
   if (!key) return null;
-  return (offers || []).find(o => o.code && (sellerKey(o.advertiser) === key || sellerKey(o.advertiser).startsWith(key) || key.startsWith(sellerKey(o.advertiser)))) || null;
+  return (offers || []).find(o => o.code && sellerKey(o.advertiser) === key &&
+    (!o.starts || Date.parse(o.starts + 'T00:00:00Z') <= now) &&
+    (!o.ends || Date.parse(o.ends + 'T23:59:59Z') >= now)) || null;
 }
 
 if (typeof document !== 'undefined') {
@@ -44,13 +46,14 @@ if (typeof document !== 'undefined') {
     const offer = matchCoupon(await offersFor(article.dataset.country || ''), article.dataset.seller);
     if (!offer) return;
     article.dataset.coupon = offer.id;
-    article.querySelector('.card-media')?.insertAdjacentHTML('beforeend', '<span class="coupon-badge">Coupon code</span>');
+    article.querySelector('.card-media, .hs-art')?.insertAdjacentHTML('beforeend', '<span class="coupon-badge">Coupon code</span>');
   };
-  const scan = () => document.querySelectorAll('.listing-card[data-seller]:not([data-coupon-checked])').forEach(tag);
+  const scan = () => document.querySelectorAll('.listing-card[data-seller]:not([data-coupon-checked]), .hs-ticket[data-seller]:not([data-coupon-checked])').forEach(tag);
   new MutationObserver(scan).observe(document.body, {childList: true, subtree: true});
   scan();
 
   const show = (offer, href, newTab) => {
+    const previousFocus = document.activeElement;
     const box = document.createElement('div');
     box.className = 'tb-coupon'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true'); box.setAttribute('aria-labelledby', 'tb-coupon-h');
     box.innerHTML = `<div class="tb-coupon-box"><button type="button" class="tb-coupon-x" aria-label="Close">×</button><small>You've got a coupon</small>
@@ -59,8 +62,15 @@ if (typeof document !== 'undefined') {
 <a class="tb-coupon-go" href="${esc(href)}"${newTab ? ' target="_blank" rel="sponsored noopener noreferrer"' : ''}>Copy code &amp; get tickets →</a>
 <button type="button" class="tb-coupon-skip">Continue without the code</button>
 <p class="tb-coupon-terms">${offer.ends ? 'Ends ' + esc(offer.ends) + '. ' : ''}${esc((offer.terms || 'Partner terms apply.').slice(0, 160))}</p></div>`;
-    const close = () => { box.remove(); document.removeEventListener('keydown', key); };
-    const key = e => { if (e.key === 'Escape') close(); };
+    const close = () => { box.remove(); document.removeEventListener('keydown', key); if (previousFocus?.isConnected) previousFocus.focus({preventScroll: true}); };
+    const key = e => {
+      if (e.key === 'Escape') { e.preventDefault(); close(); }
+      if (e.key === 'Tab') {
+        const items = [...box.querySelectorAll('button, a[href]')], first = items[0], last = items.at(-1);
+        if (e.shiftKey && (document.activeElement === first || !box.contains(document.activeElement))) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && (document.activeElement === last || !box.contains(document.activeElement))) { e.preventDefault(); first.focus(); }
+      }
+    };
     const copy = async () => { try { await navigator.clipboard.writeText(offer.code); box.querySelector('[data-copy]').textContent = 'Copied ✓'; } catch { /* the code is on screen */ } };
     box.addEventListener('click', e => {
       if (e.target === box || e.target.closest('.tb-coupon-x')) close();
@@ -75,9 +85,9 @@ if (typeof document !== 'undefined') {
 
   // "Get tickets" on a card with a coupon: show the code first, at most once per offer per visit.
   document.addEventListener('click', async e => {
-    const link = e.target.closest('.listing-card[data-coupon] a.tcard');
-    if (!link || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey) return;
-    const article = link.closest('.listing-card'), seen = 'tb-coupon-seen-' + article.dataset.coupon;
+    const link = e.target.closest('.listing-card[data-coupon] a.tcard, a.hs-ticket[data-coupon]');
+    if (!link || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button > 0) return;
+    const article = link.closest('.listing-card') || link, seen = 'tb-coupon-seen-' + article.dataset.coupon;
     try { if (sessionStorage.getItem(seen)) return; sessionStorage.setItem(seen, '1'); } catch { /* still show it */ }
     e.preventDefault();
     const offer = matchCoupon(await offersFor(article.dataset.country || ''), article.dataset.seller);

@@ -1,3 +1,4 @@
+import {verifiedPromotions} from './lib/verified-promotions.js';
 // Discount codes and deals from Awin advertisers we have joined (Awin Offers API).
 // GET ?country=GB → {ready, offers:[…]}. The token lives only in AWIN_API_TOKEN; codes
 // come from Awin as published, and every link is Awin's own tracking URL.
@@ -43,12 +44,24 @@ export function offerFitsCountry(raw, country, text) {
   return lang === 'en' || (COUNTRY_LANGS[country] || []).includes(lang);
 }
 
+// Awin regions describe eligible buyers, not the attraction's location. These
+// destinations come from the named advertiser and the promotion's own wording.
+export function offerDestination(raw) {
+  const seller = clean(raw?.advertiser?.name, 80).toLowerCase();
+  const text = [raw?.title, raw?.description].join(' ');
+  if (seller === 'theatre tickets direct' && /west end/i.test(text)) return {country: 'GB', city: 'London', label: 'London · West End'};
+  if (seller.startsWith('entradas.com')) return {country: 'ES', city: '', label: 'Spain'};
+  if (seller === 'plopsaland deutschland' && /majaland/i.test(text)) return {country: 'DE', city: '', label: 'Majaland Deutschland · Germany'};
+  return null;
+}
+
 // One Awin promotion → a card, or null when it has no safe tracked link or has expired.
 export function offerItem(raw, now = Date.now(), country = '') {
   let url;
   try { url = new URL(String(raw?.urlTracking || '')); } catch { return null; }
   if (url.protocol !== 'https:' || !TRACKING_HOSTS.has(url.hostname)) return null;
-  const ends = day(raw.endDate);
+  const starts = day(raw.startDate), ends = day(raw.endDate);
+  if (starts && Date.parse(starts + 'T00:00:00Z') > now) return null;
   if (ends && Date.parse(ends + 'T23:59:59Z') < now) return null;
   const title = clean(raw.title, 140);
   if (!title || !raw.advertiser?.name) return null;
@@ -57,7 +70,9 @@ export function offerItem(raw, now = Date.now(), country = '') {
   if (country && !offerFitsCountry(raw, country, [title, description].join(' '))) return null;
   return {
     id: String(raw.promotionId || '').replace(/\D/g, '').slice(0, 20), type: code ? 'voucher' : 'deal', title, description, terms,
-    advertiser: clean(raw.advertiser.name, 80), code, starts: day(raw.startDate), ends, url: url.href,
+    advertiser: clean(raw.advertiser.name, 80), code, starts, ends, url: url.href,
+    destination: offerDestination(raw),
+    eligibleCountries: raw.regions?.all ? ['*'] : (raw.regions?.list || []).map(r => String(r.countryCode || '').toUpperCase()).filter(c => /^[A-Z]{2}$/.test(c)),
     kind: offerKind([title, description, raw.advertiser.name].join(' '))
   };
 }
@@ -85,17 +100,31 @@ export async function loadOffers(country, {env = process.env, fetcher = fetch, n
   return value;
 }
 
+export function offerIsCurrent(offer,now=Date.now()){
+ return (!offer.starts||Date.parse(offer.starts+'T00:00:00Z')<=now)&&(!offer.ends||now<=Date.parse(offer.ends+'T23:59:59.999Z'));
+}
+// Neither the shared cache nor its stale period may cross an offer's expiry.
+export function promotionCacheControl(offers,now=Date.now()){
+ const expiries=offers.map(o=>o.ends&&Date.parse(o.ends+'T23:59:59.999Z')+1).filter(Number.isFinite);
+ const remaining=expiries.length?Math.max(0,Math.floor((Math.min(...expiries)-now)/1000)):7200;
+ const age=Math.min(offers.length?3600:300,remaining),stale=Math.min(3600,Math.max(0,remaining-age));
+ return 'public, max-age=0, s-maxage='+age+', stale-while-revalidate='+stale;
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).json({error: 'Method not allowed'}); }
   const country = String(req.query?.country || 'GB').toUpperCase();
   if (!COUNTRIES.has(country)) return res.status(200).json({ready: true, offers: []});
   try {
-    const out = await loadOffers(country);
-    res.setHeader('Cache-Control', out.offers.length ? 'public, s-maxage=3600, stale-while-revalidate=3600' : 'public, s-maxage=300');
+    const awin = await loadOffers(country);
+    const verified = verifiedPromotions(country);
+    const out = {...awin, ready: awin.ready || verified.length > 0, offers:[...awin.offers,...verified].filter(o=>offerIsCurrent(o))};
+    res.setHeader('Cache-Control',promotionCacheControl(out.offers));
     return res.status(200).json(out);
   } catch (error) {
     console.error('partner-offers', String(error?.message || error).slice(0, 120));
-    res.setHeader('Cache-Control', 'public, s-maxage=60');
-    return res.status(200).json({ready: true, offers: [], error: 'Deals are temporarily unavailable.'});
+    const verified=verifiedPromotions(country);
+    res.setHeader('Cache-Control',promotionCacheControl(verified));
+    return res.status(200).json({ready:true,offers:verified,...(!verified.length?{error:'Deals are temporarily unavailable.'}:{})});
   }
 }
