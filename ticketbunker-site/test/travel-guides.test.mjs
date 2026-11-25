@@ -36,6 +36,27 @@ test('only individually approved and country-matching affiliate entries gain tra
   assert.ok(!gb.some(p=>p.name==='Pending'));
   assert.ok(!tripOptions('FR','Paris',{providers}).flatMap(o=>o.partners).some(p=>p.name==='Approved'));
 });
+test('travel guide offers the verified Trip.com flight link without enabling its other products',()=>{
+  const items=guideProviders('travel','PT','Lisbon');
+  const trip=items.find(p=>p.name==='Search flights on Trip.com');
+  assert.equal(trip.category,'Flights');
+  assert.equal(trip.url,'https://www.trip.com/flights?Allianceid=11489066&SID=336945869&trip_sub1=&trip_sub3=D21530259');
+  assert.match(providerCards([trip]),/rel="sponsored noopener noreferrer"/);
+  for(const kind of ['stay','car','eat','transfer'])assert.ok(!guideProviders(kind,'PT','Lisbon').some(p=>new URL(p.url).hostname==='www.trip.com'));
+});
+test('guide consumers invalidate cached parent scripts and render the approved flight link before JavaScript',()=>{
+  const guideVersion=/trip-partners\.js\?v=([^']+)/.exec(read('trip-guides.js'))[1];
+  const builderVersion=/trip-partners\.js\?v=([^']+)/.exec(read('trip-builder.js'))[1];
+  const generator=readFileSync(new URL('../../scripts/build-ticketbunker-guides.mjs',import.meta.url),'utf8');
+  assert.ok(generator.includes('trip-guides.js?v='+guideVersion));
+  assert.ok(generator.includes('trip-builder.js?v='+builderVersion));
+  for(const slug of ['travel','plan-your-trip','hotels','car-hire','restaurants','vip-transfers','stag-hen-weekends']){
+    const html=read(slug+'.html');
+    assert.ok(html.includes('trip-guides.js?v='+guideVersion),slug+' must request the updated cached parent module');
+    assert.equal(html.includes('<h3>Search flights on Trip.com</h3>'),['travel','plan-your-trip','stag-hen-weekends'].includes(slug));
+  }
+  assert.ok(read('plan-your-trip.html').includes('trip-builder.js?v='+builderVersion));
+});
 test('all travel hubs have real server-rendered provider links, unique canonicals and sitemap entries',()=>{
   const xml=sitemapXml();
   for(const g of GUIDES){

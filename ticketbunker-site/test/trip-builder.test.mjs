@@ -86,7 +86,9 @@ test('only current provider choices can be restored; pending suppliers cannot re
   draft=reconcileSelections(draft,{tickets:[],stay:options.stay.map(p=>'stay:'+(p.id||p.name)),travel:options.transfer.map(p=>'transfer:'+(p.id||p.name)),food:[]});
   assert.deepEqual(draft.selected.stay,['stay:expedia-hotels']);
   assert.equal(draft.progress.stay,'planned');
-  assert.ok(TRIP_PARTNERS.every(p=>p[3]===false),'existing pending applications remain pending');
+  assert.ok(TRIP_PARTNERS.filter(p=>p[0]!=='flight').every(p=>p[3]===false),'existing pending applications remain pending');
+  assert.equal(options.flight.length,1,'only the verified flight link is approved');
+  assert.equal(options.flight[0].commercial,'affiliate');
   const viator=options.transfer.find(p=>p.id==='viator-limos');
   assert.equal(viator.commercial,'affiliate');
   assert.equal(new URL(viator.url).searchParams.get('pid'),'P00333211');

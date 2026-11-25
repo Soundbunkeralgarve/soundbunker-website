@@ -1,5 +1,5 @@
 import {CITY_PAGES} from './city-places.js';
-import {tripOptions} from './trip-partners.js?v=20261125-dates';
+import {tripOptions} from './trip-partners.js?v=20261125-tripcom';
 import {directoryProviders, tripDestination, tripDates} from './travel-directory.js?v=20261125-dates';
 import {escapeHtml as esc} from './shared.js';
 import {OFFER_KINDS, pickOffers, offerCards, loadOffers} from './travel-offers.js?v=20261125gg';
@@ -7,7 +7,7 @@ import {OFFER_KINDS, pickOffers, offerCards, loadOffers} from './travel-offers.j
 export function guideProviders(kind, country, city, trip = {}) {
   const options = tripOptions(country, city, {page: kind + '-guide', spot: 'directory', trip});
   const chosen = kind === 'all' || kind === 'groups' ? options : options.filter(o =>
-    o.kind === kind || (kind === 'travel' && ['car'].includes(o.kind)));
+    o.kind === kind || (kind === 'travel' && ['flight', 'car'].includes(o.kind)));
   return [
     ...(kind === 'groups' ? [{kind: 'groups', label: 'Group specialists', partners: directoryProviders('groups', country, city, trip)}] : []),
     ...chosen
