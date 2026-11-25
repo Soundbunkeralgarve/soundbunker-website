@@ -41,8 +41,22 @@ export const KEYED = Object.freeze({
   prague: {name: 'PID', attribution: 'Live data: Golemio / PID (CC BY 4.0).', centre: CITY_COORDS.prague, ac: true},
   helsinki: {name: 'HSL', attribution: 'Live data: HSL / Digitransit (CC BY 4.0).', centre: CITY_COORDS.helsinki}
 });
-export async function keyedCitiesLive({base = '', fetchImpl = globalThis.fetch} = {}) {
-  try { const r = await fetchImpl(base + '/api/get-around'); return r.ok ? (await r.json()).live || [] : []; } catch { return []; }
+export async function keyedCitiesLive({base = '', fetchImpl = globalThis.fetch, timeout = 5000} = {}) {
+  const controller = typeof AbortController === 'function' ? new AbortController() : null;
+  let timer;
+  try {
+    // Bound the whole lookup, including JSON parsing and fetch implementations that
+    // do not honour abort, so transport discovery never waits indefinitely.
+    return await Promise.race([
+      (async () => {
+        const r = await fetchImpl(base + '/api/get-around', controller ? {signal: controller.signal} : {});
+        if (!r.ok) return [];
+        const j = await r.json(); return Array.isArray(j.live) ? j.live : [];
+      })(),
+      new Promise(resolve => { timer = setTimeout(() => { controller?.abort(); resolve([]); }, timeout); })
+    ]);
+  } catch { return []; }
+  finally { clearTimeout(timer); }
 }
 export async function keyedBoard(slug, [lat, lon], {base = '', fetchImpl = globalThis.fetch} = {}) {
   const r = await fetchImpl(`${base}/api/get-around?city=${enc(slug)}&lat=${lat}&lon=${lon}`);
@@ -185,6 +199,45 @@ export function plannerLinks({slug = '', from, to, toName = ''} = {}) {
   if (slug === 'london') {
     links.push({kind: 'tfl-access', name: 'TfL accessibility guide', url: 'https://tfl.gov.uk/transport-accessibility/'});
     links.push({kind: 'tfl-map', name: 'Tube map', url: 'https://tfl.gov.uk/maps/track/tube'});
+  }
+  return links;
+}
+// Useful transport discovery when this area's operator has no connected departure feed.
+// Search at the actual position; these are provider searches and published timetables,
+// not promises of a nearby service, available vehicle or live departure.
+export function transportLinks({slug = '', name = '', country = '', from = null, to = null, toName = ''} = {}) {
+  const point = value => Array.isArray(value) && value.length === 2 && value.every(Number.isFinite)
+    && Math.abs(value[0]) <= 90 && Math.abs(value[1]) <= 180 ? value.join(',') : '';
+  const origin = point(from), destination = point(to) || toName;
+  const area = origin || name || slug.replaceAll('-', ' ') || 'me';
+  const search = query => 'https://www.google.com/maps/search/?' + new URLSearchParams({api: '1', query: `${query} near ${area}`});
+  const context = new URLSearchParams();
+  if (name) context.set('city', name);
+  if (country) context.set('country', country);
+  if (origin) context.set('origin', origin);
+  if (destination) context.set('destination', destination);
+  if (toName) context.set('destination_name', toName);
+  const query = context.size ? '?' + context.toString() : '';
+  const links = [
+    {kind: 'rail', name: 'Train stations', note: 'Find stations and check their services', url: search('train stations')},
+    {kind: 'bus', name: 'Bus stops', note: 'Find stops and check routes with the operator', url: search('bus stops')},
+    {kind: 'metro', name: 'Metro & tram stops', note: 'Search for local stations and stops', url: search('metro and tram stations')},
+    {kind: 'ferry', name: 'Nearby ferries & boats', note: 'Find terminals and water taxis; check routes and times with the operator', url: search('ferry terminals and water taxis')},
+    {kind: 'local-taxi', name: 'Local taxis', note: 'Find local firms and ask for a quote', url: search('taxi companies')},
+    {kind: 'local-private-hire', name: 'Local private hire', note: 'Find local drivers and ask for a quote', url: search('private hire and chauffeur services')},
+    {kind: 'travel', name: 'Trains & coaches', note: 'Compare providers for your next journey', url: '/travel' + query},
+    {kind: 'private-hire', name: 'Transfers & chauffeurs', note: 'Explore providers and request a quote', url: '/vip-transfers' + query},
+    {kind: 'eurostar', name: 'Eurostar: UK & Europe', note: 'Onward rail: check stations, travel documents, times and fares with Eurostar', url: 'https://www.eurostar.com/uk-en'},
+    {kind: 'car-ferry', name: 'Car ferries: UK & Europe', note: 'Onward crossings: compare on Direct Ferries; confirm vehicles, routes and times with the operator', url: 'https://www.directferries.co.uk/'},
+    {kind: 'car-ferry-dfds', name: 'DFDS car ferry routes', note: 'Onward crossings: confirm route, vehicle restrictions and sailing times with DFDS', url: 'https://www.dfds.com/en-gb/passenger-ferries/ferry-crossings'},
+    {kind: 'car-ferry-stena', name: 'Stena Line car ferry routes', note: 'Onward crossings: confirm route, vehicle restrictions and sailing times with Stena Line', url: 'https://www.stenaline.co.uk/routes'}
+  ];
+  const inAlgarve = origin && from[0] >= 36.9 && from[0] <= 37.6 && from[1] >= -9 && from[1] <= -7.3;
+  if (country.toUpperCase() === 'PT' || ['algarve', 'albufeira', 'lisbon', 'porto', 'coimbra', 'braga', 'madeira'].includes(slug) || inAlgarve) {
+    links.push({kind: 'cp', name: 'CP train timetables', note: 'Published timetables from Comboios de Portugal', url: 'https://www.cp.pt/info/en/w/trains-timetables-pdf'});
+  }
+  if (['algarve', 'albufeira'].includes(slug) || inAlgarve) {
+    links.push({kind: 'vamus', name: 'Vamus Algarve bus timetables', note: 'Check routes and published times with Vamus', url: 'https://www.vamusalgarve.pt/vamus/schedules'});
   }
   return links;
 }
