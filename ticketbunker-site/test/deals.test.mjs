@@ -80,3 +80,36 @@ test('deal page restores, filters and retains a linked city even when no local o
   country.value='PT';await country.handlers.change();
   assert.equal(city.value,'');assert.equal(history.url,'/deals?country=PT&kind=food');
 });
+
+test('the published West End coupon keeps its London destination separate from eligible buyer countries', () => {
+  const offer = offerItem(raw({promotionId:2512547,advertiser:{name:'Theatre Tickets Direct'},title:'3% Off',
+    description:'Get 3% off all purchases. Cheapest Tickets to all West End Musicals and Plays.',
+    voucher:{code:'awinvouch'},regions:{all:true}}), NOW, 'PT');
+  assert.equal(offer.code,'awinvouch');
+  assert.deepEqual(offer.eligibleCountries,['*']);
+  assert.deepEqual(offer.destination,{country:'GB',city:'London',label:'London · West End'});
+  assert.equal(offerCity(offer,'GB'),'London','a London search must retain the real coupon');
+  assert.equal(offerCity(offer,'PT'),'','eligibility in Portugal does not make it an Algarve attraction');
+  assert.equal(offerItem(raw({startDate:'2026-12-01'}),NOW),null,'not-yet-valid codes are not advertised');
+});
+
+test('cross-border offers display their actual destination and survive the London city filter', async () => {
+  const offer = offerItem(raw({promotionId:2512547,advertiser:{name:'Theatre Tickets Direct'},title:'3% Off',
+    description:'West End Musicals and Plays',voucher:{code:'awinvouch'},regions:{all:true}}),NOW,'GB');
+  const source=readFileSync(new URL('../deals.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replace(/export /g,'');
+  async function draw(search){
+    const select=()=>({value:'',replaceChildren(...options){this.value=options[0]?.value||'';},addEventListener(){}});
+    const country=select(),city=select(),grid={innerHTML:'',addEventListener(){}},status={textContent:''},kinds={innerHTML:'',addEventListener(){}};
+    vm.runInNewContext(source,{CITY_PAGES,esc:v=>String(v||''),URLSearchParams,Intl,Option:function(text,value){this.value=value;},
+      location:{pathname:'/deals',search},history:{replaceState(){}},navigator:{language:'en-GB'},
+      document:{querySelector:s=>({'[data-deals-form]':{elements:{country,city}},'[data-deals-grid]':grid,'[data-deals-status]':status,'[data-deals-kinds]':kinds}[s])},
+      fetch:async()=>({ok:true,json:async()=>({ready:true,offers:[offer]})})});
+    await new Promise(setImmediate);return {html:grid.innerHTML,status:status.textContent};
+  }
+  const london=await draw('?country=GB&city=London');
+  assert.match(london.html,/awinvouch/);assert.match(london.status,/1 of 1/);
+  const portugal=await draw('?country=PT');
+  assert.match(portugal.html,/London · West End/);assert.doesNotMatch(portugal.html,/Across Portugal/);
+  assert.match(portugal.status,/visitors from Portugal/);
+  assert.doesNotMatch((await draw('?country=PT&city=Lisbon')).html,/awinvouch/);
+});
