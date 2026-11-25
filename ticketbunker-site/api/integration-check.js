@@ -1,5 +1,6 @@
 // Private preview smoke tests. Production routes always return 404.
 // The project's existing Vercel Authentication protects preview deployment URLs.
+import {isIP} from 'node:net';
 import {createKayakClient, createKayakSessionId} from './lib/kayak.js';
 const MAPS = {
   primary: 'https://overpass-api.de/api/interpreter',
@@ -40,6 +41,10 @@ export default async function handler(req, res) {
   if (action === 'status') return res.status(200).json({previewOnly:true,...client.status});
   if (client.status.mode !== 'sandbox' || !client.status.configured) return res.status(409).json({error:'A configured sandbox preview is required.',...client.status});
   const context = {userTrackId:createKayakSessionId(),userAgent:String(req.headers['user-agent'] || 'TicketBunker-Integration-Check/1.0')};
+  // Vercel overwrites these trusted client-IP headers at its edge. Do not use a fabricated address or return it in diagnostics.
+  const forwarded = req.headers['x-vercel-forwarded-for'] || req.headers['x-forwarded-for'];
+  const clientIp = typeof forwarded === 'string' ? forwarded.split(',')[0].trim() : '';
+  if (isIP(clientIp)) context.clientIp = clientIp;
   const day = n => new Date(Date.now()+n*86400000).toISOString().slice(0,10);
   try {
     let result;

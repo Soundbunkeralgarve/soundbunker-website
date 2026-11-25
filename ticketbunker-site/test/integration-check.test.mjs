@@ -12,3 +12,8 @@ test('preview status returns safe test-mode metadata without the key',async()=>w
 test('preview map checks cannot be used as an arbitrary network proxy',async()=>withEnv({VERCEL_ENV:'preview'},async()=>{
  const res=response();await handler({method:'GET',query:{action:'map',provider:'https://example.com/steal',method:'GET'},headers:{}},res);assert.equal(res.code,400);
 }));
+test('sandbox smoke forwards actual browser context from trusted edge headers without returning it',async()=>withEnv({VERCEL_ENV:'preview',KAYAK_MODE:'sandbox',KAYAK_SANDBOX_API_KEY:'private-test-key'},async()=>{
+ const before=globalThis.fetch;let captured;
+ globalThis.fetch=async(url,init)=>{captured=init.headers;const body={isComplete:true,currencyCode:'USD',results:[]};return {ok:true,status:200,json:async()=>body,clone:()=>({json:async()=>body})};};
+ try{const res=response();await handler({method:'GET',query:{action:'kayak-hotels'},headers:{'user-agent':'Actual Test Browser/1.0','x-vercel-forwarded-for':'203.0.113.7','x-forwarded-for':'198.51.100.20'}},res);assert.equal(res.code,200);assert.equal(captured['User-Agent'],'Actual Test Browser/1.0');assert.equal(captured['x-original-client-ip'],'203.0.113.7');assert.equal(JSON.stringify(res.value).includes('203.0.113.7'),false);assert.equal(res.value.testData,true);assert.equal(res.value.bookable,false);}finally{globalThis.fetch=before;}
+}));
