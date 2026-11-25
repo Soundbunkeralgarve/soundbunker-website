@@ -1,0 +1,50 @@
+/* Premium pass for every guide page (hotels, travel, restaurants, car hire, transfers, trips):
+   a full photo hero, numbered chapter headings, glass cards and one button style. Loaded last. */
+body:has(.guide-hero){counter-reset:tbsec}
+.guide-hero{min-height:min(74vh,720px);display:flex;align-items:flex-end;background:#07070b!important}
+.guide-hero::before{opacity:.62!important;transform:scale(1.03);filter:saturate(1.05)}
+.guide-hero::after{background:linear-gradient(90deg,#07070bf5 0%,#07070bc4 42%,#07070b33 100%),linear-gradient(0deg,#07070b 0%,transparent 45%)!important}
+.guide-hero .wrap{width:min(1240px,calc(100% - 48px));padding-block:120px 72px!important}
+.guide-hero .label{display:inline-block;padding:8px 14px;border-radius:999px;background:#00e0a6;color:#04140d!important;font:800 12px/1 'DM Sans',Arial,sans-serif;letter-spacing:.16em}
+.guide-hero h1{font:900 clamp(64px,9vw,148px)/.84 'Barlow Condensed',Impact,sans-serif!important;text-transform:uppercase;letter-spacing:-.01em;margin:20px 0 22px!important;max-width:14ch;text-shadow:0 10px 50px #000a}
+.guide-hero p{font-size:clamp(17px,1.4vw,20px);line-height:1.55;color:#e3e7ec!important;max-width:58ch}
+.guide-crumbs{font-size:13px;opacity:.85;margin-bottom:22px}
+.guide-crumbs a{color:#cfd5db}
+.guide-jumps{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+.guide-jumps a{padding:12px 18px;border-radius:999px;border:1px solid #ffffff33;background:#ffffff12;backdrop-filter:blur(10px);color:#fff!important;font-weight:700;text-decoration:none;transition:background .15s,border-color .15s,color .15s}
+.guide-jumps a:hover{background:#00e0a6;border-color:#00e0a6;color:#04140d!important}
+
+.guide-section{position:relative;padding:96px 0!important;counter-increment:tbsec}
+.guide-section:nth-of-type(even){background:radial-gradient(55% 80% at 100% 0%,#00e0a612,transparent 60%),#0a0a10!important;border-block:1px solid #ffffff0f}
+.guide-section:nth-of-type(odd){background:radial-gradient(55% 80% at 0% 100%,#ff4f9a0d,transparent 60%),#07070b!important}
+.guide-section>.wrap>h2{position:relative;font:900 clamp(44px,5.4vw,84px)/.88 'Barlow Condensed',Impact,sans-serif!important;text-transform:uppercase;margin:0 0 18px!important;color:#fff!important;max-width:18ch}
+.guide-section>.wrap>h2::before{content:counter(tbsec,decimal-leading-zero);display:block;margin-bottom:14px;font:800 13px/1 'DM Sans',Arial,sans-serif;letter-spacing:.2em;color:#00e0a6}
+.guide-section>.wrap>p{font-size:17px;line-height:1.6;color:#b9bfc7!important;max-width:64ch}
+.guide-card{background:linear-gradient(180deg,#15151f,#0d0d14)!important;border:1px solid #ffffff17!important;border-radius:22px!important;padding:30px!important;color:#d8dce2;position:relative;overflow:hidden;transition:transform .2s,border-color .2s,box-shadow .2s}
+.guide-card::before{content:"";position:absolute;left:0;top:0;right:0;height:3px;background:linear-gradient(90deg,#00e0a6,#ff4f9a);opacity:.85}
+.guide-card:hover{transform:translateY(-4px);border-color:#00e0a666!important;box-shadow:0 24px 60px #000a}
+.guide-card h3{font:900 clamp(24px,2.2vw,32px)/1 'Barlow Condensed',Impact,sans-serif!important;text-transform:uppercase;color:#fff!important;letter-spacing:.01em}
+.guide-card p{color:#aab0b8!important;line-height:1.55}
+.guide-search{background:#0f0f17e6!important;border:1px solid #ffffff1f!important;border-radius:24px!important;padding:24px!important;box-shadow:0 30px 80px #000c,0 0 0 1px #00e0a61a inset;backdrop-filter:blur(12px)}
+.guide-search :is(input,select){background:#07070b!important;border:1px solid #2c2c3a!important;color:#fff!important;border-radius:14px!important;min-height:52px}
+.guide-search :is(input,select):focus{border-color:#00e0a6!important;outline:0;box-shadow:0 0 0 3px #00e0a633}
+:is(.guide-section,.guide-hero) :is(.btn,.btn-primary,button[type=submit],.guide-card a.button,.guide-go){border-radius:999px!important;font-weight:800!important;min-height:52px;box-shadow:0 12px 30px #00e0a633;transition:transform .15s,box-shadow .15s,background .15s}
+:is(.guide-section,.guide-hero) :is(.btn,.btn-primary,button[type=submit]):hover{transform:translateY(-1px);box-shadow:0 16px 36px #00e0a655}
+.guide-section details{background:#101018;border:1px solid #ffffff14;border-radius:16px;padding:16px 20px;margin-bottom:10px}
+.guide-section details[open]{border-color:#00e0a655}
+.guide-section summary{font-weight:800;color:#fff;cursor:pointer}
+@media(max-width:760px){
+ .guide-hero{min-height:min(68svh,600px)}
+ .guide-hero .wrap{width:calc(100% - 32px);padding-block:96px 40px!important}
+ .guide-hero h1{font-size:clamp(52px,15vw,72px)!important}
+ .guide-hero p{font-size:16px}
+ .guide-jumps{flex-wrap:nowrap;overflow-x:auto;margin-inline:-16px;padding:0 16px 4px;scrollbar-width:none}
+ .guide-jumps::-webkit-scrollbar{display:none}
+ .guide-jumps a{flex:none;padding:10px 16px}
+ .guide-section{padding:60px 0!important}
+ .guide-section>.wrap>h2{font-size:clamp(40px,11vw,56px)!important}
+ .guide-card{padding:22px!important;border-radius:18px!important}
+ .guide-card:hover{transform:none}
+ .guide-search{padding:18px!important;border-radius:20px!important}
+}
+@media(prefers-reduced-motion:reduce){.guide-card,.guide-jumps a{transition:none}}

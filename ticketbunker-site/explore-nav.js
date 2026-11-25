@@ -51,6 +51,11 @@ const css = `.tb-explore-btn{display:inline-flex;align-items:center;gap:6px;bord
  body.tb-has-bar .tb-app-bar{bottom:80px!important}
 }`;
 
+// The site-wide premium pass (guide pages) goes in last, after each page's own styles.
+if (typeof document !== 'undefined' && document.querySelector('.guide-hero') && !document.querySelector('link[href^="/site-pro.css"]')) {
+  const link = document.createElement('link'); link.rel = 'stylesheet'; link.href = '/site-pro.css?v=20261126'; document.head.append(link);
+}
+
 if (typeof document !== 'undefined' && needsNotice(location.pathname, null)) {
   const start = () => {
     const header = document.querySelector('header.header');
