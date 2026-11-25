@@ -37,7 +37,9 @@ const css = `.tb-explore-btn{display:inline-flex;align-items:center;gap:6px;bord
 .tb-explore .tb-explore-cta{grid-column:1/-1;justify-self:start;background:#00e0a6;color:#04140d;font-weight:800;padding:12px 20px;border-radius:999px}
 .tb-explore .tb-explore-cta:hover{background:#ff4f9a;color:#20030f}
 .tb-bar{display:none}
-@media(min-width:901px){.header .navigation .quick-more.tb-more-replaced,.header:has(.tb-explore-btn) .navigation .quick-more{display:none!important}}
+@media(min-width:901px){:is(.header,.tb-header) .navigation .quick-more.tb-more-replaced,:is(.header,.tb-header):has(.tb-explore-btn) .navigation .quick-more{display:none!important}}
+/* Pages with the compact header get the same logo size and bar height as the rest of the site. */
+@media(min-width:901px){.tb-header .header-inner{min-height:76px;max-width:none!important;width:100%!important;margin:0!important;padding:0 clamp(20px,2.4vw,44px)!important;box-sizing:border-box}.tb-header .brand img{width:clamp(190px,14vw,232px)!important;height:auto}.tb-header .navigation{align-items:center}}
 @media(max-width:1100px) and (min-width:901px){.tb-explore-in{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:900px){
  .tb-explore-btn{display:none}
@@ -58,7 +60,7 @@ if (typeof document !== 'undefined' && document.querySelector('.guide-hero') && 
 
 if (typeof document !== 'undefined' && needsNotice(location.pathname, null)) {
   const start = () => {
-    const header = document.querySelector('header.header');
+    const header = document.querySelector('header.header, header.tb-header');
     if (!header || document.getElementById('tb-explore')) return;
     const style = document.createElement('style'); style.textContent = css; document.head.append(style);
     document.body.insertAdjacentHTML('beforeend', exploreHtml());
