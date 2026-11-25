@@ -1,6 +1,6 @@
 // "Explore": every section of the site in one panel (desktop mega-menu, phone sheet), plus a
 // fixed bottom bar on phones so tickets, travel, deals and getting around are one tap away.
-import {needsNotice} from './coming-soon.js?v=20261125-welcome';
+import {needsNotice} from './coming-soon.js?v=20261125-appstyle';
 
 export const EXPLORE = Object.freeze([
   ['Tickets', [['Everything on', '/#rails'], ['Gigs', '/?cat=music'], ['Raves & club nights', '/?cat=club'], ['Festivals', '/?cat=festival'],
