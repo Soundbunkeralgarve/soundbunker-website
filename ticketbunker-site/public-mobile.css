@@ -1,0 +1,180 @@
+/* Public page photography and local navigation. Staff, account and checkout screens
+   use separate layouts; the ticket homepage has its own mobile stylesheet. */
+html.city-guide-document {scroll-padding-top:0}
+.city-guide-page .cg-jumps-bar {top:var(--tb-header-height,65px);z-index:20}
+.city-guide-page .cg-section[id] {scroll-margin-top:calc(var(--tb-header-height,65px) + var(--tb-guide-nav-height,72px) + 16px)}
+@media screen and (max-width:700px) {
+  .guide-page main,
+  .city-guide-page main,
+  .public-page main,
+  main.vip {min-width:0}
+
+  .guide-page .guide-hero.tbp-guide::before {
+    opacity:1;
+    background-position:center 35%;
+  }
+  .guide-page .guide-hero.tbp-guide::after {
+    background:linear-gradient(180deg,#07070b0d 0%,#07070b5c 25%,#07070be8 55%,#07070b 100%);
+  }
+  .guide-page .guide-hero.tbp-guide>.wrap {
+    width:calc(100% - 32px);
+    padding-block:128px 28px;
+  }
+  .guide-page .guide-hero .guide-crumbs,
+  .city-guide-page .cg-hero .cg-crumbs {
+    gap:8px;
+    margin-bottom:16px;
+    font-size:.875rem;
+    line-height:1.5;
+  }
+  .guide-page .guide-hero h1,
+  .city-guide-page .cg-hero h1 {
+    font-size:clamp(2.8rem,12vw,3.75rem);
+    line-height:.98;
+    margin:12px 0 18px;
+    overflow-wrap:break-word;
+    text-wrap:balance;
+    text-shadow:0 2px 18px #0006;
+  }
+  .guide-page .guide-hero p,
+  .city-guide-page .cg-hero>div>p {
+    font-size:1rem;
+    line-height:1.65;
+    color:#e3e7ed;
+  }
+  .guide-page .guide-hero .label,
+  .city-guide-page .cg-hero .label {
+    font-size:.875rem;
+    line-height:1.4;
+    letter-spacing:.05em;
+  }
+  .guide-page .guide-jumps {
+    display:flex;
+    flex-wrap:nowrap;
+    gap:8px;
+    margin:22px -16px 0;
+    padding:5px 16px;
+    overflow-x:auto;
+    scrollbar-width:none;
+    scroll-padding-inline:16px;
+    overscroll-behavior-x:contain;
+    -webkit-overflow-scrolling:touch;
+  }
+  .guide-page .guide-jumps::-webkit-scrollbar {display:none}
+  .guide-page .guide-jumps a {
+    display:inline-flex;
+    flex:0 0 auto;
+    align-items:center;
+    min-height:48px;
+    padding:11px 16px;
+    border-color:#627079;
+    border-radius:10px;
+    background:#101018b8;
+    color:#f4f6f8;
+    font-size:.9375rem;
+    line-height:1.4;
+    white-space:nowrap;
+  }
+
+  .city-guide-page .cg-hero-photo {
+    min-height:0;
+    padding:132px 0 28px;
+    align-items:stretch;
+  }
+  .city-guide-page .cg-hero-img {object-position:center 32%}
+  .city-guide-page .cg-hero-photo::after {
+    background:linear-gradient(180deg,#07070b14 0%,#07070b7a 25%,#07070be8 52%,#07070b 100%);
+  }
+  .city-guide-page .cg-hero.tbp-photo-hero {
+    padding:132px 0 28px;
+  }
+  .city-guide-page .cg-hero.tbp-photo-hero>.tbp-photo {object-position:center 32%}
+  .city-guide-page .cg-hero.tbp-photo-hero::after,
+  .public-page .about-hero.tbp-photo-hero::after {
+    background:linear-gradient(180deg,#07070b14 0%,#07070b66 28%,#07070be8 65%,#07070b 100%);
+  }
+  .city-guide-page .cg-actions-v2 {display:grid;grid-template-columns:minmax(0,1fr);gap:12px;margin-block:24px}
+  .city-guide-page .cg-actions-v2 .cg-pdf {
+    width:100%;
+    min-height:52px;
+    padding:13px 16px;
+    justify-content:center;
+    font-size:1rem;
+    white-space:normal;
+    text-align:center;
+  }
+  .city-guide-page .cg-tools {
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    width:100%;
+    gap:4px;
+    padding:4px;
+    background:#101018d9;
+  }
+  .city-guide-page .cg-tools>button,
+  .city-guide-page .cg-tools>a {
+    box-sizing:border-box;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:48px;
+    min-width:0;
+    padding:10px;
+    font-size:.875rem;
+    line-height:1.4;
+  }
+  .city-guide-page .cg-facts {grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 16px;margin-top:24px}
+  .city-guide-page .cg-facts dt {font-size:.8125rem;letter-spacing:.04em}
+  .city-guide-page .cg-facts dd {font-size:.9375rem;line-height:1.5}
+  .city-guide-page .cg-jumps-bar {
+    top:var(--tb-header-height,65px);
+    z-index:20;
+    padding-block:7px;
+    background:#0b0c13f5;
+  }
+  .city-guide-page .cg-jumps-bar .cg-jumps {
+    width:100%;
+    margin:0;
+    padding:4px 16px;
+    scroll-padding-inline:16px;
+    overscroll-behavior-x:contain;
+    -webkit-overflow-scrolling:touch;
+  }
+  .city-guide-page .cg-jumps a {
+    min-height:48px;
+    padding:11px 15px!important;
+    font-size:.9375rem!important;
+  }
+  .guide-page .guide-section[id] {scroll-margin-top:calc(var(--tb-header-height,65px) + 16px)}
+  .guide-page .guide-section,
+  .city-guide-page .cg-section {padding-block:30px}
+  .guide-page .guide-card,
+  .guide-page .guide-reading article,
+  .city-guide-page .cg-card {padding:20px;border-radius:14px}
+
+  .public-page .about-hero.tbp-photo-hero {padding:0}
+  .public-page .about-hero.tbp-photo-hero .wrap {min-height:340px;padding-block:142px 30px}
+  .public-page .about-hero.tbp-photo-hero h1 {font-size:clamp(3rem,13vw,4rem);line-height:.97;margin-block:16px 0}
+  .public-page .about-hero.tbp-photo-hero .eyebrow {font-size:.875rem;letter-spacing:.05em}
+
+  main.vip .vip-hero {padding:150px 0 30px}
+  main.vip .vip-hero-img {object-position:62% 30%;filter:saturate(1.05)}
+  main.vip .vip-hero::after {background:linear-gradient(180deg,#07070b0d 0%,#07070b66 25%,#07070be8 58%,#07070b 100%)}
+  main.vip .vip-hero h1 {font-size:clamp(3rem,13vw,4.2rem);line-height:.96;margin:14px 0 18px}
+  main.vip .vip-hero p {font-size:1rem;line-height:1.65}
+
+  .guide-page .groups-hero .wrap {min-height:0;padding-block:138px 30px}
+  .guide-page .groups-hero::after {background:linear-gradient(180deg,#07070b14 0%,#07070b66 25%,#07070be8 58%,#07070b 100%)}
+  .guide-page .groups-hero h1 {font-size:clamp(3rem,13vw,4rem);line-height:.98}
+  .guide-page .groups-cta {gap:10px;margin-top:22px}
+  .guide-page .groups-cta a {flex:1 1 100%;justify-content:center;min-height:50px;border-radius:10px;font-size:1rem}
+  .public-page .organiser-jump-links {display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+  .public-page .organiser-jump-links a {display:inline-flex;align-items:center;min-height:48px;padding:10px 12px;font-size:.9375rem;border:1px solid #6c7880;border-radius:10px}
+  .organiser-event-scenes img {object-position:center 30%;filter:grayscale(.25) contrast(1.05)}
+  .organiser-event-shade {background:linear-gradient(180deg,#0505050d 0%,#0505055c 22%,#050505df 48%,#050505 100%)}
+  .organiser-event-hero-body {min-height:0;padding-block:142px 88px}
+  .organiser-event-hero h1 {font-size:clamp(3.25rem,14vw,4.5rem);line-height:.94}
+  .organiser-event-hero-body>p {font-size:1rem;line-height:1.65}
+  .organiser-event-hero .eyebrow {font-size:.8125rem;letter-spacing:.05em}
+  .organiser-event-hero .organiser-signin {min-height:44px;font-size:.875rem}
+}

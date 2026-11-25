@@ -12,6 +12,7 @@ import {openShare,eventLink} from './event-share.js?v=20261124-adventures';
 import {PARTY_TYPES,partyType,tripHref,eventTripState} from './home-trip-context.js?v=20261123-trip-flow';
 import {debounce,feedSearchUrl,createLatestLoader} from './live-search.js?v=20261123-live-search';
 import {activityProviderSearch} from './activity-search.js?v=20261124-adventures';
+import {mountSectionNavigation,scrollToSection} from './section-navigation.js?v=20261125-mobile2';
 const $=s=>document.querySelector(s);
 const reduceMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -47,7 +48,7 @@ function renderTripPath(current=state){
  const note=$('#trip-type-note');note.hidden=!label;
  note.textContent=label?label+(where?' in '+where:'')+' · Check each event’s age, admission and group terms.':'';
 }
-$('#ds-away').onclick=()=>{form.scrollIntoView({block:'center',behavior:reduceMotion()?'auto':'smooth'});country.focus();};
+$('#ds-away').onclick=()=>scrollToSection(form,{focus:true});
 function liveFormState(){
  const next=formState(),known=cityPage(next.city)||[...$('#ds-cities').options].some(o=>o.value.toLowerCase()===next.city.toLowerCase());
  if(next.city&&!known)next.city=state.city;
@@ -101,7 +102,7 @@ function commit(next,{scroll=false,live=false}={}){
  if(feedSearchUrl(state)!==feedQueryKey)loadFeed().then(render);
  render();
  if(next.city!==undefined)loadNear();
- if(scroll)(searching()?$('#discover'):$('#rails')).scrollIntoView({behavior:reduceMotion()?'auto':'smooth'});
+ if(scroll)scrollToSection(searching()?$('#discover'):$('#rails'));
 }
 function commitForm(next,options){liveUpdate.cancel();commit({...liveFormState(),...next},options);}
 form.onsubmit=e=>{e.preventDefault();liveUpdate.cancel();
@@ -116,7 +117,8 @@ document.querySelectorAll('[data-jump]').forEach(b=>b.onclick=()=>{
  const rail=document.getElementById('rail-'+b.dataset.jump);
  if(rail&&!rail.hidden&&!searching()&&!query.value.trim())rail.scrollIntoView({behavior:reduceMotion()?'auto':'smooth'});else commitForm({category:b.dataset.jump},{scroll:true});
 });
-$('#db-change').onclick=()=>{form.scrollIntoView({block:'center'});city.focus();};
+$('#db-change').onclick=()=>scrollToSection(form,{focus:true});
+$('#db-context').onclick=()=>scrollToSection(form,{focus:true});
 $('#db-clear').onclick=()=>{liveUpdate.cancel();commit({q:'',country:'',city:'',category:'',when:'any'});};
 
 // Cards
@@ -298,30 +300,12 @@ function renderNear(now){
  mountRail(section,items.map(i=>card(i)));
 }
 $('#near-locate').onclick=()=>useMyLocation();
-$('#near-change').onclick=()=>{form.scrollIntoView({block:'center'});city.focus();};
+$('#near-change').onclick=()=>scrollToSection(form,{focus:true});
 
 // Section tabs under the destination bar: one tap to any rail that has listings.
 // Only the main ways in: when, then what. Everything else is one scroll away.
-const TAB_LABELS={'rail-weekend':'This weekend','top10':'Top 10','rail-music':'Gigs','rail-club':'Raves','rail-festival':'Festivals','rail-shows':'Theatre','rail-comedy':'Comedy','rail-family':'Family','rail-daysout':'Days out','rail-boat':'Boat trips','rail-sport':'Sport','rail-cinema':'Cinema','rail-seasonal':'Special days','rail-dining':'Dining','rail-near':'Near you'};
-let tabObserver;
-function renderTabs(){
- const nav=$('#section-tabs');
- if(searching()){nav.hidden=true;return;}
- const ids=[...document.querySelectorAll('#rails > section, #category-rails > section')].filter(el=>!el.hidden&&TAB_LABELS[el.id]).map(el=>el.id);
- nav.hidden=ids.length<3;
- const track=$('#tabs-track'),key=ids.join(',');
- if(track.dataset.key===key)return;
- track.dataset.key=key;
- track.innerHTML=ids.map(id=>`<button type="button" data-tab="${id}">${TAB_LABELS[id]}</button>`).join('');
- track.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>document.getElementById(b.dataset.tab).scrollIntoView({behavior:reduceMotion()?'auto':'smooth',block:'start'}));
- tabObserver?.disconnect();
- tabObserver=new IntersectionObserver(entries=>{for(const e of entries)if(e.isIntersecting){
-  track.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===e.target.id));
-  // Slide only the tab bar sideways; scrollIntoView here could also scroll the page itself back up to the bar.
-  const a=track.querySelector('.active');if(a)track.scrollTo({left:a.offsetLeft-(track.clientWidth-a.offsetWidth)/2,behavior:'auto'});
- }},{rootMargin:'-45% 0px -50% 0px'});
- ids.forEach(id=>tabObserver.observe(document.getElementById(id)));
-}
+const sectionNavigation=mountSectionNavigation({bar:$('#destination-bar'),nav:$('#section-tabs'),track:$('#tabs-track')});
+function renderTabs(){sectionNavigation.refresh();}
 
 // "Heading to …?": tickets in another city, one tap per city, loaded on demand.
 const TRIPS=[['London','London'],['Manchester','Manchester'],['Liverpool','Liverpool'],['Glasgow','Glasgow'],['Edinburgh','Edinburgh'],['Birmingham','Birmingham'],['Brighton','Brighton'],['Bristol','Bristol'],['Leeds','Leeds'],['Newcastle','Newcastle'],['Dublin','Dublin'],['Tenerife','Costa Adeje']];
@@ -439,17 +423,18 @@ let heroTimer;
 function heroStack(items){
  const box=document.querySelector('[data-hero-stack]');if(!box)return;
  const picks=items.filter(hasArt).slice(0,5);
- box.hidden=picks.length<3;if(box.hidden)return;
+ box.hidden=!picks.length;if(box.hidden)return;
  const key=picks.map(i=>i.key).join('|');if(box.dataset.key===key)return;box.dataset.key=key;
  const deck=box.querySelector('[data-hs-deck]'),dots=box.querySelector('[data-hs-dots]');
  deck.innerHTML=picks.map((i,n)=>{const href=i.external?withClickRef(i.url,pagRef,'hero'):i.url,ext=i.external?' target="_blank" rel="sponsored noopener noreferrer"':'';
   const price=!i.soldOut&&Number.isInteger(i.priceCents)&&i.priceCents>0?money(i.priceCents,i.currency):'';
-  return `<a class="hs-ticket" data-pos="${n}" href="${esc(href)}"${ext}><span class="hs-art"><img src="${esc(safeUrl(i.image))}" alt="" ${n?'loading="lazy"':'fetchpriority="high"'}></span><span class="hs-info"><span class="hs-cat">${esc(catLabel(i))}</span><b>${esc(i.title)}</b><small>${esc([dateLine(i),i.city].filter(Boolean).join(' · '))}</small></span><span class="hs-stub"><small>${i.soldOut?'Sold out':i.priceCents===0?'Free':price?'From':''}</small><strong>${esc(price)}</strong><em>Tickets →</em></span></a>`;}).join('');
+  return `<a class="hs-ticket" data-pos="${n}" href="${esc(href)}"${ext}><span class="hs-art"><img src="${esc(safeUrl(i.image))}" alt="" ${n?'loading="lazy"':'fetchpriority="high"'}></span><span class="hs-info"><span class="hs-cat">${esc(catLabel(i))}</span><b>${esc(i.title)}</b><small>${esc([dateLine(i),i.city].filter(Boolean).join(' · '))}</small></span><span class="hs-stub"><small>${i.soldOut?'Sold out':i.priceCents===0?'Free':price?'From':''}</small><strong>${esc(price)}</strong><em>Tickets</em></span></a>`;}).join('');
+ dots.hidden=picks.length<2;
  dots.innerHTML=picks.map((_,n)=>`<button type="button" aria-label="Show pick ${n+1}" data-hs="${n}"></button>`).join('');
  const cards=[...deck.children];let front=0;
  const show=k=>{front=(k+cards.length)%cards.length;cards.forEach((c,n)=>{const pos=(n-front+cards.length)%cards.length;c.dataset.pos=pos;c.tabIndex=pos?-1:0;c.setAttribute('aria-hidden',String(!!pos));});
   [...dots.children].forEach((d,n)=>d.toggleAttribute('aria-current',n===front));};
- const restart=()=>{clearInterval(heroTimer);if(!reduceMotion())heroTimer=setInterval(()=>{if(!box.matches(':hover,:focus-within'))show(front+1);},3800);};
+ const restart=()=>{clearInterval(heroTimer);if(cards.length>1&&!reduceMotion())heroTimer=setInterval(()=>{if(!box.matches(':hover,:focus-within'))show(front+1);},3800);};
  dots.onclick=e=>{const d=e.target.closest('[data-hs]');if(d){show(Number(d.dataset.hs));restart();}};
  show(0);restart();
 }

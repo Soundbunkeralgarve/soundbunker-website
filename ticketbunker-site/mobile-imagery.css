@@ -1,0 +1,222 @@
+/* Mobile keeps the search first, then shows the same real ticket art and photos. */
+@media (max-width:650px) {
+  .shop-home .hero.hero-sales {min-height:0}
+  .shop-home .hero.hero-sales .hero-grid {row-gap:28px;padding-bottom:28px}
+  .shop-home .hero-stack {
+    width:100%;
+    max-width:440px;
+    padding:0;
+    margin:4px 0 0;
+    justify-self:center;
+  }
+  .shop-home .hero-stack[hidden] {display:none}
+  .shop-home .hero-stack .hs-label {
+    position:static;
+    margin:0 0 12px;
+    font-size:.875rem;
+    line-height:1.4;
+    letter-spacing:.08em;
+  }
+  .shop-home .hero-stack .hs-deck {height:442px;min-height:0}
+  .shop-home .hero-stack .hs-ticket {
+    grid-template-rows:230px minmax(0,1fr) 64px;
+    border-radius:18px;
+    box-shadow:0 10px 28px #0005;
+    transform:none;
+    transition:opacity .3s ease;
+  }
+  .shop-home .hero-stack .hs-ticket:not([data-pos="0"]) {
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+    transform:none;
+  }
+  .shop-home .hero-stack .hs-ticket[data-pos="0"],
+  .shop-home .hero-stack .hs-ticket[data-pos="0"]:hover {
+    opacity:1;
+    visibility:visible;
+    transform:none;
+  }
+  .shop-home .hero-stack .hs-art {height:230px;min-height:230px;overflow:hidden}
+  .shop-home .hero-stack .hs-art img {
+    display:block;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    object-position:center 35%;
+  }
+  .shop-home .hero-stack .hs-art::after {height:25%;background:linear-gradient(0deg,#101018aa,transparent)}
+  .shop-home .hero-stack .hs-info {min-height:0;gap:5px;padding:12px 16px;align-content:start}
+  .shop-home .hero-stack .hs-cat {font-size:.875rem;line-height:1.25;letter-spacing:.04em}
+  .shop-home .hero-stack .hs-info b {
+    font-size:28px;
+    line-height:1;
+    -webkit-line-clamp:2;
+    overflow:hidden;
+  }
+  .shop-home .hero-stack .hs-info small {
+    font-size:.875rem;
+    line-height:1.35;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+  .shop-home .hero-stack .hs-stub {min-width:0;gap:7px;padding:9px 16px;border-top-width:1px}
+  .shop-home .hero-stack .hs-stub small {font-size:.875rem;line-height:1.3}
+  .shop-home .hero-stack .hs-stub strong {font-size:24px;white-space:nowrap}
+  .shop-home .hero-stack .hs-stub em {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:44px;
+    padding:8px 14px;
+    font-size:.875rem;
+    white-space:nowrap;
+  }
+  .shop-home .hero-stack .hs-dots {position:static;gap:2px;margin:3px 0 0;min-height:44px}
+  .shop-home .hero-stack .hs-dots button {
+    position:relative;
+    width:44px;
+    height:44px;
+    padding:0;
+    border:0;
+    border-radius:10px;
+    background:transparent;
+  }
+  .shop-home .hero-stack .hs-dots button::after {
+    content:'';
+    position:absolute;
+    left:8px;
+    right:8px;
+    top:20px;
+    height:4px;
+    border-radius:4px;
+    background:#59606d;
+  }
+  .shop-home .hero-stack .hs-dots button[aria-current]::after {background:#00e0a6}
+
+  /* The main chooser has a photo for each broad subject, with room to tap. */
+  .shop-home #hub .hub-tabs {
+    display:grid;
+    grid-template-columns:none;
+    grid-auto-flow:column;
+    grid-auto-columns:minmax(140px,42%);
+    gap:10px;
+    padding:3px 3px 12px;
+    margin:0 -3px;
+    overflow-x:auto;
+    scroll-snap-type:x proximity;
+  }
+  .shop-home #hub .hub-tabs button {
+    --tab-photo:url('/assets/hero/live.jpg');
+    min-height:104px;
+    padding:62px 12px 12px;
+    border:1px solid #48505a;
+    border-radius:12px;
+    background:linear-gradient(0deg,#07070bf2,#07070b20 85%),var(--tab-photo) center/cover!important;
+    box-shadow:none;
+    color:#fff!important;
+    font-size:1rem;
+    line-height:1.3;
+    text-align:left;
+    white-space:normal;
+    scroll-snap-align:start;
+  }
+  .shop-home #hub .hub-tabs button[data-hub-tab=travel] {--tab-photo:url('/assets/pages/travel.webp')}
+  .shop-home #hub .hub-tabs button[data-hub-tab=vip] {--tab-photo:url('/assets/pages/vip-transfers.webp');background-position:center,center 57%!important}
+  .shop-home #hub .hub-tabs button[data-hub-tab=stays] {--tab-photo:url('/assets/pages/hotels.webp')}
+  .shop-home #hub .hub-tabs button[data-hub-tab=deals] {--tab-photo:url('/assets/pages/restaurants.webp')}
+  .shop-home #hub .hub-tabs button[data-hub-tab=guides] {--tab-photo:url('/assets/pages/plan-your-trip.webp')}
+  .shop-home #hub .hub-tabs button[aria-selected=true] {border-color:#00e0a6;outline:2px solid #00e0a6;outline-offset:0}
+  .shop-home #hub .hub-tabs button:focus-visible {outline:3px solid #fff;outline-offset:3px}
+
+  /* Relevant real photos on the choices; vehicle types without photos keep icons. */
+  .shop-home #hub .hub-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .shop-home #hub .hub-tile {
+    position:relative;
+    isolation:isolate;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-end;
+    gap:5px;
+    min-height:212px;
+    padding:14px;
+    border:1px solid #343d46;
+    border-radius:14px;
+    background:radial-gradient(ellipse at 20% 10%,#154b42,#101018 85%);
+    color:#fff;
+    box-shadow:none;
+  }
+  .shop-home #hub .hub-tile::before {
+    content:'';
+    position:absolute;
+    inset:0;
+    z-index:-2;
+    background-image:var(--hub-photo,none);
+    background-size:cover;
+    background-position:var(--hub-position,center);
+  }
+  .shop-home #hub .hub-tile::after {
+    content:'';
+    position:absolute;
+    inset:0;
+    z-index:-1;
+    background:linear-gradient(180deg,#07070b00 15%,#07070b55 40%,#07070bf5 100%);
+  }
+  .shop-home #hub .hub-tile .hub-ic {
+    position:absolute;
+    top:12px;
+    left:12px;
+    width:40px;
+    height:40px;
+    border-radius:10px;
+    background:#07070bdb;
+    color:#79f0cf;
+  }
+  .shop-home #hub .hub-tile b {margin:0;color:#fff;font-size:24px;line-height:1.05}
+  .shop-home #hub .hub-tile small {font-size:.875rem;line-height:1.4;color:#e0e5eb}
+  .shop-home #hub-travel .hub-tile:nth-child(2) {--hub-photo:url('/assets/pages/travel.webp')}
+  .shop-home #hub-travel .hub-tile:nth-child(4) {--hub-photo:url('/assets/groups/london.webp')}
+  .shop-home #hub-travel .hub-tile:nth-child(6) {--hub-photo:url('/assets/pages/car-hire.webp')}
+  .shop-home #hub-travel .hub-tile:nth-child(7),
+  .shop-home #hub-vip .hub-tile:nth-child(2),
+  .shop-home #hub-vip .hub-tile:nth-child(3) {--hub-photo:url('/assets/pages/vip-transfers.webp');--hub-position:center 57%}
+  .shop-home #hub-vip .hub-tile:nth-child(6) {--hub-photo:url('/assets/groups/boat.webp')}
+  .shop-home #hub-stays .hub-tile:nth-child(1) {--hub-photo:url('/assets/pages/hotels.webp')}
+  .shop-home #hub-stays .hub-tile:nth-child(2) {--hub-photo:url('/assets/pages/plan-your-trip.webp')}
+  .shop-home #hub-stays .hub-tile:nth-child(3) {--hub-photo:url('/assets/hero/club.jpg')}
+  .shop-home #hub-stays .hub-tile:nth-child(4) {--hub-photo:url('/assets/hero/festival.jpg')}
+  .shop-home #hub-deals .hub-tile:nth-child(1) {--hub-photo:url('/assets/pages/restaurants.webp')}
+  .shop-home #hub-deals .hub-tile:nth-child(2) {--hub-photo:url('/assets/hero/live.jpg')}
+  .shop-home #hub-deals .hub-tile:nth-child(3) {--hub-photo:url('/assets/hero/family.jpg')}
+  .shop-home #hub-deals .hub-tile:nth-child(4) {--hub-photo:url('/assets/pages/hotels.webp')}
+  .shop-home #hub-deals .hub-tile:nth-child(5),
+  .shop-home #hub-guides .hub-tile:nth-child(1) {--hub-photo:url('/assets/pages/plan-your-trip.webp')}
+  .shop-home #hub-guides .hub-tile:nth-child(2) {--hub-photo:url('/assets/groups/london.webp')}
+  .shop-home #hub-guides .hub-tile:nth-child(3) {--hub-photo:url('/assets/groups/lisbon.webp')}
+  .shop-home #hub-guides .hub-tile:nth-child(4) {--hub-photo:url('/assets/groups/barcelona.webp')}
+  .shop-home #hub-guides .hub-tile:nth-child(5) {--hub-photo:url('/assets/city-photos/algarve.webp')}
+  .shop-home #hub-guides .hub-tile:nth-child(6) {--hub-photo:url('/assets/groups/amsterdam.webp')}
+
+  .shop-home #hub .mood-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .shop-home #hub .mood-tile {width:100%;min-width:0;height:216px;min-height:216px;aspect-ratio:auto;border:1px solid #343d46;border-radius:14px}
+  .shop-home #hub .mood-shade {background:linear-gradient(180deg,#07070b00 20%,#07070b30 40%,#07070bf0 100%)}
+  .shop-home #hub .mood-copy {left:12px;right:12px;bottom:14px;gap:6px}
+  .shop-home #hub .mood-copy b {font-size:25px;line-height:1}
+  .shop-home #hub .mood-copy small {font-size:.875rem;line-height:1.4;color:#e0e5eb}
+  .shop-home #hub .mood-copy em {font-size:.875rem;line-height:1.3;letter-spacing:0;margin-top:0}
+}
+@media (max-width:360px) {
+  .shop-home .hero-stack .hs-deck {height:426px}
+  .shop-home .hero-stack .hs-ticket {grid-template-rows:210px minmax(0,1fr) 64px}
+  .shop-home .hero-stack .hs-art {height:210px;min-height:210px}
+  .shop-home .hero-stack .hs-stub {padding-inline:12px}
+  .shop-home .hero-stack .hs-stub em {padding-inline:11px}
+  .shop-home #hub .hub-tile {padding:12px;min-height:220px}
+  .shop-home #hub .hub-tile b {font-size:22px}
+}
+@media (prefers-reduced-motion:reduce) {
+  .shop-home .hero-stack .hs-ticket {transition:none}
+}

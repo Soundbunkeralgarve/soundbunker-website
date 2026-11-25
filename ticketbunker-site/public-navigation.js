@@ -1,6 +1,6 @@
 import "./coming-soon.js?v=20261125-welcome";
 import "./promo-banner.js?v=20261125";
-import "./app-promo.js?v=20261125ga";
+import "./app-promo.js?v=20261125-mobile2";
 import {enhancePublicWorkflow} from './public-workflow.js?v=20261124-clean';
 const nav=document.getElementById('navigation'),toggle=document.getElementById('menu-toggle');
 if(nav&&toggle){
@@ -25,3 +25,11 @@ if(nav&&toggle){
 }
 
 enhancePublicWorkflow();
+
+// Every sticky public section bar uses the actual header height at this width.
+const publicHeader=document.querySelector('header');
+if(publicHeader){
+ const measureHeader=()=>document.documentElement.style.setProperty('--tb-header-height',Math.ceil(publicHeader.getBoundingClientRect().height)+'px');
+ measureHeader();
+ if(typeof ResizeObserver!=='undefined')new ResizeObserver(measureHeader).observe(publicHeader);
+}

@@ -40,8 +40,29 @@ if(offerBox){
 }
 const pdfLink=document.querySelector('[data-guide-pdf]');
 if(pdfLink&&status)pdfLink.addEventListener('click',()=>{status.textContent='Preparing your PDF guide…';setTimeout(()=>{status.textContent='';},6000);});
-// Highlight the section bar tile for the part of the guide being read.
+// Highlight the section being read without moving the document back to its menu.
+const jumpBar=document.querySelector('.cg-jumps-bar');
+if(jumpBar){
+ const measureJumps=()=>document.documentElement.style.setProperty('--tb-guide-nav-height',Math.ceil(jumpBar.getBoundingClientRect().height)+'px');
+ measureJumps();
+ if('ResizeObserver' in window)new ResizeObserver(measureJumps).observe(jumpBar);
+}
 const jumpLinks=[...document.querySelectorAll('.cg-jumps a[href^="#"]')];
-if(jumpLinks.length&&'IntersectionObserver' in window){const byId=new Map(jumpLinks.map(a=>[a.getAttribute('href').slice(1),a]));
- const io=new IntersectionObserver(es=>{for(const e of es)if(e.isIntersecting){jumpLinks.forEach(a=>a.classList.remove('active'));const a=byId.get(e.target.id);if(a){a.classList.add('active');a.scrollIntoView({block:'nearest',inline:'nearest'});}}},{rootMargin:'-35% 0px -60% 0px'});
- for(const id of byId.keys()){const s=document.getElementById(id);if(s)io.observe(s);}}
+const activateJump=active=>{
+ for(const a of jumpLinks){
+  const on=a===active;a.classList.toggle('active',on);
+  if(on)a.setAttribute('aria-current','location');else a.removeAttribute('aria-current');
+ }
+ const track=active?.closest('.cg-jumps');
+ if(!track)return;
+ const linkRect=active.getBoundingClientRect(),trackRect=track.getBoundingClientRect();
+ if(linkRect.left>=trackRect.left+4&&linkRect.right<=trackRect.right-4)return;
+ const left=linkRect.left-trackRect.left+track.scrollLeft-(track.clientWidth-linkRect.width)/2;
+ track.scrollTo({left:Math.max(0,Math.min(track.scrollWidth-track.clientWidth,left)),behavior:'auto'});
+};
+for(const a of jumpLinks)a.addEventListener('click',()=>activateJump(a));
+if(jumpLinks.length&&'IntersectionObserver' in window){
+ const byId=new Map(jumpLinks.map(a=>[a.getAttribute('href').slice(1),a]));
+ const io=new IntersectionObserver(es=>{for(const e of es)if(e.isIntersecting)activateJump(byId.get(e.target.id));},{rootMargin:'-35% 0px -60% 0px'});
+ for(const id of byId.keys()){const section=document.getElementById(id);if(section)io.observe(section);}
+}

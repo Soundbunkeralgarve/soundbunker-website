@@ -20,7 +20,12 @@ function addStyles() {
 .tb-app-bar .tb-app-x{flex:none;background:none;border:0;color:#a7adb6;font-size:20px;cursor:pointer;padding:4px 6px}
 .tb-app-btn{display:inline-flex;align-items:center;gap:6px;background:#00e0a6;color:#04140d;border-radius:999px;padding:10px 16px;font-weight:800;text-decoration:none;margin:4px 8px 4px 0}
 .tb-app-soon{display:inline-block;color:#a7adb6;font-size:13px;margin:4px 0}
-@media (max-width:520px){.tb-app-bar{left:10px;right:10px;bottom:10px}.tb-app-bar small{display:none}}`;
+@media (max-width:700px){
+.tb-app-bar{position:relative;left:auto;right:auto;bottom:auto;max-width:none;box-sizing:border-box;width:calc(100% - 32px);margin:24px 16px;display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:8px 12px;transform:none;box-shadow:none;backdrop-filter:none}
+.tb-app-bar .tb-app-go{grid-column:2;grid-row:2;justify-self:start;margin:0;display:inline-flex;align-items:center;min-height:44px;padding:10px 16px;box-sizing:border-box}
+.tb-app-bar .tb-app-x{grid-column:3;grid-row:1;width:44px;height:44px;padding:0}
+.tb-app-bar small{display:block;font-size:14px;line-height:1.5;margin-top:4px}
+}`;
   document.head.append(s);
 }
 function fillBadges() { if (APP.live) document.querySelectorAll('[data-app-badges]').forEach(el => { el.outerHTML = storeButtons(); }); }
@@ -35,11 +40,13 @@ export function showAppBar() {
       : `<a class="tb-app-go" href="/get-around">Try it now</a>`)
     + `<button class="tb-app-x" type="button" aria-label="Close">×</button>`;
   bar.querySelector('.tb-app-x').addEventListener('click', () => { bar.remove(); try { localStorage.setItem(KEY, String(Date.now())); } catch {} });
-  document.body.append(bar);
+  const footer=document.querySelector('footer');
+  if(footer)footer.before(bar);else document.body.append(bar);
   // Slide in after the visitor has had a look round, not on top of the first screen.
   const reveal = () => { bar.classList.add('in'); removeEventListener('scroll', onScroll); };
   const onScroll = () => { if (scrollY > innerHeight * 0.6) reveal(); };
-  addEventListener('scroll', onScroll, {passive: true}); setTimeout(reveal, 12000);
+  if(matchMedia('(max-width:700px)').matches)reveal();
+  else {addEventListener('scroll', onScroll, {passive:true});setTimeout(reveal,12000);}
 }
 if (typeof document !== 'undefined') {
   addStyles();
