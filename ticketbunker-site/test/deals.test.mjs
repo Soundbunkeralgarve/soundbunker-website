@@ -1,8 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+import {CITY_PAGES} from '../city-places.js';
 import {offerItem, offerKind, loadOffers} from '../api/partner-offers.js';
-import {offerCity, couponCard} from '../deals.js';
+import {offerCity, couponCard, dealSearchContext} from '../deals.js';
 
 const raw = (c = {}) => ({promotionId: 123, type: 'voucher', advertiser: {id: 7, name: 'Pizza Place', joined: true}, title: '20% off pizza in Manchester',
   description: 'Dine in or takeaway', terms: 'Min spend £20', startDate: '2026-11-01T00:00:00.000', endDate: '2026-12-31T00:00:00.000',
@@ -42,4 +44,39 @@ test('offers show only in their own countries and languages, and parks and parti
   assert.equal(kind('Deine Geburtstagsparty im Winter im Majaland'), 'kids');
   assert.equal(kind('Black Friday Deal im Majaland Deutschland'), 'daysout');
   assert.equal(kind('ESPECTÁCULOS EN PROMOCIÓN'), 'events');
+});
+
+
+test('linked deals keep a canonical city in its country and reject a mismatched country', () => {
+  assert.deepEqual(dealSearchContext('?city=manchester&country=gb&kind=food'), {country:'GB',city:'Manchester',kind:'food'});
+  assert.deepEqual(dealSearchContext('?city=Lisbon', 'GB'), {country:'PT',city:'Lisbon',kind:'all'});
+  assert.deepEqual(dealSearchContext('?city=Lisbon&country=GB'), {country:'GB',city:'',kind:'all'});
+  assert.deepEqual(dealSearchContext('?city=Nowhere&country=ES&kind=unknown'), {country:'ES',city:'',kind:'all'});
+});
+
+test('deal page restores, filters and retains a linked city even when no local offer is available', async () => {
+  const select = () => ({value:'', options:[], handlers:{}, replaceChildren(...options){this.options=options;this.value=options[0]?.value || '';}, addEventListener(type,fn){this.handlers[type]=fn;}});
+  const country=select(), city=select(), form={elements:{country,city}};
+  const grid={innerHTML:'',addEventListener(){}}, status={textContent:''}, kinds={innerHTML:'',handlers:{},addEventListener(type,fn){this.handlers[type]=fn;}};
+  const location={pathname:'/deals',search:'?country=GB&city=Manchester&kind=food'};
+  const history={url:'',replaceState(_state,_title,url){this.url=url;}};
+  let rows=[{id:'man',title:'Pizza in Manchester',kind:'food',advertiser:'Pizza',url:'https://example.com/'},
+    {id:'lon',title:'Pizza in London',kind:'food',advertiser:'Pizza',url:'https://example.com/'}];
+  const source=readFileSync(new URL('../deals.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replace(/export /g,'');
+  vm.runInNewContext(source, {CITY_PAGES,esc:v=>String(v || ''),URLSearchParams,Intl,Option:function(text,value){this.text=text;this.value=value;},location,history,
+    navigator:{language:'en-GB'},document:{querySelector:s=>({'[data-deals-form]':form,'[data-deals-grid]':grid,'[data-deals-status]':status,'[data-deals-kinds]':kinds}[s])},
+    fetch:async()=>({ok:true,json:async()=>({ready:true,offers:rows})})});
+  await new Promise(setImmediate);
+  assert.equal(city.value,'Manchester');
+  assert.match(grid.innerHTML,/Pizza in Manchester/);assert.doesNotMatch(grid.innerHTML,/Pizza in London/);
+  assert.equal(history.url,'/deals?country=GB&city=Manchester&kind=food');
+  rows=[];await country.handlers.change();
+  assert.equal(city.value,'Manchester','an empty feed must not reset the visitor to every city');
+  assert.ok(city.options.some(o=>o.value==='Manchester'));
+  assert.match(history.url,/city=Manchester/);
+  city.value='';city.handlers.change();
+  assert.equal(history.url,'/deals?country=GB&kind=food','clearing the city clears the URL filter');
+  city.value='Manchester';city.handlers.change();
+  country.value='PT';await country.handlers.change();
+  assert.equal(city.value,'');assert.equal(history.url,'/deals?country=PT&kind=food');
 });

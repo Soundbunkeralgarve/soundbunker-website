@@ -31,68 +31,104 @@ export function flightPlace(value) {
 }
 
 const ddmm = iso => iso.slice(8, 10) + iso.slice(5, 7);
-const isoDay = v => /^\d{4}-\d{2}-\d{2}$/.test(String(v || '')) && !Number.isNaN(Date.parse(v + 'T00:00:00Z'));
+const isoDay = v => /^\d{4}-\d{2}-\d{2}$/.test(String(v || '')) && !Number.isNaN(Date.parse(v + 'T00:00:00Z')) && new Date(v + 'T00:00:00Z').toISOString().slice(0, 10) === v;
+const laterDay = (iso, days = 1) => new Date(Date.parse(iso + 'T00:00:00Z') + days * 864e5).toISOString().slice(0, 10);
+const adultCount = n => Math.min(9, Math.max(1, Number.parseInt(n, 10) || 1));
+const flightCurrency = v => ['gbp', 'eur'].includes(String(v || '').toLowerCase()) ? String(v).toLowerCase() : '';
+export function initialFlightDates({depart = '', back = ''} = {}, now = new Date()) {
+  const today = now.toISOString().slice(0, 10);
+  const friday = laterDay(today, ((5 - now.getUTCDay() + 7) % 7) || 7);
+  const out = isoDay(depart) && depart >= today ? depart : friday;
+  return {depart: out, back: isoDay(back) && back > out ? back : laterDay(out, 2)};
+}
 // Aviasales search path: LIS1112LON13121 = Lisbon 11 Dec → London, back 13 Dec, 1 adult.
-export function aviasalesUrl({from, to, depart, back = '', adults = 1} = {}) {
+export function aviasalesUrl({from, to, depart, back = '', adults = 1, currency = ''} = {}) {
   const a = flightPlace(from), b = flightPlace(to);
-  if (!a || !b || a.code === b.code || !isoDay(depart)) return '';
-  const n = Math.min(9, Math.max(1, Number.parseInt(adults, 10) || 1));
-  const ret = isoDay(back) && back > depart ? ddmm(back) : '';
-  return 'https://www.aviasales.com/search/' + a.code + ddmm(depart) + b.code + ret + n + '?marker=' + AVIASALES_MARKER;
+  if (!a || !b || a.code === b.code || !isoDay(depart) || (back && (!isoDay(back) || back <= depart))) return '';
+  const ret = back ? ddmm(back) : '', cur = flightCurrency(currency);
+  return 'https://www.aviasales.com/search/' + a.code + ddmm(depart) + b.code + ret + adultCount(adults) + '?marker=' + AVIASALES_MARKER + (cur ? '&currency=' + cur : '');
 }
 
 // Fares on our own page (when the fares API is switched on), each booked on Aviasales.
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
 const when = iso => { try { return new Intl.DateTimeFormat('en-GB', {weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'}).format(new Date(iso)); } catch { return ''; } };
 const hm = m => m ? Math.floor(m / 60) + 'h ' + String(m % 60).padStart(2, '0') + 'm' : '';
-export function quoteCards(quotes) {
+export function quoteCards(quotes, {adults = 1, currency = ''} = {}) {
+  const passengers = adultCount(adults);
   return quotes.map((q, n) => `<article class="fare${n === 0 ? ' best' : ''}">
     <img class="fare-logo" src="https://pics.avs.io/120/40/${esc(q.airline)}.png" alt="" width="120" height="40" loading="lazy" onerror="this.remove()">
     <div class="fare-info"><b>${esc(q.airlineName)}</b><span>${esc(q.from)} → ${esc(q.to)} · ${esc(when(q.departAt))}</span>
       <small>${q.stops === 0 ? 'Direct' : q.stops + ' stop' + (q.stops > 1 ? 's' : '')}${q.minutes ? ' · ' + hm(q.minutes) : ''}${q.returnAt ? ' · back ' + esc(when(q.returnAt)) + (q.returnStops === 0 ? ' direct' : '') : ' · one way'}</small></div>
-    <div class="fare-price">${n === 0 ? '<i>Cheapest</i>' : ''}<b>${esc(new Intl.NumberFormat('en-GB', {style: 'currency', currency: q.currency.toUpperCase(), maximumFractionDigits: 0}).format(q.price))}</b><small>per adult</small>
-      <a href="${esc(q.url)}" target="_blank" rel="sponsored noopener">Book on Aviasales ↗</a></div></article>`).join('');
+    <div class="fare-price">${n === 0 ? '<i>Cheapest shown</i>' : ''}<b>${esc(new Intl.NumberFormat('en-GB', {style: 'currency', currency: q.currency.toUpperCase(), maximumFractionDigits: 0}).format(q.price))}</b><small>Recently found for 1 adult</small>
+      <a href="${esc(passengers === 1 ? q.url : aviasalesUrl({from: q.from, to: q.to, depart: q.departAt.slice(0, 10), back: q.returnAt?.slice(0, 10) || '', adults: passengers, currency: currency || q.currency}))}" target="_blank" rel="sponsored noopener">${passengers === 1 ? 'Book on Aviasales' : 'Check fares for ' + passengers + ' adults'} ↗</a></div></article>`).join('');
 }
-async function showQuotes(form, status, {from, to, depart, back, url}) {
+let quoteRequest = 0, quoteAbort;
+async function showQuotes(form, status, {from, to, depart, back, adults, currency, url}) {
+  const request = ++quoteRequest;
+  quoteAbort?.abort(); quoteAbort = new AbortController();
   let box = document.querySelector('[data-flight-quotes]');
   if (!box) { box = document.createElement('div'); box.className = 'fares'; box.dataset.flightQuotes = ''; form.after(box); }
   status.textContent = 'Finding fares…'; box.innerHTML = '';
-  const all = `<a class="fares-all" href="${esc(url)}" target="_blank" rel="sponsored noopener">See every live fare on Aviasales ↗</a>`;
+  const all = `<a class="fares-all" href="${esc(url)}" target="_blank" rel="sponsored noopener">Check current fares on Aviasales ↗</a>`;
   try {
-    const r = await fetch('/api/flight-quotes?' + new URLSearchParams({from, to, depart, back, currency: 'gbp'}));
+    const r = await fetch('/api/flight-quotes?' + new URLSearchParams({from, to, depart, back, currency}), {signal: quoteAbort.signal});
     const j = await r.json();
+    if (request !== quoteRequest) return;
     if (!r.ok) throw Error(j.error || 'Fares are not answering right now.');
-    if (!j.enabled || !j.quotes?.length) { status.textContent = ''; box.innerHTML = `<p class="fares-note">${j.enabled ? 'No recently found fares for this route.' : 'Live fares open on Aviasales.'}</p>${all}`; if (!j.enabled) window.open(url, '_blank', 'noopener'); return; }
+    if (!j.enabled || !j.quotes?.length) { status.textContent = ''; box.innerHTML = `<p class="fares-note">${j.enabled ? 'No recently found fares for this route.' : 'Check fares on Aviasales.'}</p>${all}`; return; }
     status.textContent = '';
-    box.innerHTML = `<h3>${j.exact ? 'Fares for your dates' : 'Cheapest days this month'}</h3>${quoteCards(j.quotes)}
-      <p class="fares-note">Recently found prices for 1 adult, from Aviasales searches in the last 48 hours. The final price and seats are confirmed on Aviasales before you pay.</p>${all}`;
-  } catch (e) { status.textContent = e.message; box.innerHTML = all; }
+    box.innerHTML = `<h3>${j.exact ? 'Recently found fares for your dates' : 'Recently found fares on other dates this month'}</h3>${quoteCards(j.quotes, {adults, currency})}
+      <p class="fares-note">Recently found fares for 1 adult. Prices and availability are confirmed by the provider.${adultCount(adults) > 1 ? ' Check the current total for your ' + adultCount(adults) + ' adults on Aviasales.' : ''}</p>${all}`;
+  } catch (e) { if (request !== quoteRequest || e.name === 'AbortError') return; status.textContent = e.message; box.innerHTML = all; }
 }
 
 if (typeof document !== 'undefined') {
   const form = document.querySelector('[data-flight-search]');
-  if (form) {
+  if (form && !form.dataset.flightSearchMounted) {
+    form.dataset.flightSearchMounted = '1';
     const f = form.elements, status = document.querySelector('[data-flight-status]');
     document.querySelector('#flight-cities').replaceChildren(...FLIGHT_CITIES.map(([n, c]) => new Option(n + ' (' + c + ')', n + ' (' + c + ')')));
     const today = new Date().toISOString().slice(0, 10);
-    // Next Friday out, Sunday back: a sensible weekend to start from.
-    const d = new Date(); d.setUTCDate(d.getUTCDate() + (((5 - d.getUTCDay() + 7) % 7) || 7));
-    const fri = d.toISOString().slice(0, 10), sun = new Date(d.getTime() + 2 * 864e5).toISOString().slice(0, 10);
     const q = new URLSearchParams(location.search);
-    f.depart.min = f.back.min = today;
-    f.depart.value = isoDay(q.get('depart')) && q.get('depart') >= today ? q.get('depart') : fri;
-    f.back.value = isoDay(q.get('back')) && q.get('back') > f.depart.value ? q.get('back') : sun;
-    const pre = flightPlace(q.get('city') || '');
+    const dates = initialFlightDates({depart: q.get('depart'), back: q.get('back')});
+    f.depart.min = today; f.depart.value = dates.depart;
+    f.back.min = laterDay(dates.depart); f.back.value = dates.back;
+    if (!f.currency) {
+      const label = document.createElement('label'), select = document.createElement('select');
+      label.textContent = 'Currency'; select.name = 'currency';
+      select.append(new Option('GBP (£)', 'gbp'), new Option('EUR (€)', 'eur')); label.append(select);
+      form.querySelector('button[type="submit"]').before(label);
+    }
+    f.currency.value = flightCurrency(q.get('currency')) || 'gbp';
+    if (q.has('adults')) f.adults.value = String(adultCount(q.get('adults')));
+    const children = Math.max(0, Number.parseInt(q.get('children'), 10) || 0);
+    if (children) {
+      const note = document.createElement('p'); note.className = 'fares-note';
+      note.textContent = `Your plan includes ${children} ${children === 1 ? 'child' : 'children'}. Fares shown here are for 1 adult. Add children and their ages on Aviasales to check the full party price.`;
+      status.after(note);
+    }
+    const preFrom = flightPlace(q.get('from') || '');
+    if (preFrom) f.from.value = preFrom.name + ' (' + preFrom.code + ')';
+    const pre = flightPlace(q.get('to') || q.get('city') || '');
     if (pre) f.to.value = pre.name + ' (' + pre.code + ')';
-    f.depart.addEventListener('change', () => { f.back.min = f.depart.value; if (f.back.value && f.back.value <= f.depart.value) f.back.value = ''; });
+    const syncReturn = () => {
+      f.back.disabled = f.oneway.checked; f.back.required = !f.oneway.checked;
+      if (!isoDay(f.depart.value)) return;
+      f.back.min = laterDay(f.depart.value);
+      if (!isoDay(f.back.value) || f.back.value <= f.depart.value) f.back.value = laterDay(f.depart.value, 2);
+    };
+    if (q.get('oneway') === '1') f.oneway.checked = true;
+    syncReturn(); f.depart.addEventListener('change', syncReturn);
     form.addEventListener('submit', e => {
       e.preventDefault();
       if (!flightPlace(f.from.value)) { status.textContent = 'Choose where you are flying from.'; f.from.focus(); return; }
       if (!flightPlace(f.to.value)) { status.textContent = 'Choose where you are flying to.'; f.to.focus(); return; }
-      const url = aviasalesUrl({from: f.from.value, to: f.to.value, depart: f.depart.value, back: f.oneway.checked ? '' : f.back.value, adults: f.adults.value});
+      if (!f.oneway.checked && (!isoDay(f.back.value) || f.back.value <= f.depart.value)) { status.textContent = 'Choose a return date after your departure, or select One way.'; f.back.focus(); return; }
+      const currency = flightCurrency(f.currency.value) || 'gbp';
+      const url = aviasalesUrl({from: f.from.value, to: f.to.value, depart: f.depart.value, back: f.oneway.checked ? '' : f.back.value, adults: f.adults.value, currency});
       if (!url) { status.textContent = 'Check your cities and dates: the two cities must differ and the return must be after the outbound date.'; return; }
-      showQuotes(form, status, {from: flightPlace(f.from.value).code, to: flightPlace(f.to.value).code, depart: f.depart.value, back: f.oneway.checked ? '' : f.back.value, url});
+      showQuotes(form, status, {from: flightPlace(f.from.value).code, to: flightPlace(f.to.value).code, depart: f.depart.value, back: f.oneway.checked ? '' : f.back.value, adults: f.adults.value, currency, url});
     });
-    f.oneway.addEventListener('change', () => { f.back.disabled = f.oneway.checked; });
+    f.oneway.addEventListener('change', syncReturn);
   }
 }

@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {normaliseDraft, openDraft, persistDraft, switchDestination, updateDetails, chooseOption, stepProgress,
-  matchingNights, ticketBrowseHref, draftQuery, destinationKey, reconcileSelections, applyTripDetails, savedListingStep, transportBrowseHref} from '../trip-builder-model.js';
+  matchingNights, ticketBrowseHref, draftQuery, destinationKey, reconcileSelections, applyTripDetails, savedListingStep, transportBrowseHref,
+  openPlannedOption, flightSearchHref} from '../trip-builder-model.js';
 import {tripOptions, TRIP_PARTNERS} from '../trip-partners.js';
 
 test('a saved trip resumes its step, dates and choices and destination plans remain separate',()=>{
@@ -40,6 +41,43 @@ test('saving or opening an option never confirms a booking and confirmation requ
   assert.equal(openDraft(persistDraft({},draft),'?city=London&country=GB&from=2026-12-15').progress.travel,'planned');
   assert.equal(chooseOption(draft,'travel','car:expedia-cars').progress.travel,'planned');
   assert.deepEqual(stepProgress(draft,'travel','skipped').selected.travel,[]);
+});
+
+test('opening each provider saves its choice and resumes the next stage with trip details intact',()=>{
+  const initial=normaliseDraft({city:'Paris',country:'FR',from:'2026-12-10',to:'2026-12-13',party:'couples',adults:3,children:1});
+  let draft=initial,store={};
+  for(const [step,id,next] of [['tickets','feed:ticket:one','stay'],['stay','stay:expedia-hotels','travel'],['travel','flight:aviasales-search','food'],['food','eat:restaurant','review']]) {
+    draft=openPlannedOption(draft,step,id);
+    assert.equal(draft.step,next);
+    assert.equal(draft.progress[step],'planned');
+    assert.ok(draft.selected[step].includes(id));
+    store=persistDraft(store,draft);
+    draft=openDraft(store,'?'+draftQuery(draft));
+    assert.equal(draft.step,next,'reload resumes the next stage');
+    assert.equal(draft.progress[step],'planned','returning never confirms a booking');
+    for(const key of ['city','country','from','to','party','adults','children'])assert.equal(draft[key],initial[key]);
+  }
+  assert.equal(initial.step,'tickets','opening does not mutate the original draft');
+  assert.deepEqual(initial.selected.tickets,[]);
+  assert.deepEqual(openPlannedOption(draft,'review','invalid'),draft);
+  assert.deepEqual(openPlannedOption(draft,'stay',''),draft);
+});
+
+test('reopening an explicitly confirmed option preserves that record while a new choice is unconfirmed',()=>{
+  const draft=stepProgress(chooseOption(normaliseDraft({city:'London'}),'stay','stay:one'),'stay','confirmed',{visitorConfirmed:true});
+  assert.equal(openPlannedOption(draft,'stay','stay:one').progress.stay,'confirmed');
+  assert.equal(openPlannedOption(draft,'stay','stay:two').progress.stay,'planned');
+  assert.deepEqual(openPlannedOption(draft,'stay','stay:two').selected.stay,['stay:one','stay:two']);
+});
+
+test('flight search handoff carries the destination, dates and party without claiming a booking',()=>{
+  const draft=normaliseDraft({city:'Lisbon',country:'PT',from:'2026-12-10',to:'2026-12-13',party:'families',adults:2,children:1,step:'travel'});
+  const url=new URL(flightSearchHref(draft),'https://theticketbunker.com');
+  assert.equal(url.pathname,'/travel');assert.equal(url.hash,'#flights');
+  assert.equal(url.searchParams.get('city'),'Lisbon');assert.equal(url.searchParams.get('country'),'PT');
+  assert.equal(url.searchParams.get('depart'),'2026-12-10');assert.equal(url.searchParams.get('back'),'2026-12-13');
+  assert.equal(url.searchParams.get('adults'),'2');assert.equal(url.searchParams.get('children'),'1');assert.equal(url.searchParams.get('party'),'families');
+  assert.equal(openPlannedOption(draft,'travel','flight:aviasales-search').progress.travel,'planned');
 });
 
 test('only current provider choices can be restored; pending suppliers cannot reappear from saved state',()=>{

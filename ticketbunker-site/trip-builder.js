@@ -6,7 +6,7 @@ import {cityBenefits} from './city-guide-benefits.js';
 import {escapeHtml as esc} from './shared.js';
 import {TRIP_BUILDER_KEY, BUILDER_STEPS, TRIP_PARTIES, normaliseDraft, openDraft, persistDraft, switchDestination,
   updateDetails, chooseOption, stepProgress, matchingNights, ticketBrowseHref, draftQuery, reconcileSelections, applyTripDetails,
-  savedListingStep, transportBrowseHref} from './trip-builder-model.js?v=20261123-transit';
+  savedListingStep, transportBrowseHref, openPlannedOption, flightSearchHref} from './trip-builder-model.js?v=20261125-progress';
 
 const host = typeof document !== 'undefined' && document.querySelector('[data-trip-builder]');
 if (host) mountBuilder(host);
@@ -18,7 +18,7 @@ function mountBuilder(host) {
   const countryName = cc => {try {return names?.of(cc) || cc;} catch {return cc;}};
   const countryCodes = [...new Set(CITY_PAGES.map(c => c[2]))].sort((a,b) => countryName(a).localeCompare(countryName(b)));
   const labels = Object.fromEntries(BUILDER_STEPS), partyNames = Object.fromEntries(TRIP_PARTIES);
-  const progressLabel = status => ({unplanned:'To plan', planned:'Planned', confirmed:'Confirmed by you', skipped:'Skipped'}[status] || 'To plan');
+  const progressLabel = status => ({unplanned:'To plan', planned:'Planned · unconfirmed', confirmed:'Confirmed by you', skipped:'Skipped'}[status] || 'To plan');
   const providerId = (kind, p) => kind + ':' + (p.id || p.name);
   const selected = (step, id) => draft.selected[step].includes(id);
   const save = () => {
@@ -44,8 +44,11 @@ function mountBuilder(host) {
       }
     }
     providers = Object.fromEntries(tripOptions(draft.country, draft.city, {page:'trip-builder', spot:'step', trip:{from:draft.from, to:draft.to, adults:draft.adults}}).map(o => [o.kind, o.partners]));
+    providers.flight = [{id:'aviasales-search', name:'Flight search', serviceLabel:'Compare flights',
+      description:'Choose your departure airport and compare flights for your trip. Live fares and booking open with Aviasales.',
+      url:flightSearchHref(draft), commercial:'public-search'}];
     const allowed = {tickets:nights.filter(n=>savedListingStep(n.category)==='tickets').map(n => n.id), stay:(providers.stay || []).map(p => providerId('stay', p)),
-      travel:[...nights.filter(n=>savedListingStep(n.category)==='travel').map(n=>n.id),...['travel','car','transfer'].flatMap(k => (providers[k] || []).map(p => providerId(k, p)))],
+      travel:[...nights.filter(n=>savedListingStep(n.category)==='travel').map(n=>n.id),...['travel','flight','car','transfer'].flatMap(k => (providers[k] || []).map(p => providerId(k, p)))],
       food:[...nights.filter(n=>savedListingStep(n.category)==='food').map(n=>n.id),...(providers.eat || []).map(p => providerId('eat', p))]};
     draft = reconcileSelections(draft, allowed);
   }
@@ -80,16 +83,16 @@ function mountBuilder(host) {
   }
   const providerRows = (kind, step) => (providers[kind] || []).map(p => {
     const id = providerId(kind,p);
-    return `<article class="tb-builder-provider"><div><span class="tb-builder-provider-type">${esc(p.serviceLabel || ({stay:'Hotel search',travel:'Train & coach search',car:'Car hire search',eat:'Restaurants & offers',transfer:'Limos & private transport'}[kind]))}</span><h4>${esc(p.name)}</h4><p>${esc(p.description || 'Check current options, dates and the final total with the provider.')}</p></div><div class="tb-builder-provider-actions"><a href="${esc(p.url)}" target="_blank" rel="${p.commercial==='affiliate'?'sponsored ':''}noopener noreferrer">Search options ↗</a><label class="tb-builder-choice"><input type="checkbox" data-builder-option="${esc(id)}" data-builder-step="${step}" ${selected(step,id)?'checked':''}>Keep in my plan</label></div></article>`;
+    return `<article class="tb-builder-provider"><div><span class="tb-builder-provider-type">${esc(p.serviceLabel || ({stay:'Hotel search',travel:'Train & coach search',car:'Car hire search',eat:'Restaurants & offers',transfer:'Limos & private transport'}[kind]))}</span><h4>${esc(p.name)}</h4><p>${esc(p.description || 'Check current options, dates and the final total with the provider.')}</p></div><div class="tb-builder-provider-actions"><a href="${esc(p.url)}" target="_blank" data-builder-open="${step}" data-builder-kind="${kind}" data-builder-choice="${esc(id)}" rel="${p.commercial==='affiliate'?'sponsored ':''}noopener noreferrer">Search options</a><label class="tb-builder-choice"><input type="checkbox" data-builder-option="${esc(id)}" data-builder-step="${step}" ${selected(step,id)?'checked':''}>Keep in my plan</label></div></article>`;
   }).join('');
   const activityLink = () => '/?' + new URLSearchParams({city:draft.city, country:draft.country, cat:['families','kids'].includes(draft.party)?'family':'daysout'});
   const savedRows = step => {
     const items=nights.filter(n=>savedListingStep(n.category)===step);
-    return items.length?`<fieldset class="tb-builder-tickets"><legend>Saved ${step==='travel'?'transport':step==='food'?'dining':'events'} in ${esc(draft.city)}</legend>${items.map(n=>`<label class="tb-builder-ticket"><input type="checkbox" data-builder-option="${esc(n.id)}" data-builder-step="${step}" ${selected(step,n.id)?'checked':''}><span><strong>${esc(n.title)}</strong><small>${esc(dateText(n))} · ${esc(n.seller || 'TicketBunker')}</small><a href="${esc(n.url)}" target="_blank" rel="${n.external?'sponsored ':''}noopener noreferrer">Open listing & booking ↗</a></span></label>`).join('')}</fieldset>`:'';
+    return items.length?`<fieldset class="tb-builder-tickets"><legend>Saved ${step==='travel'?'transport':step==='food'?'dining':'events'} in ${esc(draft.city)}</legend>${items.map(n=>`<label class="tb-builder-ticket"><input type="checkbox" data-builder-option="${esc(n.id)}" data-builder-step="${step}" ${selected(step,n.id)?'checked':''}><span><strong>${esc(n.title)}</strong><small>${esc(dateText(n))} · ${esc(n.seller || 'TicketBunker')}</small><a href="${esc(n.url)}" target="_blank" data-builder-open="${step}" data-builder-choice="${esc(n.id)}" rel="${n.external?'sponsored ':''}noopener noreferrer">Open listing & booking</a></span></label>`).join('')}</fieldset>`:'';
   };
   function ticketsHtml() {
     const advice = {families:'Plan something everyone can enjoy. Check ages, timings and the journey home.', kids:'Check minimum ages, child tickets and opening times before choosing.', staghen:'Check group sizes and stag or hen policies with the venue before booking.', couples:'Find a show, an experience or a date worth making a weekend of.', weekend:'Pick the main event, then leave room for the rest of the city.'}[draft.party];
-    return `<p>${advice}</p><div class="tb-builder-actions"><a class="tb-builder-primary" href="${esc(ticketBrowseHref(draft))}">Browse tickets in ${esc(draft.city)} ↗</a><a href="${esc(activityLink())}">Tours & days out ↗</a></div><p class="tb-builder-help">Choose an event’s “Build this trip” option to bring it back here. Your trip details stay saved.</p>
+    return `<p>${advice}</p><div class="tb-builder-actions"><a class="tb-builder-primary" data-builder-browse="tickets" href="${esc(ticketBrowseHref(draft))}">Browse tickets in ${esc(draft.city)} ↗</a><a data-builder-browse="activities" href="${esc(activityLink())}">Tours & days out ↗</a></div><p class="tb-builder-help">Choose an event’s “Build this trip” option to bring it back here. Your trip details stay saved.</p>
     ${savedRows('tickets') || '<div class="tb-builder-empty">Your selected events will appear here. Start with the city’s live listings above.</div>'}`;
   }
   function foodHtml() {
@@ -102,11 +105,11 @@ function mountBuilder(host) {
   function optionsFor(step) {
     const saved=nights.filter(n => savedListingStep(n.category)===step && selected(step,n.id)).map(n => ({name:n.title,url:n.url,external:n.external,commercial:n.external?'affiliate':'direct'}));
     if (step === 'tickets') return saved;
-    const kinds = step==='stay'?['stay']:step==='travel'?['travel','car','transfer']:['eat'];
+    const kinds = step==='stay'?['stay']:step==='travel'?['travel','flight','car','transfer']:['eat'];
     return [...saved,...kinds.flatMap(kind => (providers[kind] || []).filter(p=>selected(step,providerId(kind,p))).map(p=>({name:p.name,url:p.url,external:true,commercial:p.commercial})))];
   }
   function summaryHtml(full = false) {
-    const rows = BUILDER_STEPS.filter(([id])=>id!=='review').map(([id,label]) => `<article class="tb-builder-review-step"><div><h4>${label}</h4><span class="tb-builder-progress ${draft.progress[id]}">${progressLabel(draft.progress[id])}</span></div>${optionsFor(id).length?`<ul>${optionsFor(id).map(p=>`<li>${full?`<a href="${esc(p.url)}" target="_blank" rel="${p.commercial==='affiliate'?'sponsored ':''}noopener noreferrer">${esc(p.name)} ↗</a>`:esc(p.name)}</li>`).join('')}</ul>`:'<p>No option saved.</p>'}${full?`<button type="button" data-builder-goto="${id}">Edit ${label.toLowerCase()}</button>`:''}</article>`).join('');
+    const rows = BUILDER_STEPS.filter(([id])=>id!=='review').map(([id,label]) => `<article class="tb-builder-review-step"><div><h4>${label}</h4><span class="tb-builder-progress ${draft.progress[id]}">${progressLabel(draft.progress[id])}</span></div>${optionsFor(id).length?`<ul>${optionsFor(id).map(p=>`<li>${full?`<a data-builder-review-step="${id}" data-builder-review-name="${esc(p.name)}" href="${esc(p.url)}" target="_blank" rel="${p.commercial==='affiliate'?'sponsored ':''}noopener noreferrer">${esc(p.name)} ↗</a>`:esc(p.name)}</li>`).join('')}</ul>`:'<p>No option saved.</p>'}${full?`<button type="button" data-builder-goto="${id}">Edit ${label.toLowerCase()}</button>`:''}</article>`).join('');
     return `<h3>${esc(draft.city)}${draft.country?', '+esc(countryName(draft.country)):''}</h3><p>${esc([draft.from && (draft.from + (draft.to?' → '+draft.to:'')),partyNames[draft.party],draft.adults+' adult'+(draft.adults===1?'':'s'),draft.children?draft.children+' child'+(draft.children===1?'':'ren'):''].filter(Boolean).join(' · '))}</p>${rows}`;
   }
   function render(focus = false) {
@@ -116,10 +119,10 @@ function mountBuilder(host) {
     host.querySelector('[data-builder-steps]').innerHTML = BUILDER_STEPS.map(([id,label],i)=>`<button type="button" data-builder-goto="${id}" ${draft.step===id?'aria-current="step"':''}><span>${i+1}</span><b>${label}</b><small>${id==='review'?'Bring it together':progressLabel(draft.progress[id])}</small></button>`).join('');
     const idx = BUILDER_STEPS.findIndex(([id])=>id===draft.step), title = labels[draft.step];
     let body = draft.step==='tickets'?ticketsHtml():draft.step==='stay'?`<p>Find a stay around your plans. Check the map against the venue and compare the full room price and cancellation terms.</p>${providerRows('stay','stay')}`
-      :draft.step==='travel'?`<p>Choose how to reach ${esc(draft.city)}, then sort any local rides separately.</p>${savedRows('travel')}<h3 class="tb-builder-subheading">Trains, buses, metro & river buses</h3><div class="tb-builder-actions"><a class="tb-builder-primary" href="${esc(transportBrowseHref(draft))}">Browse listed city transport ↗</a><a href="${esc(transportBrowseHref(draft,'transfer'))}">Private transfers & water taxis ↗</a></div><p class="tb-builder-help">Available rail tickets, metro cards and river-bus passes appear in the city’s listings. Check the exact route, zones, dates and inclusions with the provider.</p>${providerRows('travel','travel')}<h3 class="tb-builder-subheading">Flights</h3><div class="tb-builder-pending"><b>Flight booking · coming soon</b><p>Commercial flight sales are not active yet. You can keep planning your stay, rail travel and activities here.</p></div><h3 class="tb-builder-subheading">Car hire</h3>${providerRows('car','travel')}<h3 class="tb-builder-subheading">Limos, chauffeurs & airport transfers</h3><p class="tb-builder-help">Choose the actual vehicle and passenger capacity. A stretched limo must be specified in the provider’s listing.</p>${providerRows('transfer','travel')}`
+      :draft.step==='travel'?`<p>Choose how to reach ${esc(draft.city)}, then sort any local rides separately.</p>${savedRows('travel')}<h3 class="tb-builder-subheading">Trains, buses, metro & river buses</h3><div class="tb-builder-actions"><a class="tb-builder-primary" data-builder-browse="transit" href="${esc(transportBrowseHref(draft))}">Browse listed city transport ↗</a><a data-builder-browse="transfer" href="${esc(transportBrowseHref(draft,'transfer'))}">Private transfers & water taxis ↗</a></div><p class="tb-builder-help">Available rail tickets, metro cards and river-bus passes appear in the city’s listings. Check the exact route, zones, dates and inclusions with the provider.</p>${providerRows('travel','travel')}<h3 class="tb-builder-subheading">Flights</h3>${providerRows('flight','travel')}<h3 class="tb-builder-subheading">Car hire</h3>${providerRows('car','travel')}<h3 class="tb-builder-subheading">Limos, chauffeurs & airport transfers</h3><p class="tb-builder-help">Choose the actual vehicle and passenger capacity. A stretched limo must be specified in the provider’s listing.</p>${providerRows('transfer','travel')}`
       :draft.step==='food'?foodHtml():`<p>Your choices, together. Reopen a provider to complete or review its booking.</p>${summaryHtml(true)}<p class="tb-builder-help">“Planned” means saved here. “Confirmed by you” is your own record after receiving the provider’s confirmation. Opening a link does not mark a booking complete.</p><button type="button" class="tb-builder-primary" data-builder-finish>Keep my plan</button>`;
     const confirmation = draft.step!=='review' && draft.selected[draft.step].length ? `<label class="tb-builder-confirm"><input type="checkbox" data-builder-confirm ${draft.progress[draft.step]==='confirmed'?'checked':''}>I have received the provider’s booking confirmation for this step.</label>` : '';
-    host.querySelector('[data-builder-panel]').innerHTML = `<span class="label">STEP ${idx+1} OF 5</span><h2 id="builder-step-heading" tabindex="-1">${title}</h2>${body}${confirmation}<p class="tb-builder-provider-note">Each booking is completed with the named provider under its prices, availability and terms. Use your trip dates and party details when searching. Some provider links may earn TicketBunker a commission.</p><div class="tb-builder-bottom">${idx?`<button type="button" data-builder-goto="${BUILDER_STEPS[idx-1][0]}">← Back</button>`:'<span></span>'}${draft.step!=='review'?`<button type="button" class="tb-builder-skip" data-builder-skip>Skip for now</button><button type="button" class="tb-builder-primary" data-builder-goto="${BUILDER_STEPS[idx+1][0]}">Next: ${BUILDER_STEPS[idx+1][1]} →</button>`:''}</div>`;
+    host.querySelector('[data-builder-panel]').innerHTML = `<span class="label">STEP ${idx+1} OF 5</span><h2 id="builder-step-heading" tabindex="-1">${title}</h2>${body}${confirmation}<p class="tb-builder-provider-note">Opening an option saves it to your plan and moves you to the next step. A booking stays unconfirmed until you confirm it. Each booking is completed with the named provider under its prices, availability and terms. Use your trip dates and party details when searching. Some provider links may earn TicketBunker a commission.</p><div class="tb-builder-bottom">${idx?`<button type="button" data-builder-goto="${BUILDER_STEPS[idx-1][0]}">← Back</button>`:'<span></span>'}${draft.step!=='review'?`<button type="button" class="tb-builder-skip" data-builder-skip>Skip for now</button><button type="button" class="tb-builder-primary" data-builder-goto="${BUILDER_STEPS[idx+1][0]}">Next: ${BUILDER_STEPS[idx+1][1]} →</button>`:''}</div>`;
     host.querySelector('[data-builder-summary]').innerHTML = summaryHtml();
     host.querySelector('[data-builder-summary]').hidden = draft.step === 'review';
     host.querySelector('.tb-builder-workspace').classList.toggle('is-review',draft.step==='review');
@@ -130,6 +133,31 @@ function mountBuilder(host) {
     }
     else if (focusedOption) [...host.querySelectorAll('[data-builder-option]')].find(el=>el.dataset.builderOption===focusedOption)?.focus({preventScroll:true});
     else if (focusedConfirmation) host.querySelector('[data-builder-confirm]')?.focus({preventScroll:true});
+  }
+  function syncDetailView() {
+    refreshOptions(); save();
+    // A field's change event runs on blur, between pointerdown and click. Keep
+    // every button/link in the working panel connected until that click lands.
+    for (const link of host.querySelectorAll('a[data-builder-open]')) {
+      const kind = link.dataset.builderKind, id = link.dataset.builderChoice;
+      const option = kind ? (providers[kind] || []).find(p => providerId(kind,p) === id) : nights.find(n => n.id === id);
+      if (option) link.href = option.url;
+    }
+    for (const link of host.querySelectorAll('a[data-builder-browse]')) {
+      link.href = {tickets:ticketBrowseHref(draft), activities:activityLink(),
+        transit:transportBrowseHref(draft), transfer:transportBrowseHref(draft,'transfer')}[link.dataset.builderBrowse];
+    }
+    for (const link of host.querySelectorAll('a[data-builder-review-step]')) {
+      const option = optionsFor(link.dataset.builderReviewStep).find(p => p.name === link.dataset.builderReviewName);
+      if (option) link.href = option.url;
+    }
+    for (const button of host.querySelectorAll('[data-builder-steps] [data-builder-goto]')) {
+      const step = button.dataset.builderGoto;
+      button.querySelector('small').textContent = step === 'review' ? 'Bring it together' : progressLabel(draft.progress[step]);
+    }
+    const confirmation = host.querySelector('[data-builder-confirm]');
+    if (confirmation) confirmation.checked = draft.progress[draft.step] === 'confirmed';
+    host.querySelector('[data-builder-summary]').innerHTML = summaryHtml();
   }
   form.elements.country.addEventListener('change', () => {form.elements.city.value=''; cityList(); form.elements.city.focus();});
   function applyForm() {
@@ -153,9 +181,30 @@ function mountBuilder(host) {
     const badDates = values.from && values.to && values.to < values.from;
     form.elements.to.setCustomValidity(badDates ? 'Choose an end date on or after the start date.' : '');
     if (badDates || !form.elements.adults.checkValidity() || !form.elements.children.checkValidity()) {status('Check your dates and passenger numbers.'); return;}
-    draft=updateDetails(draft,values); render(); status('Trip details saved.');
+    draft=updateDetails(draft,values); syncDetailView(); status('Trip details saved.');
   });
   host.addEventListener('click',async e=>{
+    const opening = e.target.closest('a[data-builder-open]');
+    if (opening) {
+      if (!applyForm()) {e.preventDefault(); return;}
+      refreshOptions();
+      const step = opening.dataset.builderOpen, id = opening.dataset.builderChoice, kind = opening.dataset.builderKind;
+      const option = kind
+        ? (providers[kind] || []).find(p => providerId(kind,p) === id)
+        : nights.find(n => n.id === id && savedListingStep(n.category) === step);
+      if (!option) {
+        e.preventDefault(); render();
+        status('Trip updated. Choose an option for ' + draft.city + '.'); return;
+      }
+      // Keep the native new-tab action, and use the latest destination and dates.
+      opening.href = option.url;
+      draft = openPlannedOption(draft, step, id); save();
+      const message = (option.name || option.title) + ' saved to your plan. Next: ' + labels[draft.step] + '.'
+        + (draft.progress[step] === 'confirmed' ? ' Your earlier confirmation is saved.' : ' Booking remains unconfirmed.');
+      // Render after the anchor's native action so replacing the panel cannot cancel it.
+      setTimeout(() => {render(true); status(message);}, 0);
+      return;
+    }
     const step = e.target.closest('[data-builder-goto]');
     if (step) {if(!applyForm())return;draft=normaliseDraft({...draft,step:step.dataset.builderGoto}); render(true); return;}
     if (e.target.closest('[data-builder-skip]')) {

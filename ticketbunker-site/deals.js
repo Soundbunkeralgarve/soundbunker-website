@@ -6,7 +6,18 @@ import {escapeHtml as esc} from './shared.js';
 export const KINDS = [['all', 'All deals'], ['food', 'Food & drink'], ['events', 'Events & shows'], ['daysout', 'Days out'],
   ['kids', 'Kids & family'], ['travel', 'Travel'], ['other', 'More']];
 const COUNTRIES = ['GB', 'IE', 'PT', 'ES', 'FR', 'NL', 'BE', 'DE', 'IT', 'CZ', 'AT', 'HU', 'PL', 'DK', 'SE', 'CH'];
-const plain = v => String(v || '').normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase();
+const plain = v => String(v || '').normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase().trim();
+const cityFor = (value, country = '') => CITY_PAGES.find(([slug, name, cc, query]) => (!country || cc === country) &&
+  [slug, name.replace(/^the /, ''), query].some(v => plain(v) === plain(value)));
+
+// A linked city remains selected even when its current deal list is empty.
+export function dealSearchContext(search = '', fallbackCountry = 'GB') {
+  const q = new URLSearchParams(search), requested = String(q.get('country') || '').toUpperCase();
+  const known = q.get('city') ? cityFor(q.get('city')) : null;
+  const country = COUNTRIES.includes(requested) ? requested : COUNTRIES.includes(known?.[2]) ? known[2] : COUNTRIES.includes(fallbackCountry) ? fallbackCountry : 'GB';
+  const city = q.get('city') ? cityFor(q.get('city'), country)?.[1].replace(/^the /, '') || '' : '';
+  return {country, city, kind: KINDS.some(([id]) => id === q.get('kind')) ? q.get('kind') : 'all'};
+}
 
 // The city an offer is for, if its words name one of our city pages in that country.
 export function offerCity(offer, country) {
@@ -53,16 +64,18 @@ if (typeof document !== 'undefined') {
     f.country.replaceChildren(...COUNTRIES.map(c => new Option(names.of(c), c)));
     const q = new URLSearchParams(location.search);
     const guess = (navigator.language || '').split('-')[1]?.toUpperCase();
-    f.country.value = COUNTRIES.includes(q.get('country')) ? q.get('country') : COUNTRIES.includes(guess) ? guess : 'GB';
-    let kind = KINDS.some(k => k[0] === q.get('kind')) ? q.get('kind') : 'all', offers = [], ready = true;
+    const initial = dealSearchContext(q.toString(), guess);
+    f.country.value = initial.country;
+    let kind = initial.kind, selectedCity = initial.city, offers = [], ready = true;
     const kindsNav = document.querySelector('[data-deals-kinds]');
     const draw = () => {
-      const country = f.country.value, wantCity = f.city.value;
+      const country = f.country.value;
+      selectedCity = cityFor(selectedCity, country)?.[1].replace(/^the /, '') || '';
+      const wantCity = selectedCity;
       const withCity = offers.map(o => ({o, city: offerCity(o, country)}));
-      const cities = [...new Set(withCity.map(w => w.city).filter(Boolean))].sort();
-      const keep = f.city.value;
+      const cities = [...new Set([...withCity.map(w => w.city), selectedCity].filter(Boolean))].sort();
       f.city.replaceChildren(new Option('All cities', ''), ...cities.map(c => new Option(c, c)));
-      f.city.value = cities.includes(keep) ? keep : '';
+      f.city.value = selectedCity;
       const counts = Object.fromEntries(KINDS.map(([k]) => [k, k === 'all' ? withCity.length : withCity.filter(w => w.o.kind === k).length]));
       kindsNav.innerHTML = KINDS.filter(([k]) => k === 'all' || counts[k]).map(([k, l]) => `<button type="button" data-kind="${k}" aria-pressed="${k === kind}">${esc(l)} <span>${counts[k]}</span></button>`).join('');
       const shown = withCity.filter(w => (kind === 'all' || w.o.kind === kind) && (!f.city.value || w.city === f.city.value));
@@ -74,7 +87,7 @@ if (typeof document !== 'undefined') {
       status.textContent = !ready ? 'Deals are being connected. Partner codes appear here as soon as they are live.'
         : offers.length ? `${shown.length} of ${offers.length} deals in ${names.of(country)}${wantCity ? ', ' + wantCity : ''}.`
         : `No partner deals for ${names.of(country)} right now. New codes are added as partners publish them; try another country.`;
-      history.replaceState(null, '', location.pathname + '?' + new URLSearchParams({country, ...(kind !== 'all' ? {kind} : {})}));
+      history.replaceState(null, '', location.pathname + '?' + new URLSearchParams({country, ...(selectedCity ? {city: selectedCity} : {}), ...(kind !== 'all' ? {kind} : {})}));
     };
     const load = async () => {
       status.textContent = 'Loading deals…'; grid.innerHTML = '';
@@ -83,7 +96,7 @@ if (typeof document !== 'undefined') {
       draw();
     };
     f.country.addEventListener('change', load);
-    f.city.addEventListener('change', draw);
+    f.city.addEventListener('change', () => { selectedCity = f.city.value; draw(); });
     kindsNav.addEventListener('click', e => { const b = e.target.closest('[data-kind]'); if (b) { kind = b.dataset.kind; draw(); } });
     grid.addEventListener('click', async e => {
       const copy = e.target.closest('[data-copy]');

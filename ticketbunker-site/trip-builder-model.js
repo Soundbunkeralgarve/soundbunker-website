@@ -98,6 +98,19 @@ export function chooseOption(draft, step, id, checked = true) {
   return next;
 }
 
+// Opening a provider saves a planning choice and moves the local workflow along.
+// It never supplies the visitor confirmation required by stepProgress.
+export function openPlannedOption(draft, step, id) {
+  const base = normaliseDraft(draft), option = clean(id, 160);
+  if (!Object.hasOwn(base.selected, step) || !option) return base;
+  const alreadyConfirmed = base.progress[step] === 'confirmed' && base.selected[step].includes(option);
+  const next = chooseOption(base, step, option);
+  if (alreadyConfirmed) next.progress[step] = 'confirmed';
+  const index = BUILDER_STEPS.findIndex(([name]) => name === step);
+  next.step = BUILDER_STEPS[index + 1][0];
+  return next;
+}
+
 export function reconcileSelections(draft, allowed = {}) {
   const next = normaliseDraft(draft);
   for (const step of Object.keys(next.selected)) {
@@ -151,6 +164,14 @@ export function ticketBrowseHref(draft) {
   if (['families', 'kids'].includes(state.party)) q.set('cat', 'family');
   if (state.from) {q.set('when', 'dates'); q.set('from', state.from); if (state.to) q.set('to', state.to);}
   return '/?' + q;
+}
+
+export function flightSearchHref(draft) {
+  const d = normaliseDraft(draft), q = new URLSearchParams({city:d.city, country:d.country,
+    adults:d.adults, children:d.children, party:d.party});
+  if (d.from) q.set('depart', d.from);
+  if (d.to) q.set('back', d.to);
+  return '/travel?' + q + '#flights';
 }
 
 export function draftQuery(draft) {
