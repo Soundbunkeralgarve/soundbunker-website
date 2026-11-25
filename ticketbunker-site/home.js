@@ -503,11 +503,15 @@ const sponsoredHtml=a=>`<aside class="promo promo-sponsored"><img src="${esc(saf
 function adverts(all){
  const shows=all.filter(i=>i.provider==='awin-1936').length, tours=all.filter(i=>['boat','daysout'].includes(i.category)).length;
  const pic=k=>pictureFirst(all.filter(i=>i.category===k&&hasArt(i)))[0];
- const ad=(cls,label,title,text,href,cta,item,extra='')=>`<aside class="promo ${cls}">${item&&hasArt(item)?`<img src="${esc(safeUrl(item.image))}" alt="" loading="lazy">`:''}<span class="promo-shade"></span><div class="promo-copy"><span class="label">${esc(label)}</span><h2>${esc(title)}</h2><p>${esc(text)}</p><a class="promo-cta" href="${esc(href)}"${extra}>${esc(cta)} →</a></div></aside>`;
+ // Bold house banners: a curated photo (never a cropped poster), a big headline, perk chips.
+ const PHOTO={'promo-vip':'/assets/vip/hero.webp','promo-westend':'/assets/samples/theatre-gold.jpg','promo-trip':'/assets/pages/hotels.webp','promo-tours':'/assets/hero/boat.jpg','promo-host':'/assets/hero/live.jpg','promo-advertise':'/assets/pages/restaurants.webp'};
+ const CHIPS={'promo-vip':['Early access','Fast-lane entry','Guestlist spots','Member deals'],'promo-trip':['Hotels','Flights','Trains','Tables'],'promo-tours':['Boat trips','Caves','Food tours','City passes'],'promo-host':['No buyer fees','Wallet tickets','Door scanner app'],'promo-westend':['Musicals','Plays','Best seats'],'promo-advertise':['From €29 a week','Live within a day']};
+ const ad=(cls,label,title,text,href,cta,item,extra='')=>{const src=PHOTO[cls]||(item&&hasArt(item)?safeUrl(item.image):'');
+  return `<aside class="promo promo-bold ${cls}">${src?`<img src="${esc(src)}" alt="" loading="lazy">`:''}<span class="promo-shade"></span><div class="promo-copy"><span class="label">${esc(label)}</span><h2>${esc(title)}</h2><p>${esc(text)}</p>${CHIPS[cls]?`<ul class="promo-chips">${CHIPS[cls].map(c=>`<li>${esc(c)}</li>`).join('')}</ul>`:''}<a class="promo-cta" href="${esc(href)}"${extra}>${esc(cta)} →</a></div></aside>`;};
  return [
   ad('promo-vip','TicketBunker VIP','Go VIP. Get more out.','Early access, a faster way in at the door and guestlist spots at partner nights. From £4.99 a month.','/vip','See VIP perks',pic('club')),
-  shows?ad('promo-westend','West End','The West End, sorted.',shows+' London shows and musicals, booked with Theatre Tickets Direct.','/london','Browse London shows',pic('shows')):'',
   ad('promo-trip','Plan your trip','Tickets, hotel, travel, food. One plan.','Build the whole night or weekend around your tickets, then book each part with the named seller.','/plan-your-trip','Build my trip',pic('festival'),' data-build-trip'),
+  shows?ad('promo-westend','West End','The West End, sorted.',shows+' London shows and musicals, booked with Theatre Tickets Direct.','/london','Browse London shows',pic('shows')):'',
   tours?ad('promo-tours','Tours & days out',tours.toLocaleString('en-GB')+' tours and days out.','Boat trips, caves, food tours and city passes across the UK and Europe.','#rail-daysout','Find a day out',pic('boat')):'',
   ad('promo-host','For organisers','Selling tickets? Keep your crowd happy.','No booking fees for your buyers, wallet tickets, a door scanner app and payouts after the show.','/for-organisers','Sell with TicketBunker',pic('music')),
   ad('promo-advertise','Advertise with us','Your venue, in front of everyone heading out.','Banners on the homepage and city pages from €29 a week. Reviewed and live within a day.','/advertise','Book a banner',pic('dining')||pic('daysout'))

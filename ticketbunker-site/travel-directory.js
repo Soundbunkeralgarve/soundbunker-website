@@ -90,6 +90,10 @@ export function directoryProviders(kind, country = '', city = '', trip = {}) {
       ];
     }
     case 'travel': return [
+      // Trip.com (approved affiliate) sells UK and European rail tickets, so its link is tracked.
+      entry('tripcom-trains', d.country === 'GB' ? 'Book UK trains on Trip.com' : 'Book trains on Trip.com',
+        `https://www.trip.com/trains/${d.country === 'GB' ? 'uk' : 'europe'}/?Allianceid=11489066&SID=336945869`,
+        'Compare train times and buy rail tickets for the UK and Europe, then use the e-ticket on your phone.'),
       entry('trainline-direct', 'Search Trainline', 'https://www.thetrainline.com/', 'Compare available train and coach routes; enter your departure and destination.'),
       entry('omio-direct', 'Search Omio', 'https://www.omio.com/', 'Check train, coach and other travel options for your journey.')
     ];
