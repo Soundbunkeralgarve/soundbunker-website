@@ -1,7 +1,7 @@
 import {CITY_PAGES} from './city-places.js?v=20261122';
 import {nearestCities} from './city-coords.js?v=20261122';
 import {locate} from './place-finder.js?v=20261122';
-import {tripOptions} from './trip-partners.js?v=20261125-dates';
+import {tripOptions} from './trip-partners.js?v=20261125-tripcom';
 import {cityBenefits} from './city-guide-benefits.js';
 import {escapeHtml as esc} from './shared.js';
 import {TRIP_BUILDER_KEY, BUILDER_STEPS, TRIP_PARTIES, normaliseDraft, openDraft, persistDraft, switchDestination,
@@ -44,7 +44,7 @@ function mountBuilder(host) {
       }
     }
     providers = Object.fromEntries(tripOptions(draft.country, draft.city, {page:'trip-builder', spot:'step', trip:{from:draft.from, to:draft.to, adults:draft.adults}}).map(o => [o.kind, o.partners]));
-    providers.flight = [{id:'aviasales-search', name:'Flight search', serviceLabel:'Compare flights',
+    providers.flight = [...(providers.flight || []), {id:'aviasales-search', name:'Flight search', serviceLabel:'Compare flights',
       description:'Choose your departure airport and compare flights for your trip. Live fares and booking open with Aviasales.',
       url:flightSearchHref(draft), commercial:'public-search'}];
     const allowed = {tickets:nights.filter(n=>savedListingStep(n.category)==='tickets').map(n => n.id), stay:(providers.stay || []).map(p => providerId('stay', p)),
@@ -83,7 +83,7 @@ function mountBuilder(host) {
   }
   const providerRows = (kind, step) => (providers[kind] || []).map(p => {
     const id = providerId(kind,p);
-    return `<article class="tb-builder-provider"><div><span class="tb-builder-provider-type">${esc(p.serviceLabel || ({stay:'Hotel search',travel:'Train & coach search',car:'Car hire search',eat:'Restaurants & offers',transfer:'Limos & private transport'}[kind]))}</span><h4>${esc(p.name)}</h4><p>${esc(p.description || 'Check current options, dates and the final total with the provider.')}</p></div><div class="tb-builder-provider-actions"><a href="${esc(p.url)}" target="_blank" data-builder-open="${step}" data-builder-kind="${kind}" data-builder-choice="${esc(id)}" rel="${p.commercial==='affiliate'?'sponsored ':''}noopener noreferrer">Search options</a><label class="tb-builder-choice"><input type="checkbox" data-builder-option="${esc(id)}" data-builder-step="${step}" ${selected(step,id)?'checked':''}>Keep in my plan</label></div></article>`;
+    return `<article class="tb-builder-provider"><div><span class="tb-builder-provider-type">${esc(p.serviceLabel || ({flight:'Flight search',stay:'Hotel search',travel:'Train & coach search',car:'Car hire search',eat:'Restaurants & offers',transfer:'Limos & private transport'}[kind]))}</span><h4>${esc(p.name)}</h4><p>${esc(p.description || 'Check current options, dates and the final total with the provider.')}</p></div><div class="tb-builder-provider-actions"><a href="${esc(p.url)}" target="_blank" data-builder-open="${step}" data-builder-kind="${kind}" data-builder-choice="${esc(id)}" rel="${p.commercial==='affiliate'?'sponsored ':''}noopener noreferrer">Search options</a><label class="tb-builder-choice"><input type="checkbox" data-builder-option="${esc(id)}" data-builder-step="${step}" ${selected(step,id)?'checked':''}>Keep in my plan</label></div></article>`;
   }).join('');
   const activityLink = () => '/?' + new URLSearchParams({city:draft.city, country:draft.country, cat:['families','kids'].includes(draft.party)?'family':'daysout'});
   const savedRows = step => {

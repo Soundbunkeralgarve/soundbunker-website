@@ -21,6 +21,9 @@ export function withClickRef(url, page, spot) {
 
 // [kind, name, countries it serves ('*' = everywhere), approved, link(cityName)]
 export const TRIP_PARTNERS = Object.freeze([
+  // Flight-only link generated and opened in the approved Trip.com affiliate portal.
+  // Keep its assigned tracking fields unchanged; visitors choose their route there.
+  ['flight', 'Search flights on Trip.com', ['*'], true, () => 'https://www.trip.com/flights?Allianceid=11489066&SID=336945869&trip_sub1=&trip_sub3=D21530259'],
   ['travel', 'Trainline', ['GB', 'ES', 'FR', 'IT', 'DE', 'NL', 'BE', 'AT', 'CH'], false, () => 'https://www.thetrainline.com/'],
   ['travel', 'Northern', ['GB'], false, () => awinLink(24353, 'https://www.northernrailway.co.uk/')],
   ['travel', 'TransPennine Express', ['GB'], false, () => awinLink(2829, 'https://www.tpexpress.co.uk/')],
@@ -32,6 +35,7 @@ export const TRIP_PARTNERS = Object.freeze([
   ['eat', 'TheFork', ['IT'], false, () => awinLink(127369, 'https://www.thefork.it/')]
 ]);
 export const TRIP_KINDS = Object.freeze([
+  ['flight', 'Flights', 'Choose your route, dates and passengers with the flight provider.'],
   ['travel', 'Trains & coaches', 'Check routes to your destination.'],
   ['car', 'Car hire', 'Check pickup, cover and the total rental price.'],
   ['stay', 'Stay nearby', 'Choose hotels around your destination.'],
