@@ -17,3 +17,13 @@ test('sandbox smoke forwards actual browser context from trusted edge headers wi
  globalThis.fetch=async(url,init)=>{captured=init.headers;const body={isComplete:true,currencyCode:'USD',results:[]};return {ok:true,status:200,json:async()=>body,clone:()=>({json:async()=>body})};};
  try{const res=response();await handler({method:'GET',query:{action:'kayak-hotels'},headers:{'user-agent':'Actual Test Browser/1.0','x-vercel-forwarded-for':'203.0.113.7','x-forwarded-for':'198.51.100.20'}},res);assert.equal(res.code,200);assert.equal(captured['User-Agent'],'Actual Test Browser/1.0');assert.equal(captured['x-original-client-ip'],'203.0.113.7');assert.equal(JSON.stringify(res.value).includes('203.0.113.7'),false);assert.equal(res.value.testData,true);assert.equal(res.value.bookable,false);}finally{globalThis.fetch=before;}
 }));
+test('private diagnostics redact supplier echoes of credentials and client addresses',async()=>withEnv({VERCEL_ENV:'preview',KAYAK_MODE:'sandbox',KAYAK_SANDBOX_API_KEY:'private-test-key'},async()=>{
+ const before=globalThis.fetch;
+ globalThis.fetch=async()=>{const body={errorCode:'INVALID_INPUT',errorMessage:'Rejected 203.0.113.7 and private-test-key at https://example.com/?apiKey=private-test-key'};return {ok:false,status:400,json:async()=>body,clone:()=>({json:async()=>body})};};
+ try{const res=response();await handler({method:'GET',query:{action:'kayak-hotels'},headers:{'user-agent':'Actual Test Browser/1.0','x-vercel-forwarded-for':'203.0.113.7'}},res);const out=JSON.stringify(res.value);assert.equal(res.value.error,'KAYAK_UNAVAILABLE');assert.equal(out.includes('203.0.113.7'),false);assert.equal(out.includes('private-test-key'),false);assert.equal(out.includes('https://example.com'),false);}finally{globalThis.fetch=before;}
+}));
+test('pending hotel checks reuse one search context until results complete',async()=>withEnv({VERCEL_ENV:'preview',KAYAK_MODE:'sandbox',KAYAK_SANDBOX_API_KEY:'private-test-key'},async()=>{
+ const before=globalThis.fetch, ids=[];let count=0;
+ globalThis.fetch=async(url)=>{ids.push(new URL(url).searchParams.get('userTrackId'));const body=++count===1?{isComplete:false,currencyCode:'USD'}:{isComplete:true,currencyCode:'USD',results:[]};return {ok:true,status:200,json:async()=>body,clone:()=>({json:async()=>body})};};
+ try{const res=response();await handler({method:'GET',query:{action:'kayak-hotels'},headers:{'user-agent':'Actual Test Browser/1.0','x-vercel-forwarded-for':'203.0.113.7'}},res);assert.equal(res.value.complete,true);assert.equal(count,2);assert.equal(new Set(ids).size,1);assert.equal(res.value.live,false);assert.equal(res.value.bookable,false);}finally{globalThis.fetch=before;}
+}));

@@ -125,3 +125,13 @@ test('production rejects a synthetic sandbox booking link instead of exposing it
  await assert.rejects(createKayakClient({env:approvedFixtureEnv,fetchImpl:async()=>response(flights())}).pollFlights(flight,ctx),error=>error.code==='KAYAK_SANDBOX_RESPONSE');
  await assert.rejects(createKayakClient({env:approvedFixtureEnv,fetchImpl:async()=>response(hotels())}).searchHotels(hotel,ctx),error=>error.code==='KAYAK_SANDBOX_RESPONSE');
 });
+
+
+test('metadata-only hotel response remains pending until hotel rows arrive',async()=>{
+ const pending={isComplete:false,searchTime:800,totalResults:100,totalAvailableResults:0,totalFilteredResults:0,currencyCode:'USD',languageCode:'EN',countryCode:'US'};
+ const result=await createKayakClient({env,fetchImpl:async()=>response(pending)}).searchHotels(hotel,ctx);
+ assert.equal(result.complete,false);assert.equal(result.currency,'USD');assert.deepEqual(result.results,[]);assert.equal(result.bookable,false);assert.equal(result.live,false);
+ for(const invalid of [{...pending,isComplete:true},{...pending,results:{}},{...pending,currencyCode:undefined}]){
+  await assert.rejects(createKayakClient({env,fetchImpl:async()=>response(invalid)}).searchHotels(hotel,ctx),e=>e.code==='KAYAK_INVALID_RESPONSE');
+ }
+});

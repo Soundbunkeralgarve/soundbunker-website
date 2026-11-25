@@ -32,7 +32,7 @@ export default async function handler(req, res) {
       const response = await fetch(url,init);
       const json = await response.clone().json().catch(()=>null);
       const secret = String(process.env.KAYAK_SANDBOX_API_KEY || '');
-      const message = String(json?.errorMessage || '').split(secret || '\0').join('[redacted]').replace(/https?:\/\/\S+/gi,'[url]').replace(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/ig,'[id]').replace(/[A-Za-z0-9_%+-]{32,}/g,'[token]').slice(0,350);
+      const message = String(json?.errorMessage || '').split(secret || '\0').join('[redacted]').replace(/https?:\/\/\S+/gi,'[url]').replace(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/ig,'[id]').replace(/[A-Za-z0-9_%+-]{32,}/g,'[token]').replace(/\b(?:\d{1,3}\.){3}\d{1,3}\b/g,'[ip]').replace(/\b[0-9a-f]*:[0-9a-f:]+\b/gi,'[ip]').slice(0,350);
       const errorCode = typeof json?.errorCode === 'number' || /^[A-Z0-9_]{1,60}$/.test(json?.errorCode || '') ? json.errorCode : null;
       upstream.push({status:response.status,keys:json && typeof json==='object'?Object.keys(json).slice(0,25):[],errorCode,message,resultsArray:Array.isArray(json?.results),phase:['first-phase','second-phase','complete'].includes(json?.status)?json.status:null,isComplete:typeof json?.isComplete==='boolean'?json.isComplete:null});
       return response;
@@ -55,7 +55,12 @@ export default async function handler(req, res) {
         result = await client.pollFlights({searchId:result.searchId,cluster:result.cluster,currency:'USD'},context);
       }
     } else if (action === 'kayak-hotels') {
-      result = await client.searchHotels({destination:'kplace:58075',checkin:day(14),checkout:day(16),rooms:'2',currency:'USD'},context);
+      const input = {destination:'kplace:58075',checkin:day(14),checkout:day(16),rooms:'2',currency:'USD'};
+      result = await client.searchHotels(input,context);
+      for(let n=0;n<2 && !result.complete;n++) {
+        await new Promise(resolve=>setTimeout(resolve,1000));
+        result = await client.searchHotels(input,context);
+      }
     } else return res.status(400).json({error:'Unknown preview check.'});
     return res.status(200).json({previewOnly:true,provider:result.provider,mode:result.mode,testData:result.testData,live:result.live,bookable:result.bookable,complete:result.complete,results:result.results.length,options:result.results.reduce((n,r)=>n+(r.options?.length||0),0),hasBookingLinks:result.results.some(r=>(r.options||[]).some(o=>o.bookingUrl)),upstream});
   } catch (e) { return res.status(200).json({previewOnly:true,error:e.code||'INTEGRATION_ERROR',live:false,bookable:false,upstream}); }

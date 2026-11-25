@@ -133,7 +133,10 @@ export function createKayakClient({env = process.env, fetchImpl = globalThis.fet
     const response=await request(HOTELS,{destination,checkin,checkout,rooms,currencyCode:currency,languageCode:'EN',onlyIfComplete:'false',searchTimeout:'5000',responseOptions:'topRates,images',pageSize:'20',includeTaxesInTotal:'true',includeLocalTaxesInTotal:'true'},context);
     if(response.accepted) return envelope({complete:false,results:[]});
     const json=response.json;
-    if(typeof json.isComplete!=='boolean' || !Array.isArray(json.results) || !CURRENCY.test(json.currencyCode || '')) throw fail('KAYAK_INVALID_RESPONSE',502);
+    if(typeof json.isComplete!=='boolean' || !CURRENCY.test(json.currencyCode || '')) throw fail('KAYAK_INVALID_RESPONSE',502);
+    // KAYAK may return search metadata before any hotel rows are ready.
+    if(json.isComplete === false && json.results === undefined) return envelope({complete:false,currency:json.currencyCode,results:[]});
+    if(!Array.isArray(json.results)) throw fail('KAYAK_INVALID_RESPONSE',502);
     const results=json.results.slice(0,20).filter(h=>typeof h.name==='string' && Number.isFinite(h.id)).map(h=>({
       id:h.id,key:safeText(h.key,60),name:safeText(h.name),address:safeText(h.address),country:safeText(h.hotelCountryCode,2),
       starRating:amount(h.starRating),guestRating:amount(h.guestRating),lowestRate:amount(h.lowestRate),currency:json.currencyCode,

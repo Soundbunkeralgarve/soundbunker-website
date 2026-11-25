@@ -76,7 +76,7 @@ const hotel = await client.searchHotels({
 
 Flights use `POST /i/api/affiliate/search/flight/v1/poll`. The first body contains `searchStartParameters` with cabin, passenger types and airport/date legs. Later bodies carry `searchId`, with `cluster` in the query. Stop when `status` becomes `complete`; preserve and expose partial state while providers are still responding.
 
-Hotels use `GET /api/3.0/hotels`. This prototype supplies an explicit place key or `klatlon:latitude,longitude`, stay dates, documented room/guest encoding, `responseOptions=topRates,images`, language and currency. `rooms='2'` means one room with two adults; `rooms='1:4,6|3'` means two rooms, the first with one adult and children aged four and six, the second with three adults. An HTTP 202 remains incomplete.
+Hotels use `GET /api/3.0/hotels`. This prototype supplies an explicit place key or `klatlon:latitude,longitude`, stay dates, documented room/guest encoding, `responseOptions=topRates,images`, language and currency. `rooms='2'` means one room with two adults; `rooms='1:4,6|3'` means two rooms, the first with one adult and children aged four and six, the second with three adults. An HTTP 202 remains incomplete. An HTTP 200 with `isComplete: false` and search metadata but no `results` array is also an ordinary pending response; repeat the same request and session context. A completed response with no results array remains invalid.
 
 Any temporary HTTP smoke route must be private and preview-only, protected by existing deployment authentication, and must not return keys, full upstream URLs, IPs, User-Agents or raw responses. The adapter itself is not a substitute for route access controls. No such public route is added by this change.
 
