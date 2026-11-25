@@ -235,3 +235,108 @@
 @media (prefers-reduced-motion:reduce) {
   .shop-home .hero-stack .hs-ticket {transition:none}
 }
+
+
+/* Give the homepage a photographic opening on phones. The image has its own
+   height so the search and ticket deck cannot stretch its portrait crop. */
+@media (max-width:760px) {
+  .shop-home .hero.hero-sales {
+    --hero-photo-height:clamp(420px,110vw,540px);
+    background:#07070b;
+    align-items:flex-start;
+  }
+  .shop-home .hero.hero-sales .hero-scenes,
+  .shop-home .hero.hero-sales .hero-shade {
+    inset:0 0 auto;
+    height:var(--hero-photo-height);
+  }
+  .shop-home .hero.hero-sales .hero-scenes {opacity:1;filter:none}
+  .shop-home .hero.hero-sales .hero-scene {
+    background-position:center 38%;
+    filter:saturate(.95) contrast(1.08) brightness(.95);
+  }
+  .shop-home .hero.hero-sales .hero-scene video {object-position:center 38%}
+  .shop-home .hero.hero-sales .hero-shade {
+    background:linear-gradient(180deg,#07070b33 0%,#07070b1a 25%,#07070b88 52%,#07070be8 80%,#07070b 100%);
+  }
+  .shop-home .hero.hero-sales .hero-grid {
+    width:calc(100% - 36px);
+    padding-top:0;
+    padding-bottom:28px;
+    grid-template-columns:minmax(0,1fr);
+  }
+  .shop-home .hero.hero-sales .hero-copy {max-width:none;min-width:0}
+  .shop-home .hero-intro-mobile {
+    min-height:clamp(360px,100vw,460px);
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    padding-block:20px 18px;
+    box-sizing:border-box;
+  }
+  .shop-home .hero.hero-sales .hero-kicker {
+    max-width:calc(100% - 80px);
+    justify-content:flex-start;
+    gap:5px 8px;
+    margin:0;
+    padding:8px 10px;
+    border-radius:12px;
+    background:#07070b9c;
+    font-size:.8125rem;
+    line-height:1.4;
+    letter-spacing:0;
+    text-transform:none;
+  }
+  .shop-home .hero-kicker .kicker-sep {display:none}
+  .shop-home .hero-kicker #coverage-count {flex-basis:100%;font-size:.75rem;color:#e1e8e5}
+  .shop-home .hero.hero-sales .hero-copy h1 {
+    width:100%;
+    margin: auto 0 16px;
+    padding-top:60px;
+    font-size:clamp(4.5rem,20vw,7.5rem);
+    line-height:.86;
+    letter-spacing:-.025em;
+    text-shadow:0 3px 28px #000b;
+  }
+  .shop-home .hero.hero-sales .h1-solid,
+  .shop-home .hero.hero-sales .h1-outline {display:block}
+  .shop-home .hero.hero-sales .h1-outline {margin-top:6px;color:#00e0a6;-webkit-text-stroke:0}
+  .shop-home .hero.hero-sales .h1-outline::after {display:none}
+  .shop-home .hero.hero-sales .hero-copy .hero-tagline {
+    margin:0;
+    max-width:28ch;
+    font-size:1.0625rem;
+    line-height:1.5;
+    color:#fff;
+    text-shadow:0 2px 14px #000;
+  }
+  .shop-home .hero.hero-sales .hero-two {display:none}
+  .shop-home .hero.hero-sales .discovery-entry {margin:0 0 14px;gap:10px}
+  .shop-home .hero.hero-sales #destination-search {box-shadow:0 18px 48px #0006;border-color:#41414e}
+  .shop-home .hero.hero-sales .hero-reel {
+    display:flex;
+    left:auto;
+    right:0;
+    top:20px;
+    bottom:auto;
+    transform:none;
+    z-index:2;
+  }
+  .shop-home .hero-reel .reel-now,
+  .shop-home .hero-reel .reel-dots,
+  .shop-home .hero-reel #scene-count {display:none}
+  .shop-home .hero-reel .reel-pause {
+    min-height:44px;
+    min-width:68px;
+    padding:10px 12px;
+    border-color:#ffffff80;
+    background:#07070b99;
+    font:600 .875rem/1.2 var(--body,'DM Sans',Arial,sans-serif);
+    letter-spacing:0;
+    text-transform:none;
+  }
+}
+@media (max-width:760px) and (prefers-reduced-motion:reduce) {
+  .shop-home .hero.hero-sales .hero-scene {transition:none;transform:none}
+  .shop-home .hero.hero-sales .hero-reel {display:none}
+}

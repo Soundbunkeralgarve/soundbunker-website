@@ -239,7 +239,7 @@ function showScene(i){
  clipFor((i+1)%scenes.length);
 }
 function playScenes(){
- const still=scenePaused||document.hidden;
+ const still=scenePaused||document.hidden||stillOnly();
  $('.hero-scenes').classList.toggle('motion-paused',still);clearInterval(sceneTimer);
  const v=scenes[sceneAt].querySelector('video');if(v){still?v.pause():v.play().catch(()=>{});}
  if(!still)sceneTimer=setInterval(()=>showScene((sceneAt+1)%scenes.length),6000);

@@ -72,7 +72,12 @@
 .shop-home.guide-page .guide-search select,
 .shop-home .trip-builder-section .tb-builder-details select {
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23d5dce6' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 7 5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 12px center;
+  background-size:18px 18px;
 }
+.shop-home.guide-page .guide-search button {background:#00e0a6;color:#04140d}
+.shop-home.guide-page .flight-search {background:#101018;border-color:#343440}
 .shop-home.guide-page .guide-search select option,
 .shop-home .trip-builder-section .tb-builder-details select option {background:#101018;color:#f4f6f8}
 .shop-home .ga :is(.ga-field input,.ga-fromto input,.ga-ts-row input) {color-scheme:dark;border-color:#41414e}
@@ -109,8 +114,11 @@
   .guide-page .guide-search:not(.trip-search) {grid-template-columns:minmax(0,1fr)}
   .guide-page .guide-search.trip-search {grid-template-columns:repeat(2,minmax(0,1fr))}
   .guide-page .guide-search.trip-search label:has(input[list]),
-  .guide-page .guide-search.trip-search label:has(select[name=country]) {grid-column:1/-1}
+  .guide-page .guide-search.trip-search label:has(select[name=country]),
+  .guide-page .guide-search.trip-search label:has(select[name=currency]) {grid-column:1/-1}
   .guide-page .guide-search button {grid-column:1/-1}
+  .guide-page .guide-search .flight-oneway {min-height:48px;padding-top:0;gap:10px}
+  .guide-page .guide-search .flight-oneway input {width:20px;height:20px;flex:0 0 20px;accent-color:#00e0a6}
   .shop-home .trip-builder-section .tb-builder-details {padding:16px}
   .shop-home .trip-builder-section .tb-builder-destination {grid-template-columns:minmax(0,1fr)}
   .shop-home .trip-builder-section .tb-builder-dates {grid-template-columns:repeat(2,minmax(0,1fr))}
