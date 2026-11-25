@@ -71,7 +71,7 @@ async function handleClientMessage(db, message, contact) {
 
   let result;
   if (!messageText(message)) {
-    result = { reply: "Thanks for contacting SoundBunker! 👋 I'm Lofty's digital assistant, happy to help with your questions or pass your enquiry to the team. I'll pass this attachment to the team to review. Feel free to tell me a little about what you need in the meantime.", handoff: { summary: `The client sent a ${message.type} message that the assistant cannot read.`, client_name: contact?.profile?.name || '', contact: '', language: '', urgent: false } };
+    result = { reply: "Thanks for contacting SoundBunker — I'm Lofty's digital assistant. I'll pass this attachment to the team.", handoff: { summary: `The client sent a ${message.type} message that the assistant cannot read.`, client_name: contact?.profile?.name || '', contact: '', language: '', urgent: false } };
   } else {
     try { result = await askStudio(await threadHistory(db, thread.id), { channel: 'whatsapp' }); }
     catch { result = { reply: fallbackReply(), handoff: { summary: 'The assistant failed to answer; please reply to the client.', client_name: contact?.profile?.name || '', contact: '', language: '', urgent: false } }; }
