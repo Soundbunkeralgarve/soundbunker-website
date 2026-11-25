@@ -1,0 +1,46 @@
+/* Organiser portal premium theme: the same dark, teal-and-pink look as the public site.
+   Loaded last on organiser.html; layout and behaviour are unchanged. */
+:root{--dark:#07070b;--darker:#040406;--ink:#f4f6f8;--muted:#a7adb6;--line:#24242f;--bg:#07070b;--panel:#101018;--panel2:#15151f}
+body{background:radial-gradient(70% 50% at 100% 0%,#00e0a612,transparent 60%),radial-gradient(60% 50% at 0% 100%,#ff4f9a0c,transparent 60%),#07070b!important;background-attachment:fixed!important;color:var(--ink)}
+h1,h2,h3,label,strong,b,th,legend{color:#fff}
+h1{font-size:clamp(56px,6vw,104px)!important;line-height:.86!important;letter-spacing:-.01em!important}
+p,.page-lead,.help-note,small{color:var(--muted)}
+.eyebrow{color:#00e0a6!important;font-size:11px!important}
+/* Sidebar + header */
+.sidebar{background:linear-gradient(180deg,#0b0b12,#07070b)!important;border-right:1px solid #ffffff12}
+.nav-item{color:#c3c8cf!important;border-radius:12px!important;font-size:13px!important;transition:background .15s,color .15s}
+.nav-item:hover{background:#ffffff0d!important;color:#fff!important}
+.nav-item.active{background:#00e0a6!important;color:#04140d!important;box-shadow:0 10px 26px #00e0a640}
+.app-header{background:#07070bd9!important;backdrop-filter:blur(14px);border-bottom:1px solid #ffffff12!important;color:#fff}
+.mobile-menu{background:#101018!important;color:#fff!important;border-color:#2c2c3a!important}
+/* Surfaces */
+:is(.panel,.metric,.ticket-preview,.logo-preview,.upload-box,.inherit-brand,.roster-line,.logo-validation,.embedded-verification,.cancellation-dialog,.featured-preview,.social-share,.hub-testing,.hub-test-card,.setup-steps li){background:linear-gradient(180deg,var(--panel2),var(--panel))!important;border:1px solid #ffffff14!important;color:var(--ink)}
+.panel{border-radius:22px!important;box-shadow:0 30px 70px #0008!important}
+.metric{border-radius:18px!important;position:relative;overflow:hidden}
+.metric::before{content:"";position:absolute;left:0;top:0;right:0;height:3px;background:linear-gradient(90deg,#00e0a6,#ff4f9a)}
+.metric strong,.metric b{font-family:'Barlow Condensed',Impact,sans-serif;font-size:clamp(34px,3vw,48px)!important;color:#fff!important}
+.help-note{background:#00e0a60f!important;border-left-color:#00e0a6!important;border-radius:0 14px 14px 0;color:#cfe9e0!important}
+.notice.error{background:#ff4f9a14!important;border-color:#ff4f9a66!important;color:#ffd0e3!important}
+/* Setup steps */
+.step{background:#101018!important;border:1px solid #24242f!important;color:#a7adb6!important;border-radius:14px!important}
+.step.active{background:#00e0a614!important;border-color:#00e0a6!important;color:#fff!important;box-shadow:0 0 0 3px #00e0a622}
+/* Forms */
+:is(.form-grid,.form-stack,.inline-form,.tier-row,.select-label,.promo-fields,.social-share) :is(input,select,textarea){background:#07070b!important;border:1px solid #2c2c3a!important;color:#fff!important;border-radius:12px!important;min-height:48px}
+:is(input,select,textarea)::placeholder{color:#6f7580!important}
+:is(input,select,textarea):focus{border-color:#00e0a6!important;outline:0!important;box-shadow:0 0 0 3px #00e0a633!important}
+select option{background:#101018;color:#fff}
+/* Buttons */
+.primary{border-radius:999px!important;font-weight:800!important;box-shadow:0 12px 30px #00e0a633;transition:transform .15s,box-shadow .15s}
+.primary:hover{transform:translateY(-1px);box-shadow:0 16px 36px #00e0a655}
+:is(.ghost,.remove-tier,.text-button){background:transparent!important;color:#00e0a6!important;border:1px solid #00e0a666!important;border-radius:999px!important}
+:is(.ghost,.remove-tier):hover{background:#00e0a6!important;color:#04140d!important}
+.danger{background:#ff4f9a1a!important;color:#ff8fbf!important;border:1px solid #ff4f9a66!important;border-radius:999px!important}
+/* Tables */
+.report-table th{background:#15151f!important;color:#fff!important}
+.report-table td{border-color:#24242f!important;color:#d8dce2}
+.report-table tr:hover td{background:#ffffff06}
+@media(max-width:900px){
+ h1{font-size:clamp(44px,12vw,64px)!important}
+ .panel{border-radius:18px!important}
+}
+.status-pill{background:#00e0a61a!important;color:#00e0a6!important;border:1px solid #00e0a655}
