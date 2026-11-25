@@ -1,11 +1,12 @@
 // Mapped local transport across the UK/EU. These are OSM places, not live departures.
 // Public Overpass is shared infrastructure: queries are bounded, coalesced and cached.
 // https://dev.overpass-api.de/overpass-doc/en/preface/commons.html
-// Both instances are listed by OpenStreetMap. One bounded fallback keeps an outage
-// at the shared primary from disabling nearby information altogether.
+// Dresel's operator documents a European extract, public GET access and open CORS:
+// https://ovp.dresel.systems/en/ . The global instance remains a bounded fallback.
+// Regional data is never queried as though it were a worldwide dataset.
 const OVERPASS = [
-  {url: 'https://overpass-api.de/api/interpreter', timeout: 10000},
-  {url: 'https://overpass.private.coffee/api/interpreter', timeout: 12000}
+  {url: 'https://ovp.dresel.systems/api/interpreter', timeout: 10000, europeOnly: true},
+  {url: 'https://overpass-api.de/api/interpreter', timeout: 10000}
 ];
 const TTL = 10 * 60 * 1000;
 const FAILURE_TTL = 30 * 1000;
@@ -88,6 +89,14 @@ function makeQuery([lat, lon], radius) {
   const around = `(around:${radius},${lat},${lon})`;
   return `[out:json][timeout:8][maxsize:67108864];(nwr["highway"="bus_stop"]${around};nwr["amenity"~"^(bus_station|ferry_terminal|taxi)$"]${around};nwr["railway"~"^(station|halt|tram_stop|subway_entrance)$"]${around};${['bus', 'trolleybus', 'train', 'subway', 'tram', 'ferry', 'boat'].map(mode => `nwr["public_transport"~"^(station|platform|stop_position)$"]["${mode}"="yes"]${around};`).join('')});out center 2500;`;
 }
+function europeanCoverage([lat, lon]) {
+  // Mainland Europe, Malta/Cyprus, plus Atlantic island groups in European
+  // extracts. This gates the regional provider; it does not name a country.
+  return lat >= 34 && lat <= 72 && lon >= -25 && lon <= 45
+    || lat >= 27 && lat <= 30 && lon >= -19 && lon <= -13 // Canary Islands
+    || lat >= 30 && lat <= 34 && lon >= -18 && lon <= -15 // Madeira
+    || lat >= 36 && lat <= 40 && lon >= -32 && lon <= -24; // Azores
+}
 async function queryInstance(instance, query, fetchImpl) {
   const controller = new AbortController();
   const started = Date.now();
@@ -95,8 +104,9 @@ async function queryInstance(instance, query, fetchImpl) {
   try {
     return await Promise.race([
       (async () => {
-        const r = await fetchImpl(instance.url, {method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded', accept: 'application/json', 'User-Agent': 'TicketBunker/1.0 (https://theticketbunker.com)'},
-          body: new URLSearchParams({data: query}).toString(), signal: controller.signal, redirect: 'error'});
+        const requestUrl = instance.url + '?' + new URLSearchParams({data: query});
+        const r = await fetchImpl(requestUrl, {method: 'GET', headers: {accept: 'application/json', 'User-Agent': 'TicketBunker/1.0 (https://theticketbunker.com)'},
+          signal: controller.signal, redirect: 'error'});
         if (!r.ok) throw Object.assign(Error('Mapped transport unavailable'), {retryable: r.status === 429 || r.status >= 500, kind: 'http', status: r.status});
         const json = await r.json();
         if (!Array.isArray(json?.elements) || json.remark) throw Object.assign(Error('Mapped transport incomplete'), {retryable: true,
@@ -111,7 +121,7 @@ async function queryInstance(instance, query, fetchImpl) {
     const codes = new Set(['ENOTFOUND', 'EAI_AGAIN', 'ETIMEDOUT', 'ECONNREFUSED', 'ECONNRESET', 'ENETUNREACH', 'EHOSTUNREACH', 'ERR_TLS_CERT_ALTNAME_INVALID', 'UND_ERR_CONNECT_TIMEOUT', 'UND_ERR_SOCKET', 'UND_ERR_HEADERS_TIMEOUT', 'UND_ERR_BODY_TIMEOUT', 'ABORT_ERR']);
     const code = e?.cause?.code || e?.code;
     const kind = ['http', 'memory_limit', 'query_timeout', 'incomplete_response', 'deadline'].includes(e?.kind) ? e.kind : e?.name === 'SyntaxError' ? 'invalid_json' : 'network';
-    const diagnostic = {host: new URL(instance.url).hostname, kind, elapsedMs: Date.now() - started};
+    const diagnostic = {host: new URL(instance.url).hostname, method: 'GET', kind, elapsedMs: Date.now() - started};
     if (Number.isInteger(e?.status) && e.status >= 100 && e.status <= 599) diagnostic.status = e.status;
     if (codes.has(code)) diagnostic.code = code;
     console.warn('nearby_transport_upstream_failure', JSON.stringify(diagnostic));
@@ -119,10 +129,11 @@ async function queryInstance(instance, query, fetchImpl) {
     throw Object.assign(Error('Mapped transport unavailable'), {retryable: true});
   } finally { clearTimeout(timer); }
 }
-async function queryMap(query, fetchImpl) {
-  for (let i = 0; i < OVERPASS.length; i++) {
-    try { return await queryInstance(OVERPASS[i], query, fetchImpl); }
-    catch (e) { if (!e.retryable || i === OVERPASS.length - 1) throw e; }
+async function queryMap(query, here, fetchImpl) {
+  const instances = OVERPASS.filter(instance => !instance.europeOnly || europeanCoverage(here));
+  for (let i = 0; i < instances.length; i++) {
+    try { return await queryInstance(instances[i], query, fetchImpl); }
+    catch (e) { if (!e.retryable || i === instances.length - 1) throw e; }
   }
 }
 async function areaData(here, radius, fetchImpl) {
@@ -137,7 +148,7 @@ async function areaData(here, radius, fetchImpl) {
   if (cache.size >= MAX_CACHE) cache.delete(cache.keys().next().value);
   const item = {until: now + TTL, promise: null};
   item.promise = (async () => {
-    const json = await queryMap(makeQuery(centre, radius + 100), fetchImpl);
+    const json = await queryMap(makeQuery(centre, radius + 100), centre, fetchImpl);
     return {places: normalizeNearbyTransport(json, centre, radius + 100), at: new Date().toISOString()};
   })().catch(e => { item.until = Date.now() + FAILURE_TTL; throw e; });
   cache.set(key, item);

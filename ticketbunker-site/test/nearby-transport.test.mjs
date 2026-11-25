@@ -88,9 +88,11 @@ test('same-area requests coalesce, cache upstream map data and recompute exact d
   const pending = new Promise(resolve => { release = resolve; });
   const fetchImpl = async (url, options) => {
     calls++;
-    assert.equal(url, 'https://overpass-api.de/api/interpreter');
-    assert.equal(options.method, 'POST');
-    const query = new URLSearchParams(options.body).get('data');
+    assert.equal(new URL(url).origin + new URL(url).pathname, 'https://ovp.dresel.systems/api/interpreter');
+    assert.equal(options.method, 'GET');
+    assert.equal(options.body, undefined);
+    const query = new URL(url).searchParams.get('data');
+    assert.ok(url.length < 8000, 'bounded transport query fits the fixed GET endpoint');
     assert.match(query, /around:2100,37.089,-8.25/);
     assert.doesNotMatch(query, /37.08901/);
     assert.match(query, /ferry_terminal/);
@@ -131,8 +133,8 @@ test('busy, failed-network and incomplete primary responses use one fixed fallba
   for (const failure of ['busy', 'server', 'network', 'memory']) {
     const calls = [];
     const fetchImpl = async (url, options) => {
-      calls.push(url);
-      assert.equal(options.method, 'POST');
+      calls.push(new URL(url).origin + new URL(url).pathname);
+      assert.equal(options.method, 'GET');
       if (calls.length === 1) {
         if (failure === 'network') throw Error('Network unavailable');
         if (failure === 'memory') return {ok: true, json: async () => ({elements: [], remark: 'runtime error: out of memory'})};
@@ -144,16 +146,16 @@ test('busy, failed-network and incomplete primary responses use one fixed fallba
     assert.equal(res.code, 200, failure);
     assert.equal(res.body.places[0].name, 'Local bus');
     assert.equal(res.body.live, false);
-    assert.deepEqual(calls, ['https://overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter']);
+    assert.deepEqual(calls, ['https://ovp.dresel.systems/api/interpreter', 'https://overpass-api.de/api/interpreter']);
   }
 });
 
 test('malformed upstream queries do not move the same bad request to another provider', async () => {
   const calls = [];
-  const fetchImpl = async url => { calls.push(url); return {ok: false, status: 400}; };
+  const fetchImpl = async url => { calls.push(new URL(url).origin + new URL(url).pathname); return {ok: false, status: 400}; };
   const res = fakeRes(); await handleNearbyTransport(request(), res, {fetchImpl});
   assert.equal(res.code, 503);
-  assert.deepEqual(calls, ['https://overpass-api.de/api/interpreter']);
+  assert.deepEqual(calls, ['https://ovp.dresel.systems/api/interpreter']);
 });
 
 test('runtime diagnostics retain safe upstream categories without visitor queries or raw errors', async () => {
@@ -166,9 +168,27 @@ test('runtime diagnostics retain safe upstream categories without visitor querie
     assert.equal(logs.length, 2);
     const safe = logs.map(([, json]) => JSON.parse(json));
     assert.deepEqual(safe.map(x => [x.kind, x.code]), [['network', 'ENOTFOUND'], ['network', 'ENOTFOUND']]);
-    assert.deepEqual(safe.map(x => x.host), ['overpass-api.de', 'overpass.private.coffee']);
+    assert.deepEqual(safe.map(x => x.host), ['ovp.dresel.systems', 'overpass-api.de']);
+    assert.ok(safe.every(x => x.method === 'GET'));
     assert.doesNotMatch(JSON.stringify(logs), /37\.089|8\.25|secret|private query/);
   } finally { console.warn = original; }
+});
+
+test('regional European data includes island searches but is skipped outside its area', async () => {
+  for (const [lat, lon] of [[51.507, -.128], [37.089, -8.25], [32.65, -16.91], [28.08, -16.73], [35.9, 14.51], [34.77, 32.43], [37.74, -25.67]]) {
+    const calls = [];
+    const fetchImpl = async url => { calls.push(new URL(url).hostname); return {ok: true, json: async () => ({elements: []})}; };
+    const res = fakeRes(); await handleNearbyTransport(request({lat: String(lat), lon: String(lon)}), res, {fetchImpl});
+    assert.equal(res.code, 200);
+    assert.deepEqual(calls, ['ovp.dresel.systems'], `${lat},${lon}`);
+  }
+  for (const [lat, lon] of [[0, 0], [40.7, -74], [0, 180], [0, -180]]) {
+    const calls = [];
+    const fetchImpl = async url => { calls.push(new URL(url).hostname); return {ok: true, json: async () => ({elements: []})}; };
+    const res = fakeRes(); await handleNearbyTransport(request({lat: String(lat), lon: String(lon)}), res, {fetchImpl});
+    assert.equal(res.code, 200);
+    assert.deepEqual(calls, ['overpass-api.de'], 'regional empty data cannot misrepresent a worldwide lookup');
+  }
 });
 
 test('endpoint is public and read-only with no ticket-service authentication dependency', async () => {
