@@ -1,0 +1,31 @@
+/* Bold house banners between the homepage rails: full-bleed photo, huge type, brand glow. */
+.shop-home .promo.promo-bold{min-height:440px;border-radius:28px;border:1px solid #ffffff1a;box-shadow:0 40px 90px #000b;align-items:flex-end;background:#07070b}
+.shop-home .promo.promo-bold img{inset:0!important;width:100%!important;height:100%!important;opacity:.62;object-fit:cover;transform:scale(1.02);transition:transform 1.2s ease}
+.shop-home .promo.promo-bold:hover img{transform:scale(1.07)}
+.shop-home .promo.promo-bold .promo-shade{position:absolute;inset:0;z-index:0;background:linear-gradient(90deg,#07070bf2 0%,#07070bcc 38%,#07070b33 75%),linear-gradient(0deg,#07070bcc,transparent 55%)}
+.shop-home .promo.promo-bold .promo-copy{position:relative;z-index:1;padding:48px 56px;max-width:720px}
+.shop-home .promo.promo-bold .label{display:inline-block;padding:7px 14px;border-radius:999px;background:#00e0a6;color:#04140d!important;font:800 12px/1 'DM Sans',Arial,sans-serif;letter-spacing:.16em;margin-bottom:18px}
+.shop-home .promo.promo-bold h2{font:900 clamp(48px,6.2vw,96px)/.88 'Barlow Condensed',Impact,sans-serif!important;text-transform:uppercase;margin:0 0 14px;color:#fff;letter-spacing:-.01em}
+.shop-home .promo.promo-bold p{font-size:18px;line-height:1.5;color:#dfe3e8;max-width:52ch;margin:0 0 18px}
+.promo-chips{display:flex;flex-wrap:wrap;gap:8px;list-style:none;padding:0;margin:0 0 24px}
+.promo-chips li{padding:8px 14px;border-radius:999px;background:#ffffff14;border:1px solid #ffffff2e;backdrop-filter:blur(8px);color:#fff;font:700 13px 'DM Sans',Arial,sans-serif}
+.shop-home .promo.promo-bold .promo-cta{display:inline-flex;align-items:center;min-height:56px;padding:16px 28px;border-radius:999px;background:#00e0a6;color:#04140d;font:800 17px 'DM Sans',Arial,sans-serif;text-decoration:none;box-shadow:0 12px 30px #00e0a640}
+.shop-home .promo.promo-bold .promo-cta:hover{background:#ff4f9a;color:#20030f;box-shadow:0 12px 30px #ff4f9a55}
+/* VIP: pink/purple glow and a giant outline word. */
+.shop-home .promo.promo-bold.promo-vip{background:radial-gradient(70% 120% at 100% 0%,#ff4f9a55,transparent 60%),radial-gradient(60% 100% at 70% 100%,#7a1fff44,transparent 60%),#07070b}
+.shop-home .promo.promo-bold.promo-vip img{opacity:.5;mix-blend-mode:luminosity}
+.shop-home .promo.promo-bold.promo-vip::after{content:'VIP';position:absolute;right:-1vw;bottom:-4vw;z-index:0;font:900 clamp(200px,26vw,420px)/.8 'Barlow Condensed',Impact,sans-serif;color:transparent;-webkit-text-stroke:2px #ff4f9a66;pointer-events:none}
+.shop-home .promo.promo-bold.promo-vip .label{background:#ff4f9a;color:#20030f!important}
+.shop-home .promo.promo-bold.promo-vip h2{background:linear-gradient(90deg,#fff 30%,#ffb3d2);-webkit-background-clip:text;background-clip:text;color:transparent}
+.shop-home .promo.promo-bold.promo-vip .promo-chips li{border-color:#ff4f9a66;background:#ff4f9a1f}
+.shop-home .promo.promo-bold.promo-vip .promo-cta{background:linear-gradient(90deg,#ff4f9a,#c77dff);color:#fff;box-shadow:0 12px 36px #ff4f9a66}
+.shop-home .promo.promo-bold.promo-host .label{background:#ffcd4d;color:#2a1c00!important}
+@media(max-width:760px){
+ .shop-home .promo.promo-bold{min-height:420px;border-radius:22px}
+ .shop-home .promo.promo-bold .promo-copy{padding:28px 22px}
+ .shop-home .promo.promo-bold h2{font-size:clamp(40px,12vw,56px)!important}
+ .shop-home .promo.promo-bold p{font-size:15px}
+ .shop-home .promo.promo-bold .promo-shade{background:linear-gradient(0deg,#07070bf5 10%,#07070b99 55%,#07070b33)}
+ .shop-home .promo.promo-bold.promo-vip::after{font-size:150px;top:auto;bottom:-24px;right:-8px;-webkit-text-stroke-color:#ff4f9a40}
+}
+@media(prefers-reduced-motion:reduce){.shop-home .promo.promo-bold img{transition:none}}
