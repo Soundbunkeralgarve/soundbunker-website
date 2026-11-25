@@ -12,7 +12,7 @@ test('public HTML and generated pages reference one version of each revised desi
     const expression=new RegExp('/'+asset.replaceAll('.','\\.')+'\\?v=([A-Za-z0-9_-]+)','g');
     for(const path of paths)for(const match of read(path).matchAll(expression))versions.set(match[1],path);
     assert.equal(versions.size,1,asset+': '+JSON.stringify([...versions]));
-    const version=asset==='public-mobile.css'?'20261125-mobile3':asset==='home.js'?'20261125-coupons':asset==='mobile-imagery.css'?'20261125-appstyle':'20261125-consistent1';
+    const version=asset==='public-mobile.css'?'20261125-mobile3':asset==='home.js'?'20261126-pro':asset==='public-navigation.js'?'20261126-meta2':asset==='mobile-imagery.css'?'20261125-appstyle':'20261125-consistent1';
     assert.ok(versions.has(version),asset);
   }
 });
