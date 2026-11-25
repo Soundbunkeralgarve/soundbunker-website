@@ -156,6 +156,21 @@ test('malformed upstream queries do not move the same bad request to another pro
   assert.deepEqual(calls, ['https://overpass-api.de/api/interpreter']);
 });
 
+test('runtime diagnostics retain safe upstream categories without visitor queries or raw errors', async () => {
+  const logs = [], original = console.warn;
+  console.warn = (...args) => logs.push(args);
+  try {
+    const fetchImpl = async () => { throw Object.assign(Error('secret-token at 37.089,-8.25'), {cause: {code: 'ENOTFOUND', message: 'private query'}}); };
+    const res = fakeRes(); await handleNearbyTransport(request(), res, {fetchImpl});
+    assert.equal(res.code, 503);
+    assert.equal(logs.length, 2);
+    const safe = logs.map(([, json]) => JSON.parse(json));
+    assert.deepEqual(safe.map(x => [x.kind, x.code]), [['network', 'ENOTFOUND'], ['network', 'ENOTFOUND']]);
+    assert.deepEqual(safe.map(x => x.host), ['overpass-api.de', 'overpass.private.coffee']);
+    assert.doesNotMatch(JSON.stringify(logs), /37\.089|8\.25|secret|private query/);
+  } finally { console.warn = original; }
+});
+
 test('endpoint is public and read-only with no ticket-service authentication dependency', async () => {
   const res = fakeRes();
   await endpoint({method: 'GET', query: {endpoint: 'nearby-transport', lat: 'bad', lon: '0'}, headers: {}}, res);

@@ -90,20 +90,31 @@ function makeQuery([lat, lon], radius) {
 }
 async function queryInstance(instance, query, fetchImpl) {
   const controller = new AbortController();
+  const started = Date.now();
   let timer;
   try {
     return await Promise.race([
       (async () => {
         const r = await fetchImpl(instance.url, {method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded', accept: 'application/json', 'User-Agent': 'TicketBunker/1.0 (https://theticketbunker.com)'},
           body: new URLSearchParams({data: query}).toString(), signal: controller.signal, redirect: 'error'});
-        if (!r.ok) throw Object.assign(Error('Mapped transport unavailable'), {retryable: r.status === 429 || r.status >= 500});
+        if (!r.ok) throw Object.assign(Error('Mapped transport unavailable'), {retryable: r.status === 429 || r.status >= 500, kind: 'http', status: r.status});
         const json = await r.json();
-        if (!Array.isArray(json?.elements) || json.remark) throw Object.assign(Error('Mapped transport incomplete'), {retryable: true});
+        if (!Array.isArray(json?.elements) || json.remark) throw Object.assign(Error('Mapped transport incomplete'), {retryable: true,
+          kind: /memory/i.test(String(json?.remark || '')) ? 'memory_limit' : /timed? out|timeout/i.test(String(json?.remark || '')) ? 'query_timeout' : 'incomplete_response'});
         return json;
       })(),
-      new Promise((_, reject) => { timer = setTimeout(() => { controller.abort(); reject(Object.assign(Error('Mapped transport timeout'), {retryable: true})); }, instance.timeout); })
+      new Promise((_, reject) => { timer = setTimeout(() => { controller.abort(); reject(Object.assign(Error('Mapped transport timeout'), {retryable: true, kind: 'deadline'})); }, instance.timeout); })
     ]);
   } catch (e) {
+    // Log only fixed categories and transport error codes. Raw errors/URLs/query
+    // bodies can contain visitor coordinates and must never enter runtime logs.
+    const codes = new Set(['ENOTFOUND', 'EAI_AGAIN', 'ETIMEDOUT', 'ECONNREFUSED', 'ECONNRESET', 'ENETUNREACH', 'EHOSTUNREACH', 'ERR_TLS_CERT_ALTNAME_INVALID', 'UND_ERR_CONNECT_TIMEOUT', 'UND_ERR_SOCKET', 'UND_ERR_HEADERS_TIMEOUT', 'UND_ERR_BODY_TIMEOUT', 'ABORT_ERR']);
+    const code = e?.cause?.code || e?.code;
+    const kind = ['http', 'memory_limit', 'query_timeout', 'incomplete_response', 'deadline'].includes(e?.kind) ? e.kind : e?.name === 'SyntaxError' ? 'invalid_json' : 'network';
+    const diagnostic = {host: new URL(instance.url).hostname, kind, elapsedMs: Date.now() - started};
+    if (Number.isInteger(e?.status) && e.status >= 100 && e.status <= 599) diagnostic.status = e.status;
+    if (codes.has(code)) diagnostic.code = code;
+    console.warn('nearby_transport_upstream_failure', JSON.stringify(diagnostic));
     if (e?.retryable === false) throw e;
     throw Object.assign(Error('Mapped transport unavailable'), {retryable: true});
   } finally { clearTimeout(timer); }
