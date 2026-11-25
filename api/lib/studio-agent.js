@@ -136,7 +136,7 @@ export async function askStudio(history, { channel }) {
       try {
         if (call.name === 'request_human') {
           handoff = call.input;
-          results.push({ type: 'tool_result', tool_use_id: call.id, content: 'Handover requested; delivery has not happened yet. Say briefly: "I'll pass this to Lofty." Do not claim it has already been delivered or promise a response time.' });
+          results.push({ type: 'tool_result', tool_use_id: call.id, content: 'Handover requested; delivery has not happened yet. Briefly tell the client you will pass this to Lofty. Do not claim it has already been delivered or promise a response time.' });
         } else {
           results.push({ type: 'tool_result', tool_use_id: call.id, content: JSON.stringify(await runTool(call.name, db)) });
         }
