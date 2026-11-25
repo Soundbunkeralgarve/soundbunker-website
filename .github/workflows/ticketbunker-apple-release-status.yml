@@ -26,6 +26,7 @@ jobs:
           APPLE_KEY_P8: ${{ secrets.HUB_APPLE_API_KEY_P8 }}
           APPLE_API_KEY_ID: ${{ secrets.HUB_APPLE_API_KEY_ID }}
           APPLE_API_ISSUER: ${{ secrets.HUB_APPLE_API_ISSUER }}
+        shell: bash
         run: node .github/scripts/ticketbunker-apple-release-status.cjs | tee ticketbunker-apple-release-status.json
       - name: Retain the exact Apple release records
         if: always()
