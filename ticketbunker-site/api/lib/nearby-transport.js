@@ -5,8 +5,8 @@
 // https://ovp.dresel.systems/en/ . The global instance remains a bounded fallback.
 // Regional data is never queried as though it were a worldwide dataset.
 const OVERPASS = [
-  {url: 'https://ovp.dresel.systems/api/interpreter', timeout: 10000, europeOnly: true},
-  {url: 'https://overpass-api.de/api/interpreter', timeout: 10000}
+  {url: 'https://ovp.dresel.systems/api/interpreter', timeout: 18000, queryTimeout: 15, europeOnly: true},
+  {url: 'https://overpass-api.de/api/interpreter', timeout: 8000, queryTimeout: 6}
 ];
 const TTL = 10 * 60 * 1000;
 const FAILURE_TTL = 30 * 1000;
@@ -85,9 +85,20 @@ function numberParam(value, fallback) {
   if (typeof value !== 'string' || !/^-?(?:\d+(?:\.\d+)?|\.\d+)$/.test(value)) return NaN;
   return Number(value);
 }
-function makeQuery([lat, lon], radius) {
-  const around = `(around:${radius},${lat},${lon})`;
-  return `[out:json][timeout:8][maxsize:67108864];(nwr["highway"="bus_stop"]${around};nwr["amenity"~"^(bus_station|ferry_terminal|taxi)$"]${around};nwr["railway"~"^(station|halt|tram_stop|subway_entrance)$"]${around};${['bus', 'trolleybus', 'train', 'subway', 'tram', 'ferry', 'boat'].map(mode => `nwr["public_transport"~"^(station|platform|stop_position)$"]["${mode}"="yes"]${around};`).join('')});out center 2500;`;
+function makeQuery([lat, lon], radius, timeout) {
+  let bbox = '', scope = `(around:${radius},${lat},${lon})`;
+  if (europeanCoverage([lat, lon])) {
+    // Bbox indexing is cheaper than repeating radius scans. Conservative extents
+    // and outward rounding cover the circle; exact distance filtering stays below.
+    // European bounds cannot reach the poles or cross the antimeridian.
+    const dy = radius / 110000, dx = radius / (110000 * Math.cos(lat * Math.PI / 180));
+    const down = n => Math.floor(n * 1e6) / 1e6, up = n => Math.ceil(n * 1e6) / 1e6;
+    bbox = `[bbox:${down(lat - dy)},${down(lon - dx)},${up(lat + dy)},${up(lon + dx)}]`;
+    scope = '';
+  }
+  const selectors = ['["highway"="bus_stop"]', '["amenity"~"^(bus_station|ferry_terminal|taxi)$"]',
+    '["railway"~"^(station|halt|tram_stop|subway_entrance)$"]', '["public_transport"~"^(station|platform|stop_position)$"]'];
+  return `[out:json][timeout:${timeout}][maxsize:67108864]${bbox};(${selectors.map(selector => `nwr${selector}${scope};`).join('')});out center 2500;`;
 }
 function europeanCoverage([lat, lon]) {
   // Mainland Europe, Malta/Cyprus, plus Atlantic island groups in European
@@ -129,10 +140,10 @@ async function queryInstance(instance, query, fetchImpl) {
     throw Object.assign(Error('Mapped transport unavailable'), {retryable: true});
   } finally { clearTimeout(timer); }
 }
-async function queryMap(query, here, fetchImpl) {
+async function queryMap(here, radius, fetchImpl) {
   const instances = OVERPASS.filter(instance => !instance.europeOnly || europeanCoverage(here));
   for (let i = 0; i < instances.length; i++) {
-    try { return await queryInstance(instances[i], query, fetchImpl); }
+    try { return await queryInstance(instances[i], makeQuery(here, radius, instances[i].queryTimeout), fetchImpl); }
     catch (e) { if (!e.retryable || i === instances.length - 1) throw e; }
   }
 }
@@ -148,7 +159,7 @@ async function areaData(here, radius, fetchImpl) {
   if (cache.size >= MAX_CACHE) cache.delete(cache.keys().next().value);
   const item = {until: now + TTL, promise: null};
   item.promise = (async () => {
-    const json = await queryMap(makeQuery(centre, radius + 100), centre, fetchImpl);
+    const json = await queryMap(centre, radius + 100, fetchImpl);
     return {places: normalizeNearbyTransport(json, centre, radius + 100), at: new Date().toISOString()};
   })().catch(e => { item.until = Date.now() + FAILURE_TTL; throw e; });
   cache.set(key, item);

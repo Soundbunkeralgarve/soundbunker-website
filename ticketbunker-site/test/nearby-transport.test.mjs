@@ -93,11 +93,13 @@ test('same-area requests coalesce, cache upstream map data and recompute exact d
     assert.equal(options.body, undefined);
     const query = new URL(url).searchParams.get('data');
     assert.ok(url.length < 8000, 'bounded transport query fits the fixed GET endpoint');
-    assert.match(query, /around:2100,37.089,-8.25/);
+    assert.match(query, /\[bbox:/);
+    assert.doesNotMatch(query, /around:/);
     assert.doesNotMatch(query, /37.08901/);
     assert.match(query, /ferry_terminal/);
     assert.match(query, /\[maxsize:67108864\]/, 'bounded 64 MiB budget avoids the previous 8 MiB ceiling');
-    assert.match(query, /\[timeout:8\]/);
+    assert.match(query, /\[timeout:15\]/);
+    assert.equal((query.match(/nwr\[/g) || []).length, 4, 'four bounded selectors replace repeated mode scans');
     assert.ok(options.signal instanceof AbortSignal);
     await pending;
     return {ok: true, json: async () => ({elements: [node(1, {amenity: 'taxi', name: 'Central taxis'})]})};
@@ -188,6 +190,38 @@ test('regional European data includes island searches but is skipped outside its
     const res = fakeRes(); await handleNearbyTransport(request({lat: String(lat), lon: String(lon)}), res, {fetchImpl});
     assert.equal(res.code, 200);
     assert.deepEqual(calls, ['overpass-api.de'], 'regional empty data cannot misrepresent a worldwide lookup');
+  }
+});
+
+test('European bounding boxes cover radius plus tile margin and keep exact circle filtering', async () => {
+  for (const [lat, lon] of [[37.089, -8.25], [51.507, -.128], [72, 20], [32.65, -16.91], [28.08, -16.73], [37.74, -25.67]]) {
+    let query;
+    const fetchImpl = async url => {
+      query = new URL(url).searchParams.get('data');
+      return {ok: true, json: async () => ({elements: [node(1, {highway: 'bus_stop', name: 'Close'}, lat + .001, lon), node(2, {highway: 'bus_stop', name: 'Outside circle'}, lat + .06, lon)]})};
+    };
+    const res = fakeRes(); await handleNearbyTransport(request({lat: String(lat), lon: String(lon), radius: '5000'}), res, {fetchImpl});
+    const match = query.match(/\[bbox:([^\]]+)\]/); assert.ok(match);
+    const [south, west, north, east] = match[1].split(',').map(Number);
+    const dy = 5100 / 110000, dx = 5100 / (110000 * Math.cos(lat * Math.PI / 180));
+    assert.ok(south <= lat - dy && north >= lat + dy, 'latitude extents round outward');
+    assert.ok(west <= lon - dx && east >= lon + dx, 'longitude extents round outward');
+    assert.ok(south >= -90 && north <= 90 && west >= -180 && east <= 180);
+    assert.match(query, /bus_stop/); assert.match(query, /bus_station\|ferry_terminal\|taxi/);
+    assert.match(query, /station\|halt\|tram_stop\|subway_entrance/); assert.match(query, /public_transport/);
+    assert.deepEqual(res.body.places.map(p => p.name), ['Close'], 'bbox does not widen the returned circular search');
+  }
+});
+
+test('dateline and polar searches retain valid radius queries without wrapping boxes', async () => {
+  for (const [lat, lon] of [[0, 0], [0, 180], [0, -180], [90, 180], [-90, -180]]) {
+    let query;
+    const fetchImpl = async url => { query = new URL(url).searchParams.get('data'); return {ok: true, json: async () => ({elements: []})}; };
+    const res = fakeRes(); await handleNearbyTransport(request({lat: String(lat), lon: String(lon)}), res, {fetchImpl});
+    assert.equal(res.code, 200);
+    assert.match(query, new RegExp(`around:2100,${lat},${lon}`));
+    assert.doesNotMatch(query, /\[bbox:|NaN|Infinity/);
+    assert.match(query, /\[timeout:6\]/, 'global fallback has its own short server budget');
   }
 });
 
