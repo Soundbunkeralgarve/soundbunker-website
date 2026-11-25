@@ -12,7 +12,12 @@ export function needsNotice(path, stored) {
   return stored !== '1' && !EXEMPT.test(path);
 }
 
-function remembered() { try { return localStorage.getItem(KEY); } catch { return null; } }
+// ?preview=partner (the link we give partner reviewers) opens the real site and is remembered.
+export const partnerPreview = search => new URLSearchParams(search || '').get('preview') === 'partner';
+function remembered() {
+  if (typeof location !== 'undefined' && partnerPreview(location.search)) { try { localStorage.setItem(KEY, '1'); } catch { /* this visit only */ } return '1'; }
+  try { return localStorage.getItem(KEY); } catch { return null; }
+}
 
 if (typeof document !== 'undefined' && needsNotice(location.pathname, remembered())) {
   const style = document.createElement('style');

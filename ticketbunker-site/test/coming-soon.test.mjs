@@ -23,3 +23,12 @@ test('the promo banner carries the tightened pitch, the partner-fee note, and lo
   assert.match(readFileSync(new URL('../promo-banner.js', import.meta.url), 'utf8'), new RegExp('coming-soon\\.js\\?v=' + soon), 'one shared module, so the notice never runs twice');
   assert.match(nav, /import "\.\/promo-banner\.js\?v=/);
 });
+
+test('partner reviewers get past the notice with ?preview=partner', async () => {
+  const {partnerPreview} = await import('../coming-soon.js');
+  assert.equal(partnerPreview('?preview=partner'), true);
+  assert.equal(partnerPreview('?city=London&preview=partner'), true);
+  assert.equal(partnerPreview('?preview=open'), false);
+  assert.equal(partnerPreview(''), false);
+  assert.match(readFileSync(new URL('../coming-soon-early.js', import.meta.url), 'utf8'), /get\('preview'\) === 'partner'/);
+});
