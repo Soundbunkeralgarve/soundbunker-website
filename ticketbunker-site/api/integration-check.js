@@ -30,7 +30,10 @@ export default async function handler(req, res) {
     try {
       const response = await fetch(url,init);
       const json = await response.clone().json().catch(()=>null);
-      upstream.push({status:response.status,keys:json && typeof json==='object'?Object.keys(json).slice(0,25):[],resultsArray:Array.isArray(json?.results),phase:['first-phase','second-phase','complete'].includes(json?.status)?json.status:null,isComplete:typeof json?.isComplete==='boolean'?json.isComplete:null});
+      const secret = String(process.env.KAYAK_SANDBOX_API_KEY || '');
+      const message = String(json?.errorMessage || '').split(secret || '\0').join('[redacted]').replace(/https?:\/\/\S+/gi,'[url]').replace(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/ig,'[id]').replace(/[A-Za-z0-9_%+-]{32,}/g,'[token]').slice(0,350);
+      const errorCode = typeof json?.errorCode === 'number' || /^[A-Z0-9_]{1,60}$/.test(json?.errorCode || '') ? json.errorCode : null;
+      upstream.push({status:response.status,keys:json && typeof json==='object'?Object.keys(json).slice(0,25):[],errorCode,message,resultsArray:Array.isArray(json?.results),phase:['first-phase','second-phase','complete'].includes(json?.status)?json.status:null,isComplete:typeof json?.isComplete==='boolean'?json.isComplete:null});
       return response;
     } catch (e) { upstream.push({error:safeCode(e)}); throw e; }
   }});

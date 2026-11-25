@@ -46,7 +46,7 @@ export function createKayakClient({env = process.env, fetchImpl = globalThis.fet
       if (u.protocol !== 'https:' || u.username || u.password || [...u.searchParams.keys()].some(k => /^(api.?key|authorization|access.?token)$/i.test(k)) || apiKey && u.href.includes(apiKey)) return null;
       if (!testData && /sandbox/i.test(u.hostname)) throw fail('KAYAK_SANDBOX_RESPONSE',502);
       return testData ? null : u.href;
-    } catch (e) { if (e.code) throw e; return null; }
+    } catch (e) { if (e.code === 'KAYAK_SANDBOX_RESPONSE') throw e; return null; }
   }
   function contextHeaders(context = {}) {
     if (!UUID.test(context.userTrackId || '') || typeof context.userAgent !== 'string' || !context.userAgent.trim() || /[\r\n]/.test(context.userAgent) || context.userAgent.length > 1000) throw fail('KAYAK_CONTEXT_REQUIRED');
@@ -83,7 +83,8 @@ export function createKayakClient({env = process.env, fetchImpl = globalThis.fet
       throw fail('KAYAK_UNAVAILABLE',502);
     } finally { clearTimeout(timer); }
   }
-  const envelope = extra => ({provider:'kayak',mode,testData,live:status.live,bookable:status.live,label:status.label,...extra});
+  const envelope = extra => ({provider:'kayak',mode,testData,live:status.live,label:status.label,...extra,
+    bookable:status.live && (extra.results || []).some(result => result.options?.some(option => option.bookable))});
   function normalizeFlights(json) {
     if (!PHASES.has(json.status) || !Array.isArray(json.results) || !CURRENCY.test(json.currency || '') || typeof json.searchId !== 'string' || typeof json.cluster !== 'string') throw fail('KAYAK_INVALID_RESPONSE',502);
     const results = json.results.slice(0,50).map(result => {
@@ -93,11 +94,12 @@ export function createKayakClient({env = process.env, fetchImpl = globalThis.fet
           departAt:safeText(s.departureTime,40),arriveAt:safeText(s.arrivalTime,40),operationalDisplay:safeText(s.operationalDisplay,300),type:['flight','train','bus'].includes(s.type) ? s.type : null}))
       }));
       // Split bookings require separate disclosures/booking flows and are excluded from this prototype.
-      const options = (Array.isArray(result.bookingOptions) ? result.bookingOptions : []).filter(o=>o.type === 'regular' && amount(o.displayPrice?.price) !== null).map(o=>({
-        price:o.displayPrice.price,currency:json.currency,provider:safeText(json.providers?.[o.providerCode]?.displayName || o.providerCode),bookingUrl:safeUrl(o.bookingUrl),
-        totalPrice:amount(o.fees?.totalPrice?.price),priceMode:['total','perPerson'].includes(json.priceMode) ? json.priceMode : null,testData,bookable:status.live,
+      const options = (Array.isArray(result.bookingOptions) ? result.bookingOptions : []).filter(o=>o.type === 'regular' && amount(o.displayPrice?.price) !== null).map(o=>{
+        const bookingUrl = safeUrl(o.bookingUrl);
+        return {price:o.displayPrice.price,currency:json.currency,provider:safeText(json.providers?.[o.providerCode]?.displayName || o.providerCode),bookingUrl,
+        totalPrice:amount(o.fees?.totalPrice?.price),priceMode:['total','perPerson'].includes(json.priceMode) ? json.priceMode : null,testData,bookable:status.live && Boolean(bookingUrl),
         nonRefundableDisclosure:safeText(o.fees?.nonRefundableDisclosure,500)
-      }));
+      };});
       return {id:safeText(result.id,100),legs,options,testData};
     }).filter(r=>r.id && r.options.length);
     return envelope({complete:json.status === 'complete',searchStatus:json.status,searchId:safeText(json.searchId,120),cluster:safeText(json.cluster,40),currency:json.currency,results});
@@ -136,9 +138,11 @@ export function createKayakClient({env = process.env, fetchImpl = globalThis.fet
       id:h.id,key:safeText(h.key,60),name:safeText(h.name),address:safeText(h.address),country:safeText(h.hotelCountryCode,2),
       starRating:amount(h.starRating),guestRating:amount(h.guestRating),lowestRate:amount(h.lowestRate),currency:json.currencyCode,
       // Never expose h.href: documented href values include the secret apiKey query parameter.
-      options:(Array.isArray(h.rates)?h.rates:[]).filter(r=>amount(r.totalRate)!==null).map(r=>({roomName:safeText(r.roomName),totalRate:r.totalRate,currency:json.currencyCode,
+      options:(Array.isArray(h.rates)?h.rates:[]).filter(r=>amount(r.totalRate)!==null).map(r=>{
+        const bookingUrl = safeUrl(r.bookUri);
+        return {roomName:safeText(r.roomName),totalRate:r.totalRate,currency:json.currencyCode,
         provider:safeText(json.providers?.[r.providerIndex]?.name),freeCancellation:typeof r.hasFreeCancellation==='boolean'?r.hasFreeCancellation:null,payLater:typeof r.canPayLater==='boolean'?r.canPayLater:null,
-        bookingUrl:safeUrl(r.bookUri),testData,bookable:status.live})),testData
+        bookingUrl,testData,bookable:status.live && Boolean(bookingUrl)};}),testData
     }));
     return envelope({complete:json.isComplete,currency:json.currencyCode,results});
   }

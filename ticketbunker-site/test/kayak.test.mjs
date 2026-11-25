@@ -92,3 +92,36 @@ test('malformed source data and scheduling-only negative prices are not offered'
  assert.deepEqual((await createKayakClient({env,fetchImpl:async()=>response(bad)}).pollFlights(flight,ctx)).results,[]);
  await assert.rejects(createKayakClient({env,fetchImpl:async()=>response({})}).pollFlights(flight,ctx),e=>e.code==='KAYAK_INVALID_RESPONSE');
 });
+
+// This origin is a fixture for configuration validation only. Every call below has
+// an injected fetch stub; no production key or production supplier request is used.
+const approvedFixtureEnv={KAYAK_MODE:'production',KAYAK_PRODUCTION_APPROVED:'true',KAYAK_PRODUCTION_API_KEY:'fixture-production-key-not-real',KAYAK_PRODUCTION_ORIGIN:'https://fixture-production.kayakaffiliates.com'};
+test('approved production capability does not make empty or pending flight/hotel results bookable',async()=>{
+ const emptyFlights=flights();emptyFlights.results=[];
+ for(const [kind,upstream] of [['flights',response(emptyFlights)],['hotels',response({isComplete:true,currencyCode:'USD',results:[]})],['flights',{ok:true,status:202}],['hotels',{ok:true,status:202}]]){
+  const client=createKayakClient({env:approvedFixtureEnv,fetchImpl:async()=>upstream});
+  assert.equal(client.status.live,true);assert.equal(client.status.canServePublic,true);
+  const result=kind==='flights'?await client.pollFlights(flight,ctx):await client.searchHotels(hotel,ctx);
+  assert.equal(result.live,true,'live describes the approved source capability');assert.equal(result.bookable,false);assert.deepEqual(result.results,[]);
+ }
+});
+test('production flight options require an accepted booking URL before claiming bookability',async()=>{
+ for(const [url,expected] of [[undefined,false],['javascript:alert(1)',false],['http://example.test/book',false],['https://example.test/book?apiKey=private',false],['https://example.test/book',true]]){
+  const upstream=flights();upstream.results[0].bookingOptions[0].bookingUrl=url;
+  const result=await createKayakClient({env:approvedFixtureEnv,fetchImpl:async()=>response(upstream)}).pollFlights(flight,ctx);
+  assert.equal(result.results[0].options[0].bookable,expected);assert.equal(result.bookable,expected);
+  assert.equal(result.results[0].options[0].bookingUrl,expected?url:null);
+ }
+});
+test('production hotel options require an accepted booking URL before claiming bookability',async()=>{
+ for(const [url,expected] of [[undefined,false],['javascript:alert(1)',false],['https://example.test/book?authorization=private',false],['https://example.test/stay',true]]){
+  const upstream=hotels();upstream.results[0].rates[0].bookUri=url;
+  const result=await createKayakClient({env:approvedFixtureEnv,fetchImpl:async()=>response(upstream)}).searchHotels(hotel,ctx);
+  assert.equal(result.results[0].options[0].bookable,expected);assert.equal(result.bookable,expected);
+  assert.equal(result.results[0].options[0].bookingUrl,expected?url:null);
+ }
+});
+test('production rejects a synthetic sandbox booking link instead of exposing it as live',async()=>{
+ await assert.rejects(createKayakClient({env:approvedFixtureEnv,fetchImpl:async()=>response(flights())}).pollFlights(flight,ctx),error=>error.code==='KAYAK_SANDBOX_RESPONSE');
+ await assert.rejects(createKayakClient({env:approvedFixtureEnv,fetchImpl:async()=>response(hotels())}).searchHotels(hotel,ctx),error=>error.code==='KAYAK_SANDBOX_RESPONSE');
+});
