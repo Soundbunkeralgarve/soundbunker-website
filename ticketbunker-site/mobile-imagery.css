@@ -200,10 +200,21 @@
  .shop-home .section-head{margin-bottom:16px;gap:12px}
  .shop-home .section-head h2,.shop-home .hub h2{font-size:2.25rem!important;line-height:1}
  .shop-home .rail-track{scroll-snap-type:x mandatory;scroll-padding-inline:2px;gap:14px;grid-auto-columns:82%;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
- .shop-home :is(#rail-music,#rail-festival) [data-track]{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:82%;grid-auto-rows:360px;overflow-x:auto!important;overflow-y:hidden!important;scroll-snap-type:x mandatory;gap:14px}
- .shop-home :is(#rail-music,#rail-festival) .listing-card:first-child,.shop-home #rail-festival .listing-card:first-child{grid-column:auto;grid-row:auto}
+ .shop-home :is(#rail-music,#rail-festival) [data-track]{grid-template-columns:none!important;grid-auto-flow:column!important;grid-auto-columns:82%!important;grid-auto-rows:360px!important;overflow-x:auto!important;overflow-y:hidden!important;scroll-snap-type:x mandatory!important;gap:14px}
+ .shop-home :is(#rail-music,#rail-festival) .listing-card:first-child,.shop-home #rail-festival .listing-card:first-child{grid-column:auto!important;grid-row:auto!important}
  .shop-home :is(#rail-music,#rail-festival) .listing-card:nth-child(n+6){display:block!important}
  .shop-home :is(#rail-music,#rail-festival,#rail-club,#rail-comedy,#rail-family,#rail-shows) .listing-card{scroll-snap-align:start}
  .shop-home :is(#rail-under,#rail-boat,#rail-family,#rail-shows){padding-block:32px!important}
 }
 @media(max-width:360px){.shop-home .hero.hero-sales .hero-grid{width:calc(100% - 32px)}.shop-home .hero.hero-sales .hero-stack{width:calc(100% + 32px);margin-inline:-16px}.shop-home .hero-stack .hs-deck{padding-inline:16px;scroll-padding-inline:16px;grid-auto-columns:calc(100% - 56px)}.shop-home .hero-stack .hs-label{margin-inline:16px}.shop-home .hero.hero-sales #destination-search .ds-submit{padding-inline:12px}.shop-home .header .brand img{width:154px}}
+/* Phones: categories and the "Why book" band swipe sideways like an app instead of stacking. */
+@media(max-width:760px){
+ .shop-home #mood-grid{display:grid!important;grid-auto-flow:column!important;grid-template-columns:none!important;grid-template-rows:repeat(2,150px)!important;grid-auto-columns:42%!important;gap:10px!important;overflow-x:auto!important;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:4px}
+ .shop-home #mood-grid::-webkit-scrollbar{display:none}
+ .shop-home #mood-grid .mood-tile{scroll-snap-align:start;min-height:0!important;height:150px!important;aspect-ratio:auto!important}
+ .shop-home .tbp-grid{display:grid!important;grid-auto-flow:column!important;grid-template-columns:none!important;grid-auto-columns:86%!important;gap:12px!important;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+ .shop-home .tbp-grid::-webkit-scrollbar{display:none}
+ .shop-home .tbp-card{scroll-snap-align:start;flex-direction:column!important}
+ .shop-home .tbp-fees>img{width:100%!important;height:170px!important;min-height:0!important}
+ .shop-home .tbp{padding:36px 0}
+}

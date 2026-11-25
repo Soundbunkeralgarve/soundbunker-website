@@ -2,6 +2,8 @@
 // is the owner's hidden way in; clicking it remembers this device and shows the site.
 // Pages people need for real tickets or running events are never covered.
 const KEY = 'tb-preview-open';
+// Launched 26 Nov 2026: the notice is off. Set back to false to show it again.
+export const LAUNCHED = true;
 // What's coming, one at a time, each with its own photo behind the notice.
 const KINDS = [['Gigs', '/assets/hero/live.jpg'], ['Raves & club nights', '/assets/hero/club.jpg'], ['Festivals', '/assets/hero/festival.jpg'],
   ['Theatre & shows', '/assets/samples/theatre-gold.jpg'], ['Comedy', '/assets/samples/comedy-spot.jpg'], ['Boat trips', '/assets/hero/boat.jpg'],
@@ -19,7 +21,7 @@ function remembered() {
   try { return localStorage.getItem(KEY); } catch { return null; }
 }
 
-if (typeof document !== 'undefined' && needsNotice(location.pathname, remembered())) {
+if (typeof document !== 'undefined' && !LAUNCHED && needsNotice(location.pathname, remembered())) {
   const style = document.createElement('style');
   style.textContent = `
 .tb-soon{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;padding:24px;background:#07070b;color:#fff;font-family:'DM Sans',Arial,sans-serif;text-align:center;overflow:auto}
