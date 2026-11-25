@@ -94,6 +94,9 @@ test('same-area requests coalesce, cache upstream map data and recompute exact d
     assert.match(query, /around:2100,37.089,-8.25/);
     assert.doesNotMatch(query, /37.08901/);
     assert.match(query, /ferry_terminal/);
+    assert.match(query, /\[maxsize:67108864\]/, 'bounded 64 MiB budget avoids the previous 8 MiB ceiling');
+    assert.match(query, /\[timeout:8\]/);
+    assert.ok(options.signal instanceof AbortSignal);
     await pending;
     return {ok: true, json: async () => ({elements: [node(1, {amenity: 'taxi', name: 'Central taxis'})]})};
   };
@@ -120,8 +123,37 @@ test('upstream overload or partial results return an honest unavailable state an
       assert.equal(res.body.places, undefined, 'an outage is not presented as no transport nearby');
       assert.equal(res.headers['retry-after'], '30');
     }
-    assert.equal(calls, 1, 'failure cooldown prevents repeated overload');
+    assert.equal(calls, 2, 'one fallback is attempted, then failure cooldown prevents repeated overload');
   }
+});
+
+test('busy, failed-network and incomplete primary responses use one fixed fallback', async () => {
+  for (const failure of ['busy', 'server', 'network', 'memory']) {
+    const calls = [];
+    const fetchImpl = async (url, options) => {
+      calls.push(url);
+      assert.equal(options.method, 'POST');
+      if (calls.length === 1) {
+        if (failure === 'network') throw Error('Network unavailable');
+        if (failure === 'memory') return {ok: true, json: async () => ({elements: [], remark: 'runtime error: out of memory'})};
+        return {ok: false, status: failure === 'busy' ? 429 : 503};
+      }
+      return {ok: true, json: async () => ({elements: [node(1, {highway: 'bus_stop', name: 'Local bus'})]})};
+    };
+    const res = fakeRes(); await handleNearbyTransport(request(), res, {fetchImpl});
+    assert.equal(res.code, 200, failure);
+    assert.equal(res.body.places[0].name, 'Local bus');
+    assert.equal(res.body.live, false);
+    assert.deepEqual(calls, ['https://overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter']);
+  }
+});
+
+test('malformed upstream queries do not move the same bad request to another provider', async () => {
+  const calls = [];
+  const fetchImpl = async url => { calls.push(url); return {ok: false, status: 400}; };
+  const res = fakeRes(); await handleNearbyTransport(request(), res, {fetchImpl});
+  assert.equal(res.code, 503);
+  assert.deepEqual(calls, ['https://overpass-api.de/api/interpreter']);
 });
 
 test('endpoint is public and read-only with no ticket-service authentication dependency', async () => {

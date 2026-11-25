@@ -1,7 +1,12 @@
 // Mapped local transport across the UK/EU. These are OSM places, not live departures.
 // Public Overpass is shared infrastructure: queries are bounded, coalesced and cached.
 // https://dev.overpass-api.de/overpass-doc/en/preface/commons.html
-const OVERPASS = 'https://overpass-api.de/api/interpreter';
+// Both instances are listed by OpenStreetMap. One bounded fallback keeps an outage
+// at the shared primary from disabling nearby information altogether.
+const OVERPASS = [
+  {url: 'https://overpass-api.de/api/interpreter', timeout: 10000},
+  {url: 'https://overpass.private.coffee/api/interpreter', timeout: 12000}
+];
 const TTL = 10 * 60 * 1000;
 const FAILURE_TTL = 30 * 1000;
 const MAX_CACHE = 128;
@@ -81,7 +86,33 @@ function numberParam(value, fallback) {
 }
 function makeQuery([lat, lon], radius) {
   const around = `(around:${radius},${lat},${lon})`;
-  return `[out:json][timeout:12][maxsize:8388608];(nwr["highway"="bus_stop"]${around};nwr["amenity"~"^(bus_station|ferry_terminal|taxi)$"]${around};nwr["railway"~"^(station|halt|tram_stop|subway_entrance)$"]${around};${['bus', 'trolleybus', 'train', 'subway', 'tram', 'ferry', 'boat'].map(mode => `nwr["public_transport"~"^(station|platform|stop_position)$"]["${mode}"="yes"]${around};`).join('')});out center 2500;`;
+  return `[out:json][timeout:8][maxsize:67108864];(nwr["highway"="bus_stop"]${around};nwr["amenity"~"^(bus_station|ferry_terminal|taxi)$"]${around};nwr["railway"~"^(station|halt|tram_stop|subway_entrance)$"]${around};${['bus', 'trolleybus', 'train', 'subway', 'tram', 'ferry', 'boat'].map(mode => `nwr["public_transport"~"^(station|platform|stop_position)$"]["${mode}"="yes"]${around};`).join('')});out center 2500;`;
+}
+async function queryInstance(instance, query, fetchImpl) {
+  const controller = new AbortController();
+  let timer;
+  try {
+    return await Promise.race([
+      (async () => {
+        const r = await fetchImpl(instance.url, {method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded', accept: 'application/json', 'User-Agent': 'TicketBunker/1.0 (https://theticketbunker.com)'},
+          body: new URLSearchParams({data: query}).toString(), signal: controller.signal, redirect: 'error'});
+        if (!r.ok) throw Object.assign(Error('Mapped transport unavailable'), {retryable: r.status === 429 || r.status >= 500});
+        const json = await r.json();
+        if (!Array.isArray(json?.elements) || json.remark) throw Object.assign(Error('Mapped transport incomplete'), {retryable: true});
+        return json;
+      })(),
+      new Promise((_, reject) => { timer = setTimeout(() => { controller.abort(); reject(Object.assign(Error('Mapped transport timeout'), {retryable: true})); }, instance.timeout); })
+    ]);
+  } catch (e) {
+    if (e?.retryable === false) throw e;
+    throw Object.assign(Error('Mapped transport unavailable'), {retryable: true});
+  } finally { clearTimeout(timer); }
+}
+async function queryMap(query, fetchImpl) {
+  for (let i = 0; i < OVERPASS.length; i++) {
+    try { return await queryInstance(OVERPASS[i], query, fetchImpl); }
+    catch (e) { if (!e.retryable || i === OVERPASS.length - 1) throw e; }
+  }
 }
 async function areaData(here, radius, fetchImpl) {
   // A small shared tile avoids sending/storing the visitor's exact GPS in an upstream query.
@@ -95,11 +126,7 @@ async function areaData(here, radius, fetchImpl) {
   if (cache.size >= MAX_CACHE) cache.delete(cache.keys().next().value);
   const item = {until: now + TTL, promise: null};
   item.promise = (async () => {
-    const r = await fetchImpl(OVERPASS, {method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded', accept: 'application/json', 'User-Agent': 'TicketBunker/1.0 (https://theticketbunker.com)'},
-      body: new URLSearchParams({data: makeQuery(centre, radius + 100)}).toString(), signal: AbortSignal.timeout(16000), redirect: 'error'});
-    if (!r.ok) throw Error('Mapped transport unavailable');
-    const json = await r.json();
-    if (!Array.isArray(json?.elements) || json.remark) throw Error('Mapped transport incomplete');
+    const json = await queryMap(makeQuery(centre, radius + 100), fetchImpl);
     return {places: normalizeNearbyTransport(json, centre, radius + 100), at: new Date().toISOString()};
   })().catch(e => { item.until = Date.now() + FAILURE_TTL; throw e; });
   cache.set(key, item);
