@@ -93,7 +93,7 @@ export default function EventDashboard({id, navigation}) {
 const d = StyleSheet.create({
   img: {width: '100%', height: 220, backgroundColor: C.card},
   stats: {flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 6},
-  stat: {flexGrow: 1, flexBasis: '45%', backgroundColor: C.card, borderRadius: 18, padding: 14, borderWidth: 1, borderColor: C.line, gap: 4},
+  stat: {flexGrow: 1, flexBasis: '45%', backgroundColor: C.cardHi, borderRadius: 20, padding: 16, borderWidth: 1, borderColor: '#00e0a633', gap: 4, shadowColor: C.teal, shadowOpacity: 0.12, shadowRadius: 16, shadowOffset: {width: 0, height: 6}, elevation: 4},
   statLabel: {fontFamily: F.bold, color: C.muted, fontSize: 14, letterSpacing: 1},
   statValue: {fontFamily: F.display, color: C.text, fontSize: 24},
   box: {gap: 10, backgroundColor: C.card, borderRadius: 18, padding: 14, borderWidth: 1, borderColor: C.line, marginTop: 6}

@@ -8,6 +8,10 @@ import {CATEGORY_KEYS, WHEN_OPTIONS, search, mixTypes, cityRow} from '../../lib/
 import {discoveryCategories, nearestCities, cityBySlug} from '../../lib/site.js';
 import {locate} from '../state.js';
 
+// Photo tiles: curated pictures, so every type looks like a night out, not a grey button.
+const TILES = {music: require('../../assets/tiles/music.jpg'), club: require('../../assets/tiles/club.jpg'), comedy: require('../../assets/tiles/comedy.jpg'),
+  festival: require('../../assets/tiles/festival.jpg'), shows: require('../../assets/tiles/shows.jpg'), family: require('../../assets/tiles/family.jpg'),
+  cinema: require('../../assets/tiles/cinema.jpg'), daysout: require('../../assets/tiles/daysout.jpg')};
 const POPULAR = ['london', 'manchester', 'glasgow', 'dublin', 'algarve', 'lisbon', 'barcelona', 'ibiza', 'paris', 'amsterdam', 'berlin', 'bristol'];
 
 export default function HomeScreen({navigation}) {
@@ -34,7 +38,8 @@ export default function HomeScreen({navigation}) {
   }
 
   return <View style={s.screen}><ScrollView style={s.screen} contentContainerStyle={{paddingBottom: 40}} keyboardShouldPersistTaps="handled">
-    <ImageBackground source={require('../../assets/club.jpg')} style={[h.hero, {paddingTop: insets.top + 16}]} imageStyle={{opacity: 0.12}}>
+    <ImageBackground source={require('../../assets/club.jpg')} style={[h.hero, {paddingTop: insets.top + 16}]} imageStyle={{opacity: 0.42}}>
+      <View pointerEvents="none" style={h.heroShade}/>
       <View style={[h.heroInner, wide && {maxWidth: 1140}]}>
         <View style={h.brandRow}><BrandHeader style={h.brand}/><Text style={h.coverage}>UK & Europe</Text></View>
         <View style={h.liveRow}><View style={h.liveDot}/><Text style={h.liveText}>{count ? count.toLocaleString('en-GB') + ' events on sale' : 'Tickets on sale now'}</Text></View>
@@ -85,8 +90,13 @@ export default function HomeScreen({navigation}) {
       <Text style={s.eyebrow}>Find your thing</Text>
       <Text style={s.h2}>Pick your next plan.</Text>
       <View style={h.grid}>
-        {CATEGORY_KEYS.map(k => <Button key={k} kind="secondary" title={discoveryCategories[k]} onPress={() => navigation.navigate('Results', {category: k})}
-          lines={2} style={[h.tile, {width: wide ? '23.5%' : '48%'}]}/>)}
+        {CATEGORY_KEYS.map(k => <Pressable key={k} accessibilityRole="button" accessibilityLabel={discoveryCategories[k]} onPress={() => navigation.navigate('Results', {category: k})}
+          style={({pressed}) => [h.tile, {width: wide ? '23.5%' : '48%'}, pressed && {transform: [{scale: 0.98}]}]}>
+          <ImageBackground source={TILES[k]} style={h.tileImg} imageStyle={{borderRadius: 20}}>
+            <View style={h.tileShade}/><View style={h.tileBar}/>
+            <Text style={h.tileText} numberOfLines={2}>{discoveryCategories[k]}</Text>
+          </ImageBackground>
+        </Pressable>)}
       </View>
     </View>
 
@@ -111,7 +121,7 @@ export default function HomeScreen({navigation}) {
   </ScrollView><StatusShade/></View>;
 }
 const h = StyleSheet.create({
-  hero: {backgroundColor: C.bg, paddingHorizontal: 20, paddingBottom: 24},
+  hero: {backgroundColor: C.bg, paddingHorizontal: 20, paddingBottom: 30, overflow: 'hidden'},
   heroInner: {width: '100%', alignSelf: 'center'},
   brandRow: {flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 26},
   brand: {width: 202, height: 34, marginBottom: 0},
@@ -131,7 +141,7 @@ const h = StyleSheet.create({
   pageDotActive: {width: 22, backgroundColor: C.teal},
   loadingTicket: {minHeight: 260, marginLeft: 20, borderRadius: 22, backgroundColor: C.card, borderWidth: 1, borderColor: C.line, alignItems: 'center', justifyContent: 'center', gap: 14},
   searchSection: {marginTop: 22},
-  searchPanel: {padding: 18, borderRadius: 22, backgroundColor: C.card, borderWidth: 1, borderColor: '#343441', gap: 10},
+  searchPanel: {padding: 18, borderRadius: 24, backgroundColor: C.card, borderWidth: 1, borderColor: '#00e0a640', gap: 10, shadowColor: C.teal, shadowOpacity: 0.18, shadowRadius: 24, shadowOffset: {width: 0, height: 10}, elevation: 8},
   searchTitle: {fontFamily: F.display, color: C.text, fontSize: 30, lineHeight: 32, marginBottom: 6, textTransform: 'uppercase'},
   inputLabel: {fontFamily: F.semibold, color: '#d6dbe1', fontSize: 14, lineHeight: 20},
   filterToggle: {minHeight: 56, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingVertical: 10},
@@ -143,7 +153,12 @@ const h = StyleSheet.create({
   actions: {flexDirection: 'row', gap: 10, marginTop: 4},
   section: {marginTop: 34, gap: 10},
   grid: {flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'space-between'},
-  tile: {minHeight: 70, borderRadius: 16, paddingHorizontal: 12},
+  tile: {height: 132, borderRadius: 20, overflow: 'hidden', borderWidth: 1, borderColor: '#ffffff1f', backgroundColor: C.card, shadowColor: '#000', shadowOpacity: 0.5, shadowRadius: 14, shadowOffset: {width: 0, height: 8}, elevation: 6},
+  tileImg: {flex: 1, justifyContent: 'flex-end', padding: 14},
+  tileShade: {...StyleSheet.absoluteFillObject, backgroundColor: '#07070b', opacity: 0.48},
+  tileBar: {width: 28, height: 3, borderRadius: 2, backgroundColor: C.teal, marginBottom: 8},
+  tileText: {fontFamily: F.display, fontSize: 24, lineHeight: 24, color: C.text, textTransform: 'uppercase'},
+  heroShade: {...StyleSheet.absoluteFillObject, backgroundColor: '#07070b', opacity: 0.55},
   wrap: {flexDirection: 'row', flexWrap: 'wrap', gap: 8},
   list: {gap: 12},
   listWide: {flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 12}

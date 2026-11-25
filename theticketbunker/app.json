@@ -3,7 +3,7 @@
     "name": "theticketbunker",
     "slug": "theticketbunker",
     "scheme": "theticketbunker",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "default",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#07070b",
@@ -11,7 +11,7 @@
     "ios": {
       "bundleIdentifier": "pt.soundbunker.theticketbunker",
       "supportsTablet": true,
-      "buildNumber": "1",
+      "buildNumber": "4",
       "associatedDomains": [],
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "TicketBunker uses your location to find nearby events, transport stops and routes. Your coordinates are sent to TicketBunker and the map or transport provider for the search. Background location is not used.",

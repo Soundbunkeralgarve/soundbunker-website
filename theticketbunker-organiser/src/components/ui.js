@@ -36,7 +36,7 @@ export function Empty({title, text, action}) {
 const b = StyleSheet.create({
   base: {minHeight: 58, borderRadius: 999, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10},
   small: {minHeight: 48, borderRadius: 999, paddingHorizontal: 16},
-  primary: {backgroundColor: C.teal},
+  primary: {backgroundColor: C.teal, shadowColor: C.teal, shadowOpacity: 0.4, shadowRadius: 16, shadowOffset: {width: 0, height: 6}, elevation: 6},
   secondary: {backgroundColor: C.cardHi, borderWidth: 1, borderColor: C.line},
   ghost: {backgroundColor: 'transparent', borderWidth: 1, borderColor: C.teal},
   text: {fontFamily: F.bold, fontSize: 17, flexShrink: 1},

@@ -17,7 +17,7 @@ export default function EventRow({event, onPress, selected}) {
   </Pressable>;
 }
 const r = StyleSheet.create({
-  row: {flexDirection: 'row', gap: 14, alignItems: 'center', backgroundColor: C.card, borderRadius: 18, padding: 12, borderWidth: 1, borderColor: C.line, minHeight: 104},
+  row: {flexDirection: 'row', gap: 14, alignItems: 'center', backgroundColor: C.card, borderRadius: 20, padding: 12, borderWidth: 1, borderColor: '#ffffff1a', minHeight: 104, shadowColor: '#000', shadowOpacity: 0.45, shadowRadius: 14, shadowOffset: {width: 0, height: 8}, elevation: 5},
   on: {borderColor: C.teal, borderWidth: 2},
   img: {width: 72, height: 80, borderRadius: 12, backgroundColor: C.cardHi},
   noImg: {alignItems: 'center', justifyContent: 'center'},
