@@ -43,4 +43,4 @@ The native interface now uses the published website’s Barlow Condensed headlin
 
 Validation passed: 9 existing organiser tests, Expo Doctor 21/21, and Android/iOS JavaScript/Hermes bundle exports on Expo 57.0.34. These checks did not create signed app binaries or submit anything to either store; no on-device visual review was performed.
 
-The initial store version remains `1.0.0`; EAS uses remote build numbering and production `autoIncrement`. After publishing the exact source commit, dispatch `.github/workflows/ticketbunker-mobile-release.yml` with `upload: false` for signed builds only, or `upload: true` for the existing TestFlight/Play internal upload route. The workflow builds buyer and organiser apps for both iOS and Android.
+The store version is `1.0.1`; EAS uses remote build numbering and production `autoIncrement`. After publishing the exact source commit, dispatch `.github/workflows/ticketbunker-mobile-release.yml` with `upload: false` for signed builds only, or `upload: true` for the existing TestFlight/Play internal upload route. The workflow builds buyer and organiser apps for both iOS and Android.

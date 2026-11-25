@@ -36,8 +36,11 @@ export function validateReleaseConfig(app, eas, expected) {
   }
   const production = resolveSubmitProfile(eas.submit, 'production');
   const ci = resolveSubmitProfile(eas.submit, 'production-ci');
-  if (app.version !== '1.0.0' || production.android?.track !== 'internal' || ci.android?.track !== 'internal') {
-    throw new Error('Initial release must use version 1.0.0 and the Play internal testing track.');
+  if (typeof app.version !== 'string' || app.version !== app.version.trim() || !/^[1-9]\d*\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(app.version)) {
+    throw new Error('Store releases require a stable version in X.Y.Z format, at least 1.0.0.');
+  }
+  if (production.android?.track !== 'internal' || ci.android?.track !== 'internal') {
+    throw new Error('Store releases must use the Play internal testing track.');
   }
   if (Object.keys(CI_IOS_KEY_FIELDS).some(field => field in production.ios)) {
     throw new Error('The standard production submit profile must use Expo-managed credentials, not a CI file path.');

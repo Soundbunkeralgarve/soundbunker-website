@@ -117,7 +117,7 @@ test('trip partners expose only approved affiliates for the destination alongsid
   assert.equal(affiliate.searchParams.get('city'), 'London');
   assert.equal(affiliate.searchParams.get('clickref'), 'app');
   assert.equal(affiliate.searchParams.get('clickref2'), 'planner');
-  assert.deepEqual(travel.partners.slice(2).map(p => p.url), ['https://www.thetrainline.com/', 'https://www.omio.com/']);
+  assert.deepEqual(travel.partners.slice(1).map(p => p.url), ['https://www.trip.com/trains/uk/?Allianceid=11489066&SID=336945869', 'https://www.thetrainline.com/', 'https://www.omio.com/']);
 });
 
 test('My trip keeps saved nights soonest first, drops past ones and tracks steps', () => {

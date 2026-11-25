@@ -50,6 +50,22 @@ test('fails before a build when an inherited submit profile could publish Androi
   assert.throws(() => validateReleaseConfig(app, eas, expected), /public Play track/);
 });
 
+test('supports stable production updates after the initial store release', () => {
+  for (const version of ['1.0.0', '1.0.1', '1.12.34', '2.0.0']) {
+    const { app, eas, expected } = config();
+    app.version = version;
+    assert.doesNotThrow(() => validateReleaseConfig(app, eas, expected), version);
+  }
+});
+
+test('rejects prerelease, malformed and pre-1.0 production versions', () => {
+  for (const version of [undefined, null, 1, '', '0.9.9', '1.0', '1.0.1.2', '01.0.1', '1.00.1', '1.0.01', '1.0.1-beta.1', '1.0.1+build.7', ' 1.0.1', '1.0.1\n']) {
+    const { app, eas, expected } = config();
+    app.version = version;
+    assert.throws(() => validateReleaseConfig(app, eas, expected), /stable version/, String(version));
+  }
+});
+
 test('rejects a standard submit route that depends on a GitHub runner key file', () => {
   const { app, eas, expected } = config();
   eas.submit.production.ios.ascApiKeyPath = '$EXPO_ASC_API_KEY_PATH';
