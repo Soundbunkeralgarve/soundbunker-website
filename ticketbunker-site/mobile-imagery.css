@@ -3,10 +3,10 @@
   .shop-home .hero.hero-sales {min-height:0}
   .shop-home .hero.hero-sales .hero-grid {row-gap:28px;padding-bottom:28px}
   .shop-home .hero-stack {
-    width:100%;
+    width:calc(100% - 28px);
     max-width:440px;
     padding:0;
-    margin:4px 0 0;
+    margin:24px 14px 0;
     justify-self:center;
   }
   .shop-home .hero-stack[hidden] {display:none}
@@ -26,9 +26,24 @@
     transition:opacity .3s ease;
   }
   .shop-home .hero-stack .hs-ticket:not([data-pos="0"]) {
+    pointer-events:none;
+  }
+  .shop-home .hero-stack .hs-ticket[data-pos="1"] {
+    opacity:1;
+    visibility:visible;
+    transform:translate(10px,-12px) rotate(2deg) scale(.97);
+    filter:brightness(.7);
+  }
+  .shop-home .hero-stack .hs-ticket[data-pos="2"] {
+    opacity:1;
+    visibility:visible;
+    transform:translate(18px,-22px) rotate(4deg) scale(.94);
+    filter:brightness(.5);
+  }
+  .shop-home .hero-stack .hs-ticket[data-pos="3"],
+  .shop-home .hero-stack .hs-ticket[data-pos="4"] {
     opacity:0;
     visibility:hidden;
-    pointer-events:none;
     transform:none;
   }
   .shop-home .hero-stack .hs-ticket[data-pos="0"],

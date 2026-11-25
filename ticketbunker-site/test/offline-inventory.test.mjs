@@ -34,9 +34,27 @@ test('offline inventory navigation falls back to the static shell instead of cac
   for(const path of ['/london','/listing/viator%3A123','/event/live-gig'])assert.equal(await (await w.request(path)).text(),'static app shell');
 });
 
-test('activation clears the old cache and versioned scripts still work offline',async()=>{
-  const w=worker();await w.activate();assert.deepEqual(w.removed,['tb-shell-v1']);
+test('activation clears old design caches and versioned scripts still work offline',async()=>{
+  const w=worker();await w.activate();assert.deepEqual(w.removed,['tb-shell-v1','tb-shell-v2']);
   await w.request('/home.js?v=20261123-mixed-cards','cors');
   w.setOffline();assert.equal(await (await w.request('/home.js?v=20261123-mixed-cards','cors')).text(),'fresh /home.js');
-  assert.ok(w.puts.every(p=>p.name==='tb-shell-v2'));
+  assert.ok(w.puts.every(p=>p.name==='tb-shell-v3'));
+});
+
+test('an online app replaces stale styles and scripts even when their URLs are unchanged',async()=>{
+  const w=worker();
+  for(const path of ['/premium.css?v=same-release','/home.js?v=same-release','/public-brand.css']){
+    w.saved.set(path,new Response('old design'));
+    assert.equal(await (await w.request(path,'cors')).text(),'fresh '+path.split('?')[0]);
+  }
+  w.setOffline();
+  assert.equal(await (await w.request('/premium.css?v=same-release','cors')).text(),'fresh /premium.css');
+  assert.equal(await (await w.request('/home.js?v=same-release','cors')).text(),'fresh /home.js');
+});
+
+test('API inventory never uses the offline design cache',async()=>{
+  const w=worker();
+  w.saved.set('/api/search?v=old',new Response('stale inventory'));
+  assert.equal(await w.request('/api/search?v=old','cors'),undefined);
+  assert.deepEqual(w.puts,[]);
 });

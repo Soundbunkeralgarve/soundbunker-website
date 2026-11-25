@@ -1,0 +1,59 @@
+/* The published premium brand on buyer, booking and help pages.
+   Opt-in scope keeps staff tools unchanged. Ticket passes retain their print palette. */
+body.tb-public-brand {
+  --bg:#07070b;--surface:#101018;--surface-2:#171722;--edge:#24242f;
+  --text:#f4f6f8;--soft:#a7adb6;--teal:#00e0a6;--pink:#ff4f9a;
+  --paper:var(--bg);--ink:var(--text);--muted:var(--soft);--line:var(--edge);--green:var(--teal);
+  --font:'DM Sans',Arial,sans-serif;--display:'Barlow Condensed',Impact,sans-serif;
+  color-scheme:dark;background:var(--bg);color:var(--text);font-family:var(--font);
+}
+.tb-public-brand :is(h1,h2,h3) {font-family:var(--display);font-weight:900;letter-spacing:-.005em}
+.tb-public-brand h1 em,.tb-public-brand .eyebrow,.tb-public-brand .booking-benefit {color:var(--teal)}
+.tb-public-brand :is(.account-header,.account-footer) {background:var(--bg);border-color:var(--edge)}
+.tb-public-brand :is(.auth-card,.ticket-card,.empty-state,.preferences,dialog,.ticket-types,.feature-benefits article,.support-guide article,.support-signin,.support-inbox,.support-detail,.support-compose,.support-help details,.support-actions,.support-post,.commercial-panel,.commercial-total,.full-prices,.full-price-card,.usage-price) {
+  background:var(--surface);color:var(--text);border-color:var(--edge);border-radius:16px;
+}
+.tb-public-brand :is(.auth-tabs,.role-tabs,.event-meta,.ticket-type,.support-inbox-head,.support-footer-links) {border-color:var(--edge)}
+.tb-public-brand :is(input,select,textarea):not([type=checkbox]):not([type=radio]) {
+  background:var(--surface-2);color:var(--text);border-color:#41414e;border-radius:10px;
+}
+.tb-public-brand input::placeholder,.tb-public-brand textarea::placeholder {color:var(--soft);opacity:1}
+.tb-public-brand :is(.password-row button,.secondary) {background:var(--surface-2);color:var(--text);border-color:#41414e}
+.tb-public-brand :is(.primary,.pill,.event-shell .primary) {background:var(--teal);color:#04140d;border-radius:999px;font-weight:800}
+.tb-public-brand .secondary {border-radius:999px}
+.tb-public-brand :is(.primary,.pill,.secondary) {min-height:48px}
+.tb-public-brand :is(.primary,.pill):hover {background:#58efc7}
+.tb-public-brand .secondary:hover {border-color:var(--teal);color:var(--teal)}
+.tb-public-brand .role-tabs a[aria-current=page] {background:var(--teal);color:#04140d}
+.tb-public-brand .auth-tabs button[aria-pressed=true] {border-color:var(--teal);color:var(--teal)}
+.tb-public-brand :is(.text-button,.text-link,.legal a,.support-guide a,.feature-page details a) {color:var(--teal)}
+.tb-public-brand :is(.legal p,.legal li,.ticket-type small,.feature-benefits p,.feature-page details p,.commercial-shell .muted,.full-price-card small,.full-price-note,.support-refund p) {color:var(--soft)}
+.tb-public-brand :is(#auth-message,#ticket-change-status,.support-message) {color:#85dfc3}
+.tb-public-brand :is(.error,#auth-message.error,#ticket-change-status.error,.support-message.error,#booking-error) {color:#ff9aae!important}
+.tb-public-brand :is(.event-notice,.support-post.staff,.support-refund) {background:#112820;color:#d6f8ec;border-color:#285043}
+.tb-public-brand :is(.preview-banner,.support-warning) {background:#312617;color:#ffcf79;border-color:#72592f}
+.tb-public-brand .support-case {background:var(--surface);color:var(--text);border-color:var(--edge)}
+.tb-public-brand :is(.support-case:hover,.support-case[aria-current=page]) {background:var(--surface-2);border-color:var(--teal)}
+.tb-public-brand .support-error-box {background:#321923;color:#ffb7c4;border-color:#773347}
+.tb-public-brand .support-badge {background:var(--surface-2);color:var(--soft)}
+.tb-public-brand .support-badge.urgent {background:#312617;color:#ffcf79}
+.tb-public-brand .support-badge.done {background:#112820;color:#85dfc3}
+.tb-public-brand .event-poster {background:var(--surface)}
+.tb-public-brand :is(.support-case p,.support-post p,.support-count) {color:var(--soft)}
+.tb-public-brand :is(.skip,.skip-link) {background:var(--teal);color:#04140d}
+.tb-public-brand :focus-visible {outline:3px solid var(--teal);outline-offset:3px}
+.tb-public-brand :is(.ticket-intro h1,.ticket-intro .eyebrow) {color:var(--text)}
+.tb-public-brand :is(.ticket-intro p,.wallet-print-help) {color:var(--soft)}
+/* A white pass and QR remain easy to scan, save and print. */
+.tb-public-brand .ticket-pass {color-scheme:light;--ink:#16241f;--muted:#65736c;--line:#d6dfda;background:#fff;color:#16241f}
+.tb-public-brand .ticket-pass :is(h1,h2,h3) {font-family:var(--display)}
+@media(max-width:700px) {
+  .tb-public-brand h1 {font-size:clamp(2.8rem,12vw,4rem);line-height:.98;overflow-wrap:break-word;text-wrap:balance}
+  .tb-public-brand .account-header {flex-wrap:wrap;gap:16px}
+  .tb-public-brand .account-header nav {flex-wrap:wrap;gap:12px}
+  .tb-public-brand :is(.support-heading,.page-heading) {align-items:flex-start;flex-wrap:wrap}
+  .tb-public-brand :is(.auth-card,.support-compose,.commercial-panel) {min-width:0}
+}
+@media print {
+  .tb-public-brand {color-scheme:light;--paper:#fff;--ink:#16241f;--muted:#65736c;background:#fff;color:#16241f}
+}

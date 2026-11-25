@@ -109,7 +109,7 @@ form.onsubmit=e=>{e.preventDefault();liveUpdate.cancel();
  const next=formState();
  // A place with its own page opens it, carrying any date or type filter along.
  const page=cityPage(next.city);
- if(page&&(!next.country||next.country===page[2])&&!(pathCity&&pathCity.slug===page[0])){location.href='/'+page[0]+planningQuery({...next,city:'',country:''});return;}
+ if(page&&(!next.country||next.country===page[2])&&!(pathCity&&pathCity.slug===page[0])){location.href='/'+page[0]+planningQuery({...next,city:'',country:''})+'#city-hub';return;}
  commit(next,{scroll:true});};
 when.onchange=()=>{$('#ds-dates').hidden=when.value!=='dates';};
 document.querySelectorAll('[data-quick-when]').forEach(b=>b.onclick=()=>commitForm({when:b.dataset.quickWhen},{scroll:true}));
@@ -349,8 +349,8 @@ function renderPlan(){
 // City pages: every listing in the place on one page, filterable by type, with the
 // travel, stays, food and tours around it one tap away.
 // Phones start shorter so the rails below stay within reach.
-const HUB_STEP=matchMedia('(max-width: 760px)').matches?8:24;let hubCat='',hubLimit=HUB_STEP;
-if(pathCity){$('#city-hub').after($('#plan-trip'),$('#gyg-box'));}
+const HUB_STEP=matchMedia('(max-width: 760px)').matches?8:24;let hubCat='',hubLimit=HUB_STEP,hubJumped=false;
+if(pathCity){$('#hub')?.before($('#city-hub'));$('#city-hub').after($('#plan-trip'),$('#gyg-box'));}
 function renderHub(all,now){
  const box=$('#city-hub');
  if(!pathCity||state.city!==pathCity.city){box.hidden=true;return;}
@@ -381,6 +381,7 @@ function renderHub(all,now){
  $('#city-filters').querySelectorAll('[data-hub]').forEach(b=>b.onclick=()=>{hubCat=b.dataset.hub;hubLimit=HUB_STEP;render();});
  const near=CITY_PAGES.filter(([slug,,c])=>c===pathCity.country&&slug!==pathCity.slug).slice(0,8);
  $('#city-grid').innerHTML=shown.length?shown.slice(0,hubLimit).map(i=>card(i)).join(''):settled?`<div class="city-empty"><h3>We\u2019re lining up event partners in ${esc(name)}.</h3><p>Tours and day trips are bookable now, and gigs and nights out will appear here as partners join.${near.length?' Meanwhile, see what\u2019s on nearby:':''}</p>${near.length?`<div class="place-links">${near.map(([slug,n])=>`<a href="/${slug}">${esc(n.replace(/^the /,''))}</a>`).join('')}</div>`:''}</div>`:'';
+ if(location.hash==='#city-hub'&&!hubJumped&&shown.length){hubJumped=true;requestAnimationFrame(()=>box.scrollIntoView({block:'start'}));}
  $('#city-more').hidden=shown.length<=hubLimit;
  $('#city-more').textContent='Show more ('+(shown.length-hubLimit)+' left)';
  $('#city-more').onclick=()=>{hubLimit+=HUB_STEP;render();};
@@ -601,7 +602,7 @@ const showCountry=(()=>{
 })();
 mountPlaceFinder({showCountry});
 // "Near me" in the search bar opens the closest city page.
-mountNearButton($('#ds-near'),{onFound:slug=>{const next=formState();location.href='/'+slug+planningQuery({...next,city:'',country:''});}});
+mountNearButton($('#ds-near'),{onFound:slug=>{const next=formState();location.href='/'+slug+planningQuery({...next,city:'',country:''})+'#city-hub';}});
 document.querySelectorAll('[data-place]').forEach(a=>a.onclick=e=>{e.preventDefault();const [c,p]=a.dataset.place.split('|');commitForm({country:c,city:p},{scroll:true});});
 
 // Share is separate from planning. Saving a public event never records a purchase.

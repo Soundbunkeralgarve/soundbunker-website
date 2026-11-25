@@ -21,6 +21,15 @@ test('downloaded guide embeds its own styles and keeps absolute links for offlin
   assert.match(html,/https:\/\/theticketbunker.com\/london/);
   assert.match(html,/https:\/\/www.google.com\/maps\/search/);
 });
+test('every online city guide includes responsive navigation even without a hero photograph',()=>{
+  for(const city of CITY_PAGES){
+    const html=guideHtml(shell,city,info);
+    assert.equal((html.match(/href="\/public-mobile\.css\?v=[^"]+"/g)||[]).length,1,city[0]);
+  }
+  const noPhoto=guideHtml(shell,cityBySlug('bolton'),info);
+  assert.doesNotMatch(noPhoto,/class="cg-hero cg-hero-photo"/);
+  assert.match(noPhoto,/public-mobile\.css\?v=/);
+});
 test('vouchers require confirmed distribution, matching destination, valid dates and redemption terms',()=>{
   const now=Date.parse('2026-11-23'),base={approved:true,publicDistribution:true,title:'Confirmed dining benefit',description:'Read the conditions',terms:'Valid at named restaurant only',validUntil:'2027-01-01',url:'https://example.com/redeem',code:'PUBLIC-CODE',cities:['london']};
   assert.equal(cityBenefits(cityBySlug('london'),[base],now).filter(b=>b.type==='voucher').length,1);
