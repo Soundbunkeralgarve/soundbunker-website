@@ -21,6 +21,7 @@ const METHODS = {
   'event-organiser-report': ['GET'], 'event-street-team': ['GET', 'POST'],
   'event-staff': ['GET', 'POST'], 'event-scan': ['POST'], 'event-door': ['GET', 'POST'],
   'my-event-tickets': ['GET'], 'my-event-ticket-transfer': ['POST'],
+  'partner-bookings': ['GET','POST'],
   'client-marketing-consent': ['GET', 'POST'],
   'organiser-connect':['GET','POST'], 'organiser-profile':['GET','POST'], 'settlement': ['GET'], 'refund-request': ['GET','POST']
 };

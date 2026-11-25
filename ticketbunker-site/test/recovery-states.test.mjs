@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
+import {createAccountScope} from '../account-partner-bookings.js';
 const source=name=>readFileSync(new URL('../'+name,import.meta.url),'utf8');
 function elements(){const map=new Map();return {map,get:id=>{if(!map.has(id))map.set(id,{textContent:'',hidden:true});return map.get(id);}};}
 test('incomplete ticket links never fetch a ticket or generate an admission QR',async()=>{
@@ -57,7 +58,7 @@ test('organiser setup opens account creation with the current navigation markup'
  };
  const code=js.replace(/^import .*\n/gm,'').split('function showAuth()')[0];
  const initial=js.split('\n').find(line=>line.startsWith("if(params.get('mode')==='signup')"));
- vm.runInNewContext(code+'\n'+initial,{$:get,document:{querySelector:get,querySelectorAll:()=>[]},preferenceFields(){},URLSearchParams,location:{search:'?role=organiser&mode=signup&next=%2Forganiser',hash:''},safeNext:v=>v||''});
+ vm.runInNewContext(code+'\n'+initial,{createAccountScope,$:get,document:{querySelector:get,querySelectorAll:()=>[]},preferenceFields(){},URLSearchParams,location:{search:'?role=organiser&mode=signup&next=%2Forganiser',hash:''},safeNext:v=>v||''});
  assert.equal(get('#form-heading').textContent,'Create your organiser login.');
  assert.equal(get('#name-field').hidden,false);assert.equal(get('#accept-terms').required,true);
  assert.equal(get('#organiser-role')['aria-current'],'page');assert.equal(get('#signup-tab')['aria-pressed'],'true');

@@ -6,6 +6,7 @@ import {C, F, s, WIDE} from '../theme.js';
 import {Button, Loading, Empty, StatusShade, BrandHeader} from '../components/ui.js';
 import {useAuth} from '../state.js';
 import {myTickets, sortTickets, ticketStatus, ticketRef} from '../../lib/tickets.js';
+import {myPartnerBookings, partnerBookingStatus, partnerBookingUrl, partnerAccountUrl} from '../../lib/partnerBookings.js';
 import {vipStatus} from '../../lib/vip.js';
 import {whenText} from '../../lib/format.js';
 import {openPage} from '../open.js';
@@ -14,7 +15,7 @@ import {SITE} from '../../lib/config.js';
 export default function TicketsScreen({navigation}) {
   const auth = useAuth();
   if (auth.session === undefined) return <View style={s.screen}><Loading label="Restoring your sign-in…"/></View>;
-  return auth.session ? <TicketList navigation={navigation}/> : <SignIn/>;
+  return auth.session ? <TicketList key={auth.session.user?.id || auth.email} navigation={navigation}/> : <SignIn/>;
 }
 
 function SignIn() {
@@ -28,8 +29,8 @@ function SignIn() {
   return <KeyboardAvoidingView style={s.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <ScrollView contentContainerStyle={{paddingTop: insets.top + 8, paddingHorizontal: 18, paddingBottom: 40, gap: 14, width: '100%', maxWidth: 560, alignSelf: 'center'}} keyboardShouldPersistTaps="handled">
       <BrandHeader/>
-      <Text style={[s.h1, {textTransform: 'uppercase'}]}>My tickets</Text>
-      <Text style={s.body}>Sign in with the email you booked with. Your TicketBunker tickets, QR codes and wallet passes are all here.</Text>
+      <Text style={[s.h1, {textTransform: 'uppercase'}]}>My tickets & bookings</Text>
+      <Text style={s.body}>Your TB tickets and saved partner bookings, clearly labelled in one account.</Text>
       <TextInput style={s.input} placeholder="Email" placeholderTextColor={C.muted} value={email} onChangeText={setEmail} autoCapitalize="none" autoComplete="email"
         keyboardType="email-address" textContentType="username" accessibilityLabel="Email"/>
       <TextInput style={s.input} placeholder="Password" placeholderTextColor={C.muted} value={password} onChangeText={setPassword} secureTextEntry autoComplete="current-password"
@@ -37,7 +38,7 @@ function SignIn() {
       {msg ? <Text style={[s.body, {color: C.bad}]} accessibilityLiveRegion="assertive">{msg}</Text> : null}
       <Button title="Sign in" onPress={submit} busy={busy}/>
       <Button title="Forgot password?" kind="ghost" small onPress={() => openPage(SITE + '/login?role=buyer')}/>
-      <Text style={s.muted}>Bought tickets but never set a password? Use Forgot password with your booking email. Partner tickets (Skiddle and others) are in that seller’s own app or email.</Text>
+      <Text style={s.muted}>Bought TB tickets but never set a password? Use Forgot password with your booking email. Partner tickets are issued by the named supplier; you can keep their booking details in your account.</Text>
     </ScrollView>
   </KeyboardAvoidingView>;
 }
@@ -45,25 +46,38 @@ function SignIn() {
 function TicketList({navigation}) {
   const auth = useAuth(), insets = useSafeAreaInsets(), {width} = useWindowDimensions(), wide = width >= WIDE;
   const [tickets, setTickets] = useState(null), [error, setError] = useState(''), [refreshing, setRefreshing] = useState(false), [vip, setVip] = useState(false);
+  const [partners, setPartners] = useState(null), [partnerError, setPartnerError] = useState('');
+  const loadPartners = useCallback(async () => {
+    setPartnerError('');
+    try {
+      let list;
+      try { list = await myPartnerBookings(await auth.token()); }
+      catch (e) { if (e.status !== 401) throw e; list = await myPartnerBookings(await auth.renew()); }
+      setPartners(list);
+    } catch (e) { setPartnerError(e.message); setPartners(p => p || []); }
+  }, [auth]);
   const load = useCallback(async () => {
     setError('');
     vipStatus(await auth.token().catch(() => '')).then(v => setVip(v.member === true)).catch(() => {});
-    try {
+    const native = async () => {try {
       let list;
       try { list = await myTickets(await auth.token()); }
       catch (e) { if (e.status !== 401) throw e; list = await myTickets(await auth.renew()); }
       setTickets(sortTickets(list));
-    } catch (e) { setError(e.message); setTickets(t => t || []); }
-  }, [auth]);
+    } catch (e) { setError(e.message); setTickets(t => t || []); }};
+    await Promise.allSettled([native(), loadPartners()]);
+  }, [auth, loadPartners]);
   useEffect(() => { load(); }, [load]);
   const header = <View style={{gap: 8, marginBottom: 8}}>
     <BrandHeader/>
-      <Text style={[s.h1, {textTransform: 'uppercase'}]}>My tickets</Text>
+      <Text style={[s.h1, {textTransform: 'uppercase'}]}>My tickets & bookings</Text>
     <View style={{flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap'}}>
       {vip ? <Text style={k.vip}>VIP</Text> : null}
       <Text style={s.muted}>Signed in as {auth.email}</Text>
     </View>
     <Button title={vip ? 'VIP · your perks & guestlist' : 'TicketBunker VIP'} kind="secondary" small onPress={() => navigation.navigate('Vip')}/>
+    <Text style={[s.h2, {marginTop: 12}]}>TB tickets{tickets ? ' · ' + tickets.length : ''}</Text>
+    <Text style={s.muted}>Issued by The Ticket Bunker. Open a ticket for your QR code and wallet options.</Text>
     {error ? <Text style={[s.body, {color: C.bad}]}>{error}</Text> : null}
   </View>;
   if (tickets === null) return <View style={[s.screen, {paddingTop: insets.top}]}><Loading label="Loading your tickets…"/></View>;
@@ -71,8 +85,14 @@ function TicketList({navigation}) {
     contentContainerStyle={{paddingTop: insets.top + 8, paddingHorizontal: 18, paddingBottom: 40, gap: 12}}
     refreshControl={<RefreshControl refreshing={refreshing} tintColor={C.teal} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }}/>}
     ListHeaderComponent={header}
-    ListEmptyComponent={<Empty title="No tickets yet." text="Tickets bought with your verified email will appear here." action={<Button title="Explore events" onPress={() => navigation.navigate('Discover')}/>}/>}
+    ListEmptyComponent={<Empty title="No TB tickets yet." text="TB tickets bought with your verified email will appear here." action={<Button title="Explore events" onPress={() => navigation.navigate('Discover')}/>}/>}
     ListFooterComponent={<View style={{marginTop: 20, gap: 10}}>
+      <Text style={s.h2}>Partner bookings{partners ? ' · ' + partners.length : ''}</Text>
+      <Text style={s.muted}>Bought with another supplier. Their tickets, booking support and refund terms apply.</Text>
+      {partnerError ? <View style={{gap: 8}}><Text style={[s.body, {color: C.bad}]} accessibilityLiveRegion="polite">Partner bookings could not load. {partnerError}</Text><Button title="Retry partner bookings" kind="secondary" small onPress={loadPartners}/></View> : null}
+      {partners === null ? <Text style={s.muted}>Loading partner bookings…</Text> : partners.length ? partners.map(b => <PartnerBooking key={b.id} booking={b}/>) : !partnerError ? <Text style={s.body}>No partner bookings saved yet.</Text> : null}
+      <Button title="Add or manage partner bookings" kind="secondary" onPress={() => openPage(partnerAccountUrl)}/>
+      <Text style={s.muted}>Add booking references or upload confirmations on the website. You may need to sign in there.</Text>
       <Button title="Sign out" kind="ghost" small onPress={() => auth.signOut()}/>
       <Button title="Delete my account" kind="secondary" small onPress={() => navigation.navigate('DeleteAccount')}/>
     </View>}
@@ -80,6 +100,8 @@ function TicketList({navigation}) {
       onPress={() => ticketRef(t.url) ? navigation.navigate('Ticket', {ticket: t}) : openPage(t.url)}>
       {t.poster ? <Image source={t.poster} style={k.poster} contentFit="cover"/> : <View style={[k.poster, k.noPoster]}><Text style={k.tb}>TB</Text></View>}
       <View style={{flex: 1, gap: 3}}>
+        <Text style={k.tag}>TB TICKET</Text>
+        <Text style={s.muted}>Issued by The Ticket Bunker</Text>
         <Text style={[k.tag, t.used && {color: C.muted}]}>{ticketStatus(t)}</Text>
         <Text style={s.h3} numberOfLines={2}>{t.title}</Text>
         <Text style={s.muted}>{whenText({startsAt: t.startsAt, timezone: t.timezone})}</Text>
@@ -88,6 +110,21 @@ function TicketList({navigation}) {
         <Text style={k.open}>Show ticket →</Text>
       </View>
     </Pressable>}/><StatusShade/></View>;
+}
+function PartnerBooking({booking}) {
+  const state = partnerBookingStatus(booking), url = partnerBookingUrl(booking.bookingUrl);
+  return <View style={[k.card, {flexDirection: 'column', gap: 8}]}>
+    <Text style={[k.tag, {color: C.pink}]}>PARTNER BOOKING</Text>
+    <Text style={s.h3}>{booking.title}</Text>
+    <Text style={s.body}>Booking provider: {booking.providerName || 'external supplier'}</Text>
+    <Text style={s.muted}>{booking.startsAt ? whenText(booking) : 'Date not added'}</Text>
+    {booking.venue ? <Text style={s.muted}>{booking.venue}</Text> : null}
+    {booking.bookingReference ? <Text style={s.body}>Booking reference: {booking.bookingReference}</Text> : null}
+    <Text style={[s.body, {color: C.warn}]}>{state.label}</Text>
+    <Text style={s.muted}>{state.note}</Text>
+    {booking.hasDocument ? <Text style={s.muted}>Confirmation saved{booking.documentName ? ' · ' + booking.documentName : ''}. Open your account to view it.</Text> : null}
+    {url ? <Button title="View with supplier" kind="secondary" small onPress={() => openPage(url)}/> : null}
+  </View>;
 }
 const k = StyleSheet.create({
   card: {flexDirection: 'row', gap: 14, backgroundColor: C.card, borderRadius: 18, padding: 12, borderWidth: 1, borderColor: C.line},
