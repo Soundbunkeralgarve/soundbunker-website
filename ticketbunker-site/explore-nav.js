@@ -37,7 +37,7 @@ const css = `.tb-explore-btn{display:inline-flex;align-items:center;gap:6px;bord
 .tb-explore .tb-explore-cta{grid-column:1/-1;justify-self:start;background:#00e0a6;color:#04140d;font-weight:800;padding:12px 20px;border-radius:999px}
 .tb-explore .tb-explore-cta:hover{background:#ff4f9a;color:#20030f}
 .tb-bar{display:none}
-@media(min-width:901px){.header .navigation .quick-more.tb-more-replaced{display:none!important}}
+@media(min-width:901px){.header .navigation .quick-more.tb-more-replaced,.header:has(.tb-explore-btn) .navigation .quick-more{display:none!important}}
 @media(max-width:1100px) and (min-width:901px){.tb-explore-in{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:900px){
  .tb-explore-btn{display:none}
@@ -83,5 +83,7 @@ if (typeof document !== 'undefined' && needsNotice(location.pathname, null)) {
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && !panel.hidden) { set(false); btn.focus(); } });
     panel.addEventListener('click', e => { if (e.target.closest('a')) set(false); });
   };
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, {once: true}); else start();
+  // After public-navigation.js has finished building the header (it adds the "More" list).
+  const later = () => setTimeout(start, 0);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', later, {once: true}); else later();
 }
