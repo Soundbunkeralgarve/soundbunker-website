@@ -15,7 +15,7 @@ export default function DeleteAccountScreen({navigation}) {
     try {
       const {data} = await auth.auth.getSession();
       if (!data.session) throw Error('Your sign-in has expired. Please sign in again.');
-      setDone(await requestAccountDeletion(data.session.access_token, me.email, 'TB Organiser', reason));
+      setDone(await requestAccountDeletion(data.session.access_token, me.email, 'TicketBunker Organiser', reason));
     } catch (e) { setMsg(e.message); } finally { setBusy(false); }
   }
   const confirm = () => Alert.alert('Delete your TicketBunker account?', `This deletes the account for ${me.email} on the website and in every TicketBunker app. It cannot be undone.`,
