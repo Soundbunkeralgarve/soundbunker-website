@@ -267,6 +267,8 @@
   }
   .shop-home .hero.hero-sales .hero-copy {max-width:none;min-width:0}
   .shop-home .hero-intro-mobile {
+    width:100%;
+    min-width:0;
     min-height:clamp(360px,100vw,460px);
     display:flex;
     flex-direction:column;
@@ -298,6 +300,11 @@
     letter-spacing:-.025em;
     text-shadow:0 3px 28px #000b;
   }
+  .shop-home .hero.hero-sales .hero-copy h1:has(.h1-city) {
+    font-size:clamp(3.25rem,15vw,5.5rem);
+    line-height:.94;
+  }
+  .shop-home .hero.hero-sales .hero-copy h1 .h1-city {overflow-wrap:anywhere}
   .shop-home .hero.hero-sales .h1-solid,
   .shop-home .hero.hero-sales .h1-outline {display:block}
   .shop-home .hero.hero-sales .h1-outline {margin-top:6px;color:#00e0a6;-webkit-text-stroke:0}
