@@ -2,6 +2,8 @@
 // loading path so a slow homepage or navigation import cannot hold it up.
 (() => {
   let stored;
+  // Partner reviewers get the real site from a link with ?preview=partner; it is remembered.
+  if (new URLSearchParams(location.search).get('preview') === 'partner') { try { localStorage.setItem('tb-preview-open', '1'); } catch { /* this visit only */ } return; }
   try { stored = localStorage.getItem('tb-preview-open'); } catch { /* first visit */ }
   const exempt = /^\/(my-tickets|account|checkout|checkout-complete|event-ticket|event-preview|partner-preview|organiser|control-room|event-scanner|scanner|support|guest-list|door-paid|ticket-preview|ticket-email-preview)(\.html)?(\/|$)/;
   if (stored === '1' || exempt.test(location.pathname)) return;
