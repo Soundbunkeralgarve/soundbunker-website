@@ -148,6 +148,17 @@ html.city-guide-document {scroll-padding-top:0}
   .guide-page .guide-section[id] {scroll-margin-top:calc(var(--tb-header-height,65px) + 16px)}
   .guide-page .guide-section,
   .city-guide-page .cg-section {padding-block:30px}
+  .shop-home.guide-page .guide-section>.wrap {width:calc(100% - 32px);min-width:0}
+  .guide-page .guide-section h2 {
+    font-size:clamp(2rem,8vw,2.6rem);
+    line-height:1.05;
+    text-wrap:balance;
+    overflow-wrap:break-word;
+    margin-bottom:16px;
+  }
+  .guide-page .guide-section>.wrap>p {font-size:1rem;line-height:1.6}
+  .guide-page .guide-search {margin-block:20px;border-radius:16px}
+  .guide-page .guide-terms {font-size:.875rem!important;line-height:1.6}
   .guide-page .guide-card,
   .guide-page .guide-reading article,
   .city-guide-page .cg-card {padding:20px;border-radius:14px}

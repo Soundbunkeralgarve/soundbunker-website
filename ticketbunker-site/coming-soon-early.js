@@ -19,5 +19,5 @@ html.tb-soon-pending::after{content:'Welcome to TicketBunker.\\A Coming soon.';w
   document.head.append(cover);
   const clear = () => { root.classList.remove('tb-soon-pending'); cover.remove(); };
   document.addEventListener('tb:welcome-ready', clear, {once: true});
-  import('/coming-soon.js?v=20261125-welcome').catch(clear);
+  import('/coming-soon.js?v=20261125-appstyle').catch(clear);
 })();

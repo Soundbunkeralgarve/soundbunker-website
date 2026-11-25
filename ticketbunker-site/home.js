@@ -1,3 +1,4 @@
+import {mountHeroTickets} from './hero-tickets.js?v=20261125-appstyle';
 import {getPublicEvents} from './featured-events.js?v=20261020';
 import {escapeHtml as esc,money,safeUrl} from './shared.js';
 import {eventKind} from './event-content.js';
@@ -48,7 +49,11 @@ function renderTripPath(current=state){
  const note=$('#trip-type-note');note.hidden=!label;
  note.textContent=label?label+(where?' in '+where:'')+' · Check each event’s age, admission and group terms.':'';
 }
-$('#ds-away').onclick=()=>scrollToSection(form,{focus:true});
+const refineToggle=$('#ds-refine-toggle'),mobileLayout=matchMedia('(max-width:760px)');
+function setRefine(open){form.dataset.refine=open?'open':'closed';refineToggle?.setAttribute('aria-expanded',String(open));}
+function editDestination(){setRefine(true);scrollToSection(form);city.focus({preventScroll:true});}
+if(refineToggle){refineToggle.onclick=()=>setRefine(form.dataset.refine!=='open');setRefine(!mobileLayout.matches);mobileLayout.addEventListener('change',()=>setRefine(!mobileLayout.matches));}
+$('#ds-away').onclick=editDestination;
 function liveFormState(){
  const next=formState(),known=cityPage(next.city)||[...$('#ds-cities').options].some(o=>o.value.toLowerCase()===next.city.toLowerCase());
  if(next.city&&!known)next.city=state.city;
@@ -89,12 +94,13 @@ function fillCountries(){
 }
 category.append(...homeRails.map(([k,l])=>opt(k,l)));
 
-function syncForm(){query.value=state.q||'';country.value=state.country;city.value=state.city;when.value=state.when;category.value=state.category;from.value=state.range.from;to.value=state.range.to;$('#ds-dates').hidden=state.when!=='dates';}
+function updateSearchSummary(){const summary=$('[data-search-summary]');if(summary)summary.textContent=[placeLabel()||'Anywhere',whenLabel()||'Any date',state.category&&discoveryCategories[state.category]].filter(Boolean).join(' · ');}
+function syncForm(){updateSearchSummary();query.value=state.q||'';country.value=state.country;city.value=state.city;when.value=state.when;category.value=state.category;from.value=state.range.from;to.value=state.range.to;$('#ds-dates').hidden=state.when!=='dates';}
 const placeLabel=(s=state)=>s.city?(s.country?s.city+', '+countryName(s.country):s.city):s.country?countryName(s.country):'';
 const whenLabel=(s=state)=>({tonight:'tonight',weekend:'this weekend',week:'in the next 7 days',dates:[s.range.from&&'from '+s.range.from,s.range.to&&'to '+s.range.to].filter(Boolean).join(' ')||'on your dates'}[s.when]||'');
 const searching=()=>!!(state.q||state.category||state.when!=='any');
 function commit(next,{scroll=false,live=false}={}){
- state={...state,...next};if(state.when!=='dates')state.range={from:'',to:''};limit=12;
+ state={...state,...next};if(state.when!=='dates')state.range={from:'',to:''};limit=12;updateSearchSummary();
  try{localStorage.setItem(KEY,JSON.stringify({country:state.country,city:state.city}));}catch{}
  const onCityPage=pathCity&&state.city===pathCity.city&&(!state.country||state.country===pathCity.country);
  history.replaceState(null,'',(pathCity&&!onCityPage?'/':location.pathname)+planningQuery(onCityPage?{...state,city:'',country:''}:state)+location.hash);
@@ -117,8 +123,8 @@ document.querySelectorAll('[data-jump]').forEach(b=>b.onclick=()=>{
  const rail=document.getElementById('rail-'+b.dataset.jump);
  if(rail&&!rail.hidden&&!searching()&&!query.value.trim())rail.scrollIntoView({behavior:reduceMotion()?'auto':'smooth'});else commitForm({category:b.dataset.jump},{scroll:true});
 });
-$('#db-change').onclick=()=>scrollToSection(form,{focus:true});
-$('#db-context').onclick=()=>scrollToSection(form,{focus:true});
+$('#db-change').onclick=editDestination;
+$('#db-context').onclick=editDestination;
 $('#db-clear').onclick=()=>{liveUpdate.cancel();commit({q:'',country:'',city:'',category:'',when:'any'});};
 
 // Cards
@@ -218,7 +224,7 @@ function renderBigFeature(){
 // over their own stills. Phones get lighter files; reduced motion or data saver keep stills.
 const scenes=[...document.querySelectorAll('.hero-scene')],dots=[...document.querySelectorAll('[data-scene]')];
 const sceneNames=['Festivals','Club nights','Live shows','Boat trips & tours','Family days out','Trains to the show'];
-const stillOnly=()=>reduceMotion()||navigator.connection?.saveData===true;
+const stillOnly=()=>reduceMotion()||navigator.connection?.saveData===true||mobileLayout.matches;
 const small=matchMedia('(max-width: 760px)').matches;
 let sceneAt=0,sceneTimer,scenePaused=false;
 function clipFor(i){
@@ -239,7 +245,7 @@ function showScene(i){
  clipFor((i+1)%scenes.length);
 }
 function playScenes(){
- const still=scenePaused||document.hidden;
+ const still=scenePaused||document.hidden||stillOnly();
  $('.hero-scenes').classList.toggle('motion-paused',still);clearInterval(sceneTimer);
  const v=scenes[sceneAt].querySelector('video');if(v){still?v.pause():v.play().catch(()=>{});}
  if(!still)sceneTimer=setInterval(()=>showScene((sceneAt+1)%scenes.length),6000);
@@ -420,7 +426,7 @@ function varied(list,n){
  return out;
 }
 // Hero: the top picks as a deck of real tickets that deals itself forward.
-let heroTimer;
+let heroCleanup;
 function heroStack(items){
  const box=document.querySelector('[data-hero-stack]');if(!box)return;
  const picks=items.filter(hasArt).slice(0,5);
@@ -429,15 +435,11 @@ function heroStack(items){
  const deck=box.querySelector('[data-hs-deck]'),dots=box.querySelector('[data-hs-dots]');
  deck.innerHTML=picks.map((i,n)=>{const href=i.external?withClickRef(i.url,pagRef,'hero'):i.url,ext=i.external?' target="_blank" rel="sponsored noopener noreferrer"':'';
   const price=!i.soldOut&&Number.isInteger(i.priceCents)&&i.priceCents>0?money(i.priceCents,i.currency):'';
-  return `<a class="hs-ticket" data-pos="${n}" href="${esc(href)}"${ext}><span class="hs-art"><img src="${esc(safeUrl(i.image))}" alt="" ${n?'loading="lazy"':'fetchpriority="high"'}></span><span class="hs-info"><span class="hs-cat">${esc(catLabel(i))}</span><b>${esc(i.title)}</b><small>${esc([dateLine(i),i.city].filter(Boolean).join(' · '))}</small></span><span class="hs-stub"><small>${i.soldOut?'Sold out':i.priceCents===0?'Free':price?'From':''}</small><strong>${esc(price)}</strong><em>Tickets</em></span></a>`;}).join('');
+  return `<a class="hs-ticket" data-pos="${n}"${i.external?` data-seller="${esc(i.seller||'')}" data-country="${esc(i.countryCode||'')}"`:""} aria-label="${esc(i.title)}${i.external?': tickets via '+esc(i.seller)+' (opens in a new tab)':': tickets'}" href="${esc(href)}"${ext}><span class="hs-art"><img src="${esc(safeUrl(i.image))}" alt="" ${n?'loading="lazy"':'fetchpriority="high"'}></span><span class="hs-info"><span class="hs-cat">${esc(catLabel(i))}</span><b>${esc(i.title)}</b><small>${esc([dateLine(i),i.city].filter(Boolean).join(' · '))}</small></span><span class="hs-stub"><small>${i.soldOut?'Sold out':i.priceCents===0?'Free':price?'From':''}</small><strong>${esc(price)}</strong><em>Tickets</em></span></a>`;}).join('');
  dots.hidden=picks.length<2;
  dots.innerHTML=picks.map((_,n)=>`<button type="button" aria-label="Show pick ${n+1}" data-hs="${n}"></button>`).join('');
- const cards=[...deck.children];let front=0;
- const show=k=>{front=(k+cards.length)%cards.length;cards.forEach((c,n)=>{const pos=(n-front+cards.length)%cards.length;c.dataset.pos=pos;c.tabIndex=pos?-1:0;c.setAttribute('aria-hidden',String(!!pos));});
-  [...dots.children].forEach((d,n)=>d.toggleAttribute('aria-current',n===front));};
- const restart=()=>{clearInterval(heroTimer);if(cards.length>1&&!reduceMotion())heroTimer=setInterval(()=>{if(!box.matches(':hover,:focus-within'))show(front+1);},3800);};
- dots.onclick=e=>{const d=e.target.closest('[data-hs]');if(d){show(Number(d.dataset.hs));restart();}};
- show(0);restart();
+ heroCleanup?.();
+ heroCleanup=mountHeroTickets({box,deck,dots,reduceMotion});
 }
 function spotTile(item,big=false){
  const art=hasArt(item)?`<img src="${esc(safeUrl(item.image))}" alt="" loading="${big?'eager':'lazy'}">`:'';

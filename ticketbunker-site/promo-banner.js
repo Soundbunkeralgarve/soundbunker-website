@@ -1,6 +1,6 @@
 // The site's one-line pitch as a banner after the first section of every public page.
 // Same exemptions as the coming-soon notice: no banner on ticket, organiser or door pages.
-import {needsNotice} from './coming-soon.js?v=20261125-welcome';
+import {needsNotice} from './coming-soon.js?v=20261125-appstyle';
 
 export const PROMO = Object.freeze({
   headline: 'Premium event tickets. No booking fees.',

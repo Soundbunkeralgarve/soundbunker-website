@@ -21,6 +21,7 @@ export function dealSearchContext(search = '', fallbackCountry = 'GB') {
 
 // The city an offer is for, if its words name one of our city pages in that country.
 export function offerCity(offer, country) {
+  if (offer.destination?.country) return offer.destination.country === country ? offer.destination.city || '' : '';
   const text = ' ' + plain([offer.title, offer.description, offer.terms].join(' ')).replace(/[^\p{L}\p{N}]+/gu, ' ') + ' ';
   const hit = CITY_PAGES.find(([, name, cc]) => cc === country && text.includes(' ' + plain(name.replace(/^the /, '')) + ' '));
   return hit ? hit[1].replace(/^the /, '') : '';
@@ -30,8 +31,8 @@ export function couponCard(o, city) {
   const ends = o.ends ? new Date(o.ends + 'T12:00:00Z').toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric'}) : '';
   return `<article class="deal-card deal-${esc(o.kind)}" data-id="${esc(o.id)}"><div class="deal-top"><span class="deal-kind">${esc((KINDS.find(k => k[0] === o.kind) || KINDS[6])[1])}</span>${city ? `<span class="deal-city">${esc(city)}</span>` : ''}</div>
 <b class="deal-adv">${esc(o.advertiser)}</b><h3>${esc(o.title)}</h3>${o.description ? `<p>${esc(o.description)}</p>` : ''}
-${o.code ? `<div class="deal-code"><code>${esc(o.code)}</code><button type="button" data-copy="${esc(o.code)}">Copy code</button></div>` : '<div class="deal-code deal-nocode">No code needed</div>'}
-<div class="deal-actions"><a href="${esc(o.url)}" target="_blank" rel="sponsored noopener">Redeem at ${esc(o.advertiser)} →</a>${o.code ? `<button type="button" data-download="${esc(o.id)}">Download coupon</button>` : ''}</div>
+${o.code ? `<div class="deal-code"><code>${esc(o.code)}</code><button type="button" data-copy="${esc(o.code)}">Copy code</button></div>` : `<div class="deal-code deal-nocode">${o.claimRequired?'Claim this coupon on '+esc(o.advertiser):'No code needed'}</div>`}
+<div class="deal-actions"><a href="${esc(o.url)}" target="_blank" rel="sponsored noopener">${o.claimRequired?'Claim at':'Redeem at'} ${esc(o.advertiser)} →</a>${o.code ? `<button type="button" data-download="${esc(o.id)}">Download coupon</button>` : ''}</div>
 <small>${ends ? 'Ends ' + esc(ends) + '. ' : ''}${o.terms ? esc(o.terms.slice(0, 180)) + (o.terms.length > 180 ? '…' : '') : 'Partner terms apply.'}</small></article>`;
 }
 
@@ -78,14 +79,14 @@ if (typeof document !== 'undefined') {
       f.city.value = selectedCity;
       const counts = Object.fromEntries(KINDS.map(([k]) => [k, k === 'all' ? withCity.length : withCity.filter(w => w.o.kind === k).length]));
       kindsNav.innerHTML = KINDS.filter(([k]) => k === 'all' || counts[k]).map(([k, l]) => `<button type="button" data-kind="${k}" aria-pressed="${k === kind}">${esc(l)} <span>${counts[k]}</span></button>`).join('');
-      const shown = withCity.filter(w => (kind === 'all' || w.o.kind === kind) && (!f.city.value || w.city === f.city.value));
+      const shown = withCity.filter(w => (kind === 'all' || w.o.kind === kind) && (!f.city.value || w.city === f.city.value || (!w.city && w.o.destination?.country === country && w.o.destination?.nationwide === true)));
       // City offers first, grouped under their city; country-wide offers after.
       const groups = new Map();
-      for (const w of shown) { const k = w.city || ''; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(w); }
+      for (const w of shown) { const k = w.o.destination?.label || w.city || ''; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(w); }
       const order = [...groups.keys()].sort((a, b) => (a === '') - (b === '') || a.localeCompare(b));
-      grid.innerHTML = order.map(k => `<section class="deal-group"><h2>${esc(k || 'Across ' + names.of(country))}</h2><div class="deal-cards">${groups.get(k).map(w => couponCard(w.o, w.city)).join('')}</div></section>`).join('');
+      grid.innerHTML = order.map(k => `<section class="deal-group"><h2>${esc(k || 'Online partner offers')}</h2><div class="deal-cards">${groups.get(k).map(w => couponCard(w.o, w.o.destination?.label || w.city)).join('')}</div></section>`).join('');
       status.textContent = !ready ? 'Deals are being connected. Partner codes appear here as soon as they are live.'
-        : offers.length ? `${shown.length} of ${offers.length} deals in ${names.of(country)}${wantCity ? ', ' + wantCity : ''}.`
+        : offers.length ? `${shown.length} of ${offers.length} partner offers available to visitors from ${names.of(country)}${wantCity ? ' · destination: ' + wantCity : ''}.`
         : `No partner deals for ${names.of(country)} right now. New codes are added as partners publish them; try another country.`;
       history.replaceState(null, '', location.pathname + '?' + new URLSearchParams({country, ...(selectedCity ? {city: selectedCity} : {}), ...(kind !== 'all' ? {kind} : {})}));
     };

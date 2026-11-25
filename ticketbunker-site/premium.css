@@ -170,7 +170,7 @@
 .shop-home.guide-page .guide-terms{color:#7c838d}
 .shop-home.guide-page .trip-when{background:#00e0a61a;border-color:#00e0a655;color:var(--text)}.shop-home.guide-page .trip-when span{color:var(--teal)}
 .shop-home.guide-page .guide-search:not(.trip-search){background:var(--surface);border-color:var(--edge);color:var(--text)}
-.shop-home.guide-page .guide-search input,.shop-home.guide-page .guide-search select{background:#07070b;border-color:var(--edge);color:var(--text)}
+.shop-home.guide-page .guide-search input,.shop-home.guide-page .guide-search select{background-color:#07070b;border-color:var(--edge);color:var(--text)}
 .shop-home.guide-page .btn-black{background:var(--teal);color:#04140d}
 /* Groups page */
 .shop-home.guide-page .idea{background:var(--surface);border-color:var(--edge)}.shop-home.guide-page .idea h3{color:var(--text)}.shop-home.guide-page .idea p{color:var(--soft)}
