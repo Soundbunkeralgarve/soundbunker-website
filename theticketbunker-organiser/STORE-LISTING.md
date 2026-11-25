@@ -1,9 +1,9 @@
-# TB Organiser: App Store and Google Play listing (to paste in)
+# TicketBunker For Organisers: App Store and Google Play listing (to paste in)
 
-Bundle ID / package: `pt.soundbunker.theticketbunker.organiser` · version 1.0.1. iOS and Android ship together. "TB Organiser" is a placeholder name; change `expo.name` before the first upload if you prefer another.
+Bundle ID / package: `pt.soundbunker.theticketbunker.organiser` · version 1.0.0. iOS and Android ship together. "TicketBunker For Organisers" is a placeholder name; change `expo.name` before the first upload if you prefer another.
 
 ## Names
-- **App name (30):** TB Organiser – TicketBunker
+- **App name (30):** TicketBunker For Organisers
 - **iOS subtitle (30):** Create and run your events
 - **Play short description (80):** Create events, sell tickets with no booking fee, and run the door from your phone.
 
@@ -11,7 +11,7 @@ Bundle ID / package: `pt.soundbunker.theticketbunker.organiser` · version 1.0.1
 Your events, on the move. Create an event, add tickets, publish, then watch sales, invite door staff and manage the guest list from anywhere.
 
 ## Description (both stores)
-TB Organiser is the free companion app for organisers on TicketBunker (theticketbunker.com). Clubs, bars, promoters, festivals, charities and private hosts use it to run their events from a phone.
+TicketBunker For Organisers is the free companion app for organisers on TicketBunker (theticketbunker.com). Clubs, bars, promoters, festivals, charities and private hosts use it to run their events from a phone.
 
 CREATE AND PUBLISH
 • Event details, start and end times in venue local time, and a poster from your photos or camera
@@ -48,7 +48,7 @@ event organiser,tickets,sell tickets,promoter,club night,box office,guest list,d
 - **Tracking:** no. **Encrypted in transit:** yes. **Account deletion:** yes, in the app (Account → Delete my account) and by email.
 
 ## App Review notes
-TB Organiser is for organisers who sell tickets for real-world events on TicketBunker.
+TicketBunker For Organisers is for organisers who sell tickets for real-world events on TicketBunker.
 - **Demo account:** [organiser email] / [password]. It has a published event [name] and a draft. Please don't publish or pay for anything; the draft shows the publish checklist.
 - **Listing fee:** a one-off business service fee for listing a real-world event. It is paid by card on Stripe Checkout, opened in a browser sheet. No digital content is sold (guideline 3.1.3).
 - **Door staff:** they scan tickets with our separate TicketBunker Scanner app (App Store ID 6823316315).

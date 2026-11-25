@@ -48,7 +48,7 @@ export function latestRequest(){
 
 export async function deviceLocation(location,{fresh=false,details=false}={}){
   const {status}=await location.requestForegroundPermissionsAsync();
-  if(status!=='granted')throw Error('Location is off for theticketbunker. Turn it on in Settings, or pick a city.');
+  if(status!=='granted')throw Error('Location is off for TicketBunker. Turn it on in Settings, or pick a city.');
   // Get Around requests a current high-accuracy fix; other screens keep their existing quick lookup.
   const last=fresh?null:await location.getLastKnownPositionAsync({maxAge:10*60*1000}).catch(()=>null);
   const pos=last||await withDeadline(()=>location.getCurrentPositionAsync({accuracy:fresh?location.Accuracy.High:location.Accuracy.Balanced}),15000,'Could not find where you are. Try again outdoors or pick a city.');

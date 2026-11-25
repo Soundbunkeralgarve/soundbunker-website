@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "theticketbunker",
+    "name": "TicketBunker",
     "slug": "theticketbunker",
     "scheme": "theticketbunker",
     "version": "1.0.1",
@@ -11,7 +11,7 @@
     "ios": {
       "bundleIdentifier": "pt.soundbunker.theticketbunker",
       "supportsTablet": true,
-      "buildNumber": "1",
+      "buildNumber": "5",
       "associatedDomains": [],
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "TicketBunker uses your location to find nearby events, transport stops and routes. Your coordinates are sent to TicketBunker and the map or transport provider for the search. Background location is not used.",

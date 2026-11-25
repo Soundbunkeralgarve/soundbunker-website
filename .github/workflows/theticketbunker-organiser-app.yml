@@ -1,4 +1,4 @@
-name: TB Organiser App Checks
+name: TicketBunker Organiser App Checks
 on:
   pull_request:
     paths: ['theticketbunker-organiser/**', 'ticketbunker-site/pricing-rules.js', '.github/workflows/theticketbunker-organiser-app.yml']

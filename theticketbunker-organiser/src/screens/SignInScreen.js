@@ -19,7 +19,8 @@ export default function SignInScreen() {
   }
   return <KeyboardAvoidingView style={s.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{paddingBottom: 40}}>
-      <ImageBackground source={require('../../assets/club.jpg')} imageStyle={{opacity: 0.4}} style={{paddingTop: insets.top + 36, paddingHorizontal: 18, paddingBottom: 28, backgroundColor: C.bg}}>
+      <ImageBackground source={require('../../assets/hero-live.jpg')} imageStyle={{opacity: 0.5}} style={{paddingTop: insets.top + 36, paddingHorizontal: 18, paddingBottom: 34, backgroundColor: C.bg, overflow: 'hidden'}}>
+        <View pointerEvents="none" style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: C.bg, opacity: 0.5}}/>
         <View style={{maxWidth: 560, width: '100%', alignSelf: 'center'}}>
           <Brand/>
           <Text style={[s.eyebrow, {marginTop: 22}]}>Organiser</Text>

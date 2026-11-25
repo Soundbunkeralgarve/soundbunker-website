@@ -10,3 +10,9 @@ node_modules
 **/*.key
 **/*.mobileprovision
 **/*.p8
+# Native folders are regenerated on the build server (local ones hold ~750 MB of Pods and archives)
+**/ios
+**/android
+*.ipa
+*.aab
+*.xcarchive

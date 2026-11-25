@@ -162,7 +162,7 @@ test('QR encodes the admission link', () => {
 test('store config matches the release rules', () => {
   const app = JSON.parse(readFileSync(new URL('../app.json', import.meta.url))).expo;
   const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url)));
-  assert.equal(app.name, 'theticketbunker');
+  assert.equal(app.name, 'TicketBunker');
   assert.equal(app.ios.bundleIdentifier, app.android.package);
   assert.equal(app.version, pkg.version, 'iOS and Android ship the same version');
   assert.equal(app.ios.supportsTablet, true);
