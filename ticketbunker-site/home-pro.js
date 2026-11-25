@@ -59,6 +59,10 @@ if (typeof document !== 'undefined') {
     if (slots[1]) anchor.before(slots[1]);
     anchor.before(showcase('travel-stays', 'Getting there and staying over', 'Travel & stays.', 'Hotels, transfers, trains and tables for the city you are heading to. Booked with the named provider.', TRAVEL_TABS));
     anchor.remove();
+    // Sales order on every screen: what's near, the top ten, the paid featured event, this weekend, then categories.
+    const top10 = document.getElementById('top10'), feature = document.getElementById('big-feature'), weekend = document.getElementById('rail-weekend');
+    if (top10 && feature) top10.after(feature);
+    if (feature && weekend) feature.after(weekend);
     // The remaining house banners repeat what the organiser and advertise sections already say.
     for (const s of slots.slice(2)) s.remove();
   };
