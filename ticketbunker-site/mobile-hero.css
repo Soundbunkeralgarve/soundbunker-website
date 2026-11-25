@@ -6,8 +6,10 @@
  .shop-home .hero.hero-sales .hero-copy{position:relative;padding:0!important;max-width:none!important}
  .mh-cover{position:relative;height:min(62svh,520px);overflow:hidden;isolation:isolate;margin:0}
  .mh-cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.08);transition:opacity 1.4s ease,transform 7s ease;z-index:-2}
- .mh-cover img.on{opacity:1;transform:scale(1)}
- .mh-cover::after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,#07070b99 0%,#07070b10 30%,#07070b55 62%,#07070b 100%),radial-gradient(80% 60% at 100% 0%,#00e0a630,transparent 60%)}
+ .mh-cover img.on{opacity:.38;transform:scale(1)}
+ .mh-cover img{filter:saturate(.6) blur(1px)}
+ .mh-cover{background:#07070b}
+ .mh-cover::after{content:'';position:absolute;inset:0;z-index:-1;background:radial-gradient(120% 70% at 95% 10%,#00e0a62e,transparent 60%),radial-gradient(110% 60% at 0% 95%,#ff4f9a24,transparent 60%),linear-gradient(180deg,#07070bcc 0%,#07070b66 35%,#07070b99 70%,#07070b 100%)}
  .mh-cover .hero-intro-mobile{position:absolute;left:20px;right:20px;bottom:64px;display:block!important;text-align:left}
  .mh-cover .hero-kicker{display:inline-flex!important;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;background:#07070bb3;backdrop-filter:blur(8px);border:1px solid #ffffff2a;font-size:12px!important;margin:0 0 14px}
  .mh-cover h1{font-size:clamp(52px,15vw,68px)!important;line-height:.86!important;margin:0 0 10px!important;text-shadow:0 6px 30px #000a}

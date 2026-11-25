@@ -1,6 +1,8 @@
 // Run in the head before the page can paint. The welcome notice has its own
 // loading path so a slow homepage or navigation import cannot hold it up.
 (() => {
+  // Launched 26 Nov 2026: no cover. Remove this line to show the notice again.
+  return;
   let stored;
   // Partner reviewers get the real site from a link with ?preview=partner; it is remembered.
   if (new URLSearchParams(location.search).get('preview') === 'partner') { try { localStorage.setItem('tb-preview-open', '1'); } catch { /* this visit only */ } return; }
