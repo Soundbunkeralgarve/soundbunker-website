@@ -1,6 +1,6 @@
 # theticketbunker: App Store and Google Play listing (to paste in)
 
-Bundle ID / package: `pt.soundbunker.theticketbunker` · version 1.0.0. iOS and Android ship together.
+Bundle ID / package: `pt.soundbunker.theticketbunker` · version 1.0.1. iOS and Android ship together.
 
 ## Names
 - **App name (30):** theticketbunker

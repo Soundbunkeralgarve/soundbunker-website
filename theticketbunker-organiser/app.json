@@ -3,7 +3,7 @@
     "name": "TB Organiser",
     "slug": "theticketbunker-organiser",
     "scheme": "tborganiser",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "default",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#07070b",

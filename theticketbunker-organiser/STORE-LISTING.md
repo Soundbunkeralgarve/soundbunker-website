@@ -1,6 +1,6 @@
 # TB Organiser: App Store and Google Play listing (to paste in)
 
-Bundle ID / package: `pt.soundbunker.theticketbunker.organiser` · version 1.0.0. iOS and Android ship together. "TB Organiser" is a placeholder name; change `expo.name` before the first upload if you prefer another.
+Bundle ID / package: `pt.soundbunker.theticketbunker.organiser` · version 1.0.1. iOS and Android ship together. "TB Organiser" is a placeholder name; change `expo.name` before the first upload if you prefer another.
 
 ## Names
 - **App name (30):** TB Organiser – TicketBunker

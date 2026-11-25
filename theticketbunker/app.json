@@ -3,7 +3,7 @@
     "name": "theticketbunker",
     "slug": "theticketbunker",
     "scheme": "theticketbunker",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "default",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#07070b",
