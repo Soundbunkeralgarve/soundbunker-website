@@ -127,7 +127,9 @@ test('applying pending destination fields before navigation changes provider con
   assert.equal(result.draft.city,'Paris');assert.equal(result.draft.country,'FR');
   assert.equal(result.draft.party,'couples');assert.equal(result.draft.from,'2026-12-10');
   assert.deepEqual(result.draft.selected.stay,[],'London provider selections cannot leak into the Paris plan');
-  assert.match(tripOptions(result.draft.country,result.draft.city).find(o=>o.kind==='stay').partners[0].url,/Paris/);
+  const paris=tripOptions(result.draft.country,result.draft.city).find(o=>o.kind==='stay').partners;
+  assert.match(paris.find(p=>p.id==='expedia-hotels').url,/Paris/);
+  assert.equal(new URL(paris.find(p=>p.id==='tripcom-hotels').url).searchParams.get('city'),'192','Trip.com opens on its own Paris city ID');
   assert.deepEqual(openDraft(store,'?city=London&country=GB').selected.stay,['stay:expedia-hotels']);
   assert.equal(applyTripDetails(store,london,{country:'FR',city:'London'}).field,'city');
   assert.equal(applyTripDetails(store,london,{country:'FR',city:'Paris',from:'2026-12-12',to:'2026-12-10'}).field,'to');

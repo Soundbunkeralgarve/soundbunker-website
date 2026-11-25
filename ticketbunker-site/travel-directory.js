@@ -1,4 +1,5 @@
 import {CITY_PAGES} from './city-places.js';
+import {tripcomStayProviders} from './trip-packages.js';
 
 // Public supplier searches and explicitly approved affiliate links. Each entry keeps
 // its commercial status; a search link never promises a quote or vehicle availability.
@@ -76,7 +77,10 @@ export function directoryProviders(kind, country = '', city = '', trip = {}) {
       if (t.to) booking.searchParams.set('checkout', t.to);
       if (t.adults) { booking.searchParams.set('group_adults', String(t.adults)); booking.searchParams.set('no_rooms', String(t.rooms)); booking.searchParams.set('group_children', '0'); }
       const ready = t.from && t.to;
+      // Trip.com is the approved, tracked hotel partner; Expedia and Booking.com stay as
+      // plain public searches so visitors can compare.
       return [
+        ...tripcomStayProviders(d.country, d.city, trip),
         entry('expedia-hotels', 'Search hotels on Expedia', url.href, ready
           ? 'Opens Expedia with your city, dates and rooms filled in: see live prices, then book there.'
           : 'Choose your dates, guests, location and cancellation terms on Expedia.'),

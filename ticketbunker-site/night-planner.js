@@ -3,7 +3,7 @@
 // the plan in "My trip" (this browser only). Steps without an approved partner say
 // "Coming soon". Public search links are identified separately from approved tracking links.
 import {tripHref,eventTripState} from './home-trip-context.js?v=20261123-trip-flow';
-import {tripOptions, withClickRef} from './trip-partners.js?v=20261123-travel';
+import {tripOptions, withClickRef} from './trip-partners.js?v=20261126-packages';
 import {gygPlace, GYG_PLACES} from './gyg-box.js?v=20261121c';
 import {directionLinks, travelEstimates, estimateText} from './get-there.js?v=20261122d';
 

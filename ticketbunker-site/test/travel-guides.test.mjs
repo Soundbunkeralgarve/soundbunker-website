@@ -8,12 +8,13 @@ import {guideProviders,providerCards,tripSummary,nextWeekend} from '../trip-guid
 import {sitemapXml} from '../api/sitemap.js';
 import {CITY_PAGES} from '../city-places.js';
 const read = p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
+const expediaOf = list=>list.find(p=>p.id==='expedia-hotels');
 test('hotel destinations infer countries, preserve accents and encode input as data',()=>{
   assert.equal(tripDestination('','Málaga').country,'ES');
-  const u=new URL(directoryProviders('stay','PT','Lisbon & Sintra')[0].url);
+  const u=new URL(expediaOf(directoryProviders('stay','PT','Lisbon & Sintra')).url);
   assert.equal(u.searchParams.get('destination'),'Lisbon & Sintra, Portugal');
   assert.equal(tripDestination('xx','London\n').city,'London');
-  assert.equal(new URL(directoryProviders('stay','','London')[0].url).searchParams.get('destination'),'London, United Kingdom');
+  assert.equal(new URL(expediaOf(directoryProviders('stay','','London')).url).searchParams.get('destination'),'London, United Kingdom');
 });
 test('shared travel searches work on native engines without Intl.DisplayNames',async()=>{
   const original=Intl.DisplayNames;
@@ -21,7 +22,7 @@ test('shared travel searches work on native engines without Intl.DisplayNames',a
     Intl.DisplayNames=undefined;
     const {tripDestination:destination,directoryProviders:providers}=await import('../travel-directory.js?without-display-names');
     assert.equal(destination('','London').search,'London, GB');
-    assert.equal(new URL(providers('stay','PT','Lisbon')[0].url).searchParams.get('destination'),'Lisbon, PT');
+    assert.equal(new URL(providers('stay','PT','Lisbon').find(p=>p.id==='expedia-hotels').url).searchParams.get('destination'),'Lisbon, PT');
   }finally{Intl.DisplayNames=original;}
 });
 test('dining adapts to countries without inventing a nationwide discount',()=>{
@@ -42,7 +43,13 @@ test('travel guide offers the verified Trip.com flight link without enabling its
   assert.equal(trip.category,'Flights');
   assert.equal(trip.url,'https://www.trip.com/flights?Allianceid=11489066&SID=336945869&trip_sub1=&trip_sub3=D21530259');
   assert.match(providerCards([trip]),/rel="sponsored noopener noreferrer"/);
-  for(const kind of ['stay','car','eat','transfer'])assert.ok(!guideProviders(kind,'PT','Lisbon').some(p=>new URL(p.url).hostname==='www.trip.com'));
+  for(const kind of ['car','eat','transfer'])assert.ok(!guideProviders(kind,'PT','Lisbon').some(p=>new URL(p.url).hostname==='www.trip.com'));
+  // Hotels and Flight + Hotel are approved too: tracked, sponsored and on Lisbon's own Trip.com ID.
+  const stays=guideProviders('stay','PT','Lisbon').filter(p=>new URL(p.url).hostname==='www.trip.com');
+  assert.deepEqual(stays.map(p=>p.id),['tripcom-hotels','tripcom-packages']);
+  for(const p of stays){const u=new URL(p.url);assert.equal(p.commercial,'affiliate');assert.equal(u.searchParams.get('Allianceid'),'11489066');assert.equal(u.searchParams.get('SID'),'336945869');}
+  assert.equal(new URL(stays[0].url).searchParams.get('city'),'1231');
+  assert.match(providerCards(stays),/rel="sponsored noopener noreferrer"/);
 });
 test('guide consumers invalidate cached parent scripts and render the approved flight link before JavaScript',()=>{
   const guideVersion=/trip-partners\.js\?v=([^']+)/.exec(read('trip-guides.js'))[1];
@@ -77,7 +84,7 @@ test('all destination guides are linked from the directory and discoverable in t
 });
 test('hotel and car searches open the provider on the chosen dates, guests and rooms',()=>{
   const trip={from:'2026-12-11',to:'2026-12-13',adults:'5',rooms:'2'};
-  const [expedia,booking]=directoryProviders('stay','PT','Lisbon',trip).map(p=>new URL(p.url));
+  const [expedia,booking]=directoryProviders('stay','PT','Lisbon',trip).filter(p=>p.commercial==='direct').map(p=>new URL(p.url));
   assert.equal(expedia.searchParams.get('startDate'),'2026-12-11');assert.equal(expedia.searchParams.get('endDate'),'2026-12-13');
   assert.equal(expedia.searchParams.get('rooms'),'2');assert.deepEqual(expedia.searchParams.getAll('adults'),['3','2'],'one adults value per room');
   assert.equal(booking.hostname,'www.booking.com');assert.equal(booking.searchParams.get('ss'),'Lisbon, Portugal');
@@ -85,11 +92,11 @@ test('hotel and car searches open the provider on the chosen dates, guests and r
   const car=new URL(directoryProviders('car','PT','Lisbon',{from:'2026-12-11',to:'2026-12-14',pickup:'18:30',dropoff:'09:00'})[0].url);
   assert.equal(car.pathname,'/carsearch');assert.equal(car.searchParams.get('d1'),'2026-12-11');assert.equal(car.searchParams.get('time1'),'0630PM');assert.equal(car.searchParams.get('time2'),'0900AM');
   // Bad input never reaches the provider.
-  const bad=new URL(directoryProviders('stay','GB','London',{from:'2026-12-13',to:'2026-12-11',adults:'99',rooms:'x'})[0].url);
+  const bad=new URL(expediaOf(directoryProviders('stay','GB','London',{from:'2026-12-13',to:'2026-12-11',adults:'99',rooms:'x'})).url);
   assert.equal(bad.searchParams.get('endDate'),null);assert.equal(bad.searchParams.get('adults'),null);
   assert.deepEqual(tripDates({from:'2026-12-11',to:'2026-12-13',adults:1,rooms:4}),{from:'2026-12-11',to:'2026-12-13',nights:2,adults:1,rooms:1,pickup:'',dropoff:''});
   assert.equal(tripSummary('stay',trip),'Fri 11 Dec → Sun 13 Dec · 2 nights · 5 adults · 2 rooms');
   assert.deepEqual(nextWeekend(new Date('2026-11-25T10:00:00Z')),{from:'2026-11-27',to:'2026-11-29'});
-  assert.equal(new URL(tripOptions('GB','London',{trip}).find(o=>o.kind==='stay').partners[0].url).searchParams.get('startDate'),'2026-12-11');
+  assert.equal(new URL(expediaOf(tripOptions('GB','London',{trip}).find(o=>o.kind==='stay').partners).url).searchParams.get('startDate'),'2026-12-11');
   for(const page of ['hotels','car-hire'])assert.match(read(page+'.html'),/name="from" type="date"[\s\S]*name="to" type="date"/);
 });
