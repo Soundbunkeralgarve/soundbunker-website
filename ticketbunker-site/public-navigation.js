@@ -1,4 +1,5 @@
 import "./coming-soon.js?v=20261125-appstyle";
+import "./tb-consent.js?v=20261125-meta1";
 import "./promo-banner.js?v=20261125";
 import "./app-promo.js?v=20261125-mobile2";
 import "./explore-nav.js?v=20261125b";
