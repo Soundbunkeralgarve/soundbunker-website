@@ -63,6 +63,25 @@ html.tb-soon-on,html.tb-soon-on body{overflow:hidden!important}
 @keyframes tbSoonUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 .tb-soon-box{max-width:820px}
 @media(max-width:700px){.tb-soon-perks{grid-template-columns:1fr 1fr;padding:0;gap:10px}.tb-soon{place-items:start center;padding:24px 20px}.tb-soon-box{margin-block:0}.tb-soon img{width:180px;margin-bottom:20px}.tb-soon h1{font-size:clamp(2.8rem,10vw,4rem)}.tb-soon p{font-size:1rem}.tb-soon .tb-soon-kind{font-size:1.6rem}.tb-soon-perks li{padding:12px}}
+/* The prelaunch view follows the same restrained mobile app styling. */
+@media(max-width:700px){
+ .tb-soon{padding:28px 22px;text-align:left;background:#07070b}
+ .tb-soon::before{background:radial-gradient(ellipse at 100% 0%,#00e0a618,transparent 60%)}
+ .tb-soon-box{padding-bottom:20px}
+ .tb-soon img{width:174px;margin:0 0 34px}
+ .tb-soon h1{font-size:clamp(3.1rem,13vw,4.5rem);line-height:.95;margin-bottom:20px}
+ .tb-soon p{margin-inline:0;font-size:1rem;line-height:1.6}
+ .tb-soon .tb-soon-kind{color:#fff;margin:0 0 14px;font-size:1.7rem}
+ .tb-soon .tb-soon-what{font-size:1rem;line-height:1.6}
+ .tb-soon .tb-soon-partners{font:500 .8125rem/1.7 'DM Sans',Arial,sans-serif;color:#a7adb6;letter-spacing:0;text-transform:none;margin-bottom:24px}
+ .tb-soon-count{display:flex;align-items:flex-start;padding:18px 20px;border-radius:16px;margin-bottom:24px;background:#101018}
+ .tb-soon-count b{font-size:3.5rem}.tb-soon-count span{font-size:.875rem}
+ .tb-soon-perks{gap:10px;margin-bottom:24px}
+ .tb-soon-perks li,.tb-soon-perks li.lit{padding:16px;border:1px solid #303440;border-radius:14px;background:#101018;box-shadow:none;transition:none}
+ .tb-soon-perks em{display:none}.tb-soon-perks b{font-size:1.2rem;margin:0 0 6px}.tb-soon-perks span{font-size:.8125rem;line-height:1.5}
+ .tb-soon a{border-radius:12px;font-size:.9375rem;padding:12px 18px}
+ .tb-soon small{font-size:.875rem;text-align:center}
+}
 @media(prefers-reduced-motion:reduce){.tb-soon-bg img,.tb-soon-kind b,.tb-soon-perks li{transition:none;animation:none;opacity:1;transform:none}.tb-soon-bg img{opacity:0}.tb-soon-bg img.on{opacity:.32}}`;
   const box = document.createElement('div');
   box.className = 'tb-soon';

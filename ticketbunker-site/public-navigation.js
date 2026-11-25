@@ -1,4 +1,4 @@
-import "./coming-soon.js?v=20261125-welcome";
+import "./coming-soon.js?v=20261125-appstyle";
 import "./promo-banner.js?v=20261125";
 import "./app-promo.js?v=20261125-mobile2";
 import "./explore-nav.js?v=20261125b";
