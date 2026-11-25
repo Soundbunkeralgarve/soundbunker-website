@@ -12,19 +12,42 @@ import {locate} from '../state.js';
 const TILES = {music: require('../../assets/tiles/music.jpg'), club: require('../../assets/tiles/club.jpg'), comedy: require('../../assets/tiles/comedy.jpg'),
   festival: require('../../assets/tiles/festival.jpg'), shows: require('../../assets/tiles/shows.jpg'), family: require('../../assets/tiles/family.jpg'),
   cinema: require('../../assets/tiles/cinema.jpg'), daysout: require('../../assets/tiles/daysout.jpg')};
+// Swipe rows down the page, so the home screen keeps offering something different as you scroll.
+const RAILS_A = [['weekend', 'Don\u2019t sit in', 'This weekend.'], ['music', 'Gigs & live music', 'Live music.']];
+const RAILS_B = [['club', 'Late ones', 'Club nights.'], ['comedy', 'Laugh it off', 'Comedy.'], ['festival', 'Fields & stages', 'Festivals.']];
+const RAILS_C = [['shows', 'Curtain up', 'Theatre & shows.'], ['family', 'All ages', 'Family days out.'], ['daysout', 'Get out there', 'Tours & days out.'], ['cinema', 'Big screen', 'Cinema.']];
+export function railItems(items, key, exclude, now = Date.now()) {
+  const skip = new Set((exclude || []).slice(0, 5).map(i => i.key));
+  const pool = items.filter(i => !skip.has(i.key));
+  if (key === 'weekend') {
+    const end = now + 4 * 864e5;
+    return pool.filter(i => i.startsAt && Date.parse(i.startsAt) >= now && Date.parse(i.startsAt) <= end).slice(0, 12);
+  }
+  return pool.filter(i => i.category === key).slice(0, 12);
+}
+function Rail({eyebrow, title, items, onSee, onOpen}) {
+  if (!items.length) return null;
+  return <View style={h.rail}>
+    <View style={[s.pad, h.railHead]}><View style={{flex: 1}}><Text style={s.eyebrow}>{eyebrow}</Text><Text style={s.h2}>{title}</Text></View>
+      <Pressable accessibilityRole="button" onPress={onSee} hitSlop={10}><Text style={h.railSee}>See all</Text></Pressable></View>
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} decelerationRate="fast" snapToInterval={276} contentContainerStyle={h.railRow}>
+      {items.map(item => <View key={item.key} style={{width: 262}}><EventCard featured item={item} onPress={() => onOpen(item)}/></View>)}
+    </ScrollView>
+  </View>;
+}
 const POPULAR = ['london', 'manchester', 'glasgow', 'dublin', 'algarve', 'lisbon', 'barcelona', 'ibiza', 'paris', 'amsterdam', 'berlin', 'bristol'];
 
 export default function HomeScreen({navigation}) {
   const insets = useSafeAreaInsets(), {width} = useWindowDimensions(), wide = width >= WIDE;
   const [place, setPlace] = useState(''), [when, setWhen] = useState('any'), [category, setCategory] = useState('');
-  const [soon, setSoon] = useState(null), [count, setCount] = useState(0), [finding, setFinding] = useState(false);
+  const [soon, setSoon] = useState(null), [all, setAll] = useState([]), [count, setCount] = useState(0), [finding, setFinding] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false), [featuredAt, setFeaturedAt] = useState(0);
   const featuredRail = useRef(null), cardWidth = Math.min(width - 54, 380), cardStep = cardWidth + 14;
   const featured = soon?.slice(0, 5) || [];
 
   useEffect(() => {
     let active = true;
-    search({}).then(r => { if (active) {setSoon(mixTypes(r.items).slice(0, wide ? 12 : 8)); setCount(r.total);} }).catch(() => active && setSoon([]));
+    search({}).then(r => { if (active) {setAll(r.items); setSoon(mixTypes(r.items).slice(0, wide ? 12 : 8)); setCount(r.total);} }).catch(() => active && setSoon([]));
     return () => {active = false;};
   }, [wide]);
   useEffect(() => {setFeaturedAt(0); featuredRail.current?.scrollTo({x: 0, animated: false});}, [cardWidth]);
@@ -86,6 +109,9 @@ export default function HomeScreen({navigation}) {
       </View>
     </View>
 
+
+    {RAILS_A.map(([k, eyebrow, title]) => <Rail key={k} eyebrow={eyebrow} title={title} items={railItems(all, k, soon)} onSee={() => navigation.navigate('Results', {category: k === 'weekend' ? '' : k, when: k === 'weekend' ? 'weekend' : 'any'})} onOpen={item => navigation.navigate('Event', {item})}/>)}
+
     <View style={[s.pad, h.section]}>
       <Text style={s.eyebrow}>Find your thing</Text>
       <Text style={s.h2}>Pick your next plan.</Text>
@@ -100,6 +126,9 @@ export default function HomeScreen({navigation}) {
       </View>
     </View>
 
+
+    {RAILS_B.map(([k, eyebrow, title]) => <Rail key={k} eyebrow={eyebrow} title={title} items={railItems(all, k, soon)} onSee={() => navigation.navigate('Results', {category: k === 'weekend' ? '' : k, when: k === 'weekend' ? 'weekend' : 'any'})} onOpen={item => navigation.navigate('Event', {item})}/>)}
+
     <View style={[s.pad, h.section]}>
       <Text style={s.eyebrow}>Explore UK & Europe</Text>
       <Text style={s.h2}>Find your city.</Text>
@@ -108,6 +137,9 @@ export default function HomeScreen({navigation}) {
         <Chip label="All 153 places" onPress={() => navigation.navigate('Tabs', {screen: 'Places'})}/>
       </View>
     </View>
+
+
+    {RAILS_C.map(([k, eyebrow, title]) => <Rail key={k} eyebrow={eyebrow} title={title} items={railItems(all, k, soon)} onSee={() => navigation.navigate('Results', {category: k === 'weekend' ? '' : k, when: k === 'weekend' ? 'weekend' : 'any'})} onOpen={item => navigation.navigate('Event', {item})}/>)}
 
     <View style={[s.pad, h.section]}>
       <Text style={s.eyebrow}>Coming up</Text>
@@ -121,6 +153,10 @@ export default function HomeScreen({navigation}) {
   </ScrollView><StatusShade/></View>;
 }
 const h = StyleSheet.create({
+  rail: {marginTop: 34},
+  railHead: {flexDirection: 'row', alignItems: 'flex-end', gap: 12, marginBottom: 12},
+  railSee: {fontFamily: F.bold, color: C.teal, fontSize: 15, paddingBottom: 6},
+  railRow: {paddingHorizontal: 18, gap: 14, paddingBottom: 6},
   hero: {backgroundColor: C.bg, paddingHorizontal: 20, paddingBottom: 30, overflow: 'hidden'},
   heroInner: {width: '100%', alignSelf: 'center'},
   brandRow: {flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 26},

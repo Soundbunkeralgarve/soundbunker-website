@@ -11,7 +11,7 @@
     "ios": {
       "bundleIdentifier": "pt.soundbunker.theticketbunker.organiser",
       "supportsTablet": true,
-      "buildNumber": "4",
+      "buildNumber": "5",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "TicketBunker For Organisers uses your photos only when you choose an event poster to upload.",
         "NSCameraUsageDescription": "TicketBunker For Organisers uses the camera only when you take a photo for an event poster.",
