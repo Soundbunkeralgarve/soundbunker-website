@@ -22,6 +22,6 @@ const r = StyleSheet.create({
   img: {width: 72, height: 80, borderRadius: 12, backgroundColor: C.cardHi},
   noImg: {alignItems: 'center', justifyContent: 'center'},
   tb: {fontFamily: F.display, color: C.teal, fontSize: 24},
-  status: {fontFamily: F.bold, color: C.teal, fontSize: 12, letterSpacing: 1},
+  status: {fontFamily: F.bold, color: C.teal, fontSize: 14, letterSpacing: 1},
   go: {color: C.teal, fontSize: 30, fontFamily: F.bold, paddingHorizontal: 4}
 });

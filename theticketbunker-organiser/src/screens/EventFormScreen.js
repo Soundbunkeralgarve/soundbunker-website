@@ -117,7 +117,7 @@ function DateTimePickerAndroidTime(day, done) {
   DateTimePickerAndroid.open({value: day, mode: 'time', is24Hour: true, onChange: (e, t) => { if (e.type === 'set' && t) { const d = new Date(day); d.setHours(t.getHours(), t.getMinutes(), 0, 0); done(d); } }});
 }
 const st = StyleSheet.create({
-  vip: {gap: 10, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#d9b35b'},
-  poster: {gap: 10, backgroundColor: C.card, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: C.line},
+  vip: {gap: 10, borderRadius: 18, padding: 14, borderWidth: 1, borderColor: C.gold},
+  poster: {gap: 10, backgroundColor: C.card, borderRadius: 18, padding: 14, borderWidth: 1, borderColor: C.line},
   preview: {width: '100%', aspectRatio: 1, borderRadius: 12, backgroundColor: C.cardHi}
 });

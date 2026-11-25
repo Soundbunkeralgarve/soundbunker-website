@@ -43,6 +43,6 @@ export default function EventDetail({item, onOpenTrip, compact}) {
 const d = StyleSheet.create({
   img: {width: '100%', height: 280, backgroundColor: C.card},
   when: {fontFamily: F.bold, color: C.teal, fontSize: 17},
-  box: {backgroundColor: C.card, borderRadius: 16, padding: 16, gap: 4, marginVertical: 10, borderWidth: 1, borderColor: C.line},
+  box: {backgroundColor: C.card, borderRadius: 18, padding: 16, gap: 4, marginVertical: 10, borderWidth: 1, borderColor: C.line},
   price: {fontFamily: F.display, color: C.text, fontSize: 26}
 });

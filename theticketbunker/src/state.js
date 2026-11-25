@@ -7,6 +7,7 @@ import {PUBLIC_CONFIG} from '../lib/publicConfig.js';
 import {secureSessionStorage} from '../lib/secureStorage.js';
 import {fetchWithDeadline, withDeadline} from '../lib/request.js';
 import {saveNight, removeNight, markStep, tidyTrip} from '../lib/planner.js';
+import {deviceLocation,watchForegroundLocation} from '../lib/getAround.js';
 
 // ---- My trip: saved on this phone only, like the site keeps it in the browser.
 const TRIP_KEY = 'tb-my-trip';
@@ -71,11 +72,7 @@ export function AuthProvider({children}) {
 }
 export const useAuth = () => useContext(AuthContext);
 
-// ---- Where the phone is, only when the person taps Near me / How far. Never sent to us.
-export async function locate() {
-  const {status} = await Location.requestForegroundPermissionsAsync();
-  if (status !== 'granted') throw Error('Location is off for theticketbunker. Turn it on in Settings, or pick a city.');
-  const last = await Location.getLastKnownPositionAsync({maxAge: 10 * 60 * 1000}).catch(() => null);
-  const pos = last || await withDeadline(() => Location.getCurrentPositionAsync({accuracy: Location.Accuracy.Balanced}), 15000, 'Could not find where you are. Try again or pick a city.');
-  return [pos.coords.latitude, pos.coords.longitude];
-}
+// Foreground location only. Get Around sends the requested position to nearby and
+// transport providers; coordinates are not stored in the phone's saved trip history.
+export const locate = options => deviceLocation(Location, options);
+export const watchTransportLocation = (onFix,onError,onResume) => watchForegroundLocation(Location,AppState,onFix,onError,onResume);

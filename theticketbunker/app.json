@@ -6,7 +6,7 @@
     "version": "1.0.0",
     "orientation": "default",
     "userInterfaceStyle": "dark",
-    "backgroundColor": "#080e12",
+    "backgroundColor": "#07070b",
     "icon": "./assets/icon.png",
     "ios": {
       "bundleIdentifier": "pt.soundbunker.theticketbunker",
@@ -14,7 +14,7 @@
       "buildNumber": "1",
       "associatedDomains": [],
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "theticketbunker uses your location on this phone to find events near you and rough travel times to the venue. It is never sent to us.",
+        "NSLocationWhenInUseUsageDescription": "TicketBunker uses your location to find nearby events, transport stops and routes. Your coordinates are sent to TicketBunker and the map or transport provider for the search. Background location is not used.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
@@ -30,7 +30,7 @@
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#080e12"
+        "backgroundColor": "#07070b"
       },
       "allowBackup": false
     },
@@ -40,13 +40,13 @@
         {
           "image": "./assets/brand-icon.png",
           "imageWidth": 160,
-          "backgroundColor": "#080e12"
+          "backgroundColor": "#07070b"
         }
       ],
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "theticketbunker uses your location on this phone to find events near you and rough travel times to the venue. It is never sent to us.",
+          "locationWhenInUsePermission": "TicketBunker uses your location to find nearby events, transport stops and routes. Your coordinates are sent to TicketBunker and the map or transport provider for the search. Background location is not used.",
           "isAndroidBackgroundLocationEnabled": false,
           "isIosBackgroundLocationEnabled": false
         }

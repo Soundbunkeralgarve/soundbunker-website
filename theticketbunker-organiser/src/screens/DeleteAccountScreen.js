@@ -40,5 +40,5 @@ export default function DeleteAccountScreen({navigation}) {
 }
 const st = StyleSheet.create({
   wrap: {padding: 18, gap: 14, paddingBottom: 48, maxWidth: 620, width: '100%', alignSelf: 'center'},
-  box: {gap: 8, backgroundColor: C.card, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: C.line}
+  box: {gap: 8, backgroundColor: C.card, borderRadius: 18, padding: 14, borderWidth: 1, borderColor: C.line}
 });

@@ -49,7 +49,7 @@ tickets,events,gigs,club,comedy,festival,concert,theatre,nightlife,whats on,near
 - **Contact info, email:** linked to the user; used for app functionality and account management. Not used for tracking.
 - **Identifiers, user ID:** linked; used for app functionality.
 - **Purchases:** none in the app. Tickets are bought on the website or the partner's site.
-- **Location:** NOT collected. Approximate location is used on the device only, when the user taps Near me or How far, and is never sent off the phone.
+- **Location:** foreground device coordinates are sent to TicketBunker and map/transport providers to return nearby stops, departure boards and routes. Background location is blocked. The previous device-only/not-collected wording no longer describes the Get Around flow; complete precise/approximate location disclosures against the stores’ definitions and actual retention before submitting this build.
 - **Tracking:** no. No advertising SDKs.
 - **Encrypted in transit:** yes (HTTPS). **Account deletion:** yes, in the app (My tickets → Delete my account) and by email.
 
@@ -58,7 +58,7 @@ This is the fan app for TicketBunker (theticketbunker.com), a ticketing platform
 - **Demo account:** [buyer email] / [password]. It holds a valid ticket for [event], so you can see My tickets, the door QR code and the wallet buttons.
 - **Partner listings:** events marked "Sold by Skiddle · fees may apply" open on the partner's website, which sells and supports those tickets. TicketBunker's own events open our web checkout for real-world event tickets (guideline 3.1.3(e)).
 - **VIP:** TicketBunker VIP is not sold in the app. The app only shows perks to existing members, and the guestlist spots are for real-world events.
-- **Location:** requested only when the user taps Near me or How far, and used on the device.
+- **Location:** foreground only, with the platform permission prompt. Used for nearby events, transport and routes; coordinates are shared with TicketBunker/map/transport providers for those searches. No background location permission is requested.
 - **Account deletion:** My tickets → Delete my account.
 
 ## Screenshots

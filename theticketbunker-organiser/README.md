@@ -31,8 +31,16 @@ npx expo run:android
 - iOS and Android always ship together, with the same `version` in `app.json` (tests check this).
 - The bundle ID and package are `pt.soundbunker.theticketbunker.organiser`. The home-screen name is "TB Organiser" (`expo.name`); change it before the first upload if you prefer another.
 - Store text, privacy answers and App Review notes are in `STORE-LISTING.md`.
-- Run `eas init` (owner `soundbunker`), create the App Store Connect record and add its `ascAppId` to `eas.json`. Store builds need `EXPO_TOKEN`.
+- The existing EAS project is `c3c754ba-b9e9-4b76-a679-88c310f87d7e`, owned by `soundbunker`; `eas.json` already points to App Store Connect `6837950804`. Preserve these identities and existing signing access. Store builds need the existing `EXPO_TOKEN`.
 - **App Review risks:**
   - **Listing fee:** it is paid through Stripe Checkout, opened from the app in a browser sheet. It is a business service fee for real-world events, which Apple's guideline 3.1.3 normally allows outside In-App Purchase, but say so in the review notes. If Apple objects, change the button to open theticketbunker.com/organiser instead.
   - **Account deletion:** done in the app (Delete my account opens a deletion case in Support admin). Complete each one within 30 days and email the person, as the app and the privacy policy (terms#app-privacy) promise.
   - **Demo login:** App Review needs an organiser account with a published event.
+
+## Brand update validation — 25 November 2026
+
+The native interface now uses the published website’s Barlow Condensed headlines, DM Sans body text, premium dark palette, official wordmark and teal pill controls. Static font files are bundled with their SIL Open Font License notices and source URLs in `assets/fonts/`. No runtime font download is needed.
+
+Validation passed: 9 existing organiser tests, Expo Doctor 21/21, and Android/iOS JavaScript/Hermes bundle exports on Expo 57.0.34. These checks did not create signed app binaries or submit anything to either store; no on-device visual review was performed.
+
+The initial store version remains `1.0.0`; EAS uses remote build numbering and production `autoIncrement`. After publishing the exact source commit, dispatch `.github/workflows/ticketbunker-mobile-release.yml` with `upload: false` for signed builds only, or `upload: true` for the existing TestFlight/Play internal upload route. The workflow builds buyer and organiser apps for both iOS and Android.

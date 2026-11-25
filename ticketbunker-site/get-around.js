@@ -217,7 +217,7 @@ export function transportLinks({slug = '', name = '', country = '', from = null,
   if (origin) context.set('origin', origin);
   if (destination) context.set('destination', destination);
   if (toName) context.set('destination_name', toName);
-  const query = context.size ? '?' + context.toString() : '';
+  const query = context.toString() ? '?' + context.toString() : '';
   const links = [
     {kind: 'rail', name: 'Train stations', note: 'Find stations and check their services', url: search('train stations')},
     {kind: 'bus', name: 'Bus stops', note: 'Find stops and check routes with the operator', url: search('bus stops')},

@@ -7,7 +7,8 @@ The theticketbunker.com experience as a native Expo / React Native app: find eve
 - **Places**: all 153 city pages from `ticketbunker-site/city-places.js`, grouped by country and searchable. Near me lists the three closest cities. The map uses Leaflet and OpenStreetMap, the same as the site, so it needs no maps API key. Pins come from `city-coords.js`.
 - **City / results lists**: our events plus partner listings, soonest first, with date and type filters. On iPad and tablets (≥ 768 pt wide) the list sits on the left and the chosen event on the right.
 - **Event detail**: every partner listing says "Sold by <seller> · fees may apply". TicketBunker events say "no booking fee". **Get tickets** opens the partner's page (with our tracked link) or the existing TicketBunker checkout at `/event/<slug>` in an in-app browser. The screen also has Add to My trip and Share.
-- **Get to the venue**: Walk, bus/train/metro, Uber, Citymapper (in cities where it runs) and the Tube map (London), from `get-there.js`. "How far is it from here?" works out rough walking and taxi times on the phone. The location never leaves the device.
+- **Get to the venue**: Walk, bus/train/metro, Uber, Citymapper (in cities where it runs) and the Tube map (London), from `get-there.js`. "How far is it from here?" works out rough walking and taxi times on the phone. The rough distance calculation runs on the device; opening a route or nearby transport search sends coordinates to the selected map/transport provider or TicketBunker for that request.
+- **Get around**: nearby mapped transport, connected operator departure feeds and provider route searches use the same current sources as the website. Coordinates are shared for the requested nearby lookup; background location is blocked.
 - **My trip**: the night planner from the site. Steps are tickets, getting there, travel, a bed, food and things to do. Partners not yet approved show "Coming soon". Saved on the phone only.
 - **My tickets**: the TicketBunker sign-in from the website (Supabase, publishable key only), `/api/my-event-tickets`, and each ticket with the same door QR as the ticket web page. Apple Wallet appears on iOS and Google Wallet on Android.
 
@@ -31,9 +32,9 @@ npx expo run:android   # emulator
 - Store text, privacy answers and App Review notes are in `STORE-LISTING.md`.
 - iOS and Android always ship together, with the same `version` in `app.json` (tests check this).
 - The bundle ID and package are `pt.soundbunker.theticketbunker`. Reserve them before the first upload.
-- `app.json` has no EAS `projectId` yet. Run `eas init` (owner `soundbunker`), then create the App Store Connect record and put its `ascAppId` into `eas.json` under `submit.production.ios` (never the Scanner's 6823316315; a test guards this).
+- The existing EAS project is `0027b9f4-e08e-4887-93b6-44f7bc8552b7`, owned by `soundbunker`; `eas.json` already points to App Store Connect `6837950372`. Preserve these identities and existing signing access.
 - Store builds need `EXPO_TOKEN`, or use the scanner's local signing route.
 - Before App Review:
   - **Account deletion:** done in the app (Delete my account opens a deletion case in Support admin). Complete each one within 30 days and email the person, as the app and the privacy policy (terms#app-privacy) promise.
-  - **Privacy labels:** location is used on the device only and not collected. The email is used for sign-in.
+  - **Privacy labels:** foreground coordinates are sent to TicketBunker and map/transport providers for nearby transport and routes; do not describe location as device-only. Update location disclosures using the platform definitions and the actual provider retention before submission. The email is used for sign-in.
   - **App Review login:** give App Review a buyer login that has a valid ticket.

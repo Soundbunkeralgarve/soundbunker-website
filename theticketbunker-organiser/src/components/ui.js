@@ -34,14 +34,14 @@ export function Empty({title, text, action}) {
   </View>;
 }
 const b = StyleSheet.create({
-  base: {minHeight: 58, borderRadius: 16, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10},
-  small: {minHeight: 48, borderRadius: 14, paddingHorizontal: 16},
+  base: {minHeight: 58, borderRadius: 999, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10},
+  small: {minHeight: 48, borderRadius: 999, paddingHorizontal: 16},
   primary: {backgroundColor: C.teal},
   secondary: {backgroundColor: C.cardHi, borderWidth: 1, borderColor: C.line},
   ghost: {backgroundColor: 'transparent', borderWidth: 1, borderColor: C.teal},
-  text: {fontFamily: F.bold, fontSize: 18},
+  text: {fontFamily: F.bold, fontSize: 17, flexShrink: 1},
   icon: {fontSize: 20},
-  chip: {minHeight: 46, paddingHorizontal: 16, borderRadius: 23, borderWidth: 1, borderColor: C.line, backgroundColor: C.card, justifyContent: 'center'},
+  chip: {minHeight: 48, paddingHorizontal: 16, borderRadius: 999, borderWidth: 1, borderColor: C.line, backgroundColor: C.card, justifyContent: 'center'},
   chipOn: {backgroundColor: C.teal, borderColor: C.teal},
   chipText: {fontFamily: F.bold, color: C.text, fontSize: 15},
   center: {flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24}

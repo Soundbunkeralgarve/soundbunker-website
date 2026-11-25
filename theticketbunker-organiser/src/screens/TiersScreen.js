@@ -51,7 +51,7 @@ export default function TiersScreen({route, navigation}) {
   </KeyboardAvoidingView>;
 }
 const t = StyleSheet.create({
-  box: {gap: 8, backgroundColor: C.card, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: C.teal},
-  row: {gap: 10, backgroundColor: C.card, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: C.line},
+  box: {gap: 8, backgroundColor: C.card, borderRadius: 18, padding: 14, borderWidth: 1, borderColor: C.teal},
+  row: {gap: 10, backgroundColor: C.card, borderRadius: 18, padding: 14, borderWidth: 1, borderColor: C.line},
   remove: {fontFamily: F.bold, color: C.bad, fontSize: 15}
 });

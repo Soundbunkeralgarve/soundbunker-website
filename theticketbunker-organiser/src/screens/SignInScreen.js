@@ -3,6 +3,7 @@ import {Text, KeyboardAvoidingView, ScrollView, Platform, ImageBackground, View}
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {C, s} from '../theme.js';
 import {Button} from '../components/ui.js';
+import Brand from '../components/Brand.js';
 import Field from '../components/Field.js';
 import {useOrganiser} from '../state.js';
 import {openPage} from '../open.js';
@@ -18,9 +19,10 @@ export default function SignInScreen() {
   }
   return <KeyboardAvoidingView style={s.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{paddingBottom: 40}}>
-      <ImageBackground source={require('../../assets/club.jpg')} imageStyle={{opacity: 0.4}} style={{paddingTop: insets.top + 36, paddingHorizontal: 18, paddingBottom: 28, backgroundColor: '#000'}}>
+      <ImageBackground source={require('../../assets/club.jpg')} imageStyle={{opacity: 0.4}} style={{paddingTop: insets.top + 36, paddingHorizontal: 18, paddingBottom: 28, backgroundColor: C.bg}}>
         <View style={{maxWidth: 560, width: '100%', alignSelf: 'center'}}>
-          <Text style={s.eyebrow}>Organiser · TicketBunker</Text>
+          <Brand/>
+          <Text style={[s.eyebrow, {marginTop: 22}]}>Organiser</Text>
           <Text style={[s.h1, {textTransform: 'uppercase', marginTop: 8}]}>Your events.{'\n'}<Text style={{color: C.teal}}>On the move.</Text></Text>
           <Text style={[s.body, {marginTop: 8}]}>Create events, publish, watch sales and run the door from your phone.</Text>
         </View>

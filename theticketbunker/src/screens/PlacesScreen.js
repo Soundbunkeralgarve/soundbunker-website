@@ -3,7 +3,7 @@ import {View, Text, TextInput, SectionList, Pressable, StyleSheet, Alert, useWin
 import {WebView} from 'react-native-webview';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {C, F, s, WIDE} from '../theme.js';
-import {StatusShade, Button, Chip} from '../components/ui.js';
+import {StatusShade, Button, Chip, BrandHeader} from '../components/ui.js';
 import {citiesByCountry, cityRow} from '../../lib/listings.js';
 import {CITY_COORDS, nearestCities, cityBySlug, placeText} from '../../lib/site.js';
 import {cityMapHtml} from '../../lib/mapHtml.js';
@@ -29,7 +29,8 @@ export default function PlacesScreen({navigation}) {
     finally { setBusy(false); }
   }
   const header = <View style={{gap: 12, paddingBottom: 8}}>
-    <Text style={[s.h1, {textTransform: 'uppercase'}]}>Places</Text>
+    <BrandHeader/>
+        <Text style={[s.h1, {textTransform: 'uppercase'}]}>Places</Text>
     <Text style={s.muted}>153 cities, islands and regions across the UK, Ireland and Europe.</Text>
     <View style={[{gap: 10}, wide && {flexDirection: 'row'}]}>
       <Button title="Near me" icon="◎" onPress={findNear} busy={busy} style={wide && {flex: 1}}/>
@@ -54,7 +55,7 @@ export default function PlacesScreen({navigation}) {
     </Pressable>}/><StatusShade/></View>;
 }
 const p = StyleSheet.create({
-  near: {gap: 8, backgroundColor: C.card, padding: 14, borderRadius: 16, borderWidth: 1, borderColor: C.line},
+  near: {gap: 8, backgroundColor: C.card, padding: 14, borderRadius: 18, borderWidth: 1, borderColor: C.line},
   row: {minHeight: 58, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, backgroundColor: C.card, borderRadius: 14, marginBottom: 8, borderWidth: 1, borderColor: C.line},
   name: {fontFamily: F.bold, color: C.text, fontSize: 18},
   go: {color: C.teal, fontSize: 22, fontFamily: F.bold}

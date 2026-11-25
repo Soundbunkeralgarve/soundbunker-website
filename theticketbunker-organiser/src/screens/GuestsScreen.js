@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import {ScrollView, View, Text, Alert, StyleSheet} from 'react-native';
-import {C, s} from '../theme.js';
+import {C, F, s} from '../theme.js';
 import {Button, Chip, Loading} from '../components/ui.js';
 import Field from '../components/Field.js';
 import {useOrganiser, call} from '../state.js';
@@ -59,6 +59,6 @@ export default function GuestsScreen({route, navigation}) {
   </ScrollView>;
 }
 const g = StyleSheet.create({
-  vip: {gap: 10, backgroundColor: C.card, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#d9b35b'},
-  badge: {alignSelf: 'flex-start', fontFamily: 'BricolageGrotesque_800ExtraBold', color: '#1a1406', backgroundColor: '#d9b35b', paddingHorizontal: 10, paddingVertical: 2, borderRadius: 6, fontSize: 13, letterSpacing: 2, overflow: 'hidden'},
-  card: {gap: 8, backgroundColor: C.card, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: C.line}});
+  vip: {gap: 10, backgroundColor: C.card, borderRadius: 18, padding: 14, borderWidth: 1, borderColor: C.gold},
+  badge: {alignSelf: 'flex-start', fontFamily: F.bold, color: C.goldInk, backgroundColor: C.gold, paddingHorizontal: 10, paddingVertical: 2, borderRadius: 6, fontSize: 14, letterSpacing: 1.2, overflow: 'hidden'},
+  card: {gap: 8, backgroundColor: C.card, borderRadius: 18, padding: 14, borderWidth: 1, borderColor: C.line}});

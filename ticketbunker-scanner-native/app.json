@@ -6,7 +6,7 @@
     "version": "1.0.2",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
-    "backgroundColor": "#080e12",
+    "backgroundColor": "#07070b",
     "icon": "./assets/icon.png",
     "ios": {
       "bundleIdentifier": "pt.soundbunker.ticketbunkerscanner",
@@ -22,7 +22,7 @@
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#080e12"
+        "backgroundColor": "#07070b"
       },
       "allowBackup": false
     },

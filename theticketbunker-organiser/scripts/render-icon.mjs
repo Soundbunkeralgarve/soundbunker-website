@@ -6,7 +6,7 @@ const base=join(dirname(fileURLToPath(import.meta.url)),'..');
 // Render the vector master directly at each size. Never upscale the header PNG:
 // the previous raster source had a black matte and clipped the bottom of the mark.
 const source=await readFile(join(base,'assets/brand-icon.svg'));
-const background='#080e12';
+const background='#07070b';
 const renderMark=width=>sharp(source,{density:600}).resize({width}).png().toBuffer();
 const centered=async(mark,size,canvasBackground)=>{
  const {width,height}=await sharp(mark).metadata();

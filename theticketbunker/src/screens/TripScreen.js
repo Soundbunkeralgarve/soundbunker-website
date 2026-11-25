@@ -2,7 +2,7 @@ import React from 'react';
 import {ScrollView, View, Text, StyleSheet, Pressable, useWindowDimensions} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {C, F, s, WIDE} from '../theme.js';
-import {StatusShade, Button, Empty} from '../components/ui.js';
+import {StatusShade, Button, Empty, BrandHeader} from '../components/ui.js';
 import GetThere from '../components/GetThere.js';
 import {useTrip} from '../state.js';
 import {plannerSteps} from '../../lib/planner.js';
@@ -14,7 +14,8 @@ export default function TripScreen({navigation}) {
   const insets = useSafeAreaInsets(), {width} = useWindowDimensions(), wide = width >= WIDE;
   const {trip, mark, remove} = useTrip();
   return <View style={s.screen}><ScrollView style={s.screen} contentContainerStyle={{paddingTop: insets.top + 8, paddingHorizontal: 18, paddingBottom: 40, gap: 16}}>
-    <Text style={[s.h1, {textTransform: 'uppercase'}]}>My trip</Text>
+    <BrandHeader/>
+        <Text style={[s.h1, {textTransform: 'uppercase'}]}>My trip</Text>
     <Text style={s.muted}>Make a night of it. Check options and book on each named provider’s site under its prices, fees and terms. We keep the plan on this phone.</Text>
     {!trip.length ? <Empty title="No nights planned yet" text="Tap Add to My trip on any event to plan getting there, a bed and food."
       action={<Button title="Find something on" onPress={() => navigation.navigate('Discover')}/>}/> :
@@ -54,7 +55,7 @@ function Night({night, wide, mark, remove, navigation}) {
 const t = StyleSheet.create({
   night: {backgroundColor: C.card, borderRadius: 20, padding: 16, gap: 12, borderWidth: 1, borderColor: C.line},
   when: {fontFamily: F.bold, color: C.teal, fontSize: 13, textTransform: 'uppercase', marginBottom: 4},
-  step: {gap: 10, borderWidth: 1, borderColor: C.line, borderRadius: 16, padding: 12, backgroundColor: C.bg},
+  step: {gap: 10, borderWidth: 1, borderColor: C.line, borderRadius: 18, padding: 12, backgroundColor: C.bg},
   stepHead: {flexDirection: 'row', alignItems: 'center', gap: 12},
   num: {width: 40, height: 40, borderRadius: 20, borderWidth: 2, borderColor: C.teal, alignItems: 'center', justifyContent: 'center'},
   numText: {fontFamily: F.bold, color: C.teal, fontSize: 17},

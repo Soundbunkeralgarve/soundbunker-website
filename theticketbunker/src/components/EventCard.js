@@ -29,7 +29,7 @@ const e = StyleSheet.create({
   noImgText: {fontFamily: F.display, color: C.teal, fontSize: 30},
   body: {flex: 1, padding: 14, gap: 3},
   when: {fontFamily: F.bold, color: C.teal, fontSize: 13, textTransform: 'uppercase', letterSpacing: 0.4},
-  title: {fontFamily: F.bold, color: C.text, fontSize: 18, lineHeight: 22},
+  title: {fontFamily: F.heading, color: C.text, fontSize: 26, lineHeight: 27},
   row: {flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 4, flexWrap: 'wrap'},
   price: {fontFamily: F.bold, color: C.text, fontSize: 14},
   seller: {fontFamily: F.body, color: C.muted, fontSize: 13, flexShrink: 1}

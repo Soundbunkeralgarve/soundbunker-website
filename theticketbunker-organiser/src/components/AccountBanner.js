@@ -32,4 +32,4 @@ export default function AccountBanner({compact}) {
     <Button title="Finish on theticketbunker.com" kind="secondary" small onPress={() => openPage(SITE + '/organiser')}/>
   </View>;
 }
-const b = StyleSheet.create({box: {gap: 10, backgroundColor: C.card, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: C.warn}});
+const b = StyleSheet.create({box: {gap: 10, backgroundColor: C.card, borderRadius: 18, padding: 14, borderWidth: 1, borderColor: C.warn}});

@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {ScrollView, View, Text, TextInput, ImageBackground, StyleSheet, useWindowDimensions, Alert} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {C, F, s, WIDE} from '../theme.js';
-import {Button, Chip, StatusShade} from '../components/ui.js';
+import {Button, Chip, StatusShade, BrandHeader} from '../components/ui.js';
 import EventCard from '../components/EventCard.js';
 import {CATEGORY_KEYS, WHEN_OPTIONS, search, mixTypes, cityRow} from '../../lib/listings.js';
 import {discoveryCategories, nearestCities, cityBySlug} from '../../lib/site.js';
@@ -30,6 +30,7 @@ export default function HomeScreen({navigation}) {
   return <View style={s.screen}><ScrollView style={s.screen} contentContainerStyle={{paddingBottom: 40}} keyboardShouldPersistTaps="handled">
     <ImageBackground source={require('../../assets/club.jpg')} style={[h.hero, {paddingTop: insets.top + (short ? 12 : 28)}]} imageStyle={{opacity: 0.45}}>
       <View style={[h.heroInner, wide && {maxWidth: 760}]}>
+        <BrandHeader/>
         <Text style={s.eyebrow}>{count ? count.toLocaleString('en-GB') + ' events on sale' : 'Tickets on sale now'} · Algarve to Berlin</Text>
         <Text style={[s.h1, h.title, wide && !short && {fontSize: 72, lineHeight: 72}]}>Book it.{'\n'}<Text style={{color: C.teal}}>Head out.</Text></Text>
         <Text style={h.tagline}>Your night out, sorted.</Text>
@@ -77,10 +78,10 @@ export default function HomeScreen({navigation}) {
   </ScrollView><StatusShade/></View>;
 }
 const h = StyleSheet.create({
-  hero: {backgroundColor: '#000', paddingHorizontal: 18, paddingBottom: 26},
+  hero: {backgroundColor: C.bg, paddingHorizontal: 18, paddingBottom: 26},
   heroInner: {width: '100%', alignSelf: 'center'},
   title: {marginTop: 10, textTransform: 'uppercase'},
-  tagline: {fontFamily: F.bold, color: C.text, fontSize: 22, marginTop: 6},
+  tagline: {fontFamily: F.medium, color: C.text, fontSize: 22, marginTop: 6},
   chips: {gap: 8, paddingTop: 12},
   actions: {gap: 10, marginTop: 16},
   section: {marginTop: 28, gap: 10},

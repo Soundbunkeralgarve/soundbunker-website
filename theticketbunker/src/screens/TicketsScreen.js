@@ -3,7 +3,7 @@ import {View, Text, TextInput, FlatList, Pressable, StyleSheet, KeyboardAvoiding
 import {Image} from 'expo-image';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {C, F, s, WIDE} from '../theme.js';
-import {Button, Loading, Empty, StatusShade} from '../components/ui.js';
+import {Button, Loading, Empty, StatusShade, BrandHeader} from '../components/ui.js';
 import {useAuth} from '../state.js';
 import {myTickets, sortTickets, ticketStatus, ticketRef} from '../../lib/tickets.js';
 import {vipStatus} from '../../lib/vip.js';
@@ -27,6 +27,7 @@ function SignIn() {
   }
   return <KeyboardAvoidingView style={s.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <ScrollView contentContainerStyle={{paddingTop: insets.top + 8, paddingHorizontal: 18, paddingBottom: 40, gap: 14, width: '100%', maxWidth: 560, alignSelf: 'center'}} keyboardShouldPersistTaps="handled">
+      <BrandHeader/>
       <Text style={[s.h1, {textTransform: 'uppercase'}]}>My tickets</Text>
       <Text style={s.body}>Sign in with the email you booked with. Your TicketBunker tickets, QR codes and wallet passes are all here.</Text>
       <TextInput style={s.input} placeholder="Email" placeholderTextColor={C.muted} value={email} onChangeText={setEmail} autoCapitalize="none" autoComplete="email"
@@ -56,7 +57,8 @@ function TicketList({navigation}) {
   }, [auth]);
   useEffect(() => { load(); }, [load]);
   const header = <View style={{gap: 8, marginBottom: 8}}>
-    <Text style={[s.h1, {textTransform: 'uppercase'}]}>My tickets</Text>
+    <BrandHeader/>
+      <Text style={[s.h1, {textTransform: 'uppercase'}]}>My tickets</Text>
     <View style={{flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap'}}>
       {vip ? <Text style={k.vip}>VIP</Text> : null}
       <Text style={s.muted}>Signed in as {auth.email}</Text>

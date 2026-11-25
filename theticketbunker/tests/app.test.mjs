@@ -93,7 +93,7 @@ test('night planner: tickets, get to the venue (walk/transit/Uber/Citymapper/Tub
     if (link.commercial === 'direct') assert.notEqual(new URL(link.url).hostname, 'www.awin1.com', 'public searches never acquire affiliate tracking');
   }
   const publicLinks = searches.flatMap(s => s.links).filter(l => l.commercial === 'direct');
-  assert.deepEqual(publicLinks.map(l => l.id), ['trainline-direct', 'omio-direct', 'expedia-cars', 'expedia-hotels', 'blacklane-direct', 'welcome-direct', 'thefork-direct', 'restaurant-map']);
+  assert.deepEqual(publicLinks.map(l => l.id), ['trainline-direct', 'omio-direct', 'expedia-cars', 'expedia-hotels', 'booking-hotels', 'blacklane-direct', 'welcome-direct', 'thefork-direct', 'restaurant-map']);
   assert.ok(publicLinks.every(l => !new URL(l.url).hostname.endsWith('awin1.com') && !new URL(l.url).searchParams.has('awinaffid')), 'public searches never acquire pending affiliate tracking');
   assert.equal(new URL(steps.find(s => s.kind === 'stay').links.find(l => l.id === 'expedia-hotels').url).searchParams.get('destination'), 'London, United Kingdom');
   assert.equal(new URL(publicLinks.find(l => l.id === 'restaurant-map').url).searchParams.get('query'), 'restaurants London, United Kingdom');
@@ -167,7 +167,9 @@ test('store config matches the release rules', () => {
   assert.equal(app.version, pkg.version, 'iOS and Android ship the same version');
   assert.equal(app.ios.supportsTablet, true);
   assert.ok(app.android.blockedPermissions.includes('android.permission.ACCESS_BACKGROUND_LOCATION'));
-  assert.match(app.ios.infoPlist.NSLocationWhenInUseUsageDescription, /never sent to us/);
+  assert.match(app.ios.infoPlist.NSLocationWhenInUseUsageDescription, /coordinates are sent to TicketBunker/);
+  assert.match(app.ios.infoPlist.NSLocationWhenInUseUsageDescription, /transport provider/);
+  assert.match(app.ios.infoPlist.NSLocationWhenInUseUsageDescription, /Background location is not used/);
 });
 
 test('VIP: early-access note only while the window is open; guestlist claims ask for a name once', async () => {
@@ -217,5 +219,5 @@ test('Get around: the app uses the site module and has its own tab', async () =>
   assert.match(app, /name="GetAround" component={GetAroundScreen}/);
   const screen = readFileSync(new URL('../src/screens/GetAroundScreen.js', import.meta.url), 'utf8');
   assert.match(screen, /TFL_ATTRIBUTION/, 'TfL attribution is shown with live times');
-  assert.match(screen, /Live departure boards for \{name\} are on the way/, 'cities without a live feed say so');
+  assert.match(screen, /No connected departure feed for this area/, 'areas without a live feed say so');
 });

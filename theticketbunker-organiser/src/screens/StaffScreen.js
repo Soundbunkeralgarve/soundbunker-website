@@ -48,4 +48,4 @@ export default function StaffScreen({route, navigation}) {
     </>}
   </ScrollView>;
 }
-const st = StyleSheet.create({row: {flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: C.card, borderRadius: 14, padding: 12, borderWidth: 1, borderColor: C.line}});
+const st = StyleSheet.create({row: {flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: C.card, borderRadius: 18, padding: 12, borderWidth: 1, borderColor: C.line}});

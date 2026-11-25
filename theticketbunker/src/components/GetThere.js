@@ -31,6 +31,6 @@ export default function GetThere({place}) {
   </View>;
 }
 const g = StyleSheet.create({
-  eta: {gap: 8, backgroundColor: C.card, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: C.line},
+  eta: {gap: 8, backgroundColor: C.card, borderRadius: 18, padding: 14, borderWidth: 1, borderColor: C.line},
   grid: {flexDirection: 'row', flexWrap: 'wrap', gap: 10}
 });

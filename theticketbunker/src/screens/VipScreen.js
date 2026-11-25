@@ -65,5 +65,5 @@ export default function VipScreen({navigation}) {
 const st = StyleSheet.create({
   hero: {gap: 10, backgroundColor: C.card, borderRadius: 20, padding: 18, borderWidth: 2, borderColor: '#d9b35b'},
   badge: {alignSelf: 'flex-start', fontFamily: F.display, color: '#1a1406', backgroundColor: '#d9b35b', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 8, fontSize: 16, letterSpacing: 2, overflow: 'hidden'},
-  box: {gap: 8, backgroundColor: C.card, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: C.line}
+  box: {gap: 8, backgroundColor: C.card, borderRadius: 18, padding: 14, borderWidth: 1, borderColor: C.line}
 });

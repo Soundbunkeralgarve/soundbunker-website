@@ -4,6 +4,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {C, s, WIDE} from '../theme.js';
 import {Button, Chip, Empty, Loading, StatusShade} from '../components/ui.js';
 import EventRow from '../components/EventRow.js';
+import Brand from '../components/Brand.js';
 import EventDashboard from '../components/EventDashboard.js';
 import AccountBanner from '../components/AccountBanner.js';
 import {useOrganiser} from '../state.js';
@@ -20,6 +21,7 @@ export default function EventsScreen({navigation}) {
   if (!org.loaded) return <View style={[s.screen, {paddingTop: insets.top}]}><Loading label="Loading your events…"/></View>;
   if (!org.organiser) return <View style={[s.screen, {paddingTop: insets.top}]}><AccountBanner/></View>;
   const header = <View style={{gap: 12, marginBottom: 6}}>
+    <Brand compact/>
     <Text style={s.eyebrow}>{org.organiser.display_name}</Text>
     <Text style={[s.h1, {textTransform: 'uppercase'}]}>My events</Text>
     <AccountBanner compact/>
