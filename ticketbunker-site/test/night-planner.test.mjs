@@ -21,7 +21,10 @@ test('travel planning has usable public searches without unapproved tracking', (
     for (const link of links) {
       const u = new URL(link.url);
       assert.notEqual(u.hostname, 'www.awin1.com', 'pending routes stay hidden');
-      if (link.commercial === 'affiliate') {
+      if (link.commercial === 'affiliate' && u.hostname === 'www.trip.com') {
+        assert.equal(kind, 'stay');
+        assert.equal(u.searchParams.get('Allianceid'), '11489066');
+      } else if (link.commercial === 'affiliate') {
         assert.equal(kind, 'transfer');
         assert.equal(u.hostname, 'www.viator.com');
         assert.equal(u.searchParams.get('pid'), 'P00333211');

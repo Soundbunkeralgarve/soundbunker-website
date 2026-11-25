@@ -8,7 +8,7 @@ import {homeRails} from './sample-listings.js?v=20261123-live-search';
 import {selectFeaturedEvents} from './featured-selection.js';
 import {renderGygBox} from './gyg-box.js?v=20261121c';
 import {renderPartnerDirectory} from './partner-directory.js?v=20261123';
-import {saveNightToMyTrip,mountMyTrip,tourLink} from './night-planner.js?v=20261123-live-search';
+import {saveNightToMyTrip,mountMyTrip,tourLink} from './night-planner.js?v=20261126-packages';
 import {openShare,eventLink} from './event-share.js?v=20261124-adventures';
 import {PARTY_TYPES,partyType,tripHref,eventTripState} from './home-trip-context.js?v=20261123-trip-flow';
 import {debounce,feedSearchUrl,createLatestLoader} from './live-search.js?v=20261123-live-search';
@@ -25,7 +25,8 @@ const ALL=[...new Set(CITY_PAGES.map(([, , country])=>country))];
 import {CITY_PAGES} from './city-places.js?v=20261122';
 import {mountPlaceFinder,mountNearButton,locate} from './place-finder.js?v=20261122';
 import {nearestCities} from './city-coords.js?v=20261122';
-import {tripOptions,withClickRef} from './trip-partners.js?v=20261123-travel';
+import {tripOptions,withClickRef} from './trip-partners.js?v=20261126-packages';
+import {weekendSection,weekendOrigin,WEEKEND_ORIGIN_KEY} from './weekend-packages.js?v=20261126-packages';
 const PLACES=[['PT','Algarve'],['PT','Lisbon'],['PT','Porto'],['GB','London'],['GB','Edinburgh'],['GB','Manchester'],['IE','Dublin'],['ES','Madrid'],['ES','Barcelona'],['FR','Paris'],['NL','Amsterdam'],['DE','Berlin']];
 const saved=(()=>{try{return JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch{return {};}})();
 // City pages (/london, /algarve …) open preset to their place.
@@ -334,7 +335,8 @@ function renderTrip(){
  const query=TRIPS.find(([l])=>l===tripPick)[1],list=tripCache.get(tripPick);
  const track=section.querySelector('[data-track]');
  if(!list){track.innerHTML='<p class="trip-loading">Loading '+esc(tripPick)+'…</p>';return;}
- const items=mixSellers(sortItems(filterItems(blend(events,partners,Date.now(),list),{city:query,when:'any'}).filter(i=>!i.soldOut))).slice(0,16);
+ const cityItems=mixSellers(sortItems(filterItems(blend(events,partners,Date.now(),list),{city:query,when:'any'}).filter(i=>!i.soldOut))),items=cityItems.slice(0,16);
+ if(!pathCity){const page=cityPage(tripPick);renderWeekend({slug:page?.[0]||'',name:tripPick,country:page?.[2]||'',items:cityItems,page:pagRef});}
  mountRail(section,items.map(i=>card(i)),`<a class="tcard host-tile" href="${esc(cityHref(tripPick))}"><div><span class="label">${esc(tripPick)}</span><h3>See it all.</h3><p>Every gig, night out, family day and tour we have in ${esc(tripPick)}.</p><span class="head-link">Everything in ${esc(tripPick)} ↗</span></div></a>`);
 }
 
@@ -356,7 +358,19 @@ function renderPlan(){
 // travel, stays, food and tours around it one tap away.
 // Phones start shorter so the rails below stay within reach.
 const HUB_STEP=matchMedia('(max-width: 760px)').matches?8:24;let hubCat='',hubLimit=HUB_STEP,hubJumped=false;
-if(pathCity){$('#hub')?.before($('#city-hub'));$('#city-hub').after($('#plan-trip'),$('#gyg-box'));}
+if(pathCity){$('#hub')?.before($('#city-hub'));$('#city-hub').after($('#weekend'),$('#plan-trip'),$('#gyg-box'));}
+// "Make it a weekend": top dated events with stay, Flight + Hotel and flights for the same dates.
+// The departure airport is remembered on this device only.
+let flyFrom=(()=>{try{return weekendOrigin(localStorage.getItem(WEEKEND_ORIGIN_KEY)||'');}catch{return 'LON';}})(),weekendArgs=null;
+function renderWeekend(args){
+ if(args)weekendArgs=args;const box=$('#weekend');if(!box||!weekendArgs)return;
+ const {pending,...opts}=weekendArgs;
+ if(pending&&!opts.items?.length&&box.querySelector('.wk-card'))return; // keep the server-rendered cards while the live feed loads
+ const html=weekendSection({...opts,origin:flyFrom});
+ box.hidden=!html;box.querySelector('[data-weekend]').innerHTML=html;
+ const pick=box.querySelector('[data-weekend-origin]');
+ if(pick)pick.onchange=()=>{flyFrom=weekendOrigin(pick.value);try{localStorage.setItem(WEEKEND_ORIGIN_KEY,flyFrom);}catch{}renderWeekend();box.querySelector('[data-weekend-origin]')?.focus();};
+}
 function renderHub(all,now){
  const box=$('#city-hub');
  if(!pathCity||state.city!==pathCity.city){box.hidden=true;return;}
@@ -368,6 +382,7 @@ function renderHub(all,now){
  const shown=mixSellers(hubCat?list.filter(i=>i.category===hubCat):list);
  $('#city-hub-h').textContent='Everything on in '+name+'.';
  const settled=feedCity===state.city&&feedDone;
+ renderWeekend({slug:pathCity.slug,name,country:pathCity.country,items:list,page:pagRef,pending:!settled});
  $('#city-hub-count').textContent=list.length?list.length.toLocaleString('en-GB')+' on sale':settled?'Events coming soon':'Loading what\u2019s on\u2026';
  const jump=(id,label,note)=>`<button type="button" class="amenity" data-go="${id}"><b>${esc(label)}</b><small>${esc(note)}</small></button>`;
  const plan=tripOptions(state.country||pathCity.country||'',name),live=k=>plan.find(o=>o.kind===k)?.partners.length?'Search options':'Coming soon';
@@ -378,6 +393,7 @@ function renderHub(all,now){
   jump('plan-trip','Trains & coaches',live('travel')),
   `<a class="amenity" href="${esc('/vip-transfers?'+new URLSearchParams({city:name,country:state.country||pathCity.country||''}))}"><b>Limos &amp; VIP transport</b><small>Check local options</small></a>`,
   jump('plan-trip','Stay nearby',live('stay')),
+  !$('#weekend').hidden?jump('weekend','Make it a weekend','Event + hotel + flights'):'',
   jump('plan-trip','Eat nearby',live('eat')),
   jump('rail-trip','Other cities','Tickets further afield')
  ].filter(Boolean).join('');

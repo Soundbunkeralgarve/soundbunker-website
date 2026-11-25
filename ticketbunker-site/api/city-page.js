@@ -5,6 +5,7 @@ import {cityBySlug} from '../city-places.js';
 import {withClickRef} from '../trip-partners.js';
 import {GUIDE_LINKS} from '../travel-directory.js';
 import {sortItems, mixSellers} from '../discovery-model.js';
+import {weekendSection} from '../weekend-packages.js';
 const SITE = 'https://theticketbunker.com';
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
 const when = (iso, zone) => { try { return new Intl.DateTimeFormat('en-GB', {weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: zone || 'Europe/London'}).format(new Date(iso)); } catch { return ''; } };
@@ -45,6 +46,11 @@ export function cityHtml(shell, [slug, name, country, , pitch], listings = []) {
     .replace('<span>Algarve to Berlin</span>', `<span>${esc(plain)}</span>`)
     .replace('</head>', `<script>window.__TB_CITY=${JSON.stringify({city: slug === 'algarve' ? 'Algarve' : name, country, slug}).replace(/</g, '\\u003c')}</script>${ld.length ? `<script type="application/ld+json">${JSON.stringify({'@context': 'https://schema.org', '@type': 'ItemList', name: 'Upcoming events in ' + inName, itemListElement: ld.map((e, n) => ({'@type': 'ListItem', position: n + 1, item: e}))}).replace(/</g, '\\u003c')}</script>` : ''}</head>`)
     .replace('<section class="faq-section"', guide + '<section class="faq-section"')
+    // Event + stay + travel cards, server-rendered so they work before JavaScript; home.js
+    // refreshes them with the live feed and the visitor's departure airport.
+    .replace('<section class="weekend-packs" id="weekend" aria-labelledby="weekend-h" hidden><div class="wrap" data-weekend></div></section>',
+      () => { const html = weekendSection({slug, name: plain, country, items, page: slug});
+        return `<section class="weekend-packs" id="weekend" aria-labelledby="weekend-h"${html ? '' : ' hidden'}><div class="wrap" data-weekend>${html}</div></section>`; })
     // Every city page carries the full Get around widget in place of the homepage teaser.
     .replace(/<section class="get-around-section ga-home"[\s\S]*?<\/section>/, getAroundSection(slug, inName))
     .replace('</head>', '<script type="module" src="/get-around-ui.js?v=20261125-location-fix"></script></head>');

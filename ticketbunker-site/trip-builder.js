@@ -1,7 +1,7 @@
 import {CITY_PAGES} from './city-places.js?v=20261122';
 import {nearestCities} from './city-coords.js?v=20261122';
 import {locate} from './place-finder.js?v=20261122';
-import {tripOptions} from './trip-partners.js?v=20261125-tripcom';
+import {tripOptions} from './trip-partners.js?v=20261126-packages';
 import {cityBenefits} from './city-guide-benefits.js';
 import {escapeHtml as esc} from './shared.js';
 import {TRIP_BUILDER_KEY, BUILDER_STEPS, TRIP_PARTIES, normaliseDraft, openDraft, persistDraft, switchDestination,

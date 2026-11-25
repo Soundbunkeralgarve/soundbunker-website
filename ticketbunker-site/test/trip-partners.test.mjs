@@ -12,6 +12,11 @@ test('pending affiliate links stay hidden while public searches remain usable', 
     if (p.name === 'Search flights on Trip.com') {
       assert.equal(p.commercial, 'affiliate');
       assert.equal(p.url, 'https://www.trip.com/flights?Allianceid=11489066&SID=336945869&trip_sub1=&trip_sub3=D21530259');
+    } else if (p.id === 'tripcom-hotels' || p.id === 'tripcom-packages') {
+      assert.equal(p.commercial, 'affiliate');
+      assert.equal(u.hostname, 'www.trip.com');
+      assert.equal(u.searchParams.get('Allianceid'), '11489066');
+      assert.equal(u.searchParams.get('SID'), '336945869');
     } else if (p.commercial === 'affiliate') {
       assert.ok(['viator-limos', 'viator-chauffeurs', 'viator-transfers', 'viator-minibuses', 'viator-helicopters', 'viator-jets', 'viator-boats'].includes(p.id));
       assert.equal(u.hostname, 'www.viator.com');

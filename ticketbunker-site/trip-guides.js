@@ -1,6 +1,6 @@
 import {CITY_PAGES} from './city-places.js';
-import {tripOptions} from './trip-partners.js?v=20261125-tripcom';
-import {directoryProviders, tripDestination, tripDates} from './travel-directory.js?v=20261125-dates';
+import {tripOptions} from './trip-partners.js?v=20261126-packages';
+import {directoryProviders, tripDestination, tripDates} from './travel-directory.js?v=20261126-packages';
 import {escapeHtml as esc} from './shared.js';
 import {OFFER_KINDS, pickOffers, offerCards, loadOffers} from './travel-offers.js?v=20261125gg';
 
