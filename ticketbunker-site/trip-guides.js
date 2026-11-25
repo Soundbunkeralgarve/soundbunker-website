@@ -89,7 +89,7 @@ if (typeof document !== 'undefined') {
       if (!box) { box = document.createElement('section'); box.className = 'guide-offers'; box.dataset.guideOffers = ''; results.before(box); results.classList.add('guide-more'); }
       if (offerCity === cityName) return;
       offerCity = cityName;
-      box.innerHTML = `<div class="guide-offers-head"><span class="label">Bookable now</span><h2>Real options in ${esc(cityName)}</h2></div><div class="offer-grid"><p class="offer-loading">Finding live options…</p></div>`;
+      box.innerHTML = `<div class="guide-offers-head"><span class="label">Bookable now</span><h2>Explore ${esc(cityName)}</h2></div><div class="offer-grid"><p class="offer-loading">Finding live options…</p></div>`;
       const items = pickOffers(await loadOffers(cityName), kind, 9);
       if (offerCity !== cityName) return;
       box.querySelector('.offer-grid').innerHTML = items.length ? offerCards(items)

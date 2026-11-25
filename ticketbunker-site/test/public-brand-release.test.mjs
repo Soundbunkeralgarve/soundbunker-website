@@ -12,7 +12,7 @@ test('public HTML and generated pages reference one version of each revised desi
     const expression=new RegExp('/'+asset.replaceAll('.','\\.')+'\\?v=([A-Za-z0-9_-]+)','g');
     for(const path of paths)for(const match of read(path).matchAll(expression))versions.set(match[1],path);
     assert.equal(versions.size,1,asset+': '+JSON.stringify([...versions]));
-    assert.ok(versions.has('20261125-consistent1'),asset);
+    assert.ok(versions.has(asset==='public-mobile.css'?'20261125-mobile3':'20261125-consistent1'),asset);
   }
 });
 test('buyer-facing account families opt in without changing staff tool themes',()=>{
