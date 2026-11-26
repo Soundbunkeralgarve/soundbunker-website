@@ -74,12 +74,18 @@ test('webhook rejects wrong amounts, sessions and test payments before recording
  for(const altered of [{amount_total:7301},{id:'cs_live_wrong'},{livemode:false},{currency:'gbp'}])await assert.rejects(recordInvoiceBalance({...paid,...altered},db),/mismatch/);
  await recordInvoiceBalance(paid,db);assert.equal(db.row.balance_paid_cents,7300);
 });
-test('an uncertain Stripe response retries the same checkout idempotency key',async()=>{
+test('an uncertain Stripe response retries the same checkout idempotency key and body across invoice/portal entrypoints',async()=>{
  const api=provider(),stripe=stripeProvider(),db=memory();let fail=true;
  const request=async(path,options)=>{const session=await stripe.stripe(path,options);if(fail){fail=false;throw Error('Network timeout after Stripe create');}return session;};
- await assert.rejects(createBalanceCheckout(db.row,{db,request:api.request,stripe:request}),/timeout/);
- const retry=memory(fixture(),db.p);await createBalanceCheckout(retry.row,{db:retry,request:api.request,stripe:request});
+ await assert.rejects(createBalanceCheckout(db.row,{db,request:api.request,stripe:request,portalReturn:false}),/timeout/);
+ const retry=memory(fixture(),db.p);await createBalanceCheckout(retry.row,{db:retry,request:api.request,stripe:request,portalReturn:true});
  assert.equal(stripe.calls[0].idem,stripe.calls[1].idem);assert.deepEqual(stripe.calls[0].body,stripe.calls[1].body);
+});
+test('a new persisted portal checkout returns to the client area through either entrypoint',async()=>{
+ const api=provider(),stripe=stripeProvider(),db=memory(fixture(),{portal_return:true});
+ await createBalanceCheckout(db.row,{db,request:api.request,stripe:stripe.stripe});
+ assert.equal(stripe.calls[0].body.success_url,'https://www.soundbunker.pt/client?delivery_payment=processing#my-files');
+ assert.equal(stripe.calls[0].body.cancel_url,'https://www.soundbunker.pt/client#my-files');
 });
 test('an expired checkout is replaced with a new generation and its old webhook cannot mark payment',async()=>{
  const api=provider(),db=memory(),stripe=stripeProvider();await createBalanceCheckout(db.row,{db,request:api.request,stripe:stripe.stripe});const old={...stripe.session,metadata:{...stripe.session.metadata},payment_status:'paid'};

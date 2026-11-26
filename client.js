@@ -3,6 +3,11 @@ let mode = 'login';
 let folderTimer;
 let folderChecks = 0;
 let profileRequest;
+let deliveryAccess = null;
+let deliveryRequest = null;
+let deliveryPollTimer = null;
+let deliveryRefreshAt = 0;
+let deliveryPaymentBusy = false;
 let submittingAuth = false;
 let returningToPlugins = false;
 let activePeer = null;
@@ -47,6 +52,9 @@ async function boot() {
       if (event === 'SIGNED_OUT') {
         clearInterval(folderTimer);
         folderTimer = null;
+        clearTimeout(deliveryPollTimer);
+        deliveryAccess = null;
+        document.dispatchEvent(new CustomEvent('sb-delivery-access', { detail: { canDownload: false } }));
         show('#portalPanel', false); show('#authPanel', true);
       }
     });
@@ -183,11 +191,12 @@ async function enterPortal(session) {
   if (next === '/client#my-tickets') history.replaceState(null,'','/client#my-tickets');
   if (next === '/client#plugin-affiliates') history.replaceState(null, '', '/client#plugin-affiliates');
   if (profile.role === 'admin' && !['#inbox','#notifications','#my-tickets','#my-plugins','#plugin-affiliates'].includes(location.hash)) { location.replace('/admin'); return; }
-  await Promise.all([loadInvoices(session), loadProjects(session), loadGalleries(session), loadVouchers(session), loadPluginLicences(session), loadAffiliate(), loadBookings(), loadNotifications(), loadInbox(), loadMyEventTickets(), loadMarketingPreferences(session)]);
+  await Promise.all([loadDeliveryAccess(session), loadInvoices(session), loadProjects(session), loadGalleries(session), loadVouchers(session), loadPluginLicences(session), loadAffiliate(), loadBookings(), loadNotifications(), loadInbox(), loadMyEventTickets(), loadMarketingPreferences(session)]);
   if (['#my-plugins', '#plugin-affiliates'].includes(location.hash)) $(location.hash)?.scrollIntoView({ block: 'start' });
   if(location.hash==='#my-files') document.querySelector('#my-files')?.scrollIntoView({block:'start'});
   if(location.hash==='#my-tickets') document.querySelector('#my-tickets')?.scrollIntoView({block:'start'});
   if(location.hash==='#session-upload') document.querySelector('#session-upload')?.scrollIntoView({block:'start'});
+  if (new URLSearchParams(location.search).get('delivery_payment') === 'processing') startDeliveryPaymentRefresh();
 }
 
 async function refreshProfile(session, initial = false) {
@@ -201,6 +210,7 @@ async function refreshProfile(session, initial = false) {
         throw new Error(data.error || 'Could not load your client area');
       }
       renderProfile(data.profile, data.dropboxWarning);
+      if (data.deliveryAccess || data.profile.deliveryAccess) renderDeliveryAccess(data.deliveryAccess || data.profile.deliveryAccess);
       return data.profile;
     } catch (error) {
       if (initial) message(error.message, true);
@@ -217,25 +227,27 @@ function renderProfile(profile, warning) {
   $('#clientEmail').textContent = profile.email;
   $('#goldCount').textContent = String(profile.qualifying_booking_count || 0);
   $('#goldState').textContent = profile.gold_status ? 'Gold Card active' : 'Qualifying bookings';
-  const dropboxLink = $('#clientDropboxLink');
-  for (const [selector, url] of [['#musicFolderLink', profile.dropbox_music_url], ['#photosFolderLink', profile.dropbox_photos_url]]) {
-    if (url) { $(selector).href = url; show(selector, true); }
-    else show(selector, false);
+  // Finished music is opened through the authenticated portal, never a shared folder URL.
+  const musicReady = Boolean(profile.dropbox_music_path || profile.dropbox_folder_path);
+  const photosReady = Boolean(profile.dropbox_photos_path || profile.dropbox_folder_path);
+  $('#musicFolderLink').disabled = !musicReady;
+  if (profile.dropbox_photos_url) {
+    $('#photosFolderLink').href = profile.dropbox_photos_url;
+    show('#photosFolderLink', true);
+  } else {
+    $('#photosFolderLink').removeAttribute('href');
+    show('#photosFolderLink', false);
   }
-  $('#musicUpload').disabled = !profile.dropbox_music_url;
-  $('#photosUpload').disabled = !profile.dropbox_photos_url;
-  $('#sessionUpload').disabled = !profile.dropbox_music_url;
-  $('#sessionDropzone')?.classList.toggle('disabled', !profile.dropbox_music_url);
-  if (profile.dropbox_shared_url && profile.dropbox_music_url && profile.dropbox_photos_url) {
-    dropboxLink.href = profile.dropbox_shared_url;
-    show('#clientDropboxLink', true);
-    show('#refreshDropbox', true);
+  $('#musicUpload').disabled = !musicReady;
+  $('#photosUpload').disabled = !photosReady;
+  $('#sessionUpload').disabled = !musicReady;
+  $('#sessionDropzone')?.classList.toggle('disabled', !musicReady);
+  show('#refreshDropbox', true);
+  if (musicReady && photosReady) {
     show('#dropboxStatus', false);
     clearInterval(folderTimer);
     folderTimer = null;
   } else {
-    show('#clientDropboxLink', false);
-    show('#refreshDropbox', true);
     $('#dropboxStatus').textContent = warning || 'Preparing your files…';
     show('#dropboxStatus', true);
     if (!folderTimer && folderChecks < 6) {
@@ -258,7 +270,7 @@ function renderProfile(profile, warning) {
 
 async function checkDropbox() {
   const { data: { session } } = await supabaseClient.auth.getSession();
-  if (session) await Promise.all([refreshProfile(session), loadProjects(session), loadGalleries(session), loadNotifications()]);
+  if (session) await Promise.all([refreshProfile(session), loadDeliveryAccess(session), loadProjects(session), loadGalleries(session), loadNotifications()]);
 }
 
 async function uploadChunk(session, type, name, action, chunk, sessionId = '', offset = 0) {
@@ -301,45 +313,161 @@ async function uploadFiles(input, type, statusSelector = '', suppliedFiles = nul
   finally { input.value = ''; input.disabled = false; }
 }
 
+function deliveryMoney(cents) {
+  return new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'EUR' }).format(cents / 100);
+}
+
+function renderDeliveryAccess(access) {
+  const amount = Number(access?.balanceCents);
+  if (!Number.isSafeInteger(amount) || amount < 0 || !Array.isArray(access?.bookings)) return;
+  const previous = deliveryAccess;
+  deliveryAccess = { ...access, balanceCents: amount, canDownload: access.canDownload === true && amount === 0 };
+  const panel = $('#deliveryPayment'), actions = $('#deliveryPaymentActions');
+  if (!panel || !actions) return;
+  actions.replaceChildren();
+  const returning = new URLSearchParams(location.search).get('delivery_payment') === 'processing';
+  panel.hidden = deliveryAccess.canDownload && !returning;
+  panel.classList.toggle('is-unlocked', deliveryAccess.canDownload);
+  $('#deliveryPaymentTitle').textContent = deliveryAccess.canDownload ? 'Your downloads are unlocked' : 'Unlock your music';
+  $('#deliveryPaymentSummary').textContent = deliveryAccess.canDownload
+    ? 'Payment confirmed. You can now listen and download below.'
+    : 'Pay ' + deliveryMoney(amount) + ' to unlock your music downloads.';
+  $('#deliveryPaymentStatus').textContent = returning && !deliveryAccess.canDownload
+    ? 'If you have just paid, we are waiting for payment confirmation. Your downloads unlock automatically.' : '';
+  for (const booking of access.bookings.filter(item => Number(item.balanceCents) > 0)) {
+    const button = document.createElement('button');
+    button.type = 'button'; button.className = 'client-action-solid';
+    button.dataset.payBooking = booking.id;
+    button.disabled = deliveryPaymentBusy || booking.canPay === false;
+    button.textContent = 'Pay ' + deliveryMoney(booking.balanceCents) +
+      (access.bookings.filter(item => Number(item.balanceCents) > 0).length > 1 ? ' · ' + (booking.serviceName || booking.title || 'Session balance') : ' & unlock downloads');
+    actions.append(button);
+    if (booking.canPay === false) {
+      const pending = document.createElement('span'); pending.className = 'client-delivery-pending';
+      pending.textContent = booking.message || 'Your payment is being prepared. Please check again shortly.'; actions.append(pending);
+    }
+  }
+  if (access.requiresReview && !deliveryAccess.canDownload) {
+    $('#deliveryPaymentSummary').textContent = access.message || 'The studio needs to check your balance before your downloads can be unlocked.';
+    const contact = document.createElement('a'); contact.href = 'mailto:bookings@soundbunker.pt'; contact.textContent = 'Contact the studio'; actions.append(contact);
+  }
+  if (!deliveryAccess.canDownload && !actions.children.length && !access.requiresReview) {
+    $('#deliveryPaymentSummary').textContent = 'Your download access is being checked. Please refresh shortly.';
+    const retry = document.createElement('button'); retry.type = 'button'; retry.className = 'client-action-ghost';
+    retry.dataset.deliveryRetry = 'true'; retry.textContent = 'Check payment'; actions.append(retry);
+  }
+  if (!previous || previous.canDownload !== deliveryAccess.canDownload || previous.balanceCents !== amount) {
+    document.dispatchEvent(new CustomEvent('sb-delivery-access', { detail: deliveryAccess }));
+  }
+}
+
+async function loadDeliveryAccess(session) {
+  if (deliveryRequest) return deliveryRequest;
+  const owner = session.user?.id || session.user?.email;
+  deliveryRequest = (async () => {
+    try {
+      const response = await fetch('/api/client-delivery-payment', { headers: { authorization: 'Bearer ' + session.access_token }, cache: 'no-store' });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Could not check your payment. Please try again.');
+      const access = data.access || data;
+      if (!Number.isSafeInteger(Number(access.balanceCents)) || !Array.isArray(access.bookings)) throw new Error('Could not check your payment. Please try again.');
+      const active = await supabaseClient.auth.getSession();
+      if ((active.data.session?.user?.id || active.data.session?.user?.email) !== owner) return null;
+      renderDeliveryAccess(access);
+      return deliveryAccess;
+    } catch (error) {
+      deliveryAccess = null;
+      document.dispatchEvent(new CustomEvent('sb-delivery-access', { detail: { canDownload: false } }));
+      show('#deliveryPayment', true);
+      $('#deliveryPaymentTitle').textContent = 'Check your download access';
+      $('#deliveryPaymentSummary').textContent = 'Your music stays protected while we check your payment.';
+      $('#deliveryPaymentStatus').textContent = error.message;
+      const retry = document.createElement('button'); retry.type = 'button'; retry.className = 'client-action-ghost';
+      retry.dataset.deliveryRetry = 'true'; retry.textContent = 'Try again';
+      $('#deliveryPaymentActions').replaceChildren(retry);
+      return null;
+    }
+  })();
+  try { return await deliveryRequest; } finally { deliveryRequest = null; }
+}
+
+async function payDeliveryBalance(bookingId) {
+  if (deliveryPaymentBusy) return;
+  deliveryPaymentBusy = true;
+  $('#deliveryPaymentActions').querySelectorAll('button').forEach(button => { button.disabled = true; });
+  $('#deliveryPaymentStatus').textContent = 'Opening secure payment…';
+  try {
+    const result = await portalApi('/api/client-delivery-payment', { bookingId });
+    if (result.paid) {
+      $('#deliveryPaymentStatus').textContent = 'Payment confirmed. Refreshing your downloads…';
+      await refreshDeliveryState(true);
+      return;
+    }
+    const target = new URL(result.url, location.origin);
+    const permitted = target.protocol === 'https:' && (target.hostname === 'checkout.stripe.com' ||
+      (target.origin === location.origin && target.pathname === '/api/invoice-payment'));
+    if (!permitted) throw new Error('Payment could not be opened. Please try again.');
+    location.assign(target.href);
+  } catch (error) {
+    $('#deliveryPaymentStatus').textContent = error.message;
+  } finally {
+    deliveryPaymentBusy = false;
+    $('#deliveryPaymentActions').querySelectorAll('button').forEach(button => { button.disabled = deliveryAccess?.bookings?.find(item => item.id === button.dataset.payBooking)?.canPay === false; });
+  }
+}
+
+async function refreshDeliveryState(force = false) {
+  if (!supabaseClient || document.hidden || $('#portalPanel')?.hidden || (!force && Date.now() - deliveryRefreshAt < 2000)) return;
+  deliveryRefreshAt = Date.now();
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session) return;
+  await Promise.all([loadDeliveryAccess(session), loadProjects(session)]);
+}
+
+function startDeliveryPaymentRefresh() {
+  clearTimeout(deliveryPollTimer);
+  const end = Date.now() + 60000;
+  async function poll() {
+    if ($('#portalPanel')?.hidden) return;
+    await refreshDeliveryState(true);
+    if (deliveryAccess?.canDownload) {
+      const url = new URL(location.href); url.searchParams.delete('delivery_payment');
+      history.replaceState(null, '', url.pathname + url.search + url.hash);
+      return;
+    }
+    if (Date.now() < end) deliveryPollTimer = setTimeout(poll, 2500);
+    else $('#deliveryPaymentStatus').textContent = 'Your payment is still being confirmed. Refresh your files shortly; there is no need to pay again.';
+  }
+  deliveryPollTimer = setTimeout(poll, 1500);
+}
+
 async function loadProjects(session) {
   try {
-    const response = await fetch('/api/client-projects', { headers: { authorization: `Bearer ${session.access_token}` } });
+    const response = await fetch('/api/client-projects', { headers: { authorization: `Bearer ${session.access_token}` }, cache: 'no-store' });
     if (!response.ok) throw new Error('Projects are temporarily unavailable.');
     const data = await response.json();
+    if (data.access) renderDeliveryAccess(data.access);
     const projects = data.projects || [];
     $('#projectCount').textContent = String(projects.length);
     const list = $('#projectList');
-    list.innerHTML = '';
+    list.replaceChildren();
     projects.forEach(project => {
-      const element = document.createElement(project.delivery_url ? 'a' : 'span');
-      element.className = 'client-mini-project';
-      element.textContent = project.title || 'SoundBunker project';
-      if (project.delivery_url) { element.href = project.delivery_url; element.target = '_blank'; element.rel = 'noopener'; }
-      const row = document.createElement('div');
-      row.appendChild(element);
-      let delivery;
-      try { delivery = new URL(project.delivery_url); } catch {}
-      if (delivery?.protocol === 'https:') {
-        const fileName = decodeURIComponent(delivery.pathname).split('/').pop();
-        if (/\.(mp3|wav|m4a|aac|ogg|oga|opus|flac|aif|aiff|mp4|webm)$/i.test(fileName)) {
-          if (delivery.hostname === 'www.dropbox.com' || delivery.hostname === 'dropbox.com') {
-            delivery.searchParams.delete('dl'); delivery.searchParams.set('raw', '1');
-          }
-          const player = document.createElement('audio');
-          player.controls = true; player.preload = 'none'; player.src = delivery.href;
-          player.setAttribute('aria-label', project.title || 'Project audio');
-          player.style.cssText = 'display:block;width:100%;margin:10px 0';
-          player.addEventListener('play', () => document.querySelectorAll('audio,video').forEach(media => { if (media !== player) media.pause(); }));
-          row.append(player);
-        } else {
-          const listen = document.createElement('button');listen.type='button';listen.className='client-mini-project';listen.textContent='Listen on site';
-          listen.onclick=()=>document.dispatchEvent(new CustomEvent('sb-browse-music',{detail:{folder:project.title}}));
-          row.append(listen);
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'client-mini-project';
+      button.textContent = project.title || 'SoundBunker project';
+      button.addEventListener('click', () => {
+        if (deliveryAccess?.canDownload !== true) {
+          $('#deliveryPayment').scrollIntoView({ block: 'center', behavior: 'smooth' });
+          return;
         }
-      }
-      list.appendChild(row);
+        document.dispatchEvent(new CustomEvent('sb-browse-music', { detail: { folder: project.title } }));
+      });
+      list.append(button);
     });
-    $('#projectSummary').textContent = projects.length ? 'Your SoundBunker projects and deliveries:' : 'New projects appear here when the studio creates them.';
+    $('#projectSummary').textContent = projects.length
+      ? deliveryAccess?.canDownload === true ? 'Open a project to listen and download.' : 'Your deliveries unlock after the remaining balance is paid.'
+      : 'New projects appear here when the studio creates them.';
     if (!projects.length) list.innerHTML = '<span class="client-mini-project">No projects uploaded yet.</span>';
   } catch {
     $('#projectList').innerHTML = '<span class="client-mini-project">Projects are temporarily unavailable.</span>';
@@ -467,7 +595,11 @@ async function portalApi(path, payload) {
     headers: { authorization: `Bearer ${session.access_token}`, ...(payload === undefined ? {} : { 'content-type': 'application/json' }) },
     body: payload === undefined ? undefined : JSON.stringify(payload), cache: 'no-store' });
   const data = await response.json();
-  if (!response.ok) throw new Error(data.error || 'Could not load this area');
+  if (!response.ok) {
+    const error = new Error(data.error || 'Could not load this area');
+    error.status = response.status; error.data = data;
+    throw error;
+  }
   return data;
 }
 const affiliateMoney = cents => new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR' }).format(cents / 100);
@@ -797,11 +929,16 @@ document.addEventListener('DOMContentLoaded', () => {
     finally { button.disabled = false; }
   });
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && $('#portalPanel') && !$('#portalPanel').hidden && $('#clientDropboxLink').hidden) checkDropbox();
     if (!document.hidden && !$('#portalPanel').hidden) {
-      supabaseClient.auth.getSession().then(({data:{session}})=>{if(session){loadProjects(session);loadGalleries(session);}});
+      supabaseClient.auth.getSession().then(({data:{session}})=>{if(session){loadDeliveryAccess(session);loadProjects(session);loadGalleries(session);}});
       loadNotifications(); loadInbox(); loadBookings(); loadMyEventTickets();
     }
+  });
+  window.addEventListener('focus', () => refreshDeliveryState());
+  $('#deliveryPaymentActions').addEventListener('click', event => {
+    const button = event.target.closest('[data-pay-booking]');
+    if (button) payDeliveryBalance(button.dataset.payBooking);
+    if (event.target.closest('[data-delivery-retry]')) refreshDeliveryState(true);
   });
   setInterval(() => {
     if (!document.hidden && !$('#portalPanel').hidden) { loadNotifications(); loadInbox(); }

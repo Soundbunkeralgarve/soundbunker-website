@@ -41,7 +41,7 @@ async function accessToken() {
   finally { tokenPending = null; }
 }
 
-async function callDropbox(endpoint, body) {
+export async function callDropbox(endpoint, body) {
   const token = await accessToken();
   const response = await fetch(`${DROPBOX_API}${endpoint}`, {
     method: 'POST',
@@ -75,6 +75,8 @@ async function ensureFolder(path) {
 }
 
 export async function sharedLink(path) {
+  // Music leaves Dropbox only through the authenticated payment-checked API.
+  if (isPrivateClientDeliveryPath(path)) return '/client#my-files';
   try {
     const created = await callDropbox('/sharing/create_shared_link_with_settings', {
       path,
@@ -102,10 +104,66 @@ export async function ensureClientDropboxFolder({ userId, fullName, email, exist
   // Client logins must not burst several concurrent Dropbox requests.
   await ensureFolder(musicPath);
   await ensureFolder(photosPath);
-  const url = await sharedLink(folderPath);
-  const musicUrl = await sharedLink(musicPath);
+  const url = null;
+  const musicUrl = null;
   const photosUrl = await sharedLink(photosPath);
+  await secureClientDropboxDelivery({ dropbox_folder_path: folderPath, dropbox_music_path: musicPath });
   return { path: folderPath, url, musicPath, musicUrl, photosPath, photosUrl };
+}
+
+export function isClientMusicPath(path) {
+  return /\/my music(?:\/|$)/i.test(String(path || ''));
+}
+
+export function isPrivateClientDeliveryPath(path) {
+  if (isClientMusicPath(path)) return true;
+  const root = normalizedPath(process.env.DROPBOX_CLIENT_ROOT || '/SoundBunker Clients');
+  const value = normalizedPath(path);
+  if (value === root) return true;
+  if (!value.startsWith(root + '/')) return false;
+  const relative = value.slice(root.length + 1).split('/');
+  return relative.length === 1 || relative[1] !== 'my photos';
+}
+
+function normalizedPath(path) {
+  return String(path || '').normalize('NFC').replace(/\/+$/, '').toLowerCase();
+}
+
+export function deliveryLinkMustBeRevoked(linkPath, musicPath) {
+  const path = normalizedPath(linkPath), music = normalizedPath(musicPath);
+  return Boolean(path && music && (path === music || path.startsWith(music + '/') || music.startsWith(path + '/')));
+}
+
+// Removing a button does not invalidate links already sent to a customer.
+// Revoke the music tree and its ancestors, retaining independent photo links.
+export async function secureClientDropboxDelivery(profile) {
+  const musicPath = profile.dropbox_music_path || (profile.dropbox_folder_path ? profile.dropbox_folder_path + '/My Music' : '');
+  if (!musicPath) throw new Error('Private music folder is not configured');
+  let page = await callDropbox('/sharing/list_shared_links', {});
+  const revoke = new Set();
+  for (;;) {
+    for (const link of page.links || []) {
+      if (!deliveryLinkMustBeRevoked(link.path_lower || link.path_display, musicPath)) continue;
+      if (link.url) revoke.add(link.url);
+    }
+    if (!page.has_more) break;
+    if (!page.cursor) throw new Error('Dropbox link audit is incomplete');
+    page = await callDropbox('/sharing/list_shared_links', { cursor: page.cursor });
+  }
+  let revoked = 0;
+  for (const url of revoke) {
+    try { await callDropbox('/sharing/revoke_shared_link', { url }); revoked++; }
+    catch (error) { if (!String(error.message).includes('shared_link_not_found')) throw error; }
+  }
+  return { secured: true, revoked };
+}
+
+export async function latestDropboxCursor(path) {
+  return callDropbox('/files/list_folder/get_latest_cursor', { path, recursive: true, include_deleted: true });
+}
+
+export async function continueDropboxCursor(cursor) {
+  return callDropbox('/files/list_folder/continue', { cursor });
 }
 
 export async function uploadClientFile({ path, chunk, sessionId, offset, finish }) {

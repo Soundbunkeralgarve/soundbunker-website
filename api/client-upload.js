@@ -1,6 +1,7 @@
 import { json } from './lib/http.js';
 import { requireUser } from './lib/supabase-auth.js';
 import { uploadClientFile } from './lib/dropbox.js';
+import { markClientDeliveryUpload, finishClientDeliveryUpload } from './lib/client-delivery-notifications.js';
 
 export const config = { api: { bodyParser: false } };
 
@@ -24,7 +25,9 @@ export default async function handler(request, response) {
     const chunks = [];
     if (action !== 'finish') for await (const part of request) chunks.push(Buffer.isBuffer(part) ? part : Buffer.from(part));
     const chunk = Buffer.concat(chunks);
+    if (type === 'music' && action === 'finish') await markClientDeliveryUpload(context.admin, context.user.id, `${root}/${name}`);
     const result = await uploadClientFile({ path: `${root}/${name}`, chunk, sessionId: action === 'start' ? '' : sessionId, offset, finish: action === 'finish' });
+    if (type === 'music' && action === 'finish') await finishClientDeliveryUpload(context.admin, context.user.id, `${root}/${name}`, result);
     return json(response, { sessionId: result.session_id, uploaded: action === 'finish', name: result.name });
   } catch (error) {
     console.error('Client Dropbox upload failed', error);

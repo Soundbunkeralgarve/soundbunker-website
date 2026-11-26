@@ -21,7 +21,7 @@ export async function invoiceOutstanding(row,request){
  const receipts=related.documents.filter(d=>d.status!=='canceled');
  if(receipts.some(d=>String(d.type).replaceAll(' ','')!=='Receipt'||!['final','sent','settled'].includes(d.status)||!Number.isFinite(Number(d.total))||Number(d.total)<0))throw Error('Invoice adjustments require review');
  const paid=receipts.reduce((sum,d)=>sum+Math.round(Number(d.total)*100),0);
- const knownPaid=Number(row.request_payload?.paid_cents||0)+Number(row.balance_paid_cents||0);
+ const knownPaid=Math.max(Number(row.request_payload?.paid_cents||0),Number(row.delivery_verified_paid_cents||0))+Number(row.balance_paid_cents||0);
  if(paid<knownPaid)throw Error('Invoice payment receipt is being prepared');
  return Math.max(0,Number(row.amount_cents)-paid);
 }
@@ -39,7 +39,7 @@ export async function recordInvoiceBalance(checkout,db){
  await checked(db.rpc('sb_record_invoice_balance',{p_id:id,p_generation:p.generation,p_session:checkout.id,p_amount:checkout.amount_total}));
  return {paid:true};
 }
-export async function createBalanceCheckout(row,{db,request,stripe=balanceStripe}){
+export async function createBalanceCheckout(row,{db,request,stripe=balanceStripe,portalReturn=false}){
  const amount=await invoiceOutstanding(row,request);if(amount<=0)return {paid:true};
  const token=randomUUID();
  const claims=await checked(db.rpc('sb_lock_invoice_balance',{p_id:row.id,p_amount:amount,p_token:token}));
@@ -60,7 +60,10 @@ export async function createBalanceCheckout(row,{db,request,stripe=balanceStripe
   // Stripe idempotency keys expire. Never retry an uncertain create indefinitely.
   if(Date.now()-Date.parse(p.started_at)>25*60000)throw Error('Previous payment setup requires review. Please contact SoundBunker.');
   const link=invoicePaymentLink(row),suffix=row.id.replace(/[^a-f]/g,'').padEnd(8,'a').slice(0,8);
-  const body={mode:'payment',success_url:link+'&return=1',cancel_url:link,
+  // Persist the return choice with the payment generation. Retries from another
+  // entrypoint must send the same body under Stripe's invoice idempotency key.
+  const returnToPortal=p.portal_return===true;
+  const body={mode:'payment',success_url:returnToPortal?'https://www.soundbunker.pt/client?delivery_payment=processing#my-files':link+'&return=1',cancel_url:returnToPortal?'https://www.soundbunker.pt/client#my-files':link,
    client_reference_id:row.id,customer_email:row.recipient.email,
    integration_identifier:'soundbunker-invoice-balance-'+suffix,
    expires_at:String(Math.floor(Date.parse(p.started_at)/1000)+3600),
@@ -98,7 +101,7 @@ export async function processBalanceReceipt(payment,{db,request}){
   if(!receipt?.id||!link)throw Error('Balance payment receipt is missing');await write({receipt_id:receipt.id,receipt_url:link});
  }
  const receiptLink=documentLink(payment.receipt_url);if(!receiptLink)throw Error('Balance receipt link requires review');
- const updated=await db.from('sb_website_invoice_jobs').update({balance_receipt_url:receiptLink,balance_paid_cents:Number(row.amount_cents)-Number(row.request_payload.paid_cents)}).eq('id',row.id);
+ const updated=await db.from('sb_website_invoice_jobs').update({balance_receipt_url:receiptLink,balance_paid_cents:Number(payment.amount_cents)}).eq('id',row.id);
  if(updated.error)throw Error('Balance receipt could not be stored in the portal');
  if(!payment.email_sent_at){
   const email=row.recipient.email;

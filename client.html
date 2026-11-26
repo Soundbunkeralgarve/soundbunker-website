@@ -16,11 +16,11 @@
   <link rel="stylesheet" href="plugins.css?v=20261103b">
   <link rel="stylesheet" href="client-mobile-app.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="client.js?v=20261117-account" defer></script>
+  <script src="client.js?v=20261126-delivery" defer></script>
 <link rel="stylesheet" href="calendar-picker.css">
 <script defer src="calendar-picker.js"></script>
-  <link rel="stylesheet" href="client-music.css?v=1">
-  <script src="client-music.js?v=20260925-audio" defer></script>
+  <link rel="stylesheet" href="client-music.css?v=20261126-delivery">
+  <script src="client-music.js?v=20261126-delivery" defer></script>
 <link rel="stylesheet" href="site-navigation.css?v=20261102b-nav"><script src="site-navigation.js?v=20261114-remote" defer></script><link rel="stylesheet" href="ask-studio.css?v=20261101"><script src="ask-studio.js?v=20261121-assistant" defer></script><link rel="stylesheet" href="site-polish.css?v=20261103c"></head>
 <body class="portal-bg client-page">
   <header class="site-header unified-header" id="top">
@@ -143,9 +143,9 @@
       <section class="client-hub-panel portal-notice-panel" id="notifications"><div><p class="eyebrow">STUDIO UPDATES</p><h2>Your notifications.</h2><p>New files, session changes, messages and updates from the studio appear here.</p><div id="notificationList"><p>Loading updates…</p></div><button id="markRead" class="client-action-ghost" type="button">Mark all as read</button></div></section>
 
       <section class="client-hub-panel client-files-panel" id="my-files">
-        <div><p class="eyebrow">My Files</p><h2>One private space. Two clear folders.</h2><p>Find your mixes and masters in My Music, and your galleries and image downloads in My Photos. Upload files directly to the right folder below.</p><a id="clientDropboxLink" class="client-folder-all" href="#" target="_blank" rel="noopener" hidden>Open entire client folder ↗</a><button id="refreshDropbox" class="client-action-ghost" type="button" hidden>Refresh my files</button><p id="dropboxStatus" class="muted" aria-live="polite" hidden></p></div>
+        <div><p class="eyebrow">My Files</p><h2>One private space. Two clear folders.</h2><p>Find your mixes and masters in My Music, and your galleries and image downloads in My Photos. Upload files directly to the right folder below.</p><button id="refreshDropbox" class="client-action-ghost" type="button" hidden>Refresh my files</button><p id="dropboxStatus" class="muted" aria-live="polite" hidden></p><section id="deliveryPayment" class="client-delivery-payment" aria-labelledby="deliveryPaymentTitle" hidden><div><h3 id="deliveryPaymentTitle">Your music downloads</h3><p id="deliveryPaymentSummary"></p></div><div id="deliveryPaymentActions" class="client-delivery-payment-actions"></div><p id="deliveryPaymentStatus" role="status" aria-live="polite"></p></section></div>
         <div class="client-folder-grid">
-          <article class="client-folder-card"><span>01 / AUDIO</span><h3>My Music</h3><p>Projects, tracks, mixes, masters, stems and references.</p><a id="musicFolderLink" href="#" target="_blank" rel="noopener" hidden>Browse &amp; download ↗</a><label class="client-upload-label" for="musicUpload">Upload music files<input id="musicUpload" type="file" multiple hidden></label><p id="musicUploadStatus" class="client-upload-status" role="status"></p></article>
+          <article class="client-folder-card"><span>01 / AUDIO</span><h3>My Music</h3><p>Projects, tracks, mixes, masters, stems and references.</p><button id="musicFolderLink" class="client-action-ghost" type="button">Browse music</button><label class="client-upload-label" for="musicUpload">Upload music files<input id="musicUpload" type="file" multiple hidden></label><p id="musicUploadStatus" class="client-upload-status" role="status"></p></article>
           <article class="client-folder-card"><span>02 / IMAGES</span><h3>My Photos</h3><p>Private galleries, selections and high-resolution images.</p><a id="photosFolderLink" href="#" target="_blank" rel="noopener" hidden>Browse &amp; download ↗</a><label class="client-upload-label" for="photosUpload">Upload photographs<input id="photosUpload" type="file" accept="image/*" multiple hidden></label><p id="photosUploadStatus" class="client-upload-status" role="status"></p></article>
         </div>
       </section>

@@ -19,7 +19,7 @@ export function publicInvoice(row) {
     amount_cents:Number(row.amount_cents),currency:row.currency,document_type:row.document_type,
     document_number:row.document_number,url:row.finalized_at?documentLink(row.document_url):null,
     created_at:row.created_at,issued:!!row.finalized_at,email_sent:!!row.email_sent_at,
-    paid_cents:Number(row.request_payload?.paid_cents??(row.paid?Number(row.amount_cents):0))+Number(row.balance_paid_cents||0),
+    paid_cents:Math.max(Number(row.request_payload?.paid_cents??(row.paid?Number(row.amount_cents):0)),Number(row.delivery_verified_paid_cents||0))+Number(row.balance_paid_cents||0),
     pay_url:invoiceAvailableInPortal(row)?invoicePaymentLink(row):null,
     receipt_url:documentLink(row.balance_receipt_url)};
 }

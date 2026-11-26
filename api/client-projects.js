@@ -1,12 +1,18 @@
-import { createClient } from '@supabase/supabase-js';
 import { json } from './lib/http.js';
-export default async function handler(request,response){
- if(request.method!=='GET') return json(response,{error:'Method not allowed'},405);
- const token=(request.headers.authorization||'').replace(/^Bearer\s+/,'');
- const url=process.env.SUPABASE_URL,pub=process.env.SUPABASE_PUBLISHABLE_KEY,secret=process.env.SUPABASE_SECRET_KEY;
- if(!token||!url||!pub||!secret)return json(response,{error:'Not signed in'},401);
- const auth=createClient(url,pub,{auth:{persistSession:false}});const {data}=await auth.auth.getUser(token);if(!data?.user)return json(response,{error:'Session expired'},401);
- const admin=createClient(url,secret,{auth:{persistSession:false}});const {data:projects,error}=await admin.from('projects').select('*').eq('user_id',data.user.id).order('created_at',{ascending:false});
- if(error)return json(response,{error:'Project list needs the client deliveries database migration'},503);
- return json(response,{projects:projects||[]});
+import { requireUser } from './lib/supabase-auth.js';
+import { getClientDeliveryAccess } from './lib/client-delivery-access.js';
+
+export default async function handler(request, response) {
+  if (request.method !== 'GET') return json(response, {error:'Method not allowed'}, 405);
+  const ctx = await requireUser(request);
+  if (ctx.error) return json(response, {error:ctx.error}, ctx.status);
+  if (!ctx.user.email_confirmed_at || !ctx.user.email) return json(response, {error:'Verify your account email first.'}, 403);
+  try {
+    const access = await getClientDeliveryAccess({admin:ctx.admin,userId:ctx.user.id,email:ctx.user.email});
+    const {data:projects,error} = await ctx.admin.from('projects').select('id,title,created_at').eq('user_id',ctx.user.id).order('created_at',{ascending:false});
+    if (error) throw error;
+    return json(response, {projects:projects || [],access});
+  } catch {
+    return json(response, {error:'Your projects are temporarily unavailable.'}, 503);
+  }
 }

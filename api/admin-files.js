@@ -3,6 +3,7 @@ import { requireAdmin } from './lib/supabase-auth.js';
 import { dropboxConfigured, listDropboxFolder, makeDropboxFolder, moveDropboxEntry,
   deleteDropboxEntry, dropboxEntryLink, uploadClientFile } from './lib/dropbox.js';
 import { notifyClient } from './lib/notify.js';
+import { enqueueClientDeliveryRevision, dispatchClientDeliveryNotifications } from './lib/client-delivery-notifications.js';
 
 export const config = { api: { bodyParser: false } };
 const uuid = /^[\da-f]{8}-[\da-f]{4}-[1-5][\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}$/i;
@@ -71,8 +72,16 @@ export default async function handler(request, response) {
             await registerProject(ctx.admin, profile.id, parts.slice(0, 2).join('/'), await dropboxEntryLink(folderPath, true));
           } catch (registrationError) { registrationWarning = registrationError.message; console.error('File saved; project registration failed', registrationError); }
         }
-        try { notification = await notifyClient(ctx.admin, profile.id, 'A new file is ready',
-          `${input.name} has been added to your ${input.relative || 'SoundBunker'} folder.`, '/client#my-files'); }
+        try {
+          if (parts[0] === 'My Music') {
+            const queued = await enqueueClientDeliveryRevision(ctx.admin, profile.id, result);
+            if (queued) {
+              const delivery = await dispatchClientDeliveryNotifications({ admin: ctx.admin, onlyId: queued.id });
+              notification = { inApp: delivery.sent > 0 || Boolean(queued.portal_notification_id), email: delivery.sent ? 'sent' : queued.status === 'sent' ? 'sent' : 'queued' };
+            }
+          } else notification = await notifyClient(ctx.admin, profile.id, 'A new file is ready',
+            `${input.name} has been added to your ${input.relative || 'SoundBunker'} folder.`, '/client#my-files');
+        }
         catch (notifyError) { console.error('File saved; portal notification failed', notifyError); notification = { inApp: false, email: 'failed' }; }
       }
       return json(response, { sessionId: result.session_id, uploaded: input.action === 'finish',

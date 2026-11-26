@@ -1,6 +1,7 @@
 import { json } from './lib/http.js';
 import { requireAdmin } from './lib/supabase-auth.js';
 import { dropboxConfigured, ensureClientDropboxFolder } from './lib/dropbox.js';
+import { ensureClientDeliveryWatcher } from './lib/client-delivery-notifications.js';
 
 export default async function handler(request, response) {
   if (request.method !== 'POST') return json(response, { error: 'Method not allowed' }, 405);
@@ -13,6 +14,7 @@ export default async function handler(request, response) {
   if (error || !profile) return json(response, { error: 'Client profile was not found' }, 404);
   try {
     const folder = await ensureClientDropboxFolder({ userId: profile.id, fullName: profile.full_name, email: profile.email, existingPath: profile.dropbox_folder_path });
+    await ensureClientDeliveryWatcher(context.admin,profile.id,folder.musicPath);
     const updated = await context.admin.from('profiles').update({
       dropbox_folder_path: folder.path,
       dropbox_shared_url: folder.url,

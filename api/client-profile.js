@@ -1,6 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { json, parseJson } from './lib/http.js';
-import { dropboxConfigured, ensureClientDropboxFolder } from './lib/dropbox.js';
+import { dropboxConfigured, ensureClientDropboxFolder, secureClientDropboxDelivery } from './lib/dropbox.js';
+import { getClientDeliveryAccess } from './lib/client-delivery-access.js';
+import { ensureClientDeliveryWatcher } from './lib/client-delivery-notifications.js';
 export default async function handler(request,response){
   if(!['GET','POST'].includes(request.method)) return json(response,{error:'Method not allowed'},405);
   const auth=request.headers.authorization||'';
@@ -13,6 +15,7 @@ export default async function handler(request,response){
   if(userError||!userData?.user) return json(response,{error:'Session expired'},401);
   const admin=createClient(url,secret,{auth:{persistSession:false,autoRefreshToken:false}});
   const user=userData.user;
+  if (!user.email_confirmed_at || !user.email) return json(response, {error:'Verify your account email first.'}, 403);
   if (request.method === 'POST') {
     if (!user.email_confirmed_at || !user.email) return json(response, {error:'Verify your account email first.'}, 403);
     const body = await parseJson(request).catch(() => null);
@@ -34,16 +37,26 @@ export default async function handler(request,response){
   const metadataName=user.user_metadata?.full_name||user.user_metadata?.name||'';
   if(!profile.full_name && metadataName){ const updated=await admin.from('profiles').update({full_name:metadataName}).eq('id',user.id).select('*').single(); if(!updated.error) profile=updated.data; }
   let dropboxWarning='';
-  if((!profile.dropbox_shared_url || !profile.dropbox_music_url || !profile.dropbox_photos_url) && dropboxConfigured()){
+  if((!profile.dropbox_folder_path || !profile.dropbox_music_path || !profile.dropbox_photos_path) && dropboxConfigured()){
     try{
       const folder=await ensureClientDropboxFolder({userId:user.id,fullName:profile.full_name||metadataName,email:profile.email||user.email,existingPath:profile.dropbox_folder_path});
+      await ensureClientDeliveryWatcher(admin,user.id,folder.musicPath);
       const saved=await admin.from('profiles').update({dropbox_folder_path:folder.path,dropbox_shared_url:folder.url,dropbox_music_path:folder.musicPath,dropbox_music_url:folder.musicUrl,dropbox_photos_path:folder.photosPath,dropbox_photos_url:folder.photosUrl,dropbox_created_at:new Date().toISOString()}).eq('id',user.id).select('*').single();
       if(saved.error) throw saved.error;
       profile=saved.data;
     }catch(folderError){console.error('Automatic Dropbox folder error',folderError);dropboxWarning='Your file folder is still being prepared.';}
-  } else if (!profile.dropbox_shared_url) {
+  } else if (!profile.dropbox_folder_path) {
     console.error('Automatic Dropbox folder unavailable: Dropbox credentials are not configured');
     dropboxWarning='Your file folder is still being prepared.';
   }
-  return json(response,{profile:{id:profile.id,email:profile.email||user.email||'',full_name:profile.full_name||metadataName||'',role:profile.role||'client',gold_status:Boolean(profile.gold_status),qualifying_booking_count:Number(profile.qualifying_booking_count||0),dropbox_folder_path:profile.dropbox_folder_path||'',dropbox_shared_url:profile.dropbox_shared_url||'',dropbox_music_url:profile.dropbox_music_url||'',dropbox_photos_url:profile.dropbox_photos_url||''},dropboxWarning});
+  let deliveryAccess;
+  try {
+    if (profile.dropbox_folder_path) await secureClientDropboxDelivery(profile);
+    deliveryAccess = await getClientDeliveryAccess({admin,userId:user.id,email:user.email});
+  } catch (error) {
+    console.error('Private delivery access unavailable', error.message);
+    deliveryAccess = {canDownload:false,balanceCents:null,currency:'eur',bookings:[],unavailable:true};
+    dropboxWarning ||= 'Your music is temporarily unavailable. Please try again shortly.';
+  }
+  return json(response,{profile:{id:profile.id,email:profile.email||user.email||'',full_name:profile.full_name||metadataName||'',role:profile.role||'client',gold_status:Boolean(profile.gold_status),qualifying_booking_count:Number(profile.qualifying_booking_count||0),dropbox_folder_path:profile.dropbox_folder_path||'',dropbox_music_path:profile.dropbox_music_path||'',dropbox_photos_path:profile.dropbox_photos_path||'',dropbox_shared_url:'',dropbox_music_url:'',dropbox_photos_url:profile.dropbox_photos_url||''},deliveryAccess,dropboxWarning});
 }

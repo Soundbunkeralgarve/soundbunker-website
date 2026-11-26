@@ -8,3 +8,18 @@
 .portal-music [data-playing]{font-weight:700}
 .portal-music audio{display:block;width:100%;min-width:0;margin:12px 0}
 .portal-music [hidden]{display:none!important}
+.portal-music-track{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.12)}
+.portal-music-track>span{font-size:15px;line-height:1.5;overflow-wrap:anywhere}
+.portal-music-track-actions{display:flex;gap:8px;flex-wrap:wrap}
+.portal-music-track-actions button{font-size:14px}
+.portal-music .portal-music-folder{width:100%}
+.portal-music p{font-size:14px!important;line-height:1.5}
+.client-delivery-payment{grid-column:1/-1;display:grid;gap:12px;border:1px solid rgba(191,147,255,.6);border-radius:16px;background:rgba(139,92,246,.14);padding:22px;margin:6px 0 18px;min-width:0}
+.client-delivery-payment[hidden]{display:none!important}
+.client-delivery-payment h3{font-size:22px;margin:0 0 8px}
+.client-delivery-payment p{font-size:16px!important;line-height:1.6;margin:0;overflow-wrap:anywhere}
+.client-delivery-payment-actions{display:flex;gap:10px;flex-wrap:wrap}
+.client-delivery-payment-actions button{font:inherit;max-width:100%;white-space:normal;text-align:left}
+.client-delivery-payment #deliveryPaymentStatus{font-size:14px!important}
+.client-delivery-payment.is-unlocked{border-color:rgba(88,214,179,.6);background:rgba(88,214,179,.1)}
+@media(max-width:600px){.client-delivery-payment{padding:18px}.client-delivery-payment-actions{display:grid}.client-delivery-payment-actions button{width:100%}}

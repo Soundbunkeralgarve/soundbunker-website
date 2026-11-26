@@ -1,10 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 import { json } from './lib/http.js';
-import { listDropboxFolder, dropboxEntryLink } from './lib/dropbox.js';
+import { listDropboxFolder, dropboxEntryLink, secureClientDropboxDelivery } from './lib/dropbox.js';
+import { getClientDeliveryAccess } from './lib/client-delivery-access.js';
 
 const audioFile = name => /\.(mp3|wav|m4a|aac|ogg|oga|opus|flac|aif|aiff|mp4|webm)$/i.test(name);
 export function musicPath(root, relative) {
-  if (typeof relative !== 'string' || relative.startsWith('/') || /[\\\u0000-\u001f]/.test(relative) || relative.split('/').some(part => part === '.' || part === '..')) return null;
+  if (typeof relative !== 'string' || relative.length > 1200 || relative.startsWith('/') || /[\\\u0000-\u001f]/.test(relative) || (relative && relative.split('/').some(part => !part || part === '.' || part === '..'))) return null;
   return root.replace(/\/+$/, '') + (relative ? '/' + relative : '');
 }
 export default async function handler(request, response) {
@@ -20,7 +21,10 @@ export default async function handler(request, response) {
     const auth = createClient(url, pub, options);
     const { data, error: authError } = await auth.auth.getUser(token);
     if (authError || !data?.user) return json(response, { error: 'Please sign in again.' }, 401);
+    if (!data.user.email_confirmed_at || !data.user.email) return json(response, { error: 'Verify your account email first.' }, 403);
     const admin = createClient(url, secret, options);
+    const access = await getClientDeliveryAccess({ admin, userId: data.user.id, email: data.user.email });
+    if (!access.canDownload) return json(response, { error: 'Pay your remaining balance to unlock your music.', access }, 402);
     const { data: profile, error } = await admin.from('profiles').select('dropbox_music_path,dropbox_folder_path').eq('id', data.user.id).maybeSingle();
     if (error) throw error;
     const root = profile?.dropbox_music_path || (profile?.dropbox_folder_path ? profile.dropbox_folder_path + '/My Music' : '');
@@ -29,13 +33,16 @@ export default async function handler(request, response) {
     const relative = params.get('path') || '';
     const path = musicPath(root, relative);
     if (!path) return json(response, { error: 'Invalid music path.' }, 400);
-    if (params.get('action') === 'play') {
-      if (!audioFile(relative)) return json(response, { error: 'Choose an audio file.' }, 400);
-      return json(response, { url: await dropboxEntryLink(path, false) });
+    const action = params.get('action') || 'list';
+    if (!['list','play','download'].includes(action)) return json(response, { error: 'Invalid file action.' }, 400);
+    if (action === 'play' || action === 'download') {
+      if (!relative || (action === 'play' && !audioFile(relative))) return json(response, { error: 'Choose a file.' }, 400);
+      await secureClientDropboxDelivery(profile);
+      return json(response, { url: await dropboxEntryLink(path, false), access });
     }
     const entries = await listDropboxFolder(path);
-    return json(response, { entries: entries.filter(item => item.type === 'folder' || (item.type === 'file' && audioFile(item.name))).map(item => ({ name: item.name, type: item.type, path: relative ? relative + '/' + item.name : item.name })).sort((a,b) => (a.type === b.type ? 0 : a.type === 'folder' ? -1 : 1) || a.name.localeCompare(b.name)) });
+    return json(response, { access, entries: entries.filter(item => ['folder','file'].includes(item.type)).map(item => ({ name: item.name, type: item.type, playable: item.type === 'file' && audioFile(item.name), path: relative ? relative + '/' + item.name : item.name })).sort((a,b) => (a.type === b.type ? 0 : a.type === 'folder' ? -1 : 1) || a.name.localeCompare(b.name)) });
   } catch {
-    return json(response, { error: 'Could not load your music. Try again or use Browse & download.' }, 502);
+    return json(response, { error: 'Your music is temporarily unavailable. Please try again shortly.' }, 503);
   }
 }
