@@ -1,6 +1,8 @@
 import {handleGetAround} from './lib/get-around-live.js';
 import {handleNearbyTransport} from './lib/nearby-transport.js';
 import {handleFlightQuotes} from './lib/flight-quotes.js';
+import {handleFlightDeals} from './lib/flight-deals.js';
+import {handleFoodDeals} from './lib/food-deals.js';
 import {handleKayakSearch} from './lib/kayak-service.js';
 // The existing SoundBunker ticket service owns authentication, authorisation,
 // event inventory, QR signatures and payments. No service credentials reach this site.
@@ -62,6 +64,8 @@ export default async function handler(req, res) {
   if (endpoint === 'get-around') return handleGetAround(req, res);
   if (endpoint === 'nearby-transport') return handleNearbyTransport(req, res);
   if (endpoint === 'flight-quotes') return handleFlightQuotes(req, res);
+  if (endpoint === 'flight-deals') return handleFlightDeals(req, res);
+  if (endpoint === 'food-deals') return handleFoodDeals(req, res);
   if (endpoint === 'kayak-search') return handleKayakSearch(req, res);
   res.setHeader('Cache-Control','private, no-store, max-age=0');
   res.setHeader('Content-Type','application/json; charset=utf-8');

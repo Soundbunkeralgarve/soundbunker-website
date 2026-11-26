@@ -1,19 +1,19 @@
 /* Homepage: the four big ways in (Tickets, Travel, Hotels, Food), then "Where to?" — every
    country and city, near the top and easy to scan. Loaded last on the homepage. */
-.shop-home .big-four{padding:34px 0 10px;background:#07070b}
-.bf4-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
-.bf4{position:relative;isolation:isolate;display:flex;flex-direction:column;justify-content:flex-end;min-height:300px;padding:22px;border-radius:24px;overflow:hidden;color:#fff!important;text-decoration:none!important;
+.shop-home .big-four{padding:18px 0 18px;background:#07070b;position:relative;z-index:3}
+.bf4-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+.bf4{position:relative;isolation:isolate;display:flex;flex-direction:column;justify-content:flex-end;min-height:200px;padding:18px;border-radius:22px;overflow:hidden;color:#fff!important;text-decoration:none!important;
   border:1px solid #ffffff1f;box-shadow:0 24px 60px #0009;transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s,border-color .25s}
 .bf4 img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;transition:transform 1.2s cubic-bezier(.2,.8,.2,1);filter:saturate(1.15)}
 .bf4::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,#07070b10 0%,#07070b33 40%,#07070bf0 100%)}
 .bf4:hover{transform:translateY(-4px)}
 .bf4:hover img{transform:scale(1.06)}
-.bf4 b{font:900 clamp(44px,4.2vw,68px)/.86 'Barlow Condensed',Impact,sans-serif;text-transform:uppercase;letter-spacing:-.01em;text-shadow:0 6px 24px #000a}
+.bf4 b{font:900 clamp(26px,2.2vw,40px)/.86 'Barlow Condensed',Impact,sans-serif;text-transform:uppercase;letter-spacing:-.01em;text-shadow:0 6px 24px #000a}
 .bf4 small{display:block;margin-top:8px;padding-right:56px;font:600 15px/1.35 'DM Sans',Arial,sans-serif;color:#e6e9ec;max-width:26ch}
 .bf4 i{position:absolute;right:18px;bottom:18px;width:46px;height:46px;border-radius:999px;display:grid;place-items:center;font:800 22px/1 'DM Sans',Arial,sans-serif;font-style:normal;color:#04140d;background:var(--bf4,#00e0a6);transition:transform .2s}
 .bf4:hover i{transform:translateX(3px)}
 .bf4-tag{position:absolute;top:16px;left:16px;padding:7px 12px;border-radius:999px;background:#07070bb3;backdrop-filter:blur(8px);border:1px solid #ffffff2e;font:800 11px 'DM Sans',Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase}
-.bf4-tickets{--bf4:#00e0a6}.bf4-travel{--bf4:#5db8ff}.bf4-hotels{--bf4:#ffcd4d}.bf4-food{--bf4:#ff4f9a}
+.bf4-packages{--bf4:#a98bff}.bf4-trains{--bf4:#7dd3fc}.bf4-tickets{--bf4:#00e0a6}.bf4-travel{--bf4:#5db8ff}.bf4-hotels{--bf4:#ffcd4d}.bf4-food{--bf4:#ff4f9a}
 .bf4:hover{border-color:var(--bf4);box-shadow:0 30px 70px #000b,0 0 40px color-mix(in srgb,var(--bf4) 35%,transparent)}
 .bf4 b{color:#fff}.bf4:hover b{color:var(--bf4)}
 
@@ -43,3 +43,9 @@
  .shop-home .browse-places{padding:24px 0!important}.shop-home .browse-places .wrap{margin:0 16px;padding:22px 16px!important;border-radius:22px}
  .shop-home .place-countries{flex-wrap:nowrap;overflow-x:auto}}
 @media(prefers-reduced-motion:reduce){.bf4,.bf4 img,.bf4 i{transition:none}}
+
+/* At the very top on phones: one swipe row of the five big choices. */
+@media(max-width:760px){.shop-home .big-four{padding:12px 0 6px}.shop-home .big-four .wrap{padding:0}
+ .bf4-grid{display:flex!important;overflow-x:auto;scroll-snap-type:x mandatory;gap:10px;padding:0 16px 4px;scrollbar-width:none}.bf4-grid::-webkit-scrollbar{display:none}
+ .bf4{flex:0 0 38%;min-height:120px!important;scroll-snap-align:start;padding:12px!important;border-radius:16px!important}.bf4 b{font-size:26px!important}}
+@media(max-width:1100px) and (min-width:761px){.bf4-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}}

@@ -2,7 +2,7 @@ import "./coming-soon.js?v=20261125-appstyle";
 import "./tb-consent.js?v=20261125-meta1";
 import "./promo-banner.js?v=20261125";
 import "./app-promo.js?v=20261126-stores";
-import "./explore-nav.js?v=20261125b";
+import "./explore-nav.js?v=20261126-travel";
 import {enhancePublicWorkflow} from './public-workflow.js?v=20261124-clean';
 const nav=document.getElementById('navigation'),toggle=document.getElementById('menu-toggle');
 if(nav&&toggle){

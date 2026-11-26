@@ -1,0 +1,51 @@
+/* Flights, packages, hotels and food pages: big photo cards with real prices. */
+.tp{padding:64px 0 40px;background:radial-gradient(70% 60% at 100% 0%,#00e0a612,transparent 60%),#07070b;color:#f4f6f8}
+.tp-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,420px);gap:28px;align-items:end;margin-bottom:22px}
+.tp-label{display:block;color:#00e0a6;font:800 12px/1 'DM Sans',Arial,sans-serif;letter-spacing:.18em;text-transform:uppercase;margin-bottom:10px}
+.tp-head h2{font:900 clamp(44px,5.6vw,92px)/.88 'Barlow Condensed',Impact,sans-serif;text-transform:uppercase;margin:0;color:#fff}
+.tp-head h2 em{font-style:normal;color:#00e0a6}
+.tp-head p{color:#b9bec6;font-size:16px;line-height:1.55;margin:0}
+.tp-sub{display:block;font:700 12px 'DM Sans',Arial,sans-serif;color:#a7adb6;text-transform:uppercase;letter-spacing:.1em;margin:4px 0 8px}
+.tp-chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 12px;scrollbar-width:none}
+.tp-chips::-webkit-scrollbar{display:none}
+.tp-chips button{flex:none;border:1px solid #2c2c3a;background:#15151f;color:#e6e9ec;border-radius:999px;padding:10px 16px;font:700 14px 'DM Sans',Arial,sans-serif;cursor:pointer}
+.tp-chips button:hover{border-color:#00e0a6}
+.tp-chips button[aria-pressed=true]{background:#00e0a6;border-color:#00e0a6;color:#04140d;box-shadow:0 8px 22px #00e0a640}
+.tp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:18px;margin-top:10px}
+.tp-card{display:flex;flex-direction:column;border-radius:22px;overflow:hidden;background:linear-gradient(180deg,#14141e,#0d0d15);border:1px solid #ffffff17;box-shadow:0 20px 50px #0008;transition:transform .2s,border-color .2s,box-shadow .2s}
+.tp-card:hover{transform:translateY(-4px);border-color:#00e0a6;box-shadow:0 26px 60px #000a,0 0 34px #00e0a62b}
+.tp-card>img,.tp-nophoto{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;background:linear-gradient(135deg,#00e0a633,#ff4f9a33)}
+.tp-body{display:flex;flex-direction:column;gap:6px;padding:16px 18px 18px;flex:1}
+.tp-tag{font:800 11px 'DM Sans',Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#00e0a6}
+.tp-body h3{font:900 30px/.95 'Barlow Condensed',Impact,sans-serif;text-transform:uppercase;margin:2px 0 0;color:#fff}
+.tp-food .tp-body h3{font:800 18px/1.25 'DM Sans',Arial,sans-serif;text-transform:none}
+.tp-body p{margin:0;color:#c3c8cf;font-size:14px}
+.tp-stars{color:#ffcd4d!important;font-weight:800}.tp-stars small{color:#a7adb6;font-weight:500}
+.tp-price{margin-top:auto;padding-top:10px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.tp-price b{font:900 38px/1 'Barlow Condensed',Impact,sans-serif;color:#fff}
+.tp-price small{color:#a7adb6;font-size:12px}
+.tp-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}
+.tp-hotel .tp-actions,.tp-food .tp-actions{margin-top:auto;padding-top:12px}
+.tp-go{display:inline-flex;align-items:center;background:#00e0a6;color:#04140d!important;border-radius:999px;padding:11px 18px;font:800 14px 'DM Sans',Arial,sans-serif;text-decoration:none!important;box-shadow:0 10px 26px #00e0a640}
+.tp-go:hover{background:#3dffc8}
+.tp-alt{color:#c3c8cf!important;font:700 13px 'DM Sans',Arial,sans-serif;text-decoration:underline!important;text-underline-offset:3px}
+.tp-loading,.tp-empty{grid-column:1/-1;padding:28px;border-radius:20px;background:#12121b;border:1px dashed #2c2c3a;color:#c3c8cf}
+.tp-empty b{display:block;font:900 26px/1 'Barlow Condensed',Impact,sans-serif;text-transform:uppercase;color:#fff;margin-bottom:8px}
+.tp-empty p{margin:0 0 14px}
+.tp-dates{display:grid;grid-template-columns:repeat(3,minmax(0,220px));gap:12px;margin:6px 0 10px;padding:16px;border-radius:20px;background:#12121b;border:1px solid #ffffff17}
+.tp-dates label{display:flex;flex-direction:column;gap:6px;font:600 13px 'DM Sans',Arial,sans-serif;color:#c3c8cf}
+.tp-dates input,.tp-dates select{min-height:46px;border-radius:12px;border:1px solid #2c2c3a;background:#07070b;color:#fff;padding:0 12px;font:600 15px 'DM Sans',Arial,sans-serif}
+@media(max-width:900px){.tp-head{grid-template-columns:1fr;gap:12px}.tp-dates{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.tp{padding:40px 0 28px}.tp .wrap{padding:0 16px}.tp-grid{grid-template-columns:1fr}.tp-dates{grid-template-columns:1fr}}
+/* Search for a specific trip, above the deals. */
+.tp-search{margin:4px 0 22px;padding:20px;border-radius:22px;background:linear-gradient(180deg,#16161f,#0e0e16);border:1px solid #00e0a659;box-shadow:0 24px 60px #0009,0 0 40px #00e0a61f}
+.tp-search-h{display:block;font:900 24px/1 'Barlow Condensed',Impact,sans-serif;text-transform:uppercase;color:#fff;margin-bottom:12px}
+.tp-search-row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.tp-search-row>label{display:flex;flex-direction:column;gap:6px;flex:1 1 150px;min-width:0;font:600 13px 'DM Sans',Arial,sans-serif;color:#c3c8cf}
+.tp-search-row>label.tp-wide{flex:2 1 220px}
+.tp-search-row input,.tp-search-row select{min-height:48px;border-radius:12px;border:1px solid #2c2c3a;background:#07070b;color:#fff;padding:0 12px;font:600 15px 'DM Sans',Arial,sans-serif;width:100%;box-sizing:border-box}
+.tp-search-row input:focus,.tp-search-row select:focus{outline:0;border-color:#00e0a6;box-shadow:0 0 0 3px #00e0a633}
+.tp-search-row .dr-field{flex:2 1 260px;grid-column:auto}
+.tp-search-row .tp-go{min-height:48px;border:0;cursor:pointer;flex:0 0 auto}
+.tp-search-note{margin:10px 0 0;color:#8f96a1;font-size:12.5px}
+@media(max-width:560px){.tp-search{padding:16px}.tp-search-row>label,.tp-search-row .dr-field,.tp-search-row .tp-go{flex:1 1 100%}}

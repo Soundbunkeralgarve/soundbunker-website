@@ -46,3 +46,23 @@ test('hotels, Flight + Hotel and trains are tabs, with real Trip.com links and n
   assert.doesNotMatch(hotels + packs + trainCards(), /[£€]\s?\d/, 'no made-up prices');
   assert.match(trainCards(), /trip\.com\/trains\/uk\/\?Allianceid=11489066/);
 });
+
+test('flight deals keep the cheapest real fare per city, from today on', async () => {
+  const {flightDeals} = await import('../api/lib/flight-deals.js');
+  const rows = [{origin: 'LON', destination: 'BCN', price: 40, airline: 'FR', departure_at: '2026-12-11T09:00:00Z', return_at: '2026-12-14T09:00:00Z', link: '/search/LON1112BCN14121'},
+    {origin: 'LON', destination: 'BCN', price: 31, airline: 'U2', departure_at: '2027-01-08T09:00:00Z', return_at: '2027-01-10T09:00:00Z', link: '/search/LON0801BCN10011'},
+    {origin: 'LON', destination: 'LIS', price: 20, airline: 'TP', departure_at: '2026-11-01T09:00:00Z', link: '/search/LON0111LIS1'}];
+  const fetchImpl = async () => ({ok: true, json: async () => ({currency: 'gbp', data: rows})});
+  const r = await flightDeals({from: 'LON'}, {token: 't', fetchImpl, now: new Date('2026-11-26T12:00:00Z')});
+  assert.deepEqual(r.deals.map(d => [d.city, d.price]), [['BCN', 31]], 'one card per city, the past fare dropped');
+  assert.deepEqual(await flightDeals({from: 'LON'}, {token: ''}), {enabled: false, deals: []});
+});
+
+test('travel page cards book on Trip.com with the dates in', async () => {
+  const {flightCard, packageCard, hotelCard, tripcomFlightsUrl} = await import('../travel-page.js');
+  const deal = {city: 'BCN', price: 31, currency: 'gbp', stops: 0, airlineName: 'easyJet', departAt: '2027-01-08T09:00:00Z', returnAt: '2027-01-10T09:00:00Z', url: 'https://www.aviasales.com/search/x?marker=811245'};
+  assert.match(tripcomFlightsUrl({from: 'LON', to: 'BCN', depart: '2027-01-08', back: '2027-01-10'}), /showfarefirst\?dcity=lon&acity=bcn&ddate=2027-01-08&rdate=2027-01-10&triptype=rt.*Allianceid=11489066/);
+  assert.match(flightCard(deal, 'LON'), /£31[\s\S]*Book on Trip\.com/);
+  assert.match(packageCard(deal, 'LON'), /packages\/list[\s\S]*Hotel only/);
+  assert.match(hotelCard('lisbon', {from: '2027-01-08', to: '2027-01-10', adults: 2}), /hotels\/list\?city=1231&amp;checkIn=2027-01-08/);
+});

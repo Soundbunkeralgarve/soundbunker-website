@@ -147,7 +147,7 @@
       ]
     },
     {
-      "source": "/api/((?!partner-feed|events$|partner-offers|ticketbunker-ads).*)",
+      "source": "/api/((?!partner-feed|events$|partner-offers|ticketbunker-ads|flight-deals|food-deals).*)",
       "headers": [
         {
           "key": "Cache-Control",
@@ -156,7 +156,7 @@
       ]
     },
     {
-      "source": "/api/(partner-feed|events|partner-offers|ticketbunker-ads)",
+      "source": "/api/(partner-feed|events|partner-offers|ticketbunker-ads|flight-deals|food-deals)",
       "headers": [
         {
           "key": "Cache-Control",
