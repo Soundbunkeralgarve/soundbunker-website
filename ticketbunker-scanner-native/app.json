@@ -11,12 +11,12 @@
     "ios": {
       "bundleIdentifier": "pt.soundbunker.ticketbunkerscanner",
       "supportsTablet": true,
-      "buildNumber": "16",
+      "buildNumber": "17",
       "infoPlist": {}
     },
     "android": {
       "package": "pt.soundbunker.ticketbunkerscanner",
-      "versionCode": 11,
+      "versionCode": 12,
       "permissions": [
         "android.permission.CAMERA"
       ],
