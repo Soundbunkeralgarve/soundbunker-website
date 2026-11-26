@@ -63,6 +63,11 @@ if (typeof document !== 'undefined') {
     const top10 = document.getElementById('top10'), feature = document.getElementById('big-feature'), weekend = document.getElementById('rail-weekend');
     if (top10 && feature) top10.after(feature);
     if (feature && weekend) feature.after(weekend);
+    // Our own promos (Get around, wallet and scanner) sit between ticket sections, never stacked together.
+    const getAround = document.getElementById('get-around'), perks = document.getElementById('fan-benefits');
+    const festival = document.getElementById('rail-festival'), moreOut = document.getElementById('more-ways-out');
+    if (getAround && festival) festival.after(getAround);
+    if (perks && moreOut) moreOut.after(perks);
     // The remaining house banners repeat what the organiser and advertise sections already say.
     for (const s of slots.slice(2)) s.remove();
   };

@@ -3,7 +3,7 @@
 # Safe to rerun: pages that already have the band are skipped.
 import re,sys
 band=open(sys.argv[1]).read()
-CSS='<link rel="stylesheet" href="/promise.css?v=20261125">'
+CSS='<link rel="stylesheet" href="/promise.css?v=20261126">'
 def photo(src,alt=''):return f'<img class="tbp-photo" src="{src}" alt="{alt}" width="1600" height="1000" fetchpriority="high">'
 def banner(src,text):return f'<div class="tbp-banner"><img src="{src}" alt="" width="1600" height="1000" fetchpriority="high"><p>{text}</p></div>'
 GUIDES=['hotels','travel','car-hire','restaurants','vip-transfers','plan-your-trip']

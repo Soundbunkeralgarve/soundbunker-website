@@ -177,9 +177,14 @@ export default function GetAroundScreen({route}) {
           <Chip key={c[0]} label={(LIVE[c[0]] ? '● ' : '') + c[1].replace(/^the /, '')} active={c[0] === slug} onPress={() => chooseCity(c[0])}/>)}
       </ScrollView>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{gap: 8}}>
-          {[...MODES,['taxi','Taxis']].map(([k, l]) => <Chip key={k} label={(k === 'all' ? '' : ICON[k] + ' ') + (k==='boat'?'Ferries & boats':l)} active={mode === k} onPress={() => setMode(k)}/>)}
-        </ScrollView>
+      {/* Big, clear transport choices: a grid of tiles with a large icon each. */}
+      <View style={g.modeGrid}>
+        {[...MODES,['taxi','Taxis']].map(([k, l]) => <Pressable key={k} accessibilityRole="button" accessibilityState={{selected: mode === k}} onPress={() => setMode(k)}
+          style={({pressed}) => [g.modeTile, mode === k && g.modeOn, pressed && {opacity: 0.85}]}>
+          <Text style={g.modeIcon}>{k === 'all' ? '✦' : ICON[k]}</Text>
+          <Text style={[g.modeLabel, mode === k && {color: C.tealInk}]} numberOfLines={2}>{k === 'boat' ? 'Ferries & boats' : l}</Text>
+        </Pressable>)}
+      </View>
       {live ? <>
         <View style={g.card}>
           {[['stepFree', tfl ? '♿ Step-free routes' : '♿ Wheelchair accessible'], tfl && ['fewerChanges', '⇄ Fewer changes'], acKnown && ['airCon', '❄ Air-conditioned']].filter(Boolean).map(([k, l]) =>
@@ -283,6 +288,11 @@ export default function GetAroundScreen({route}) {
   </SafeAreaView>;
 }
 const g = StyleSheet.create({
+  modeGrid: {flexDirection: 'row', flexWrap: 'wrap', gap: 10},
+  modeTile: {flexBasis: '31%', flexGrow: 1, minHeight: 92, borderRadius: 18, borderWidth: 1, borderColor: C.line, backgroundColor: C.card, alignItems: 'center', justifyContent: 'center', gap: 6, padding: 10},
+  modeOn: {backgroundColor: C.teal, borderColor: C.teal, shadowColor: C.teal, shadowOpacity: 0.35, shadowRadius: 14, shadowOffset: {width: 0, height: 6}, elevation: 6},
+  modeIcon: {fontSize: 30, lineHeight: 36},
+  modeLabel: {fontFamily: F.bold, fontSize: 14, color: C.text, textAlign: 'center'},
   card: {backgroundColor: C.card, borderRadius: 18, borderWidth: 1, borderColor: C.line, padding: 16, gap: 10},
   toggle: {flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'},
   live: {color: C.teal, fontFamily: F.bold, fontSize: 12, letterSpacing: 1.4},
