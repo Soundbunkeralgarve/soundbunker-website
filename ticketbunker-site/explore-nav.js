@@ -6,7 +6,7 @@ export const EXPLORE = Object.freeze([
   ['Tickets', [['Everything on', '/#rails'], ['Gigs', '/?cat=music'], ['Raves & club nights', '/?cat=club'], ['Festivals', '/?cat=festival'],
     ['Theatre & shows', '/?cat=shows'], ['Comedy', '/?cat=comedy'], ['Family days out', '/?cat=family'], ['Days out & tours', '/?cat=daysout'],
     ['Sport', '/?cat=sport'], ['This weekend', '/?when=weekend']]],
-  ['Travel', [['Flights', '/travel#flights'], ['Trains & coaches', '/travel'], ['Taxis & getting around', '/get-around'], ['Car hire', '/car-hire'],
+  ['Travel', [['Flight deals', '/flights'], ['Flight + Hotel', '/packages'], ['Search flights', '/travel#flights'], ['Trains', '/trains'], ['Coaches & car hire', '/travel'], ['Taxis & getting around', '/get-around'], ['Car hire', '/car-hire'],
     ['Airport transfers', '/vip-transfers']]],
   ['VIP travel', [['Limos', '/vip-transfers'], ['Chauffeur cars', '/vip-transfers'], ['Minibuses & party buses', '/vip-transfers'],
     ['Helicopters', '/vip-transfers'], ['Private jets', '/vip-transfers'], ['Boats & yachts', '/vip-transfers']]],
