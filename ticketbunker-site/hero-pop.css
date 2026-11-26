@@ -1,0 +1,57 @@
+/* Homepage hero, loaded last: full-colour photos, a bigger glowing headline and a glass search card.
+   Earlier sheets made the photos grey and dim; this brings them back to life on every screen. */
+.shop-home .hero.hero-sales{isolation:isolate;overflow:hidden}
+.shop-home .hero.hero-sales .hero-scenes{opacity:1!important;filter:none!important}
+.shop-home .hero.hero-sales .hero-scene{filter:saturate(1.25) contrast(1.06) brightness(.92)!important}
+.shop-home .hero.hero-sales .hero-shade{background:
+  linear-gradient(90deg,#07070bf0 0%,#07070bc7 30%,#07070b55 56%,#07070b10 78%),
+  linear-gradient(0deg,#07070b 0%,#07070b00 26%),
+  linear-gradient(180deg,#07070ba6 0%,#07070b00 18%)!important}
+/* Slow-moving teal and pink stage light over the photo. */
+.shop-home .hero.hero-sales::before{content:"";position:absolute;inset:-20%;z-index:1;pointer-events:none;mix-blend-mode:screen;opacity:.75;
+  background:radial-gradient(32% 38% at 18% 78%,#00e0a640,transparent 70%),radial-gradient(30% 34% at 82% 18%,#ff4f9a38,transparent 70%),radial-gradient(26% 30% at 60% 90%,#7c5cff26,transparent 70%);
+  animation:hp-drift 18s ease-in-out infinite alternate}
+@keyframes hp-drift{to{transform:translate3d(4%,-3%,0) rotate(4deg)}}
+.shop-home .hero.hero-sales .hero-grid{position:relative;z-index:2}
+
+/* Headline */
+.shop-home .hero.hero-sales h1{font-size:clamp(84px,7.6vw,128px)!important;line-height:.84!important;letter-spacing:-.01em!important;text-shadow:0 10px 40px #000c!important}
+.shop-home .hero.hero-sales .h1-outline{background:linear-gradient(92deg,#00e0a6 0%,#5dffd2 45%,#00e0a6 100%);-webkit-background-clip:text;background-clip:text;color:transparent!important;
+  filter:drop-shadow(0 0 22px #00e0a670) drop-shadow(0 8px 26px #0009);text-shadow:none!important}
+.shop-home .hero.hero-sales .h1-outline::after{display:none!important}
+.shop-home .hero.hero-sales .hero-tagline{font-size:clamp(18px,1.5vw,22px)!important;font-weight:600;color:#fff!important;margin-top:18px!important}
+.shop-home .hero.hero-sales .hero-kicker{background:#07070b99!important;backdrop-filter:blur(10px);border:1px solid #00e0a655!important;box-shadow:0 0 24px #00e0a626}
+.shop-home .hero.hero-sales .live-dot{background:#00e0a6!important;box-shadow:0 0 0 0 #00e0a6aa;animation:hp-pulse 1.8s ease-out infinite}
+@keyframes hp-pulse{to{box-shadow:0 0 0 10px #00e0a600}}
+
+/* Two promises as glass chips */
+.shop-home .hero.hero-sales .hero-two{gap:12px!important;flex-wrap:nowrap!important}
+.shop-home .hero.hero-sales .hero-two span{flex:1 1 0;min-width:0;padding:12px 16px;border-radius:16px;background:#0b0b12a6;backdrop-filter:blur(12px);border:1px solid #ffffff1c;border-left:3px solid #00e0a6}
+.shop-home .hero.hero-sales .hero-two span+span{border-left-color:#ff4f9a}
+.shop-home .hero.hero-sales .hero-two span+span b{color:#ff8fbf!important}
+
+/* Search as a glowing glass card */
+.shop-home .hero.hero-sales #destination-search{background:linear-gradient(180deg,#14141ee0,#0b0b12e6)!important;backdrop-filter:blur(18px);
+  border:1px solid #00e0a659!important;border-radius:24px!important;box-shadow:0 30px 80px #000b,0 0 0 1px #ffffff0a inset,0 0 46px #00e0a62b!important}
+.shop-home .hero.hero-sales #destination-search :is(input,select){background:#07070bcc!important;border-color:#2c2c3a!important}
+.shop-home .hero.hero-sales .ds-submit{background:linear-gradient(90deg,#00e0a6,#3dffc8)!important;color:#04140d!important;font-weight:900!important;letter-spacing:.02em;
+  box-shadow:0 14px 34px #00e0a659!important;transition:transform .15s,box-shadow .15s}
+.shop-home .hero.hero-sales .ds-submit:hover{transform:translateY(-1px);box-shadow:0 18px 44px #00e0a680!important}
+.shop-home .hero.hero-sales .discovery-entry :is(a,button){background:#0b0b12b3!important;backdrop-filter:blur(10px);border-color:#ffffff26!important}
+
+/* "Hot right now" card glows */
+.shop-home .hero.hero-sales .hs-label{color:#ff4f9a!important;text-shadow:0 0 18px #ff4f9a88}
+.shop-home .hero.hero-sales .hs-ticket[data-pos="0"],.shop-home .hero.hero-sales .hs-deck>:first-child{box-shadow:0 40px 90px #000c,0 0 0 1px #ff4f9a55,0 0 60px #ff4f9a33!important}
+
+/* Phones: brighter cover photos, bigger headline, glowing search card. */
+@media(max-width:760px){
+ .shop-home .hero.hero-sales::before{display:none}
+ .mh-cover img{filter:saturate(1.2) contrast(1.05)!important}
+ .mh-cover img.on{opacity:.9!important}
+ .mh-cover::after{background:radial-gradient(90% 50% at 100% 0%,#00e0a62e,transparent 60%),radial-gradient(90% 50% at 0% 100%,#ff4f9a33,transparent 60%),
+   linear-gradient(180deg,#07070b8c 0%,#07070b1a 28%,#07070b40 52%,#07070bd9 80%,#07070b 100%)!important}
+ .mh-cover h1{font-size:clamp(60px,18vw,82px)!important}
+ .mh-cover .hero-tagline{font-size:17px!important;font-weight:600}
+ .shop-home .hero.hero-sales #destination-search{background:linear-gradient(180deg,#16161f,#0e0e16)!important;border:1px solid #00e0a659!important;box-shadow:0 24px 60px #000c,0 0 40px #00e0a62b!important}
+}
+@media(prefers-reduced-motion:reduce){.shop-home .hero.hero-sales::before,.shop-home .hero.hero-sales .live-dot{animation:none}}
