@@ -6,7 +6,7 @@ import {MODES, LIVE, KEYED, keyedBoard, keyedCitiesLive, TFL_ATTRIBUTION, tflNea
 import {CITY_COORDS} from './city-coords.js';
 import {watchLocation, locationContext, locationError, movedMetres} from './get-around-location.js?v=20261125-location-fix';
 import {cityBySlug} from './city-places.js';
-import {storeButtons} from './app-promo.js?v=20261125ga';
+import {storeButtons} from './app-promo.js?v=20261126-stores';
 import {pickOffers, offerCards, loadOffers, tripSearchLinks} from './travel-offers.js?v=20261125gg';
 import {quoteCards, flightPlace} from './flight-search.js?v=20261125gj';
 

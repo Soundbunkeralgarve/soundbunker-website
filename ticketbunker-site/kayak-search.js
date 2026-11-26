@@ -2,7 +2,7 @@
 // Existing travel searches remain the primary fallback and keep their own submit handlers.
 import {CITY_PAGES} from './city-places.js';
 import {CITY_COORDS} from './city-coords.js';
-import {flightPlace} from './flight-search.js?v=20261125-context';
+import {flightPlace} from './flight-search.js?v=20261126-empty';
 
 const ENDPOINT = '/api/kayak-search';
 const SESSION_KEY = 'tb-kayak-session-id';

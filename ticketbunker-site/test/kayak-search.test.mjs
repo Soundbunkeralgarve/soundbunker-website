@@ -115,5 +115,5 @@ test('the production hook is included alongside the existing flight, hotel and t
  for(const name of ['travel.html','hotels.html']){
   const html=readFileSync(new URL('../'+name,import.meta.url),'utf8');assert.match(html,/kayak-search\.js\?v=20261125-production-gate/);assert.match(html,/trip-guides\.js\?v=/);
  }
- assert.match(readFileSync(new URL('../travel.html',import.meta.url),'utf8'),/flight-search\.js\?v=20261125-context/);
+ assert.match(readFileSync(new URL('../travel.html',import.meta.url),'utf8'),/flight-search\.js\?v=20261126-empty/);
 });

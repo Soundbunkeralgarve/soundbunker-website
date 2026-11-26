@@ -165,7 +165,11 @@ test('the app is promoted sitewide without linking to unpublished store pages', 
   const nav = readFileSync(new URL('../public-navigation.js', import.meta.url), 'utf8');
   assert.match(nav, /app-promo\.js\?v=/);
   assert.match(nav, /\/get-around/);
-  assert.equal(APP.live, false, 'flip only once both stores have published the app');
+  // Each store is linked only once it has published the app: the App Store has, Google Play has not yet.
+  assert.equal(APP.store.ios, true);
+  assert.equal(APP.store.android, false, 'flip only once Google Play has published the app');
+  const promo = readFileSync(new URL('../app-promo.js', import.meta.url), 'utf8');
+  assert.match(promo, /APP\.store\?\.android\s*\?/, 'the Google Play link is behind the android flag');
   const page = readFileSync(new URL('../get-around.html', import.meta.url), 'utf8');
   assert.match(page, /<link rel="canonical" href="https:\/\/theticketbunker.com\/get-around">/);
   assert.match(page, /data-get-around data-page="true"/);

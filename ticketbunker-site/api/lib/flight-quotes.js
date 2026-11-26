@@ -37,10 +37,15 @@ export async function flightQuotes({from, to, depart, back = '', currency = 'gbp
     if (!r.ok) throw Error('Fares are not answering right now.');
     return normaliseQuotes(await r.json());
   };
-  // Exact dates first; if nothing was found for that day, show the cheapest days that month.
-  let quotes = await ask(depart, back), exact = true;
-  if (!quotes.length) { quotes = await ask(depart.slice(0, 7), back ? back.slice(0, 7) : ''); exact = false; }
-  const value = {enabled: true, exact, quotes: quotes.slice(0, 8), at: new Date().toISOString()};
+  // Exact dates first; then the cheapest days that month, then next month, then one-way fares.
+  // The cached data is thin late in a month, so a busy route can otherwise come back empty.
+  const nextMonth = iso => { const d = new Date(iso.slice(0, 7) + '-01T00:00:00Z'); d.setUTCMonth(d.getUTCMonth() + 1); return d.toISOString().slice(0, 7); };
+  const tries = [['exact', depart, back], ['month', depart.slice(0, 7), back ? back.slice(0, 7) : ''],
+    ['next-month', nextMonth(depart), back ? nextMonth(back) : '']];
+  if (back) tries.push(['one-way', depart.slice(0, 7), ''], ['one-way', nextMonth(depart), '']);
+  let quotes = [], kind = 'none';
+  for (const [k, d, b] of tries) { quotes = await ask(d, b); if (quotes.length) { kind = k; break; } }
+  const value = {enabled: true, exact: kind === 'exact', kind, quotes: quotes.slice(0, 8), at: new Date().toISOString()};
   cache.set(key, {value, until: Date.now() + 10 * 60000});
   if (cache.size > 300) cache.delete(cache.keys().next().value);
   return value;
