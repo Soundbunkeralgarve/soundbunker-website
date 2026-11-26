@@ -1,5 +1,6 @@
 import { randomUUID, timingSafeEqual } from 'node:crypto';
-import { latestDropboxCursor, continueDropboxCursor, secureClientDropboxDelivery } from './dropbox.js';
+import { latestDropboxCursor, continueDropboxCursor, secureClientDropboxDelivery,
+  prepareClientDropboxSecurity, makeDropboxFolder } from './dropbox.js';
 import { getClientDeliveryAccess } from './client-delivery-access.js';
 import { sendTransactionalEmail } from './notify.js';
 
@@ -95,6 +96,7 @@ export function clientDeliveryMessage(fileName, access, fullName = '') {
 export async function dispatchClientDeliveryNotifications({ admin, token = randomUUID(), onlyId = null,
   accessForClient = getClientDeliveryAccess, send = sendTransactionalEmail, secure = secureClientDropboxDelivery,
   now = Date.now, deadline = Date.now()+180000 } = {}) {
+  if (secure === secureClientDropboxDelivery) secure = await prepareClientDropboxSecurity();
   const rows = await checked(admin.rpc('sb_claim_client_delivery_notifications', {
     p_token: token, p_id: onlyId
   }));
@@ -143,7 +145,10 @@ export async function dispatchClientDeliveryNotifications({ admin, token = rando
 
 export async function reconcileClientDeliveryFolders({ admin, token = randomUUID(),
   latestCursor = latestDropboxCursor, continueCursor = continueDropboxCursor, secure = secureClientDropboxDelivery,
-  deadline = Date.now()+120000 } = {}) {
+  createFolder = makeDropboxFolder, deadline = Date.now()+120000 } = {}) {
+  // One complete shared-link audit per run, before leasing individual clients.
+  // Injected protection in tests or another caller remains under their control.
+  if (secure === secureClientDropboxDelivery) secure = await prepareClientDropboxSecurity();
   const rows = await checked(admin.rpc('sb_claim_client_delivery_watchers', { p_token: token }));
   const result = { baselined: 0, scanned: 0, queued: 0, pending: 0 };
   for (const row of rows || []) {
@@ -154,7 +159,15 @@ export async function reconcileClientDeliveryFolders({ admin, token = randomUUID
       if (!protection?.secured) throw new Error('Client music delivery protection is unavailable');
       await checked(admin.from(WATCHERS).update({ links_secured_at: new Date().toISOString() }).eq('user_id', row.user_id).eq('lease_token', token));
       if (!row.cursor) {
-        const baseline = await latestCursor(row.root_path);
+        let baseline;
+        try { baseline = await latestCursor(row.root_path); }
+        catch (error) {
+          if (!String(error.message).includes('path/not_found')) throw error;
+          // Legacy profiles can predate My Music. Only create the exact private
+          // root already claimed for this client; never infer another path.
+          await createFolder(row.root_path);
+          baseline = await latestCursor(row.root_path);
+        }
         const cursor = typeof baseline === 'string' ? baseline : baseline?.cursor;
         if (!cursor) throw new Error('Dropbox baseline cursor is missing');
         await checked(admin.rpc('sb_advance_client_delivery_watcher', {
@@ -181,9 +194,12 @@ export async function reconcileClientDeliveryFolders({ admin, token = randomUUID
       // A Dropbox cursor reset requires an explicit rebaseline, never a mass
       // historical notification. The next run only records the latest cursor.
       const reset = String(error.message).includes('reset');
+      const status = Number(error.status);
+      const detail = String(error.message || 'Folder scan failed')
+        .replace(/Bearer\s+\S+/gi,'Bearer [redacted]').replace(/https?:\/\/\S+/gi,'[URL]').slice(0,240);
       await checked(admin.from(WATCHERS).update({ ...(reset ? { cursor: null } : {}),
-        last_error: String(error.message || 'Folder scan failed').slice(0,300),
-        next_attempt_at: new Date(Date.now()+300000).toISOString()
+        last_error: (Number.isInteger(status) && status > 0 ? `HTTP ${status}: ` : '') + detail,
+        next_attempt_at: new Date(Date.now()+60000).toISOString()
       }).eq('user_id', row.user_id).eq('lease_token', token));
       result.pending++;
     } finally {

@@ -45,12 +45,14 @@ export async function callDropbox(endpoint, body) {
   const token = await accessToken();
   const response = await fetch(`${DROPBOX_API}${endpoint}`, {
     method: 'POST',
+    signal: AbortSignal.timeout(20000),
     headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
     body: JSON.stringify(body)
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const error = new Error(data.error_summary || data.error?.['.tag'] || 'Dropbox request failed');
+    const reason = data.error_summary || data.error?.['.tag'] || (typeof data.error === 'string' ? data.error : 'Dropbox request failed');
+    const error = new Error(`${reason} (HTTP ${response.status})`);
     error.status = response.status;
     error.dropbox = data;
     throw error;
@@ -137,22 +139,36 @@ export function deliveryLinkMustBeRevoked(linkPath, musicPath) {
 // Removing a button does not invalidate links already sent to a customer.
 // Revoke the music tree and its ancestors, retaining independent photo links.
 export async function secureClientDropboxDelivery(profile) {
-  const musicPath = profile.dropbox_music_path || (profile.dropbox_folder_path ? profile.dropbox_folder_path + '/My Music' : '');
-  if (!musicPath) throw new Error('Private music folder is not configured');
+  const secure = await prepareClientDropboxSecurity();
+  return secure(profile);
+}
+
+// One complete snapshot per scan prevents each client from re-listing all
+// account links. Revoke from the snapshot only after pagination is complete.
+export async function prepareClientDropboxSecurity() {
+  const links = [];
   let page = await callDropbox('/sharing/list_shared_links', {});
-  const revoke = new Set();
   for (;;) {
-    for (const link of page.links || []) {
-      if (!deliveryLinkMustBeRevoked(link.path_lower || link.path_display, musicPath)) continue;
-      if (link.url) revoke.add(link.url);
-    }
+    links.push(...(page.links || []));
     if (!page.has_more) break;
     if (!page.cursor) throw new Error('Dropbox link audit is incomplete');
     page = await callDropbox('/sharing/list_shared_links', { cursor: page.cursor });
   }
+  const revokedUrls = new Set();
+  return profile => secureDeliveryFromLinks(profile, links, revokedUrls);
+}
+
+async function secureDeliveryFromLinks(profile, links, revokedUrls) {
+  const musicPath = profile.dropbox_music_path || (profile.dropbox_folder_path ? profile.dropbox_folder_path + '/My Music' : '');
+  if (!musicPath) throw new Error('Private music folder is not configured');
+  const revoke = new Set();
+    for (const link of links) {
+      if (!deliveryLinkMustBeRevoked(link.path_lower || link.path_display, musicPath)) continue;
+      if (link.url && !revokedUrls.has(link.url)) revoke.add(link.url);
+    }
   let revoked = 0;
   for (const url of revoke) {
-    try { await callDropbox('/sharing/revoke_shared_link', { url }); revoked++; }
+    try { await callDropbox('/sharing/revoke_shared_link', { url }); revoked++; revokedUrls.add(url); }
     catch (error) { if (!String(error.message).includes('shared_link_not_found')) throw error; }
   }
   return { secured: true, revoked };

@@ -105,6 +105,22 @@ test('folder provisioning creates the cursor before it becomes ready and never r
   }finally{await db.sql.close();}
 });
 
+test('a missing legacy My Music root is repaired before baselining; transient scans retain HTTP status and retry in one minute',async()=>{
+  const db=await storage();
+  try {
+    const created=[];let cursors=0;
+    const result=await reconcileClientDeliveryFolders({admin:db,secure:secured,
+      latestCursor:async path=>{assert.equal(path,root);if(cursors++===0){const error=Error('path/not_found/...');error.status=409;throw error;}return {cursor:'repaired-baseline'};},
+      createFolder:async path=>created.push(path)});
+    assert.equal(result.baselined,1);assert.deepEqual(created,[root]);
+    const failed=await reconcileClientDeliveryFolders({admin:db,secure:secured,continueCursor:async()=>{const error=Error('Dropbox request failed');error.status=429;throw error;}});
+    assert.equal(failed.pending,1);
+    const row=(await db.sql.query('select * from sb_delivery_watchers')).rows[0];
+    assert.equal(row.cursor,'repaired-baseline');assert.match(row.last_error,/HTTP 429/);
+    assert.ok(Date.parse(row.next_attempt_at)-Date.now()<65000);assert.ok(Date.parse(row.next_attempt_at)-Date.now()>45000);
+  }finally{await db.sql.close();}
+});
+
 test('admin upload plus polling produces one email and portal notification; client self uploads never send readiness messages',async()=>{
   const db=await storage();
   try {
