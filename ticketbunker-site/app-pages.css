@@ -1,0 +1,57 @@
+/* TicketBunker app share pages (/app, /organiser-app, /scanner-app, /check-in-hub).
+   Each page sets --c (its app colour), --c-rgb and --ink on <body>. Built by scripts/make-app-share-pages.py. */
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;background:#07070b;color:#f4f6f8;font:400 17px/1.55 'DM Sans',Arial,sans-serif}
+body{background:radial-gradient(ellipse 900px 600px at 85% 10%,rgba(var(--c-rgb),.18),transparent 70%),radial-gradient(ellipse 700px 500px at 0% 60%,rgba(var(--c-rgb),.07),transparent 70%),#07070b;min-height:100vh}
+a{color:inherit}
+.bar{display:flex;justify-content:space-between;align-items:center;max-width:1180px;margin:0 auto;padding:18px 20px}
+.bar img{display:block;height:auto;max-width:180px}
+.bar-link{font-weight:700;text-decoration:none;color:#c9cdd5}
+.bar-link:hover{color:#fff}
+main{max-width:1180px;margin:0 auto;padding:0 20px}
+.hero{display:grid;grid-template-columns:1.05fr 1fr;gap:40px;align-items:center;padding:28px 0 56px}
+.eyebrow{display:flex;align-items:center;gap:14px;margin:0;font-weight:700;font-size:15px;letter-spacing:.18em;text-transform:uppercase;color:var(--c)}
+.eyebrow img{width:64px;height:64px;border-radius:15px;box-shadow:0 10px 30px rgba(var(--c-rgb),.35),0 0 0 1px #ffffff1f}
+h1{margin:22px 0 0;font:900 clamp(56px,8vw,104px)/.88 'Barlow Condensed',Impact,sans-serif;text-transform:uppercase;letter-spacing:.005em}
+h1 span{display:block;color:var(--c)}
+.lead{margin:22px 0 0;max-width:560px;color:#c9cdd5;font-size:19px}
+.stores{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+.store{display:inline-flex;align-items:center;gap:10px;min-height:56px;padding:8px 20px 8px 16px;border-radius:14px;background:#000;border:1px solid #ffffff40;color:#fff;text-decoration:none;font:700 19px/1.05 'DM Sans',Arial,sans-serif;transition:transform .15s,box-shadow .15s,border-color .15s}
+.store small{display:block;font-size:11px;font-weight:500;letter-spacing:.04em;color:#cfd3da;margin-bottom:2px}
+a.store:hover{transform:translateY(-2px);border-color:var(--c);box-shadow:0 12px 30px rgba(var(--c-rgb),.35)}
+.store.soon{background:#13131c;border-style:dashed;border-color:#3a3a4a;color:#a7adb6;cursor:default}
+.platforms{margin:14px 0 0;color:#a7adb6;font-size:15px}
+.shots{position:relative;height:560px}
+.shot{position:absolute;width:250px;border-radius:30px;box-shadow:0 0 0 5px #1c1c26,0 0 0 6px #33333f,0 30px 70px rgba(0,0,0,.55)}
+.shot:nth-child(1){left:4%;top:60px;transform:rotate(-7deg)}
+.shot:nth-child(2){left:31%;top:0;z-index:2;width:270px;box-shadow:0 0 0 5px #1c1c26,0 0 0 6px #33333f,0 30px 70px rgba(0,0,0,.55),0 0 80px rgba(var(--c-rgb),.35)}
+.shot:nth-child(3){left:58%;top:70px;transform:rotate(7deg)}
+.shots.hub{height:auto}
+.shot.wide{position:static;width:100%;border-radius:14px;transform:none;box-shadow:0 0 0 8px #1c1c26,0 30px 70px rgba(0,0,0,.55),0 0 90px rgba(var(--c-rgb),.25)}
+.features ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.features li{padding:22px;border-radius:20px;background:#101018;border:1px solid #24242f}
+.features li b{display:block;font:800 24px/1 'Barlow Condensed',Impact,sans-serif;text-transform:uppercase;color:var(--c);margin-bottom:10px}
+.features li span{color:#c9cdd5;font-size:16px}
+.family{padding:56px 0 24px}
+.family h2{margin:0 0 16px;font:900 34px/1 'Barlow Condensed',Impact,sans-serif;text-transform:uppercase}
+.others{display:flex;flex-wrap:wrap;gap:12px}
+.other{display:inline-flex;align-items:center;gap:12px;padding:10px 18px 10px 10px;border-radius:16px;background:#101018;border:1px solid #24242f;text-decoration:none;font-weight:700}
+.other img{border-radius:11px}
+.other:hover{border-color:var(--c)}
+.foot{max-width:1180px;margin:0 auto;padding:28px 20px 40px;color:#7d838d;font-size:14px}
+.foot a{color:#a7adb6}
+@media (max-width:900px){
+ .hero{grid-template-columns:1fr;gap:12px;padding-top:12px}
+ .shots{height:440px;max-width:520px;width:100%;margin:0 auto}
+ .shot{width:38%}.shot:nth-child(2){width:41%}
+ .features ul{grid-template-columns:1fr 1fr}
+}
+@media (max-width:560px){
+ html,body{font-size:16px}
+ .bar img{max-width:140px}
+ .lead{font-size:17px}
+ .store{flex:1 1 100%;justify-content:center}
+ .shots{height:330px}
+ .features ul{grid-template-columns:1fr}
+}
