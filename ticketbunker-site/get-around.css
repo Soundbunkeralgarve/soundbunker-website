@@ -156,3 +156,11 @@
 .ga [data-transport]{display:grid;gap:12px}
 .ga [data-transport] .ga-big small,.ga [data-taxis] small{font-size:14px;line-height:1.4}
 @media(max-width:560px){.ga-where{font-size:14px;white-space:normal;padding:7px 10px}.ga-big{grid-template-columns:1fr}.ga-local{max-height:580px}}
+/* Transport choices as big, clear tiles with a large icon */
+.ga-chips{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px!important;overflow:visible!important;flex-wrap:wrap}
+.ga-chips button{display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:96px;border-radius:18px!important;border:1px solid #2c2c3a!important;background:#101018!important;color:#f4f6f8!important;padding:12px!important;font:800 15px 'DM Sans',Arial,sans-serif!important;cursor:pointer;transition:transform .15s,border-color .15s}
+.ga-chips button:hover{border-color:#00e0a6!important;transform:translateY(-2px)}
+.ga-chips button[aria-pressed=true]{background:#00e0a6!important;border-color:#00e0a6!important;color:#04140d!important;box-shadow:0 12px 28px #00e0a640}
+.ga-mode-ic{font-size:32px;line-height:1}
+.ga-mode-l{text-align:center;line-height:1.2}
+@media(max-width:760px){.ga-chips{grid-template-columns:repeat(3,1fr)}.ga-chips button{min-height:84px;font-size:13px!important}.ga-mode-ic{font-size:26px}}

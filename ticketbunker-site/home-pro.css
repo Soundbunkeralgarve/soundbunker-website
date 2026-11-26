@@ -40,3 +40,31 @@
  .pro-tab-row button{flex:none;padding:10px 16px;font-size:14px}
  .shop-home :is(#more-ways-out,#travel-stays) .pro-panels [data-track]{grid-auto-columns:76%!important}
 }
+
+/* "What are you planning?": bold tabs and photo tiles instead of plain buttons. */
+.shop-home #hub{padding:72px 0 56px;background:radial-gradient(60% 90% at 100% 0%,#00e0a614,transparent 60%),#07070b}
+.shop-home #hub .hub-head h2{font:900 clamp(48px,6vw,96px)/.88 'Barlow Condensed',Impact,sans-serif!important;text-transform:uppercase;color:#fff}
+.shop-home #hub .hub-tabs{gap:10px;padding-bottom:18px}
+.shop-home #hub .hub-tabs button{background:#101018!important;border:1px solid #ffffff22!important;color:#e6e9ec!important;padding:14px 22px!important;font:800 16px 'DM Sans',Arial,sans-serif!important;border-radius:999px}
+.shop-home #hub .hub-tabs button[aria-selected=true]{background:#00e0a6!important;border-color:#00e0a6!important;color:#04140d!important;box-shadow:0 10px 26px #00e0a640!important}
+.shop-home #hub .hub-grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.shop-home #hub .hub-tile.hub-photo{position:relative;min-height:190px;align-content:end;overflow:hidden;border-radius:20px!important;border:1px solid #ffffff1a!important;
+  background:linear-gradient(180deg,#07070b10 20%,#07070be6 92%),var(--tile-img) center/cover no-repeat,#101018!important;color:#fff!important;padding:18px!important;
+  box-shadow:0 18px 40px #0008;transition:transform .2s,border-color .2s}
+.shop-home #hub .hub-tile.hub-photo:hover{transform:translateY(-4px);border-color:#00e0a6!important}
+.shop-home #hub .hub-tile.hub-photo b{font:900 26px/1 'Barlow Condensed',Impact,sans-serif!important;text-transform:uppercase;color:#fff!important}
+.shop-home #hub .hub-tile.hub-photo small{color:#d6dde0!important;font-size:13px}
+.shop-home #hub .hub-tile.hub-photo .hub-ic{position:absolute;top:14px;left:14px;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:#07070bb3;color:#00e0a6;backdrop-filter:blur(6px)}
+.shop-home #hub .hub-tile.hub-photo .hub-ic svg{width:22px;height:22px}
+@media(max-width:760px){.shop-home #hub{padding:44px 0 32px}.shop-home #hub .hub-grid{grid-template-columns:1fr 1fr;gap:10px}.shop-home #hub .hub-tile.hub-photo{min-height:150px;padding:14px!important}.shop-home #hub .hub-tile.hub-photo b{font-size:21px!important}}
+
+/* "Don't miss": a stage-lit band with a giant outline word and a glowing lead card. */
+.shop-home #spotlight{position:relative;overflow:hidden;padding:84px 0 72px!important;border-block:1px solid #ffffff14;
+  background:radial-gradient(55% 80% at 15% 0%,#ff4f9a2e,transparent 60%),radial-gradient(50% 80% at 100% 100%,#7a1fff2b,transparent 60%),#07070b!important}
+.shop-home #spotlight::before{content:"DON'T MISS";position:absolute;right:-1vw;top:18px;font:900 clamp(120px,17vw,280px)/.8 'Barlow Condensed',Impact,sans-serif;color:transparent;-webkit-text-stroke:2px #ff4f9a33;pointer-events:none;white-space:nowrap}
+.shop-home #spotlight>.wrap{position:relative}
+.shop-home #spotlight .label{display:inline-block;padding:7px 14px;border-radius:999px;background:#ff4f9a;color:#20030f!important;font:800 12px/1 'DM Sans',Arial,sans-serif;letter-spacing:.16em}
+.shop-home #spotlight h2{font:900 clamp(56px,7vw,112px)/.86 'Barlow Condensed',Impact,sans-serif!important;color:#fff!important;margin:14px 0 26px!important}
+.shop-home #spotlight .spot-grid>*:first-child{box-shadow:0 0 0 2px #ff4f9a,0 30px 80px #ff4f9a40;border-radius:22px}
+.shop-home #spotlight .spot-grid>*{border-radius:20px;overflow:hidden}
+@media(max-width:760px){.shop-home #spotlight{padding:52px 0 44px!important}.shop-home #spotlight::before{font-size:96px;top:8px}.shop-home #spotlight h2{font-size:58px!important}}

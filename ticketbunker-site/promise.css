@@ -46,3 +46,7 @@
 /* Travel guides: each page its own, brighter photo. */
 .guide-hero.tbp-guide::before{opacity:.62}
 .guide-hero.tbp-guide::after{background:linear-gradient(90deg,#07130ef0 0%,#07130eb0 45%,#07130e20 100%)}
+/* Real photos on the wallet and scanner cards, framed on the faces and the phones */
+.tbp-card>img.tbp-photo{height:260px;object-position:50% 38%}
+.tbp-card.tbp-scan>img.tbp-photo{object-position:50% 45%}
+@media(max-width:760px){.tbp-card>img.tbp-photo{height:220px}}

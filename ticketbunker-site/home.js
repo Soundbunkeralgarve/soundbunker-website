@@ -651,19 +651,29 @@ function liveCount(){
  const own=events.filter(e=>!e.preview&&!e.public_beta_test&&!e.internal_free_test).length,n=own+feedTotal;
  if(n>0)$('#live-count').textContent=n.toLocaleString('en-GB')+' events on sale';
 }
+// The last feed is kept in the browser for 30 minutes, so a repeat visit draws listings at once
+// while the fresh feed loads in the background.
+const FEED_CACHE='tb-feed-cache-v1';let feedFromCache=false,cachedUrl='';
+function cachedFeed(url){
+ try{const c=JSON.parse(localStorage.getItem(FEED_CACHE)||'null');if(c&&c.url===url&&Date.now()-c.at<18e5&&Array.isArray(c.events)){feed=c.events;if(c.total>0)feedTotal=c.total;feedFromCache=true;cachedUrl=url;feedDone=true;feedLoading=false;return true;}}catch{}
+ return false;
+}
 async function loadFeed(){
  const url=feedSearchUrl(state),want=state.city;
- feedCity=want;feedQueryKey=url;feedDone=false;feedLoading=true;feedError=false;
+ feedCity=want;feedQueryKey=url;feedError=false;if(!(feedFromCache&&url===cachedUrl)){feedDone=false;feedLoading=true;feedFromCache=false;}
  const result=await feedLoader.run(async signal=>{const r=await fetch(url,{signal});if(!r.ok)throw Error('Partner search '+r.status);return r.json();});
  if(!result.current||feedQueryKey!==url)return;
  feedLoading=false;feedDone=true;feedError=Boolean(result.error || result.value?.activitySearchFailed);
- if(!result.error){const d=result.value;feed=Array.isArray(d.events)?d.events:[];if(Number.isInteger(d.total)&&d.total>0)feedTotal=d.total;}else feed=[];
+ if(!result.error){const d=result.value;feed=Array.isArray(d.events)?d.events:[];if(Number.isInteger(d.total)&&d.total>0)feedTotal=d.total;try{localStorage.setItem(FEED_CACHE,JSON.stringify({url,at:Date.now(),events:feed,total:feedTotal}));}catch{}}else if(!feedFromCache)feed=[];
  liveCount();
 }
 async function load(){
  try{const response=await getPublicEvents();events=Array.isArray(response.events)?response.events:[];loadError=false;}catch{loadError=true;}
  fillCountries();render();
 }
+cachedFeed(feedSearchUrl(state));
 fillCountries();syncForm();render();
-Promise.all([loadPartners(),loadFeed(),load()]).then(()=>{fillCountries();render();loadNear();});
+// Draw as each source arrives instead of waiting for the slowest one.
+const redraw=()=>{fillCountries();render();};
+Promise.all([loadPartners().then(redraw),loadFeed().then(redraw),load()]).then(()=>{redraw();loadNear();});
 if(location.pathname==='/events')$('#rails').scrollIntoView();
