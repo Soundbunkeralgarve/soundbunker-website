@@ -62,6 +62,13 @@ export function quoteCards(quotes, {adults = 1, currency = ''} = {}) {
     <div class="fare-price">${n === 0 ? '<i>Cheapest shown</i>' : ''}<b>${esc(new Intl.NumberFormat('en-GB', {style: 'currency', currency: q.currency.toUpperCase(), maximumFractionDigits: 0}).format(q.price))}</b><small>Recently found for 1 adult</small>
       <a href="${esc(passengers === 1 ? q.url : aviasalesUrl({from: q.from, to: q.to, depart: q.departAt.slice(0, 10), back: q.returnAt?.slice(0, 10) || '', adults: passengers, currency: currency || q.currency}))}" target="_blank" rel="sponsored noopener">${passengers === 1 ? 'Book on Aviasales' : 'Check fares for ' + passengers + ' adults'} ↗</a></div></article>`).join('');
 }
+// A clear "nothing found" card: says so plainly and gives the next steps.
+export function noFares(from, to, url) {
+  return `<div class="fares-empty" role="status"><b>No saved fares from ${esc(from)} to ${esc(to)}</b>
+    <p>We have no recent prices for this route, so we can't show fares here. Flights may still be on sale, or there may be no direct route.</p>
+    <ul><li>Check live fares for your exact dates on Aviasales</li><li>Try a nearby airport (London has six, for example)</li><li>Try one way, or different dates</li></ul>
+    <a class="fares-all" href="${esc(url)}" target="_blank" rel="sponsored noopener">Check live fares on Aviasales ↗</a></div>`;
+}
 let quoteRequest = 0, quoteAbort;
 async function showQuotes(form, status, {from, to, depart, back, adults, currency, url}) {
   const request = ++quoteRequest;
@@ -75,9 +82,11 @@ async function showQuotes(form, status, {from, to, depart, back, adults, currenc
     const j = await r.json();
     if (request !== quoteRequest) return;
     if (!r.ok) throw Error(j.error || 'Fares are not answering right now.');
-    if (!j.enabled || !j.quotes?.length) { status.textContent = ''; box.innerHTML = `<p class="fares-note">${j.enabled ? 'No recently found fares for this route.' : 'Check fares on Aviasales.'}</p>${all}`; return; }
+    if (!j.enabled || !j.quotes?.length) { status.textContent = ''; box.innerHTML = noFares(from, to, url); return; }
     status.textContent = '';
-    box.innerHTML = `<h3>${j.exact ? 'Recently found fares for your dates' : 'Recently found fares on other dates this month'}</h3>${quoteCards(j.quotes, {adults, currency})}
+    const heading = {exact: 'Fares found for your dates', month: 'No fares saved for your exact dates. Cheapest days this month', 'next-month': 'Nothing saved this month. Cheapest days next month',
+      'one-way': 'No return fares saved. Cheapest one-way fares'}[j.kind] || (j.exact ? 'Fares found for your dates' : 'Cheapest fares on nearby dates');
+    box.innerHTML = `${j.exact ? '' : `<p class="fares-alert">Not your exact dates: these are the closest fares we have. Your dates may still be on sale on Aviasales.</p>`}<h3>${heading}</h3>${quoteCards(j.quotes, {adults, currency})}
       <p class="fares-note">Recently found fares for 1 adult. Prices and availability are confirmed by the provider.${adultCount(adults) > 1 ? ' Check the current total for your ' + adultCount(adults) + ' adults on Aviasales.' : ''}</p>${all}`;
   } catch (e) { if (request !== quoteRequest || e.name === 'AbortError') return; status.textContent = e.message; box.innerHTML = all; }
 }

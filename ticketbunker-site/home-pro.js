@@ -5,8 +5,53 @@ export const EXPLORE_TABS = Object.freeze([
   ['comedy', 'Comedy'], ['family', 'Family'], ['under', 'Under £20'], ['boat', 'Boat trips'], ['daysout', 'Days out'],
   ['sport', 'Sport'], ['cinema', 'Cinema'], ['seasonal', 'Seasonal'], ['gyg', 'Tours']
 ]);
-export const TRAVEL_TABS = Object.freeze([['trip', 'City breaks'], ['transfer', 'VIP transfers'], ['transit', 'Trains & buses'], ['dining', 'Restaurants']]);
+export const TRAVEL_TABS = Object.freeze([['hotels', 'Hotels'], ['packages', 'Flight + Hotel'], ['trains', 'Trains'], ['transit', 'Travel passes'], ['trip', 'City breaks'], ['transfer', 'VIP transfers'], ['dining', 'Restaurants']]);
 const railOf = k => document.getElementById(k === 'gyg' ? 'gyg-box' : 'rail-' + k);
+
+// Hotels and Flight + Hotel for the most-booked cities, each opening Trip.com on that city for
+// next weekend (Friday to Sunday). No prices are shown: Trip.com has the live ones.
+export const STAY_CITIES = Object.freeze([['london', 'GB'], ['manchester', 'GB'], ['edinburgh', 'GB'], ['dublin', 'IE'], ['lisbon', 'PT'], ['porto', 'PT'], ['algarve', 'PT'],
+  ['barcelona', 'ES'], ['madrid', 'ES'], ['malaga', 'ES'], ['paris', 'FR'], ['amsterdam', 'NL'], ['rome', 'IT'], ['berlin', 'DE'], ['prague', 'CZ'], ['budapest', 'HU']]);
+const escHtml = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+const shortDay = iso => new Intl.DateTimeFormat('en-GB', {weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC'}).format(new Date(iso + 'T00:00:00Z'));
+export function stayCards(kind, {tripcomCity, tripcomHotelsUrl, tripcomPackageUrl}, {from, to}) {
+  const when = `${shortDay(from)} – ${shortDay(to)}`;
+  return STAY_CITIES.map(([slug, cc]) => {
+    const m = tripcomCity(cc, slug);
+    if (!m || (kind === 'packages' && (!m.airport || m.airport === 'LON'))) return '';
+    const url = kind === 'hotels' ? tripcomHotelsUrl(m, {from, to, adults: 2}) : tripcomPackageUrl(m, {from, to, adults: 2}, 'LON');
+    const name = m.name.replace(/\b\w/g, c => c.toUpperCase());
+    return `<a class="stay-card" href="${escHtml(url)}" target="_blank" rel="sponsored noopener"><img src="/assets/city-photos/pdf/${slug}.jpg" alt="" loading="lazy">
+<span class="stay-kind">${kind === 'hotels' ? 'Hotels' : 'Flight + Hotel'}</span><b>${escHtml(name)}</b>
+<small>${kind === 'hotels' ? `${when} · 2 adults` : `From London · ${when} · 2 adults`}</small><em>${kind === 'hotels' ? 'See hotels on Trip.com' : 'See packages on Trip.com'} ↗</em></a>`;
+  }).join('');
+}
+// Built after the showcase (the link builders load on demand), then handed to its panels first.
+// Popular rail routes. Trip.com's train search opens on the UK or Europe page; the visitor
+// enters the stations and date there (Trip.com has no stable link for a set route).
+export const TRAIN_ROUTES = Object.freeze([['London', 'Manchester', 'manchester', 'GB', '2h 10m'], ['London', 'Edinburgh', 'edinburgh', 'GB', '4h 20m'],
+  ['London', 'Paris', 'paris', 'EU', '2h 20m'], ['Manchester', 'Liverpool', 'liverpool', 'GB', '35m'], ['Madrid', 'Barcelona', 'barcelona', 'EU', '2h 30m'],
+  ['Lisbon', 'Porto', 'porto', 'EU', '2h 50m'], ['Paris', 'Amsterdam', 'amsterdam', 'EU', '3h 20m'], ['Rome', 'Florence', 'florence', 'EU', '1h 35m']]);
+export function trainCards() {
+  return TRAIN_ROUTES.map(([a, b, slug, zone, time]) => `<a class="stay-card" href="https://www.trip.com/trains/${zone === 'GB' ? 'uk' : 'europe'}/?Allianceid=11489066&amp;SID=336945869" target="_blank" rel="sponsored noopener"><img src="/assets/city-photos/pdf/${slug}.jpg" alt="" loading="lazy">
+<span class="stay-kind">Train · about ${time}</span><b>${escHtml(a)} → ${escHtml(b)}</b><small>${zone === 'GB' ? 'UK rail tickets, e-ticket on your phone' : 'European rail tickets, e-ticket on your phone'}</small><em>Search trains on Trip.com ↗</em></a>`).join('');
+}
+async function addStayRails(box) {
+  const panels = box?.querySelector('.pro-panels');
+  if (!panels || document.getElementById('rail-hotels')) return;
+  const [tp, fs] = await Promise.all([import('./trip-packages.js'), import('./flight-search.js?v=20261126-empty')]);
+  const dates = fs.initialFlightDates({});
+  const made = [['hotels', 'Hotels for the weekend.', 'Live prices and booking on Trip.com, for next weekend. Change dates and guests there.'],
+    ['packages', 'Flight + Hotel in one booking.', 'Flights from London plus a hotel, booked together on Trip.com. Change the airport there.'],
+    ['trains', 'Take the train.', 'City-centre to city-centre. Search times and buy rail tickets on Trip.com: enter your stations and date there.']].map(([kind, title, text]) => {
+    const s = document.createElement('section');
+    s.id = 'rail-' + kind; s.className = 'stay-rail'; s.dataset.proTab = kind;
+    s.innerHTML = `<div class="wrap"><div class="stay-head"><h3>${title}</h3><p>${text}</p></div><div class="stay-grid">${kind === 'trains' ? trainCards() : stayCards(kind, tp, {from: dates.depart, to: dates.back})}</div></div>`;
+    return s;
+  });
+  panels.prepend(...made);
+  box.querySelector('[data-pro="hotels"]')?.click();
+}
 
 function showcase(id, label, title, text, tabs) {
   const box = document.createElement('section');
@@ -57,8 +102,10 @@ if (typeof document !== 'undefined') {
     const more = showcase('more-ways-out', 'Pick your kind of fun', 'More ways out.', 'Comedy, family days, boat trips, sport and more. One tap to switch.', EXPLORE_TABS);
     anchor.before(more);
     if (slots[1]) anchor.before(slots[1]);
-    anchor.before(showcase('travel-stays', 'Getting there and staying over', 'Travel & stays.', 'Hotels, transfers, trains and tables for the city you are heading to. Booked with the named provider.', TRAVEL_TABS));
+    const travel = showcase('travel-stays', 'Getting there and staying over', 'Travel & stays.', 'Hotels, Flight + Hotel packages, trains, transfers and tables for the city you are heading to. Booked with the named provider.', TRAVEL_TABS);
+    anchor.before(travel);
     anchor.remove();
+    addStayRails(travel).catch(() => {});
     // Sales order on every screen: what's near, the top ten, the paid featured event, this weekend, then categories.
     const top10 = document.getElementById('top10'), feature = document.getElementById('big-feature'), weekend = document.getElementById('rail-weekend');
     if (top10 && feature) top10.after(feature);
