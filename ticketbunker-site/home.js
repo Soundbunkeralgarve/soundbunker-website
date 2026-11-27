@@ -23,7 +23,7 @@ const countryNames=new Intl.DisplayNames(['en'],{type:'region'}),countryName=c=>
 const POPULAR=['PT','GB','IE','ES','FR','NL','DE','IT','BE'];
 const ALL=[...new Set(CITY_PAGES.map(([, , country])=>country))];
 import {CITY_PAGES} from './city-places.js?v=20261122';
-import {mountPlaceFinder,mountNearButton,locate} from './place-finder.js?v=20261122';
+import {mountPlaceFinder,mountNearButton,locate} from './place-finder.js?v=20261127-place-search';
 import {nearestCities} from './city-coords.js?v=20261122';
 import {tripOptions,withClickRef} from './trip-partners.js?v=20261126-packages';
 import {weekendSection,weekendOrigin,WEEKEND_ORIGIN_KEY} from './weekend-packages.js?v=20261126-packages';
@@ -608,21 +608,8 @@ function render(){
  fillCityList();
 }
 
-// Every city page is a real link in the HTML (for people and search engines); here the
-// list becomes one country at a time, starting with the visitor's own.
-const showCountry=(()=>{
- const groups=[...document.querySelectorAll('.place-group')],bar=$('#place-countries');if(!groups.length)return ()=>{};
- const zone=(()=>{try{return Intl.DateTimeFormat().resolvedOptions().timeZone;}catch{return '';}})();
- const ZONE_CC={'Europe/London':'GB','Europe/Dublin':'IE','Europe/Lisbon':'PT','Atlantic/Madeira':'PT','Europe/Madrid':'ES','Atlantic/Canary':'ES','Europe/Paris':'FR','Europe/Rome':'IT','Europe/Berlin':'DE','Europe/Amsterdam':'NL','Europe/Brussels':'BE'};
- const has=cc=>groups.some(g=>g.dataset.cc===cc);
- let pick=[pathCity?.country,state.country,ZONE_CC[zone],'GB'].find(cc=>cc&&has(cc));
- const show=cc=>{pick=cc;groups.forEach(g=>{g.hidden=cc!=='all'&&g.dataset.cc!==cc;});bar.querySelectorAll('button').forEach(b=>{b.classList.toggle('active',b.dataset.cc===cc);b.setAttribute('aria-pressed',String(b.dataset.cc===cc));});};
- bar.innerHTML=groups.map(g=>`<button type="button" data-cc="${g.dataset.cc}">${esc(countryName(g.dataset.cc))}</button>`).join('')+'<button type="button" data-cc="all">All countries</button>';
- bar.onclick=e=>{const b=e.target.closest('[data-cc]');if(b)show(b.dataset.cc);};
- bar.hidden=false;show(pick);
- return show;
-})();
-mountPlaceFinder({showCountry});
+// Compact destination finder; independent of the hero's event-search filters.
+mountPlaceFinder({country:pathCity?.country||state.country,city:pathCity?.slug});
 // "Near me" in the search bar opens the closest city page.
 mountNearButton($('#ds-near'),{onFound:slug=>{const next=formState();location.href='/'+slug+planningQuery({...next,city:'',country:''})+'#city-hub';}});
 document.querySelectorAll('[data-place]').forEach(a=>a.onclick=e=>{e.preventDefault();const [c,p]=a.dataset.place.split('|');commitForm({country:c,city:p},{scroll:true});});

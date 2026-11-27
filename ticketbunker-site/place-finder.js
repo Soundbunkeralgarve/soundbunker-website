@@ -1,5 +1,4 @@
-// Finding a place: "Near me" (the browser's location, used only on this device to pick the
-// closest city pages) and a map of every city page across the UK and Europe.
+// A compact country/search/map finder using the same destinations as the city pages.
 import {CITY_PAGES} from './city-places.js?v=20261122';
 import {CITY_COORDS, nearestCities} from './city-coords.js?v=20261122';
 
@@ -7,53 +6,43 @@ const LEAFLET = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/';
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
 const bySlug = Object.fromEntries(CITY_PAGES.map(r => [r[0], r]));
 const label = slug => bySlug[slug][1].replace(/^the /, '');
-const km = n => n < 1 ? 'here' : Math.round(n) + ' km';
+const countryNames = new Intl.DisplayNames(['en'], {type: 'region'});
+const countryLabel = cc => countryNames.of(cc) || cc;
+const normalise = value => String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 
-// Ask the browser where the visitor is; nothing is sent to our servers.
+export function searchPlaces(query, country = '', limit = 5) {
+  const wanted = normalise(query);
+  if (!wanted) return [];
+  return CITY_PAGES.map((row, order) => {
+    const names = [row[0], row[1].replace(/^the /, ''), row[3]].map(normalise);
+    const rank = names.some(n => n === wanted) ? 0 : names.some(n => n.startsWith(wanted)) ? 1 : names.some(n => n.includes(wanted)) ? 2 : 3;
+    return {row, rank, order};
+  }).filter(({row, rank}) => rank < 3 && (!country || row[2] === country))
+    .sort((a, b) => a.rank - b.rank || a.order - b.order).slice(0, Math.max(0, limit)).map(({row}) => row);
+}
+
+// Request location only after the visitor presses Near me.
 export function locate() {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) return reject(new Error('unsupported'));
     navigator.geolocation.getCurrentPosition(p => resolve([p.coords.latitude, p.coords.longitude]), reject, {timeout: 12000, maximumAge: 6e5});
   });
 }
-const locateError = e => e?.code === 1 ? 'Location is switched off for this site. Pick a country below instead.' : 'We couldn’t find your location just now. Pick a country below instead.';
+const locateError = e => e?.code === 1 ? 'Location is switched off. Choose a country or search instead.' : 'We couldn’t find your location. Choose a country or search instead.';
 
 let leafletLoad;
 function loadLeaflet() {
-  leafletLoad ||= new Promise((resolve, reject) => {
+  if (window.L) return Promise.resolve(window.L);
+  if (!leafletLoad) leafletLoad = new Promise((resolve, reject) => {
     const css = document.createElement('link'); css.rel = 'stylesheet'; css.href = LEAFLET + 'leaflet.min.css'; document.head.append(css);
-    const js = document.createElement('script'); js.src = LEAFLET + 'leaflet.min.js'; js.onload = () => resolve(window.L); js.onerror = reject; document.head.append(js);
-  });
+    const js = document.createElement('script'); js.src = LEAFLET + 'leaflet.min.js';
+    js.onload = () => resolve(window.L); js.onerror = () => {js.remove(); css.remove(); reject(new Error('Map unavailable'));};
+    document.head.append(js);
+  }).catch(error => {leafletLoad = null; throw error;});
   return leafletLoad;
 }
 
-let map, markers = {};
-async function openMap(box) {
-  box.hidden = false;
-  if (map) { map.invalidateSize(); return map; }
-  box.innerHTML = '<p class="place-map-loading">Loading map…</p>';
-  const L = await loadLeaflet();
-  box.innerHTML = '';
-  map = L.map(box, {scrollWheelZoom: false, worldCopyJump: false, minZoom: 3, maxZoom: 11}).setView([50, 6], 4);
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
-  for (const [slug, at] of Object.entries(CITY_COORDS)) {
-    if (!bySlug[slug]) continue;
-    markers[slug] = L.circleMarker(at, {radius: matchMedia('(max-width: 560px)').matches ? 5 : 7, weight: 2, color: '#04110c', fillColor: '#2ee6a6', fillOpacity: .95})
-      .bindTooltip(label(slug), {direction: 'top', offset: [0, -6]})
-      .bindPopup(`<a class="map-pop" href="/${slug}"><b>${esc(label(slug))}</b><span>See everything on →</span></a>`)
-      .addTo(map);
-  }
-  // Open framed on every city, from the Canaries to Cyprus, whatever the screen size.
-  map.fitBounds(L.latLngBounds(Object.values(CITY_COORDS)), {padding: [16, 16]});
-  return map;
-}
-
-function nearHtml(list) {
-  return 'Closest to you: ' + list.map(({slug, km: d}) => `<a href="/${slug}">${esc(label(slug))} <small>${km(d)}</small></a>`).join(' ');
-}
-
-// Hero "Near me": jump straight to the closest city page.
+// Hero Near me continues to open the closest city page.
 export function mountNearButton(button, {onFound} = {}) {
   if (!button) return;
   if (!navigator.geolocation) { button.hidden = true; return; }
@@ -65,25 +54,133 @@ export function mountNearButton(button, {onFound} = {}) {
   };
 }
 
-// "Pick a country. Pick a city." tools: Near me + map.
-export function mountPlaceFinder({showCountry} = {}) {
-  const near = document.getElementById('place-near'), toggle = document.getElementById('place-map-btn'), out = document.getElementById('place-near-out'), box = document.getElementById('place-map');
-  if (!toggle || !box) return;
-  toggle.onclick = async () => {
-    const opening = box.hidden;
-    toggle.setAttribute('aria-expanded', String(opening)); toggle.textContent = opening ? 'Hide map' : 'Show on map';
-    if (!opening) { box.hidden = true; return; }
-    try { await openMap(box); } catch { box.innerHTML = '<p class="place-map-loading">The map couldn’t load. Use the country list below.</p>'; }
+export function mountPlaceFinder({country: initialCountry = '', city: initialCity = ''} = {}) {
+  const root = document.getElementById('all-places');
+  if (!root) return;
+  const form = root.querySelector('#place-search-form'), country = root.querySelector('#place-country'), input = root.querySelector('#place-query');
+  const results = root.querySelector('#place-results'), selection = root.querySelector('#place-selection');
+  const near = root.querySelector('#place-near'), toggle = root.querySelector('#place-map-btn'), out = root.querySelector('#place-near-out'), box = root.querySelector('#place-map');
+  if (!form || !country || !input || !results || !selection || !toggle || !box) return;
+  const zoneCountries = {'Europe/London':'GB','Europe/Dublin':'IE','Europe/Lisbon':'PT','Atlantic/Madeira':'PT','Europe/Madrid':'ES','Atlantic/Canary':'ES','Europe/Paris':'FR','Europe/Rome':'IT','Europe/Berlin':'DE','Europe/Amsterdam':'NL','Europe/Brussels':'BE'};
+  let zone = ''; try {zone = Intl.DateTimeFormat().resolvedOptions().timeZone;} catch {}
+  country.value = [initialCountry, zoneCountries[zone], 'GB'].find(cc => cc && [...country.options].some(o => o.value === cc)) || '';
+  let choices = [], active = -1, selected = null, selectedAt = null, map, mapLoading, revision = 0, interaction = 0, locationPin;
+  const markers = {};
+
+  function hideResults() {
+    results.hidden = true; input.setAttribute('aria-expanded', 'false'); input.removeAttribute('aria-activedescendant'); active = -1; choices = [];
+  }
+  function showResults(rows) {
+    choices = rows; active = -1;
+    results.innerHTML = rows.map(([slug, , cc], i) => `<li id="place-option-${i}" role="option" aria-selected="false" data-place-slug="${slug}"><span>${esc(label(slug))}</span><small>${esc(countryLabel(cc))}</small></li>`).join('');
+    results.hidden = !rows.length; input.setAttribute('aria-expanded', String(Boolean(rows.length))); input.removeAttribute('aria-activedescendant');
+  }
+  function showSelection(row, nearby = false) {
+    const [slug, , cc] = row;
+    selection.hidden = false;
+    selection.innerHTML = `<div><b>${esc(nearby ? 'Your area' : label(slug))}</b><span>${esc(nearby ? 'Closest destination: ' + label(slug) : countryLabel(cc))}</span></div><a href="/${slug}">${nearby ? 'See what’s on nearby' : 'See what’s on'}</a>`;
+  }
+  async function getMap() {
+    if (map) return map;
+    if (!mapLoading) mapLoading = (async () => {
+      box.innerHTML = '<p class="place-map-loading">Loading map…</p>';
+      const L = await loadLeaflet(); box.innerHTML = '';
+      map = L.map(box, {scrollWheelZoom: false, minZoom: 3, maxZoom: 13}).setView([50, 6], 4);
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
+      for (const [slug, at] of Object.entries(CITY_COORDS)) {
+        if (!bySlug[slug]) continue;
+        markers[slug] = L.circleMarker(at, {radius: 6, weight: 2, color: '#04110c', fillColor: '#00e0a6', fillOpacity: .95})
+          .bindTooltip(label(slug), {direction: 'top', offset: [0, -6]})
+          .bindPopup(`<a class="map-pop" href="/${slug}"><b>${esc(label(slug))}</b><span>See what’s on</span></a>`)
+          .on('click', () => choose(bySlug[slug]));
+      }
+      return map;
+    })().catch(error => {mapLoading = null; throw error;});
+    return mapLoading;
+  }
+  function frameMap() {
+    const rows = CITY_PAGES.filter(row => !country.value || row[2] === country.value);
+    const visible = new Set(rows.map(row => row[0]));
+    for (const [slug, marker] of Object.entries(markers)) {
+      if (visible.has(slug)) {if (!map.hasLayer(marker)) marker.addTo(map);}
+      else if (map.hasLayer(marker)) map.removeLayer(marker);
+      marker.setRadius(selected?.[0] === slug ? 10 : 6);
+    }
+    if (locationPin) {map.removeLayer(locationPin); locationPin = null;}
+    map.invalidateSize();
+    if (selectedAt) {
+      map.setView(selectedAt, 11);
+      if (selected && selectedAt === CITY_COORDS[selected[0]]) markers[selected[0]]?.openPopup();
+      else locationPin = window.L.circleMarker(selectedAt, {radius: 9, weight: 3, color: '#fff', fillColor: '#00e0a6', fillOpacity: 1}).bindTooltip('Your area').addTo(map);
+    } else {
+      map.closePopup();
+      const points = rows.map(row => CITY_COORDS[row[0]]).filter(Boolean);
+      if (points.length === 1) map.setView(points[0], 7);
+      else if (points.length) map.fitBounds(window.L.latLngBounds(points), {padding: [24, 24], maxZoom: 7});
+    }
+  }
+  async function showMap() {
+    const current = ++revision;
+    box.hidden = false; toggle.setAttribute('aria-expanded', 'true'); toggle.textContent = 'Hide map';
+    try {await getMap(); if (current === revision && !box.hidden) frameMap();}
+    catch {if (current === revision) box.innerHTML = '<p class="place-map-loading">The map couldn’t load. You can still search and open a destination above.</p>';}
+  }
+  function choose(row, {at, nearby = false} = {}) {
+    interaction++;
+    selected = row; selectedAt = at || CITY_COORDS[row[0]]; country.value = row[2];
+    input.value = label(row[0]); hideResults(); input.blur(); showSelection(row, nearby);
+    out.textContent = nearby ? 'Map centred on your area.' : 'Map centred on ' + label(row[0]) + '.';
+    showMap();
+  }
+  country.addEventListener('change', () => {
+    interaction++;
+    selected = null; selectedAt = null; input.value = ''; hideResults(); selection.hidden = true;
+    out.textContent = country.value ? 'Showing destinations in ' + countryLabel(country.value) + '.' : 'Showing all destinations.';
+    showMap();
+  });
+  input.addEventListener('input', () => {interaction++; out.textContent = ''; selected = null; selectedAt = null; selection.hidden = true; showResults(searchPlaces(input.value, country.value));});
+  input.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {hideResults(); return;}
+    if (!['ArrowDown', 'ArrowUp'].includes(event.key)) return;
+    if (!choices.length) showResults(searchPlaces(input.value, country.value));
+    if (!choices.length) return;
+    event.preventDefault(); results.hidden = false; input.setAttribute('aria-expanded', 'true');
+    active = active < 0 ? (event.key === 'ArrowDown' ? 0 : choices.length - 1) : (active + (event.key === 'ArrowDown' ? 1 : -1) + choices.length) % choices.length;
+    [...results.children].forEach((li, i) => li.setAttribute('aria-selected', String(i === active)));
+    input.setAttribute('aria-activedescendant', 'place-option-' + active);
+    const option = results.children[active];
+    if (option.offsetTop < results.scrollTop) results.scrollTop = option.offsetTop;
+    else if (option.offsetTop + option.offsetHeight > results.scrollTop + results.clientHeight) results.scrollTop = option.offsetTop + option.offsetHeight - results.clientHeight;
+  });
+  results.addEventListener('pointerdown', event => {if (event.target.closest('[data-place-slug]')) event.preventDefault();});
+  results.addEventListener('click', event => {const option = event.target.closest('[data-place-slug]'); if (option) choose(bySlug[option.dataset.placeSlug]);});
+  root.addEventListener('focusout', event => {if (!root.querySelector('.place-search-field').contains(event.relatedTarget)) hideResults();});
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    if (active >= 0 && choices[active]) {choose(choices[active]); return;}
+    const matches = searchPlaces(input.value, country.value);
+    if (!input.value.trim()) {hideResults(); showMap(); return;}
+    const exact = matches.find(row => [row[0], row[1].replace(/^the /, ''), row[3]].some(value => normalise(value) === normalise(input.value)));
+    if (exact || matches.length === 1) choose(exact || matches[0]);
+    else if (matches.length) {showResults(matches); out.textContent = 'Choose a destination below to pinpoint it.';}
+    else {hideResults(); out.textContent = 'No matching destination' + (country.value ? ' in ' + countryLabel(country.value) : '') + '. Try another town, city or region.';}
+  });
+  toggle.onclick = () => {
+    interaction++;
+    if (box.hidden) showMap();
+    else {revision++; box.hidden = true; toggle.setAttribute('aria-expanded', 'false'); toggle.textContent = 'Show map';}
   };
-  if (!navigator.geolocation) { near.hidden = true; return; }
-  near.onclick = async () => {
-    near.disabled = true; out.textContent = 'Finding the closest places…';
-    try {
-      const at = await locate(), list = nearestCities(at, 3);
-      out.innerHTML = nearHtml(list);
-      showCountry?.(bySlug[list[0].slug][2]);
-      if (map) { map.setView(at, 8); markers[list[0].slug]?.openPopup(); }
-    } catch (e) { out.textContent = locateError(e); }
-    finally { near.disabled = false; }
-  };
+  if (initialCity && bySlug[initialCity]) {
+    selected = bySlug[initialCity]; selectedAt = CITY_COORDS[initialCity]; input.value = label(initialCity); showSelection(selected);
+  }
+  if (near) {
+    near.hidden = !navigator.geolocation;
+    near.onclick = async () => {
+      const request = ++interaction;
+      near.disabled = true; out.textContent = 'Finding your area…';
+      try {const at = await locate(), [best] = nearestCities(at, 1); if (request === interaction) choose(bySlug[best.slug], {at, nearby: true});}
+      catch (error) {if (request === interaction) out.textContent = locateError(error);}
+      finally {near.disabled = false;}
+    };
+  }
 }
