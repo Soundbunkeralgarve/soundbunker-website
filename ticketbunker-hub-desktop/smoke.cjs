@@ -1,11 +1,15 @@
 console.log('Smoke script loading');
 // Exercises the real desktop bootstrap, local renderer, bundled Node/SQLite and worker IPC.
 const {app}=require('electron');
-const {mkdtempSync}=require('node:fs');
+const {mkdtempSync,mkdirSync}=require('node:fs');
 const {tmpdir}=require('node:os');
 const path=require('node:path');
 const {startDesktop}=require('./main.cjs');
-const directory=mkdtempSync(path.join(tmpdir(),'tb-electron-smoke-'));
+app.setName('TicketBunker Check-in Hub');
+// A MAS rehearsal stays inside its container, in a fresh folder separate from the live ledger.
+const smokeRoot=process.mas?app.getPath('userData'):tmpdir();
+if(process.mas)mkdirSync(smokeRoot,{recursive:true,mode:0o700});
+const directory=mkdtempSync(path.join(smokeRoot,'tb-electron-smoke-'));
 let success=false;
 const timeout=setTimeout(()=>{console.error('Hub desktop did not complete its smoke test.');app.exit(1);},20000);
 app.on('will-quit',event=>{
