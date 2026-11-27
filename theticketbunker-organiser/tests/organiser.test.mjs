@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {isVipAllocation, eventInput, pricedTicketRows, publishState, groupEvents, statusLabel, localStamp, stampDate, reportStats, activeStaff, guestRoster, organiserApi, publicUrl, KINDS} from '../lib/organiser.js';
+import {isVipAllocation, eventInput, pricedTicketRows, publishState, groupEvents, statusLabel, localStamp, stampDate, venueStamp, venueDate, eventTimeZone, reportStats, activeStaff, guestRoster, organiserApi, publicUrl, KINDS} from '../lib/organiser.js';
+import {localEventInstant} from '../../api/lib/events-time.js';
 
 const NOW = Date.parse('2026-11-22T10:00:00Z');
 const form = (over = {}) => ({title: 'Sunset Sessions', kind: 'club', venue: 'SoundBunker, Loulé', venueCity: 'Loulé', headlineArtist: '',
@@ -25,6 +26,34 @@ test('event details are checked like the web portal and sent as venue wall-clock
   assert.equal(isVipAllocation({artist_email: 'vip@theticketbunker.com'}), true);
   const d2 = stampDate('2026-12-05T20:30');
   assert.equal(localStamp(d2), '2026-12-05T20:30');
+});
+
+test('editing a draft preserves venue time and the API instant across phone timezones and daylight saving', () => {
+  assert.equal(eventTimeZone(null, {country_code: 'GB'}), 'Europe/London');
+  assert.equal(eventTimeZone(null, {country_code: 'PT'}), 'Europe/Lisbon');
+  assert.equal(eventTimeZone({venue_timezone: 'Europe/London'}, {country_code: 'PT'}), 'Europe/London');
+  for (const zone of ['Europe/London', 'Europe/Lisbon']) {
+    for (const [instant, wall] of [
+      ['2027-01-01T20:30:00.000Z', '2027-01-01T20:30'],
+      ['2027-07-01T19:30:00.000Z', '2027-07-01T20:30'],
+      ['2027-03-28T00:30:00.000Z', '2027-03-28T00:30'],
+      ['2027-03-28T02:30:00.000Z', '2027-03-28T03:30'],
+      ['2027-10-31T01:30:00.000Z', '2027-10-31T01:30']
+    ]) {
+      assert.equal(venueStamp(instant, zone), wall);
+      assert.equal(venueDate(wall, zone).toISOString(), instant);
+      const end = new Date(Date.parse(instant) + 5 * 3600000).toISOString();
+      const vip = new Date(Date.parse(instant) - 48 * 3600000).toISOString();
+      const payload = eventInput(form({startsAt: venueStamp(instant, zone), endsAt: venueStamp(end, zone), vipEarlyAccessUntil: venueStamp(vip, zone)}), 'draft1', zone);
+      assert.equal(payload.startsAt, wall);
+      assert.equal(localEventInstant(payload.startsAt, zone), instant);
+      assert.equal(localEventInstant(payload.endsAt, zone), end);
+      assert.equal(localEventInstant(payload.vipEarlyAccessUntil, zone), vip);
+    }
+    assert.equal(venueDate('2027-03-28T01:30', zone), null);
+    assert.throws(() => eventInput(form({startsAt: '2027-03-28T01:30', endsAt: '2027-03-28T04:30'}), 'draft1', zone), e => e.field === 'startsAt');
+  }
+  assert.equal(venueStamp('bad', 'Europe/London'), '');
 });
 
 test('ticket types: only priced rows, 1.00–100,000.00, whole quantities up to 2,000, unique names', () => {

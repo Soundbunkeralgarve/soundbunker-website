@@ -174,3 +174,19 @@ test('durable multi-door rehearsal survives lost replies, restart and multi-page
   t.diagnostic('300 durable admissions across 20 encrypted clients, with reply loss and restart: '+Math.round(performance.now()-started)+' ms in this test environment; not a physical-device latency measurement.');
  }finally{if(x)await x.close();restored?.close();rmSync(dir,{recursive:true,force:true});}
 });
+
+test('offline brand fonts are served locally while unknown files remain private',async()=>{
+ const x=await network();try{
+  const base='http://127.0.0.1:'+x.servers.admin.address().port;
+  for(const name of ['DMSans_400Regular.ttf','DMSans_700Bold.ttf','BarlowCondensed_700Bold.ttf']){
+   const response=await fetch(base+'/fonts/'+name);
+   assert.equal(response.status,200);assert.equal(response.headers.get('content-type'),'font/ttf');
+   assert.match(response.headers.get('content-security-policy'),/default-src 'self'/);
+   const bytes=new Uint8Array(await response.arrayBuffer());assert.ok(bytes.byteLength>1000);
+   assert.deepEqual([...bytes.slice(0,4)],[0,1,0,0]);
+  }
+  assert.equal((await fetch(base+'/fonts/unknown.ttf')).status,403);
+  assert.equal((await fetch(base+'/fonts/DMSans-OFL.txt')).status,403);
+  assert.equal((await fetch(base+'/package.json')).status,403);
+ }finally{await x.close();}
+});

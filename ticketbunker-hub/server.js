@@ -48,8 +48,8 @@ export function createHubServers({store,cloud,addresses=[],lanPort=8787,adminPor
   if(!allowedHosts.has(req.headers.host)||!['127.0.0.1','::ffff:127.0.0.1','::1'].includes(req.socket.remoteAddress))return reply(res,403,{error:'Local access only'});
   res.setHeader('Content-Security-Policy',"default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'");
   res.setHeader('Referrer-Policy','no-referrer');
-  if(req.method==='GET'&&['/','/app.js','/styles.css','/brand.png'].includes(req.url)){
-   const file=req.url==='/'?'index.html':req.url.slice(1);res.writeHead(200,{'content-type':file.endsWith('.png')?'image/png':file.endsWith('.js')?'application/javascript':file.endsWith('.css')?'text/css':'text/html','cache-control':'no-store'});res.end(await readFile(new URL('./public/'+file,import.meta.url)));return;
+  if(req.method==='GET'&&['/','/app.js','/styles.css','/brand.png','/fonts/DMSans_400Regular.ttf','/fonts/DMSans_700Bold.ttf','/fonts/BarlowCondensed_700Bold.ttf'].includes(req.url)){
+   const file=req.url==='/'?'index.html':req.url.slice(1);res.writeHead(200,{'content-type':file.endsWith('.ttf')?'font/ttf':file.endsWith('.png')?'image/png':file.endsWith('.js')?'application/javascript':file.endsWith('.css')?'text/css':'text/html','cache-control':'no-store'});res.end(await readFile(new URL('./public/'+file,import.meta.url)));return;
   }
   if(req.headers.authorization!=='Bearer '+adminKey||req.headers.origin&&req.headers.origin!==`http://${req.headers.host}`)return reply(res,403,{error:'Open the private organiser link shown in the hub terminal.'});
   try{

@@ -4,7 +4,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {C, F, s} from '../theme.js';
 
 // Big, easy-to-tap buttons: at least 56pt tall, full width unless told otherwise.
-export function Button({title, onPress, kind = 'primary', icon, disabled, busy, small, style, accessibilityLabel, lines = 1}) {
+export function Button({title, onPress, kind = 'primary', icon, disabled, busy, small, style, accessibilityLabel, lines = 2}) {
   const primary = kind === 'primary', ghost = kind === 'ghost';
   return <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel || title} disabled={disabled || busy} onPress={onPress}
     style={({pressed}) => [b.base, small && b.small, primary ? b.primary : ghost ? b.ghost : b.secondary, (disabled || busy) && {opacity: 0.5}, pressed && {opacity: 0.8, transform: [{scale: 0.99}]}, style]}>
@@ -34,7 +34,7 @@ export function Empty({title, text, action}) {
   </View>;
 }
 const b = StyleSheet.create({
-  base: {minHeight: 58, borderRadius: 999, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10},
+  base: {minHeight: 58, borderRadius: 999, paddingHorizontal: 20, paddingVertical: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10},
   small: {minHeight: 48, borderRadius: 999, paddingHorizontal: 16},
   primary: {backgroundColor: C.teal, shadowColor: C.teal, shadowOpacity: 0.4, shadowRadius: 16, shadowOffset: {width: 0, height: 6}, elevation: 6},
   secondary: {backgroundColor: C.cardHi, borderWidth: 1, borderColor: C.line},

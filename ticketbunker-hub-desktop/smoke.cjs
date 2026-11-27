@@ -27,7 +27,7 @@ startDesktop({showWindow:false,onStage:stage=>console.log('Desktop stage: '+stag
   const network=await window.webContents.executeJavaScript('window.hubNetwork.status()');
   if(network.platform!==process.platform||typeof network.available!=='boolean'||network.state!=='idle')throw Error('Desktop network bridge did not return a safe first-run state.');
   const macGuide=await window.webContents.executeJavaScript(`({visible:!document.getElementById('macWifiSetup').hidden,label:document.getElementById('prepareMac').textContent})`);
-  if(macGuide.visible!==(process.platform==='darwin')||macGuide.label!=='Prepare Mac Wi-Fi')throw Error('The Mac setup guide did not render correctly.');
+  if(macGuide.visible!==(process.platform==='darwin'&&!process.mas)||macGuide.label!=='Prepare Mac Wi-Fi')throw Error('The Mac setup guide did not render correctly.');
   success=true;await stop();
  }catch(e){console.error(e.message);await stop();}
 }});
