@@ -10,12 +10,14 @@ test('portal links carry only a valid event ID, never commands or credentials',(
 });
 
 test('App Store ledgers remain inside the container and never reopen direct-download data implicitly',()=>{
- const base={home:'/Users/promoter',userData:'/Users/promoter/Library/Containers/pt.soundbunker.ticketbunkerhub/Data/Library/Application Support/TicketBunker Check-in Hub'};
- assert.equal(desktopDataDirectory(base),'/Users/promoter/.ticketbunker-hub');
- assert.equal(desktopDataDirectory({...base,override:'/tmp/hub-rehearsal'}),'/tmp/hub-rehearsal');
- assert.equal(desktopDataDirectory({...base,mas:true}),base.userData+'/ledger');
- assert.equal(desktopDataDirectory({...base,mas:true,override:base.userData+'/rehearsal'}),base.userData+'/rehearsal');
- for(const override of ['/Users/promoter/.ticketbunker-hub',base.userData+'/../old-ledger','/tmp/rehearsal'])
+ const path=require('node:path'),home=path.resolve('promoter-home');
+ const base={home,userData:path.join(home,'Library','Containers','pt.soundbunker.ticketbunkerhub','Data','Library','Application Support','TicketBunker Check-in Hub')};
+ const rehearsal=path.resolve('hub-rehearsal');
+ assert.equal(desktopDataDirectory(base),path.join(home,'.ticketbunker-hub'));
+ assert.equal(desktopDataDirectory({...base,override:rehearsal}),rehearsal);
+ assert.equal(desktopDataDirectory({...base,mas:true}),path.join(base.userData,'ledger'));
+ assert.equal(desktopDataDirectory({...base,mas:true,override:path.join(base.userData,'rehearsal')}),path.join(base.userData,'rehearsal'));
+ for(const override of [path.join(home,'.ticketbunker-hub'),path.resolve(base.userData,'..','old-ledger'),rehearsal])
   assert.throws(()=>desktopDataDirectory({...base,mas:true,override}),/inside its app container/);
  assert.throws(()=>desktopDataDirectory({mas:true,home:base.home}),/container path is unavailable/);
 });
