@@ -39,3 +39,21 @@ test('closing the Hub releases only its own helper and clears join credentials',
  const x=setup(),start=x.controller.start(),child=x.children[0];child.stdout.emit('data',Buffer.from('{"state":"started"}\n'));await start;
  x.controller.dispose();assert.equal(child.killed,true);assert.equal(x.controller.status().password,'');assert.equal(x.controller.status().state,'idle');
 });
+
+test('App Store networking works without bundling or invoking the privileged Mac helper',async()=>{
+ const fs=require('node:fs'),path=require('node:path'),os=require('node:os');
+ const directory=fs.mkdtempSync(path.join(os.tmpdir(),'tb-mas-network-'));
+ try{
+  // The App Store package deliberately omits mac-network.cjs.
+  fs.copyFileSync(path.join(__dirname,'../network.cjs'),path.join(directory,'network.cjs'));
+  const {createNetworkController:createStoreNetwork}=require(path.join(directory,'network.cjs'));
+  let settings=0,privileged=0;
+  const controller=createStoreNetwork({platform:'darwin',mas:true,resourceRoot:directory,
+   openSettings:async()=>{settings++;},confirmMacSetup:()=>{privileged++;},launch:()=>{throw Error('Unexpected subprocess');}});
+  assert.equal(controller.status().macSetup,null);assert.equal(controller.status().available,false);
+  await assert.rejects(controller.prepareMac(),/App Store edition/);
+  await assert.rejects(controller.start());
+  await controller.settings();assert.equal(settings,1);assert.equal(privileged,0);
+  controller.dispose();assert.equal(controller.status().state,'idle');
+ }finally{fs.rmSync(directory,{recursive:true,force:true});}
+});

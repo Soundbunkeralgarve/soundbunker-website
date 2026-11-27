@@ -1,62 +1,129 @@
-import React, {useMemo, useState} from 'react';
-import {View, Text, TextInput, SectionList, Pressable, StyleSheet, Alert, useWindowDimensions} from 'react-native';
+import React, {useMemo, useRef, useState} from 'react';
+import {View, Text, TextInput, ScrollView, FlatList, Modal, Pressable, StyleSheet, Alert, Keyboard, useWindowDimensions} from 'react-native';
 import {WebView} from 'react-native-webview';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {C, F, s, WIDE} from '../theme.js';
-import {StatusShade, Button, Chip, BrandHeader} from '../components/ui.js';
-import {citiesByCountry, cityRow} from '../../lib/listings.js';
-import {CITY_COORDS, nearestCities, cityBySlug, placeText} from '../../lib/site.js';
+import {StatusShade, Button, BrandHeader} from '../components/ui.js';
+import {citiesByCountry, countryName, cityRow} from '../../lib/listings.js';
+import {nearestCities, cityBySlug} from '../../lib/site.js';
+import {countryPlaces, matchingPlaces, submittedPlace, mapDestination} from '../../lib/places.js';
 import {cityMapHtml} from '../../lib/mapHtml.js';
 import {locate} from '../state.js';
 
-const ALL = citiesByCountry().map(g => ({...g, cities: g.cities.map(c => ({...c, at: CITY_COORDS[c.slug]}))}));
-const MAP_HTML = cityMapHtml(ALL.flatMap(g => g.cities));
+const COUNTRIES = citiesByCountry().sort((a, b) => a.title.localeCompare(b.title));
 
-// Pick a country. Pick a city. Or let the phone find the closest ones.
 export default function PlacesScreen({navigation}) {
   const insets = useSafeAreaInsets(), {width} = useWindowDimensions(), wide = width >= WIDE;
-  const [q, setQ] = useState(''), [map, setMap] = useState(false), [near, setNear] = useState(null), [busy, setBusy] = useState(false);
-  const open = slug => navigation.navigate('City', cityRow(cityBySlug(slug)));
-  const sections = useMemo(() => {
-    const want = placeText(q);
-    return ALL.map(g => ({title: g.title, data: g.cities.filter(c => !want || placeText(c.name).includes(want) || placeText(g.title).includes(want))}))
-      .filter(g => g.data.length);
-  }, [q]);
-  async function findNear() {
-    setBusy(true);
-    try { setNear(nearestCities(await locate(), 3).map(n => ({...n, name: cityBySlug(n.slug)[1]}))); }
-    catch (e) { Alert.alert('Near me', e.message); }
-    finally { setBusy(false); }
+  const [country, setCountry] = useState(''), [q, setQ] = useState(''), [selected, setSelected] = useState(null);
+  const [point, setPoint] = useState(null), [nearby, setNearby] = useState(false), [showCountries, setShowCountries] = useState(false);
+  const [busy, setBusy] = useState(false), [mapError, setMapError] = useState(false);
+  const interaction = useRef(0);
+  const choices = useMemo(() => selected ? [] : matchingPlaces(q, country), [q, country, selected]);
+  const pins = useMemo(() => countryPlaces(country), [country]);
+  const mapHtml = useMemo(() => cityMapHtml(pins, point, 11, {selectedSlug: selected?.slug, location: nearby ? point : null}), [pins, point, selected, nearby]);
+  const showMap = Boolean(country || selected);
+
+  function chooseCountry(code) {
+    interaction.current++;
+    setCountry(code); setQ(''); setSelected(null); setPoint(null); setNearby(false); setMapError(false); setShowCountries(false);
+    Keyboard.dismiss();
   }
-  const header = <View style={{gap: 12, paddingBottom: 8}}>
+  function choose(city, at = city.at, isNear = false) {
+    interaction.current++;
+    setCountry(city.country); setQ(city.name.replace(/^the /, '')); setSelected(city); setPoint(at); setNearby(isNear); setMapError(false);
+    Keyboard.dismiss();
+  }
+  function changeQuery(value) {
+    interaction.current++;
+    setQ(value); setSelected(null); setPoint(null); setNearby(false);
+  }
+  function search() {
+    const match = submittedPlace(q, country);
+    if (match) choose(match);
+    else Keyboard.dismiss();
+  }
+  async function findNear() {
+    const request = ++interaction.current;
+    setBusy(true);
+    try {
+      const at = await locate({fresh: true}), [best] = nearestCities(at, 1);
+      if (request === interaction.current && best) choose({...cityRow(cityBySlug(best.slug)), at}, at, true);
+    } catch (error) {
+      if (request === interaction.current) Alert.alert('Near me', error.message);
+    } finally { setBusy(false); }
+  }
+  function mapChoice(event) {
+    const city = mapDestination(event.nativeEvent.data, country);
+    if (city) choose(city);
+  }
+
+  return <View style={s.screen}><ScrollView style={s.screen} keyboardShouldPersistTaps="handled"
+    contentContainerStyle={{paddingTop: insets.top + 8, paddingHorizontal: 18, paddingBottom: 40}}>
     <BrandHeader/>
-        <Text style={[s.h1, {textTransform: 'uppercase'}]}>Places</Text>
-    <Text style={s.muted}>153 cities, islands and regions across the UK, Ireland and Europe.</Text>
-    <View style={[{gap: 10}, wide && {flexDirection: 'row'}]}>
-      <Button title="Near me" icon="◎" onPress={findNear} busy={busy} style={wide && {flex: 1}}/>
-      <Button title={map ? 'Show the list' : 'Show the map'} icon={map ? '☰' : '🗺'} kind="ghost" onPress={() => setMap(!map)} style={wide && {flex: 1}}/>
+    <Text style={[s.h1, {textTransform: 'uppercase'}]}>Find your place.</Text>
+    <Text style={[s.muted, {marginTop: 10, marginBottom: 24}]}>Choose a country, search a city or region, then see what’s on.</Text>
+    <View style={p.panel}>
+      <Text style={p.label}>Country</Text>
+      <Pressable accessibilityRole="button" accessibilityLabel={`Country: ${country ? countryName(country) : 'Choose a country'}`}
+        accessibilityState={{expanded: showCountries}} onPress={() => {interaction.current++; setShowCountries(true);}}
+        style={({pressed}) => [s.input, p.select, pressed && {borderColor: C.teal}]}>
+        <Text style={p.selectText}>{country ? countryName(country) : 'Choose a country'}</Text><Text style={p.arrow}>⌄</Text>
+      </Pressable>
+      <Text style={[p.label, {marginTop: 18}]}>City or region</Text>
+      <TextInput style={s.input} placeholder="Search a city, island or region" placeholderTextColor={C.muted} value={q} onChangeText={changeQuery}
+        returnKeyType="search" onSubmitEditing={search} autoCorrect={false} accessibilityLabel="Search a city, island or region"/>
+      {choices.length ? <View style={p.results}>{choices.map(city => <Pressable key={city.slug} accessibilityRole="button"
+        accessibilityLabel={`${city.name}, ${countryName(city.country)}`} onPress={() => choose(city)}
+        style={({pressed}) => [p.result, pressed && {backgroundColor: C.cardHi}]}>
+        <View style={{flex: 1}}><Text style={p.name}>{city.name.replace(/^the /, '')}</Text><Text style={s.muted}>{countryName(city.country)}</Text></View><Text style={p.arrow}>→</Text>
+      </Pressable>)}</View> : q.trim() && !selected ? <Text accessibilityLiveRegion="polite" style={[s.muted, {marginTop: 12}]}>No matching destination{country ? ` in ${countryName(country)}` : ''}. Try another city or region.</Text> : null}
+      <View style={[p.actions, wide && {flexDirection: 'row'}]}>
+        <Button title="Search" onPress={search} disabled={!q.trim()} style={wide && {flex: 1}}/>
+        <Button title="Near me" icon="◎" onPress={findNear} busy={busy} kind="ghost" style={wide && {flex: 1}}/>
+      </View>
     </View>
-    {near ? <View style={p.near}>
-      <Text style={s.eyebrow}>Closest to you</Text>
-      {near.map(n => <Button key={n.slug} kind="secondary" title={`${n.name} · ${n.km < 10 ? n.km.toFixed(1) : Math.round(n.km)} km`} onPress={() => open(n.slug)}/>)}
+    {showMap ? <View style={p.mapPanel}>
+      <Text accessibilityLiveRegion="polite" style={[s.eyebrow, {padding: 16}]}>{nearby ? 'Your area' : selected ? selected.name.replace(/^the /, '') : countryName(country)}</Text>
+      {mapError ? <Text style={[s.muted, {padding: 20}]}>The map couldn’t load. You can still search and choose a destination above.</Text> : <WebView
+        style={{height: wide ? 420 : 300, backgroundColor: C.bg}} originWhitelist={['*']} source={{html: mapHtml, baseUrl: 'https://theticketbunker.com/'}}
+        onMessage={mapChoice} onError={() => setMapError(true)} onHttpError={() => setMapError(true)} nestedScrollEnabled setSupportMultipleWindows={false}
+        accessibilityLabel={nearby ? 'Map centred on your area' : selected ? `Map centred on ${selected.name}` : `Destinations in ${countryName(country)}`}/>}
+    </View> : <Text style={[s.muted, {marginTop: 20}]}>Choose a country to explore the map, or use Near me.</Text>}
+    {selected ? <View style={p.selection}>
+      <Text style={s.h3}>{nearby ? 'Your area' : selected.name.replace(/^the /, '')}</Text>
+      <Text style={s.muted}>{nearby ? `Closest destination: ${selected.name.replace(/^the /, '')}` : countryName(selected.country)}</Text>
+      <Button title={nearby ? 'See what’s on nearby' : 'See what’s on'} onPress={() => navigation.navigate('City', selected)} style={{marginTop: 14}}/>
     </View> : null}
-    {!map ? <TextInput style={s.input} placeholder="Search places" placeholderTextColor={C.muted} value={q} onChangeText={setQ} autoCorrect={false} accessibilityLabel="Search places"/> : null}
+  </ScrollView><StatusShade/>
+    <Modal visible={showCountries} transparent animationType="slide" onRequestClose={() => setShowCountries(false)}>
+      <View style={[p.modalBackdrop, {paddingTop: insets.top + 24, paddingBottom: insets.bottom + 18}]}>
+        <View style={p.countrySheet} accessibilityViewIsModal>
+          <View style={p.sheetHeader}><Text style={s.h2}>Choose a country</Text><Button title="Close" small kind="ghost" onPress={() => setShowCountries(false)}/></View>
+          <FlatList data={COUNTRIES} keyExtractor={item => item.country} keyboardShouldPersistTaps="handled"
+            renderItem={({item}) => <Pressable accessibilityRole="button" accessibilityState={{selected: country === item.country}}
+              onPress={() => chooseCountry(item.country)} style={({pressed}) => [p.countryRow, (pressed || country === item.country) && {backgroundColor: C.cardHi}]}>
+              <Text style={[p.name, {flex: 1}]}>{item.title}</Text><Text style={p.arrow}>{country === item.country ? '✓' : '→'}</Text>
+            </Pressable>}/>
+        </View>
+      </View>
+    </Modal>
   </View>;
-  if (map) return <View style={[s.screen, {paddingTop: insets.top + 8}]}>
-    <View style={s.pad}>{header}</View>
-    <WebView style={{flex: 1, backgroundColor: C.bg}} originWhitelist={['*']} source={{html: MAP_HTML, baseUrl: 'https://theticketbunker.com/'}}
-      onMessage={e => open(e.nativeEvent.data)} setSupportMultipleWindows={false}/>
-  </View>;
-  return <View style={s.screen}><SectionList style={s.screen} sections={sections} keyExtractor={c => c.slug} stickySectionHeadersEnabled={false}
-    contentContainerStyle={{paddingTop: insets.top + 8, paddingHorizontal: 18, paddingBottom: 40}} ListHeaderComponent={header} keyboardShouldPersistTaps="handled"
-    renderSectionHeader={({section}) => <Text style={[s.eyebrow, {marginTop: 22, marginBottom: 8}]}>{section.title}</Text>}
-    renderItem={({item}) => <Pressable accessibilityRole="button" onPress={() => open(item.slug)} style={({pressed}) => [p.row, pressed && {backgroundColor: C.cardHi}]}>
-      <Text style={p.name}>{item.name}</Text><Text style={p.go}>→</Text>
-    </Pressable>}/><StatusShade/></View>;
 }
+
 const p = StyleSheet.create({
-  near: {gap: 8, backgroundColor: C.card, padding: 14, borderRadius: 18, borderWidth: 1, borderColor: C.line},
-  row: {minHeight: 58, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, backgroundColor: C.card, borderRadius: 14, marginBottom: 8, borderWidth: 1, borderColor: C.line},
-  name: {fontFamily: F.bold, color: C.text, fontSize: 18},
-  go: {color: C.teal, fontSize: 22, fontFamily: F.bold}
+  panel: {backgroundColor: C.card, borderRadius: 20, borderWidth: 1, borderColor: C.line, padding: 18},
+  label: {fontFamily: F.bold, color: C.text, fontSize: 15, marginBottom: 8},
+  select: {flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, backgroundColor: C.bg},
+  selectText: {fontFamily: F.medium, color: C.text, fontSize: 17, flex: 1},
+  arrow: {fontFamily: F.bold, color: C.teal, fontSize: 22},
+  actions: {gap: 12, marginTop: 18},
+  results: {marginTop: 10, borderRadius: 14, borderWidth: 1, borderColor: C.line, overflow: 'hidden'},
+  result: {minHeight: 68, flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: C.line},
+  name: {fontFamily: F.bold, color: C.text, fontSize: 17},
+  mapPanel: {marginTop: 20, borderRadius: 20, overflow: 'hidden', borderWidth: 1, borderColor: C.line, backgroundColor: C.card},
+  selection: {marginTop: 16, padding: 18, borderRadius: 20, backgroundColor: C.card, borderWidth: 1, borderColor: C.teal, gap: 6},
+  modalBackdrop: {flex: 1, justifyContent: 'flex-end', backgroundColor: '#000b', paddingHorizontal: 18},
+  countrySheet: {height: '85%', width: '100%', maxWidth: 640, alignSelf: 'center', backgroundColor: C.card, borderRadius: 20, overflow: 'hidden', borderWidth: 1, borderColor: C.line},
+  sheetHeader: {padding: 18, gap: 16},
+  countryRow: {minHeight: 58, flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 18, paddingVertical: 12, borderTopWidth: 1, borderTopColor: C.line}
 });

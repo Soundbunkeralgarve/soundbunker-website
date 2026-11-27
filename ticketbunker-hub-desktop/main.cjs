@@ -2,11 +2,12 @@ const {app,BrowserWindow,dialog,Menu,powerSaveBlocker,utilityProcess,session,ipc
 const path=require('node:path');
 const {homedir}=require('node:os');
 const {mkdirSync}=require('node:fs');
-const {HUB_ORIGIN,localWindowUrl,eventFromLink}=require('./policy.cjs');
+const {HUB_ORIGIN,localWindowUrl,eventFromLink,desktopDataDirectory}=require('./policy.cjs');
 const {createNetworkController}=require('./network.cjs');
-function startDesktop({dataDirectory=path.join(homedir(),'.ticketbunker-hub'),resourceRoot,onReady,onError,onStage=()=>{},showWindow=true}={}){
+function startDesktop({dataDirectory,resourceRoot,onReady,onError,onStage=()=>{},showWindow=true}={}){
 const reportError=(title,message)=>onError?onError(title,message):dialog.showErrorBox(title,message);
 onStage('set-name');app.setName('TicketBunker Check-in Hub');
+dataDirectory=desktopDataDirectory({mas:Boolean(process.mas),override:dataDirectory,userData:app.getPath('userData'),home:homedir()});
 const browserData=path.join(dataDirectory,'desktop');mkdirSync(browserData,{recursive:true,mode:0o700});
 onStage('set-data-path');app.setPath('userData',browserData);
 let window,worker,adminUrl,powerId,network,quitting=false,stopping=false,quitPrompt=false,startupTimer,requestedEvent;
@@ -37,7 +38,7 @@ onStage('instance-lock');if(!app.requestSingleInstanceLock()){app.quit();}else{
   const launchLink=process.argv.find(x=>x.startsWith('ticketbunkerhub:'));if(launchLink)requestedEvent=eventFromLink(launchLink);
   onStage('session');session.defaultSession.setPermissionRequestHandler((_webContents,_permission,callback)=>callback(false));
   session.defaultSession.webRequest.onBeforeRequest((details,callback)=>{callback({cancel:!details.url.startsWith(HUB_ORIGIN+'/')&&!details.url.startsWith('data:image/')});});
-  onStage('create-window');window=new BrowserWindow({width:1240,height:900,minWidth:760,minHeight:640,backgroundColor:'#f5f7f5',title:'TicketBunker Check-in Hub',show:false,webPreferences:{preload:path.join(__dirname,'preload.cjs'),nodeIntegration:false,contextIsolation:true,sandbox:true,webSecurity:true,devTools:!app.isPackaged}});
+  onStage('create-window');window=new BrowserWindow({width:1240,height:900,minWidth:760,minHeight:640,backgroundColor:'#07070b',title:'TicketBunker Check-in Hub',show:false,webPreferences:{preload:path.join(__dirname,'preload.cjs'),nodeIntegration:false,contextIsolation:true,sandbox:true,webSecurity:true,devTools:!app.isPackaged}});
   window.webContents.setWindowOpenHandler(()=>({action:'deny'}));
   window.webContents.on('will-navigate',(event,url)=>{if(!localWindowUrl(url))event.preventDefault();});
   window.webContents.on('will-redirect',event=>event.preventDefault());
@@ -48,7 +49,7 @@ onStage('instance-lock');if(!app.requestSingleInstanceLock()){app.quit();}else{
   Menu.setApplicationMenu(Menu.buildFromTemplate([{label:'Hub',submenu:[{label:'Show check-in hub',click:show},{type:'separator'},{label:'Close hub',click:requestQuit}]},{label:'Edit',submenu:[{role:'undo'},{role:'redo'},{type:'separator'},{role:'cut'},{role:'copy'},{role:'paste'},{role:'selectAll'}]}]));
   powerId=powerSaveBlocker.start('prevent-app-suspension');
   const root=resourceRoot||(app.isPackaged?process.resourcesPath:path.resolve(__dirname,'..'));
-  network=createNetworkController({resourceRoot:root,openSettings:url=>shell.openExternal(url),confirmMacSetup:async()=>{
+  network=createNetworkController({resourceRoot:root,mas:Boolean(process.mas),openSettings:url=>shell.openExternal(url),confirmMacSetup:async()=>{
    const {response}=await dialog.showMessageBox(window,{type:'info',title:'Prepare Mac Wi-Fi',message:'Prepare this Mac for Wi-Fi without internet?',detail:'TicketBunker will add a virtual network connection named TicketBunker Offline. macOS will ask for administrator permission. Then switch on Internet Sharing using the choices shown in the Hub. This setup method needs testing on your Mac; it does not start or verify Wi-Fi automatically. To stop broadcasting later, switch off Internet Sharing in Mac settings.',buttons:['Cancel','Prepare Mac'],defaultId:1,cancelId:0,noLink:true});
    return response===1;
   }});

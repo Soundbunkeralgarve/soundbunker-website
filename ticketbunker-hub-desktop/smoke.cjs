@@ -1,11 +1,15 @@
 console.log('Smoke script loading');
 // Exercises the real desktop bootstrap, local renderer, bundled Node/SQLite and worker IPC.
 const {app}=require('electron');
-const {mkdtempSync}=require('node:fs');
+const {mkdtempSync,mkdirSync}=require('node:fs');
 const {tmpdir}=require('node:os');
 const path=require('node:path');
 const {startDesktop}=require('./main.cjs');
-const directory=mkdtempSync(path.join(tmpdir(),'tb-electron-smoke-'));
+app.setName('TicketBunker Check-in Hub');
+// A MAS rehearsal stays inside its container, in a fresh folder separate from the live ledger.
+const smokeRoot=process.mas?app.getPath('userData'):tmpdir();
+if(process.mas)mkdirSync(smokeRoot,{recursive:true,mode:0o700});
+const directory=mkdtempSync(path.join(smokeRoot,'tb-electron-smoke-'));
 let success=false;
 const timeout=setTimeout(()=>{console.error('Hub desktop did not complete its smoke test.');app.exit(1);},20000);
 app.on('will-quit',event=>{
@@ -27,7 +31,7 @@ startDesktop({showWindow:false,onStage:stage=>console.log('Desktop stage: '+stag
   const network=await window.webContents.executeJavaScript('window.hubNetwork.status()');
   if(network.platform!==process.platform||typeof network.available!=='boolean'||network.state!=='idle')throw Error('Desktop network bridge did not return a safe first-run state.');
   const macGuide=await window.webContents.executeJavaScript(`({visible:!document.getElementById('macWifiSetup').hidden,label:document.getElementById('prepareMac').textContent})`);
-  if(macGuide.visible!==(process.platform==='darwin')||macGuide.label!=='Prepare Mac Wi-Fi')throw Error('The Mac setup guide did not render correctly.');
+  if(macGuide.visible!==(process.platform==='darwin'&&!process.mas)||macGuide.label!=='Prepare Mac Wi-Fi')throw Error('The Mac setup guide did not render correctly.');
   success=true;await stop();
  }catch(e){console.error(e.message);await stop();}
 }});

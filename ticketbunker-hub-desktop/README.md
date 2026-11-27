@@ -15,7 +15,7 @@ With internet, local approvals and automatic cloud uploads run together. With po
 
 ### Local network setup and validation
 
-The Hub uses the approved TicketBunker logo and offline-bundled black, white and teal interface. Its dashboard separates the event download, local network, paired scanners and internet sync. Connection illustrations and scanner indicators reflect authenticated local contact; internet sync has a separate status. Fonts, graphics and the logo are bundled locally, without external asset requests.
+The Hub uses the approved TicketBunker logo and offline-bundled black, white and teal interface. Its dashboard separates the event download, local network, paired scanners and internet sync. Connection illustrations and scanner indicators reflect authenticated local contact; internet sync has a separate status. DM Sans text, Barlow Condensed headings, graphics and the logo are bundled locally, without external asset requests. The dashboard uses the same dark surfaces and teal controls as the customer, organiser and scanner apps, with readable labels and a dark startup window.
 
 **Sync tickets & entries** uploads saved check-ins first, then forces a ticket refresh even if the previous download was recent. **Refresh downloaded tickets** also uploads pending entries before refreshing. The dashboard shows the most recent ticket download, check-in upload and number of entries still waiting to upload. Automatic background sync retries while the Hub is open. An internet-sync failure preserves downloaded tickets and durable check-ins; local entry can continue while the offline permit remains valid and the scanners stay connected to the Hub over local Wi-Fi. New sales/refunds/staff changes require a successful internet refresh. A real API response is required before showing internet sync as available; merely opening the software or completing an empty background task does not prove connectivity.
 
@@ -78,3 +78,23 @@ The ad-hoc Mac QA packages 1.0.0 and 1.0.1 were withdrawn after a real browser d
 The manual **Publish Gatekeeper-Verified TicketBunker Mac Hub** workflow runs only from main. It requires the existing Mac signing/notarization secret names, uses Developer ID signing for both app and DMG, notarizes the final DMGs, staples both distribution and app tickets, adds browser-style quarantine to a fresh copy, and requires `syspolicy_check distribution` plus Gatekeeper assessment before artifact upload/publication. A native-architecture packaged startup test also passes before publication. It can publish Mac testing installers independently of Windows signing. It does not activate the complete public desktop release gate.
 
 The same verification script also protects the full signed desktop release workflow. Credentials must be configured through the authorised Apple account and encrypted GitHub Actions secrets; the unsigned/ad-hoc QA workflow cannot substitute for this release gate.
+
+## Mac App Store edition — prepared, not submitted
+
+The separate `electron-builder.mas.cjs` configuration requests Electron's MAS runtime with App Sandbox and inherited helper entitlements. It excludes the privileged Mac network preparation module. At runtime `process.mas` disables automatic network changes, keeps the private Wi-Fi/router and scanner pairing flow, and stores a new ledger beneath Electron's container user-data path. It neither imports nor migrates the direct-download `~/.ticketbunker-hub` ledger. Finish and sync any event in the edition that owns it before switching editions; never copy a live ledger between them.
+
+From `ticketbunker-hub-desktop`, after the existing resource preparation, use the explicit store configuration:
+
+```sh
+npm run prepare:resources
+npx electron-builder --config electron-builder.mas.cjs --mac mas-dev --publish never
+npx electron-builder --config electron-builder.mas.cjs --mac mas --publish never
+```
+
+These commands require matching Mac development/distribution provisioning profiles and certificates for `pt.soundbunker.ticketbunkerhub`, including an installer distribution certificate for the upload package. Supply each existing profile through the corresponding `masDev.provisioningProfile` / `mas.provisioningProfile` build option. The configuration requires signing and must fail rather than claim an unsigned package is ready. It does not alter the DMG/Windows workflows or submit anything automatically.
+
+Before submission, a signed `mas-dev` build must prove the sandboxed utility process starts, SQLite writes and restarts inside the container, local network permission works, two real phones reject a duplicate ticket without internet, and queued entries upload after reconnect. This source preparation and fixture tests do not establish those device results. The App Store app record, privacy/encryption declarations, reviewer access/screenshots, final signed package and review submission are still required. Selling the Mac app also requires the owner's chosen price and the current Paid Apps Agreement in App Store Connect; neither is set by this code.
+
+Google Play does not distribute this native Mac/Windows Electron package. It supports Android and compatible Chromebook applications; a Google Play Hub would require a separate supported-platform implementation. The current Windows installer is a separate distribution route and is not silently substituted for a requested store sale.
+
+Primary references: [Electron MAS guide](https://www.electronjs.org/docs/latest/tutorial/mac-app-store-submission-guide/), [Apple App Review section 2.4.5](https://developer.apple.com/app-store/review/guidelines/), [Apple pricing](https://developer.apple.com/help/app-store-connect/manage-app-pricing/set-a-price/), [Google Play compatibility](https://support.google.com/googleplay/answer/2851648).

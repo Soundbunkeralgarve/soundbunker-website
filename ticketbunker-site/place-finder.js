@@ -1,6 +1,8 @@
 // A compact country/search/map finder using the same destinations as the city pages.
 import {CITY_PAGES} from './city-places.js?v=20261122';
 import {CITY_COORDS, nearestCities} from './city-coords.js?v=20261122';
+import {searchPlaces, normalisePlace as normalise} from './place-search.js?v=20261127';
+export {searchPlaces};
 
 const LEAFLET = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/';
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
@@ -8,18 +10,6 @@ const bySlug = Object.fromEntries(CITY_PAGES.map(r => [r[0], r]));
 const label = slug => bySlug[slug][1].replace(/^the /, '');
 const countryNames = new Intl.DisplayNames(['en'], {type: 'region'});
 const countryLabel = cc => countryNames.of(cc) || cc;
-const normalise = value => String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
-
-export function searchPlaces(query, country = '', limit = 5) {
-  const wanted = normalise(query);
-  if (!wanted) return [];
-  return CITY_PAGES.map((row, order) => {
-    const names = [row[0], row[1].replace(/^the /, ''), row[3]].map(normalise);
-    const rank = names.some(n => n === wanted) ? 0 : names.some(n => n.startsWith(wanted)) ? 1 : names.some(n => n.includes(wanted)) ? 2 : 3;
-    return {row, rank, order};
-  }).filter(({row, rank}) => rank < 3 && (!country || row[2] === country))
-    .sort((a, b) => a.rank - b.rank || a.order - b.order).slice(0, Math.max(0, limit)).map(({row}) => row);
-}
 
 // Request location only after the visitor presses Near me.
 export function locate() {

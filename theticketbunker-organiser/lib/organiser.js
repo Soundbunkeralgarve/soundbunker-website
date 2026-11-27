@@ -4,6 +4,7 @@
 import {plans, planOrder, planForCapacity, largeEventThreshold} from '../../ticketbunker-site/pricing-rules.js';
 import {requestJson} from './request.js';
 import {SITE} from './config.js';
+import {localEventInstant} from '../../api/lib/events-time.js';
 
 export const KINDS = Object.freeze([['club', 'Club night'], ['show', 'Live music / gig'], ['comedy', 'Comedy show'], ['festival', 'Festival'],
   ['sports', 'Sport'], ['workshop', 'Workshop'], ['community', 'Community event'], ['other', 'Other']]);
@@ -47,7 +48,21 @@ export function stampDate(stamp) {
   return m ? new Date(+m[1], m[2] - 1, +m[3], +m[4], +m[5]) : null;
 }
 
-export function eventInput(form, editingId = '') {
+// Match the organiser API: UK/Portugal wall-clock input is converted at the venue,
+// independently of the phone's current timezone.
+export const eventTimeZone = (event, profile) => event?.venue_timezone || (profile?.country_code === 'GB' ? 'Europe/London' : 'Europe/Lisbon');
+export function venueStamp(value, timeZone = 'Europe/Lisbon') {
+  if (!value || !Number.isFinite(new Date(value).getTime())) return '';
+  const parts = Object.fromEntries(new Intl.DateTimeFormat('en-CA', {timeZone, year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hourCycle: 'h23'}).formatToParts(new Date(value)).map(p => [p.type, p.value]));
+  return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}`;
+}
+export function venueDate(stamp, timeZone = 'Europe/Lisbon') {
+  if (!stamp) return null;
+  try { return new Date(localEventInstant(stamp, timeZone)); } catch { return null; }
+}
+
+export function eventInput(form, editingId = '', timeZone = 'Europe/Lisbon') {
   const t = v => String(v ?? '').trim();
   const data = {action: editingId ? 'editEvent' : 'event', ...(editingId ? {eventId: editingId} : {}),
     title: t(form.title), kind: form.kind, venue: t(form.venue), venueCity: t(form.venueCity), headlineArtist: t(form.headlineArtist),
@@ -58,11 +73,11 @@ export function eventInput(form, editingId = '') {
   if (!data.venue || data.venue.length > 180) fail('Add the venue name and address.', 'venue');
   if (data.venueCity.length > 120) fail('Town / city is too long.', 'venueCity');
   if (data.headlineArtist.length > 120) fail('Headline act is too long.', 'headlineArtist');
-  const start = stampDate(data.startsAt), end = stampDate(data.endsAt);
+  const start = venueDate(data.startsAt, timeZone), end = venueDate(data.endsAt, timeZone);
   if (!start) fail('Choose when the event starts.', 'startsAt');
   if (!end || end <= start) fail('Set a finish time after the start time.', 'endsAt');
   if (data.vipEarlyAccessUntil) {
-    const vip = stampDate(data.vipEarlyAccessUntil);
+    const vip = venueDate(data.vipEarlyAccessUntil, timeZone);
     if (!vip || vip <= new Date() || vip >= start) fail('VIP early access must end in the future and before the event starts.', 'vipEarlyAccessUntil');
   }
   if (data.description.length < 20 || data.description.length > 4000) fail('Full event information needs 20–4,000 characters.', 'description');

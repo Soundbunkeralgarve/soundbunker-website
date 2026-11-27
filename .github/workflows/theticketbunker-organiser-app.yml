@@ -1,10 +1,10 @@
 name: TicketBunker Organiser App Checks
 on:
   pull_request:
-    paths: ['theticketbunker-organiser/**', 'ticketbunker-site/pricing-rules.js', '.github/workflows/theticketbunker-organiser-app.yml']
+    paths: ['theticketbunker-organiser/**', 'ticketbunker-site/pricing-rules.js', 'api/lib/events-time.js', '.github/workflows/theticketbunker-organiser-app.yml']
   push:
     branches: [main]
-    paths: ['theticketbunker-organiser/**', 'ticketbunker-site/pricing-rules.js', '.github/workflows/theticketbunker-organiser-app.yml']
+    paths: ['theticketbunker-organiser/**', 'ticketbunker-site/pricing-rules.js', 'api/lib/events-time.js', '.github/workflows/theticketbunker-organiser-app.yml']
 jobs:
   validate:
     runs-on: ubuntu-latest
